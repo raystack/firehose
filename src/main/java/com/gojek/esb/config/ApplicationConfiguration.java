@@ -12,7 +12,9 @@ public interface ApplicationConfiguration extends Config {
     @Key("KAFKA_TOPIC")
     String getKafkaTopic();
 
-    @DefaultValue("30000")
-    @Key("MAXIMUM_BACKOFF_TIME_MS")
-    Integer getMaximumBackOffTimeInMs();
+    @Key("SERVICE_URL")
+    String getServiceURL();
+
+    @Key("HTTP_HEADERS")
+    String getHTTPHeaders();
 }
