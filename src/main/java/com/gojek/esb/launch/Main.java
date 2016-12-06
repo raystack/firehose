@@ -6,11 +6,10 @@ import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.consumer.EsbGenericConsumer;
 import com.gojek.esb.consumer.LogConsumer;
 import com.gojek.esb.factory.GenericKafkaFactory;
+import com.gojek.esb.parser.Header;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 
@@ -25,26 +24,12 @@ public class Main {
         );
 
         EsbGenericConsumer genericConsumer = new GenericKafkaFactory().createConsumer(kafkaConsumerConfig);
-        GenericHTTPClient client = new GenericHTTPClient(appConfig.getServiceURL(), parseHeaders(appConfig.getHTTPHeaders()));
+        GenericHTTPClient client = new GenericHTTPClient(appConfig.getServiceURL(), Header.parse(appConfig.getHTTPHeaders()));
 
         LogConsumer logConsumer = new LogConsumer(genericConsumer, client);
 
         while (true) {
             logConsumer.processPartitions();
         }
-    }
-
-    private static Map<String, String> parseHeaders(String headers) {
-        HashMap<String, String> map = new HashMap<>();
-
-        String[] headerStrings = headers.split(",");
-        for (String string : headerStrings) {
-            if (!string.trim().isEmpty()) {
-                String[] keyValue = string.trim().split(":");
-                map.put(keyValue[0], keyValue[1]);
-            }
-        }
-
-        return map;
     }
 }
