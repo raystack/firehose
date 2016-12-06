@@ -24,7 +24,7 @@ public class LogConsumer {
         List<EsbMessage> messages = consumer.readMessages();
         if (!messages.isEmpty()) {
             HttpResponse resp = genericHTTPClient.execute(messages);
-            logger.debug(resp.toString());
+            logger.info(resp.toString());
         }
     }
 
