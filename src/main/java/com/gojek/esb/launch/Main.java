@@ -20,7 +20,8 @@ public class Main {
         KafkaConsumerConfig kafkaConsumerConfig = new KafkaConsumerConfig(appConfig.getKafkaAddress(),
                 appConfig.getConsumerGroupId(),
                 Pattern.compile(appConfig.getKafkaTopic()),
-                Long.MAX_VALUE
+                Long.MAX_VALUE,
+                System.getenv()
         );
 
         EsbGenericConsumer genericConsumer = new GenericKafkaFactory().createConsumer(kafkaConsumerConfig);
