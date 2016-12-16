@@ -17,4 +17,19 @@ public interface ApplicationConfiguration extends Config {
 
     @Key("HTTP_HEADERS")
     String getHTTPHeaders();
+
+    @Key("DATADOG_PREFIX")
+    String getDataDogPrefix();
+
+    @Key("DATADOG_HOST")
+    @DefaultValue("localhost")
+    String getDataDogHost();
+
+    @Key("DATADOG_PORT")
+    @DefaultValue("8125")
+    Integer getDataDogPort();
+
+    @Key("DATADOG_TAGS")
+    @DefaultValue("")
+    String getDataDogTags();
 }
