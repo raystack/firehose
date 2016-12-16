@@ -24,9 +24,9 @@ public class LogConsumer {
         List<EsbMessage> messages = consumer.readMessages();
         if (!messages.isEmpty()) {
             HttpResponse resp = genericHTTPClient.execute(messages);
-            logger.info(resp.toString());
+            logger.info("Execution successful for {} records", messages.size());
+
+            consumer.commitAsync();
         }
     }
-
-
 }
