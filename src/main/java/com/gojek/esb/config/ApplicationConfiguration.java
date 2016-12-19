@@ -32,4 +32,8 @@ public interface ApplicationConfiguration extends Config {
     @Key("DATADOG_TAGS")
     @DefaultValue("")
     String getDataDogTags();
+
+    @Key("STREAMING")
+    @DefaultValue("false")
+    Boolean isStreaming();
 }
