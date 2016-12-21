@@ -24,7 +24,7 @@ public class StreamingClientFactory {
         Properties streamsConfig = new Properties();
         streamsConfig.put(StreamsConfig.APPLICATION_ID_CONFIG, streamingConfig.getApplicationId());
         streamsConfig.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, FactoryUtils.appConfig.getKafkaAddress());
-        streamsConfig.put(StreamsConfig.ZOOKEEPER_CONNECT_CONFIG, streamingConfig.getZookeeperConnect());
+        streamsConfig.put(StreamsConfig.ZOOKEEPER_CONNECT_CONFIG, streamingConfig.getZookeeperAddress());
         streamsConfig.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
         streamsConfig.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
         streamsConfig.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, streamingConfig.getStreamThreads());

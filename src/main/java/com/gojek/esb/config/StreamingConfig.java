@@ -6,8 +6,8 @@ public interface StreamingConfig extends Config {
     @Key("APPLICATION_ID")
     String getApplicationId();
 
-    @Key("ZOOKEEPER_CONNECT")
-    String getZookeeperConnect();
+    @Key("ZOOKEEPER_ADDRESS")
+    String getZookeeperAddress();
 
     @Key("STREAM_THREADS")
     @DefaultValue("1")
