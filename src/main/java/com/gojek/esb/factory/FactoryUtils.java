@@ -7,11 +7,8 @@ import com.gojek.esb.util.Clock;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import org.aeonbits.owner.ConfigFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class FactoryUtils {
-    private final static Logger logger = LoggerFactory.getLogger(FactoryUtils.class.getName());
 
     public static final ApplicationConfiguration appConfig = ConfigFactory.create(ApplicationConfiguration.class, System.getenv());
 

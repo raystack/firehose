@@ -36,4 +36,11 @@ public interface ApplicationConfiguration extends Config {
     @Key("STREAMING")
     @DefaultValue("false")
     Boolean isStreaming();
+
+    @Key("ENABLE_AUDIT")
+    @DefaultValue("false")
+    Boolean isAuditEnabled();
+
+    @Key("AUDIT_SERVICE_URL")
+    String getAuditServiceUrl();
 }
