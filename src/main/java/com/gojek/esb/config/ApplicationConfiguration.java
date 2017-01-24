@@ -43,4 +43,8 @@ public interface ApplicationConfiguration extends Config {
 
     @Key("AUDIT_SERVICE_URL")
     String getAuditServiceUrl();
+
+    @Key("SINK")
+    @ConverterClass(SinkConverter.class)
+    SinkType getSinkType();
 }
