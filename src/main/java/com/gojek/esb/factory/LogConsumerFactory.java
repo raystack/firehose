@@ -7,10 +7,10 @@ import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.consumer.EsbGenericConsumer;
 import com.gojek.esb.consumer.LogConsumer;
 import com.gojek.esb.server.AuditServiceResponseHandler;
+import com.gojek.esb.sink.HttpSink;
+import com.gojek.esb.sink.Sink;
 import com.gojek.esb.util.TimeUtil;
 import org.asynchttpclient.DefaultAsyncHttpClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -32,6 +32,11 @@ public class LogConsumerFactory {
     private static final EsbGenericConsumer genericConsumer = new GenericKafkaFactory().createConsumer(kafkaConsumerConfig, auditConfig);
 
     public static LogConsumer getLogConsumer() {
-        return new LogConsumer(genericConsumer, FactoryUtils.httpClient, FactoryUtils.statsDClient, FactoryUtils.clockInstance);
+        HttpSink sink = new HttpSink(FactoryUtils.httpClient);
+        return new LogConsumer(genericConsumer, sink, FactoryUtils.statsDClient, FactoryUtils.clockInstance);
+    }
+
+    public static LogConsumer getLogConsumer(Sink sink) {
+        return new LogConsumer(genericConsumer, sink, FactoryUtils.statsDClient, FactoryUtils.clockInstance);
     }
 }
