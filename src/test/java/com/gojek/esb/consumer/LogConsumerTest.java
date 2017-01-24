@@ -1,5 +1,6 @@
 package com.gojek.esb.consumer;
 
+import com.gojek.esb.sink.HttpSink;
 import com.gojek.esb.util.Clock;
 import com.gojek.esb.client.GenericHTTPClient;
 import com.timgroup.statsd.StatsDClient;
@@ -38,6 +39,9 @@ public class LogConsumerTest {
     private StatsDClient statsDClient;
 
     @Mock
+    private HttpSink httpSink;
+
+    @Mock
     private Clock clock;
 
     private LogConsumer logConsumer;
@@ -49,7 +53,7 @@ public class LogConsumerTest {
         EsbMessage msg2 = new EsbMessage(new byte[]{}, new byte[]{}, "topic");
         messages = Arrays.asList(msg1, msg2);
 
-        logConsumer = new LogConsumer(esbGenericConsumer, genericHTTPClient, statsDClient, clock);
+        logConsumer = new LogConsumer(esbGenericConsumer, httpSink, statsDClient, clock);
 
         when(esbGenericConsumer.readMessages()).thenReturn(messages);
         when(genericHTTPClient.execute(any(List.class))).thenReturn(httpResponse);
@@ -60,7 +64,7 @@ public class LogConsumerTest {
     public void shouldProcessPartitions() throws IOException {
         logConsumer.processPartitions();
 
-        verify(genericHTTPClient).execute(messages);
+        verify(httpSink).pushMessage(messages);
     }
 
     @Test
@@ -69,7 +73,7 @@ public class LogConsumerTest {
 
         logConsumer.processPartitions();
 
-        verify(genericHTTPClient, times(0)).execute(any(List.class));
+        verify(httpSink, times(0)).pushMessage(any(List.class));
     }
 
     @Test
