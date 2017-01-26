@@ -31,11 +31,6 @@ public class LogConsumerFactory {
 
     private static final EsbGenericConsumer genericConsumer = new GenericKafkaFactory().createConsumer(kafkaConsumerConfig, auditConfig);
 
-    public static LogConsumer getLogConsumer() {
-        HttpSink sink = new HttpSink(FactoryUtils.httpClient);
-        return new LogConsumer(genericConsumer, sink, FactoryUtils.statsDClient, FactoryUtils.clockInstance);
-    }
-
     public static LogConsumer getLogConsumer(Sink sink) {
         return new LogConsumer(genericConsumer, sink, FactoryUtils.statsDClient, FactoryUtils.clockInstance);
     }
