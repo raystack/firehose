@@ -16,6 +16,7 @@ public interface ApplicationConfiguration extends Config {
     String getServiceURL();
 
     @Key("HTTP_HEADERS")
+    @DefaultValue("")
     String getHTTPHeaders();
 
     @Key("DATADOG_PREFIX")
