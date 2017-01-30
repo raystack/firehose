@@ -18,6 +18,11 @@ public class LogConsumer {
     private static final Logger logger = LoggerFactory.getLogger(LogConsumer.class);
 
     private final EsbGenericConsumer consumer;
+
+    public Sink getSink() {
+        return sink;
+    }
+
     private final Sink sink;
     private final StatsDClient statsDClient;
 
