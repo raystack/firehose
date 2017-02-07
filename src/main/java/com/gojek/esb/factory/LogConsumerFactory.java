@@ -12,8 +12,8 @@ import com.gojek.esb.server.AuditServiceResponseHandler;
 import com.gojek.esb.sink.BackOffProvider;
 import com.gojek.esb.sink.ExponentialBackOffProvider;
 import com.gojek.esb.sink.HttpSink;
-import com.gojek.esb.sink.db.ProtoToTableMapper;
-import com.gojek.esb.sink.db.QueryTemplate;
+import com.gojek.esb.sink.ProtoToTableMapper;
+import com.gojek.esb.sink.QueryTemplate;
 import com.gojek.esb.sink.RetrySinkCommand;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.db.DBBatchCommand;
@@ -79,13 +79,13 @@ public class LogConsumerFactory {
         long idleTimeout = dbConfig.getIdleTimeout();
         DBConnectionPool connectionPool = new HikariDBConnectionPool(dbConfig.getDbUrl(), dbConfig.getUser(),
                 dbConfig.getPassword(), dbConfig.getMaximumConnectionPoolSize(),
-                connectionTimeout, idleTimeout, dbConfig.getMinimumIdle());
+                connectionTimeout, idleTimeout);
 
         BackOffProvider backOffProvider = new ExponentialBackOffProvider(dbConfig.getInitialExpiryTimeInMs(),
                 dbConfig.getBackOffRate(), dbConfig.getMaximumExpiryInMs());
         RetrySinkCommand retrySinkCommand = new RetrySinkCommand(backOffProvider);
 
-        return new DBBatchCommand(retrySinkCommand, connectionPool);
+        return new DBBatchCommand(connectionPool, retrySinkCommand);
     }
 
     private QueryTemplate createQueryTemplate(DBConfig dbConfig) {
