@@ -11,16 +11,11 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) throws IOException {
 
-        if (!FactoryUtils.appConfig.isStreaming()) {
-            LogConsumer logConsumer = new LogConsumerFactory(System.getenv()).getConsumer();
-            //TODO:move initialize call to log consumer
-            logConsumer.getSink().initialize();
-            while (true) {
-                logConsumer.processPartitions();
-            }
-        } else {
-            StreamingClient streamingClient = StreamingClientFactory.getStreamingClient();
-            streamingClient.start();
+        LogConsumer logConsumer = new LogConsumerFactory(System.getenv()).getConsumer();
+        //TODO:move initialize call to log consumer
+        logConsumer.getSink().initialize();
+        while (true) {
+            logConsumer.processPartitions();
         }
     }
 }

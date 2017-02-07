@@ -34,10 +34,6 @@ public interface ApplicationConfiguration extends Config {
     @DefaultValue("")
     String getDataDogTags();
 
-    @Key("STREAMING")
-    @DefaultValue("false")
-    Boolean isStreaming();
-
     @Key("ENABLE_AUDIT")
     @DefaultValue("false")
     Boolean isAuditEnabled();
