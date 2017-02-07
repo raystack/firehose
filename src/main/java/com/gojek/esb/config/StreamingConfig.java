@@ -2,6 +2,7 @@ package com.gojek.esb.config;
 
 import org.aeonbits.owner.Config;
 
+@Deprecated
 public interface StreamingConfig extends Config {
     @Key("APPLICATION_ID")
     String getApplicationId();
