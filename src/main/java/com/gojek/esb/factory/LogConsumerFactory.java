@@ -5,6 +5,7 @@ import com.gojek.esb.config.ApplicationConfiguration;
 import com.gojek.esb.config.AuditConfig;
 import com.gojek.esb.config.DBConfig;
 import com.gojek.esb.config.KafkaConsumerConfig;
+import com.gojek.esb.config.LogConfig;
 import com.gojek.esb.config.SinkType;
 import com.gojek.esb.consumer.EsbGenericConsumer;
 import com.gojek.esb.consumer.LogConsumer;
@@ -20,10 +21,14 @@ import com.gojek.esb.sink.db.DBBatchCommand;
 import com.gojek.esb.sink.db.DBConnectionPool;
 import com.gojek.esb.sink.db.DBSink;
 import com.gojek.esb.sink.db.HikariDBConnectionPool;
+import com.gojek.esb.sink.print.LogSink;
+import com.gojek.esb.sink.print.ProtoParser;
 import com.gojek.esb.util.TimeUtil;
+import com.google.protobuf.GeneratedMessageV3;
 import org.aeonbits.owner.ConfigFactory;
 import org.asynchttpclient.DefaultAsyncHttpClient;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -52,7 +57,6 @@ public class LogConsumerFactory {
                 Long.MAX_VALUE,
                 config
         );
-
         AuditConfig auditConfig = new AuditConfig(new DefaultAsyncHttpClient(), kafkaConsumerConfig.getGroupId(),
                 appConfig.getAuditServiceUrl(), appConfig.isAuditEnabled(), Optional.of(new AuditServiceResponseHandler()), Optional.of(new AuditMessageBuilder(new TimeUtil())));
         EsbGenericConsumer consumer = new GenericKafkaFactory().createConsumer(kafkaConsumerConfig, auditConfig);
@@ -60,10 +64,23 @@ public class LogConsumerFactory {
         Sink sink;
         if (appConfig.getSinkType() == SinkType.DB) {
             sink = createDBSink();
-        } else {
+        } else if (appConfig.getSinkType() == SinkType.HTTP) {
             sink = new HttpSink(FactoryUtils.httpClient);
+        } else {
+            sink = getLogSink();
         }
         return new LogConsumer(consumer, sink, FactoryUtils.statsDClient, FactoryUtils.clockInstance);
+    }
+
+    private Sink getLogSink() {
+        Sink sink;
+        LogConfig logConfig = ConfigFactory.create(LogConfig.class, config);
+        ProtoParser protoParser = new ProtoParser(logConfig.getProtoSchema());
+        sink = new LogSink(protoParser, (List<GeneratedMessageV3> v) -> {
+            v.forEach(System.out::println);
+            System.out.println("===============================================");
+        });
+        return sink;
     }
 
     private Sink createDBSink() {
