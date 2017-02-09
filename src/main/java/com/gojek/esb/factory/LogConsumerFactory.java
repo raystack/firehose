@@ -1,34 +1,19 @@
 package com.gojek.esb.factory;
 
 import com.gojek.esb.audit.AuditMessageBuilder;
-import com.gojek.esb.config.ApplicationConfiguration;
-import com.gojek.esb.config.AuditConfig;
-import com.gojek.esb.config.DBConfig;
-import com.gojek.esb.config.KafkaConsumerConfig;
-import com.gojek.esb.config.LogConfig;
-import com.gojek.esb.config.SinkType;
+import com.gojek.esb.config.*;
 import com.gojek.esb.consumer.EsbGenericConsumer;
 import com.gojek.esb.consumer.LogConsumer;
 import com.gojek.esb.server.AuditServiceResponseHandler;
-import com.gojek.esb.sink.BackOffProvider;
-import com.gojek.esb.sink.ExponentialBackOffProvider;
-import com.gojek.esb.sink.HttpSink;
-import com.gojek.esb.sink.db.ProtoToTableMapper;
-import com.gojek.esb.sink.db.QueryTemplate;
-import com.gojek.esb.sink.RetrySinkCommand;
-import com.gojek.esb.sink.Sink;
-import com.gojek.esb.sink.db.DBBatchCommand;
-import com.gojek.esb.sink.db.DBConnectionPool;
-import com.gojek.esb.sink.db.DBSink;
-import com.gojek.esb.sink.db.HikariDBConnectionPool;
-import com.gojek.esb.sink.print.LogSink;
-import com.gojek.esb.sink.print.ProtoParser;
+import com.gojek.esb.sink.*;
+import com.gojek.esb.sink.db.*;
+import com.gojek.esb.sink.log.ConsoleLogger;
+import com.gojek.esb.sink.log.LogSink;
+import com.gojek.esb.sink.log.ProtoParser;
 import com.gojek.esb.util.TimeUtil;
-import com.google.protobuf.GeneratedMessageV3;
 import org.aeonbits.owner.ConfigFactory;
 import org.asynchttpclient.DefaultAsyncHttpClient;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -39,15 +24,8 @@ public class LogConsumerFactory {
     private final ApplicationConfiguration appConfig;
 
     public LogConsumerFactory(Map<String, String> config) {
-
         this.config = config;
-
         appConfig = ConfigFactory.create(ApplicationConfiguration.class, config);
-
-    }
-
-    public static LogConsumer getLogConsumer(Sink sink) {
-        return new LogConsumer(null, sink, FactoryUtils.statsDClient, FactoryUtils.clockInstance);
     }
 
     public LogConsumer getConsumer() {
@@ -63,27 +41,21 @@ public class LogConsumerFactory {
 
         Sink sink;
         if (appConfig.getSinkType() == SinkType.DB) {
-            sink = createDBSink();
+            sink = DBSink();
         } else if (appConfig.getSinkType() == SinkType.HTTP) {
             sink = new HttpSink(FactoryUtils.httpClient);
         } else {
-            sink = getLogSink();
+            sink = LogSink();
         }
         return new LogConsumer(consumer, sink, FactoryUtils.statsDClient, FactoryUtils.clockInstance);
     }
 
-    private Sink getLogSink() {
-        Sink sink;
+    private Sink LogSink() {
         LogConfig logConfig = ConfigFactory.create(LogConfig.class, config);
-        ProtoParser protoParser = new ProtoParser(logConfig.getProtoSchema());
-        sink = new LogSink(protoParser, (List<GeneratedMessageV3> v) -> {
-            v.forEach(System.out::println);
-            System.out.println("===============================================");
-        });
-        return sink;
+        return new LogSink(new ProtoParser(logConfig.getProtoSchema()), new ConsoleLogger());
     }
 
-    private Sink createDBSink() {
+    private Sink DBSink() {
         DBConfig dbConfig = ConfigFactory.create(DBConfig.class, config);
         DBBatchCommand dbBatchCommand = createBatchCommand(dbConfig);
         QueryTemplate queryTemplate = createQueryTemplate(dbConfig);
