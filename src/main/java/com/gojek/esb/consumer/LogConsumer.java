@@ -2,6 +2,7 @@ package com.gojek.esb.consumer;
 
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.util.Clock;
+import com.newrelic.api.agent.Trace;
 import com.timgroup.statsd.StatsDClient;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ public class LogConsumer {
 
     private final Clock clock;
 
+    @Trace(dispatcher = true)
     public void processPartitions() throws IOException {
         Instant beforeCall = clock.now();
         String batchReceivedCounter = "messages.received";
