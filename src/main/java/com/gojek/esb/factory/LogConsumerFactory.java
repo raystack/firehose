@@ -1,17 +1,28 @@
 package com.gojek.esb.factory;
 
 import com.gojek.esb.audit.AuditMessageBuilder;
+import com.gojek.esb.client.BaseHttpClient;
+import com.gojek.esb.client.ExponentialBackoffClient;
+import com.gojek.esb.client.GenericHTTPClient;
 import com.gojek.esb.config.*;
 import com.gojek.esb.consumer.EsbGenericConsumer;
 import com.gojek.esb.consumer.LogConsumer;
+import com.gojek.esb.parser.Header;
 import com.gojek.esb.server.AuditServiceResponseHandler;
 import com.gojek.esb.sink.*;
 import com.gojek.esb.sink.db.*;
 import com.gojek.esb.sink.log.ConsoleLogger;
 import com.gojek.esb.sink.log.LogSink;
 import com.gojek.esb.sink.log.ProtoParser;
+import com.gojek.esb.util.Clock;
 import com.gojek.esb.util.TimeUtil;
+import com.timgroup.statsd.NonBlockingStatsDClient;
+import com.timgroup.statsd.StatsDClient;
 import org.aeonbits.owner.ConfigFactory;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.asynchttpclient.DefaultAsyncHttpClient;
 
 import java.util.Map;
@@ -22,10 +33,17 @@ public class LogConsumerFactory {
 
     private Map<String, String> config;
     private final ApplicationConfiguration appConfig;
+    private final HTTPSinkConfig httpSinkConfig;
+    private final StatsDClient statsDClient;
+    private final Clock clockInstance;
 
     public LogConsumerFactory(Map<String, String> config) {
         this.config = config;
         appConfig = ConfigFactory.create(ApplicationConfiguration.class, config);
+        httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, config);
+        statsDClient = new NonBlockingStatsDClient(getPrefix(appConfig.getDataDogPrefix()), appConfig.getDataDogHost(),
+                appConfig.getDataDogPort(), appConfig.getDataDogTags().split(","));
+        clockInstance = new Clock();
     }
 
     public LogConsumer getConsumer() {
@@ -43,11 +61,31 @@ public class LogConsumerFactory {
         if (appConfig.getSinkType() == SinkType.DB) {
             sink = DBSink();
         } else if (appConfig.getSinkType() == SinkType.HTTP) {
-            sink = new HttpSink(FactoryUtils.httpClient);
+            sink = HttpSink();
         } else {
             sink = LogSink();
         }
-        return new LogConsumer(consumer, sink, FactoryUtils.statsDClient, FactoryUtils.clockInstance);
+        return new LogConsumer(consumer, sink, statsDClient, clockInstance);
+    }
+
+    private Sink HttpSink() {
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setSocketTimeout(httpSinkConfig.getRequestTimeoutInMs())
+                .setConnectionRequestTimeout(httpSinkConfig.getRequestTimeoutInMs())
+                .setConnectTimeout(httpSinkConfig.getRequestTimeoutInMs())
+                .build();
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+        connectionManager.setMaxTotal(httpSinkConfig.getMaxHttpConnections());
+        CloseableHttpClient closeableHttpClient = HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig).build();
+        BaseHttpClient client = new ExponentialBackoffClient(closeableHttpClient, statsDClient, clockInstance, httpSinkConfig);
+
+        GenericHTTPClient httpClient = new GenericHTTPClient(appConfig.getServiceURL(),
+                Header.parse(appConfig.getHTTPHeaders()), client);
+        return new HttpSink(httpClient);
+    }
+
+    private static String getPrefix(String prefix) {
+        return "log.consumer." + prefix;
     }
 
     private Sink LogSink() {
