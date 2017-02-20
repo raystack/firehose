@@ -58,7 +58,7 @@ public class LogConsumerFactoryTest {
             put("PROTO_SCHEMA", "com.gojek.esb.feedback.FeedbackLogMessage");
             put("JDBC_DRIVER", "org.postgresql.Driver");
             put("TABLE_NAME", "dfs.feedback_message");
-            put("DB_USERNAME", "postgres");
+            put("DB_USERNAME", "ashwin");
             put("DB_PASSWORD", "");
             put("DB_URL", "jdbc:postgresql://127.0.0.1:5432/");
 
