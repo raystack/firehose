@@ -24,6 +24,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 import java.util.Map;
 import java.util.Optional;
@@ -36,17 +40,24 @@ public class LogConsumerFactory {
     private final HTTPSinkConfig httpSinkConfig;
     private final StatsDClient statsDClient;
     private final Clock clockInstance;
+    private static final Logger logger = LoggerFactory.getLogger(LogConsumerFactory.class);
 
     public LogConsumerFactory(Map<String, String> config) {
         this.config = config;
         appConfig = ConfigFactory.create(ApplicationConfiguration.class, config);
+        logger.info("--------- Config ---------");
+        logger.info(appConfig.getKafkaAddress());
+        logger.info(appConfig.getKafkaTopic());
+        logger.info(appConfig.getConsumerGroupId());
+        logger.info(appConfig.getSinkType().name());
+        logger.info("--------- ------ ---------");
         httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, config);
         statsDClient = new NonBlockingStatsDClient(getPrefix(appConfig.getDataDogPrefix()), appConfig.getDataDogHost(),
                 appConfig.getDataDogPort(), appConfig.getDataDogTags().split(","));
         clockInstance = new Clock();
     }
 
-    public LogConsumer getConsumer() {
+    public LogConsumer buildConsumer() {
         KafkaConsumerConfig kafkaConsumerConfig = new KafkaConsumerConfig(appConfig.getKafkaAddress(),
                 appConfig.getConsumerGroupId(),
                 Pattern.compile(appConfig.getKafkaTopic()),
@@ -90,6 +101,9 @@ public class LogConsumerFactory {
 
     private Sink LogSink() {
         LogConfig logConfig = ConfigFactory.create(LogConfig.class, config);
+        logger.info("--------- LogSink ---------");
+        logger.info(logConfig.getProtoSchema());
+        logger.info("--------- ------- ---------");
         return new LogSink(new ProtoParser(logConfig.getProtoSchema()), new ConsoleLogger());
     }
 
