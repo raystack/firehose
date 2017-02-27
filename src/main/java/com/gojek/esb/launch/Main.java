@@ -7,8 +7,7 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-
-        LogConsumer logConsumer = new LogConsumerFactory(System.getenv()).getConsumer();
+        LogConsumer logConsumer = new LogConsumerFactory(System.getenv()).buildConsumer();
         //TODO:move initialize call to log consumer
         logConsumer.getSink().initialize();
         while (true) {
