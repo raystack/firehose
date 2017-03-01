@@ -64,8 +64,7 @@ public class LogConsumerFactory {
                 Long.MAX_VALUE,
                 config
         );
-        AuditConfig auditConfig = new AuditConfig(new DefaultAsyncHttpClient(), kafkaConsumerConfig.getGroupId(),
-                appConfig.getAuditServiceUrl(), appConfig.isAuditEnabled(), Optional.of(new AuditServiceResponseHandler()), Optional.of(new AuditMessageBuilder(new TimeUtil())));
+        AuditConfig auditConfig = ConfigFactory.create(AuditConfig.class, System.getenv());
         EsbGenericConsumer consumer = new GenericKafkaFactory().createConsumer(kafkaConsumerConfig, auditConfig);
 
         Sink sink;
