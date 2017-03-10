@@ -29,6 +29,8 @@ public class LogConsumer {
 
     private final Clock clock;
 
+    private String protoClassName;
+
     @Trace(dispatcher = true)
     public void processPartitions() throws IOException {
         Instant beforeCall = clock.now();
@@ -41,7 +43,7 @@ public class LogConsumer {
             statsDClient.gauge(batchSize, messages.size());
 
             if (!messages.isEmpty()) {
-                sink.pushMessage(messages);
+                sink.pushMessage(messages, protoClassName);
                 logger.info("Execution successful for {} records", messages.size());
                 consumer.commitAsync();
             }

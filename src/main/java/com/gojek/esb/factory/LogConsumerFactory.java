@@ -1,21 +1,34 @@
 package com.gojek.esb.factory;
 
-import com.gojek.esb.audit.AuditMessageBuilder;
 import com.gojek.esb.client.BaseHttpClient;
 import com.gojek.esb.client.ExponentialBackoffClient;
 import com.gojek.esb.client.GenericHTTPClient;
-import com.gojek.esb.config.*;
+import com.gojek.esb.config.ApplicationConfiguration;
+import com.gojek.esb.config.AuditConfig;
+import com.gojek.esb.config.DBConfig;
+import com.gojek.esb.config.HTTPSinkConfig;
+import com.gojek.esb.config.HttpSinkType;
+import com.gojek.esb.config.KafkaConsumerConfig;
+import com.gojek.esb.config.LogConfig;
+import com.gojek.esb.config.SinkType;
 import com.gojek.esb.consumer.EsbGenericConsumer;
 import com.gojek.esb.consumer.LogConsumer;
 import com.gojek.esb.parser.Header;
-import com.gojek.esb.server.AuditServiceResponseHandler;
-import com.gojek.esb.sink.*;
-import com.gojek.esb.sink.db.*;
+import com.gojek.esb.sink.BackOffProvider;
+import com.gojek.esb.sink.ExponentialBackOffProvider;
+import com.gojek.esb.sink.HttpSink;
+import com.gojek.esb.sink.RetrySinkCommand;
+import com.gojek.esb.sink.Sink;
+import com.gojek.esb.sink.db.DBBatchCommand;
+import com.gojek.esb.sink.db.DBConnectionPool;
+import com.gojek.esb.sink.db.DBSink;
+import com.gojek.esb.sink.db.HikariDBConnectionPool;
+import com.gojek.esb.sink.db.ProtoToTableMapper;
+import com.gojek.esb.sink.db.QueryTemplate;
 import com.gojek.esb.sink.log.ConsoleLogger;
 import com.gojek.esb.sink.log.LogSink;
 import com.gojek.esb.sink.log.ProtoParser;
 import com.gojek.esb.util.Clock;
-import com.gojek.esb.util.TimeUtil;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import org.aeonbits.owner.ConfigFactory;
@@ -23,14 +36,10 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.asynchttpclient.DefaultAsyncHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class LogConsumerFactory {
@@ -75,7 +84,12 @@ public class LogConsumerFactory {
         } else {
             sink = LogSink();
         }
-        return new LogConsumer(consumer, sink, statsDClient, clockInstance);
+
+        String protoClassName = null;
+        if (httpSinkConfig.getHttpSinkType() == HttpSinkType.JSON) {
+            protoClassName = httpSinkConfig.getHttpSinkJsonProtoSchema();
+        }
+        return new LogConsumer(consumer, sink, statsDClient, clockInstance, protoClassName);
     }
 
     private Sink HttpSink() {
