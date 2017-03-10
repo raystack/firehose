@@ -11,7 +11,6 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-
 public class LogConsumerFactoryTest {
 
     HashMap<String, String> config;
@@ -28,9 +27,10 @@ public class LogConsumerFactoryTest {
     @Test
     public void shouldCreateBatchLogConsumer() {
         config.put("STREAMING", "FALSE");
+        config.put("SINK", "http");
         LogConsumerFactory logConsumerFactory = new LogConsumerFactory(config);
 
-        Assert.assertEquals(logConsumerFactory.getConsumer().getClass(), LogConsumer.class);
+        Assert.assertEquals(logConsumerFactory.buildConsumer().getClass(), LogConsumer.class);
     }
 
     @Test
@@ -40,7 +40,7 @@ public class LogConsumerFactoryTest {
         config.put("HTTPSINK_RETRY_STATUS_CODE_RANGES", "405-500,501-600");
         LogConsumerFactory logConsumerFactory = new LogConsumerFactory(config);
 
-        Assert.assertEquals(logConsumerFactory.getConsumer().getSink().getClass(), HttpSink.class);
+        Assert.assertEquals(logConsumerFactory.buildConsumer().getSink().getClass(), HttpSink.class);
     }
 
     @Test
@@ -50,7 +50,7 @@ public class LogConsumerFactoryTest {
         config.putAll(dbConfig());
         LogConsumerFactory logConsumerFactory = new LogConsumerFactory(config);
 
-        Assert.assertEquals(logConsumerFactory.getConsumer().getSink().getClass(), DBSink.class);
+        Assert.assertEquals(logConsumerFactory.buildConsumer().getSink().getClass(), DBSink.class);
     }
 
     private Map<String, String> dbConfig() {
