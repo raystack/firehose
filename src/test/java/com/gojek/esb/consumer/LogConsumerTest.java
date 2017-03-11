@@ -2,6 +2,7 @@ package com.gojek.esb.consumer;
 
 import com.gojek.esb.client.GenericHTTPClient;
 import com.gojek.esb.sink.HttpSink;
+import com.gojek.esb.sink.deserializer.Deserializer;
 import com.gojek.esb.util.Clock;
 import com.timgroup.statsd.StatsDClient;
 import org.apache.http.HttpResponse;
@@ -60,7 +61,7 @@ public class LogConsumerTest {
         logConsumer = new LogConsumer(esbGenericConsumer, httpSink, statsDClient, clock, protoClassName);
 
         when(esbGenericConsumer.readMessages()).thenReturn(messages);
-        when(genericHTTPClient.execute(any(List.class))).thenReturn(httpResponse);
+        when(genericHTTPClient.execute(any(List.class), any(Deserializer.class))).thenReturn(httpResponse);
         when(clock.now()).thenReturn(Instant.now());
     }
 
