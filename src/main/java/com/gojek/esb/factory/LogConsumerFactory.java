@@ -3,6 +3,9 @@ package com.gojek.esb.factory;
 import com.gojek.esb.client.BaseHttpClient;
 import com.gojek.esb.client.ExponentialBackoffClient;
 import com.gojek.esb.client.GenericHTTPClient;
+import com.gojek.esb.client.deserializer.Deserializer;
+import com.gojek.esb.client.deserializer.JsonDeserializer;
+import com.gojek.esb.client.deserializer.JsonWrapperDeserializer;
 import com.gojek.esb.config.ApplicationConfiguration;
 import com.gojek.esb.config.AuditConfig;
 import com.gojek.esb.config.DBConfig;
@@ -85,11 +88,7 @@ public class LogConsumerFactory {
             sink = LogSink();
         }
 
-        String protoClassName = null;
-        if (httpSinkConfig.getHttpSinkType() == HttpSinkType.JSON) {
-            protoClassName = httpSinkConfig.getHttpSinkJsonProtoSchema();
-        }
-        return new LogConsumer(consumer, sink, statsDClient, clockInstance, protoClassName);
+        return new LogConsumer(consumer, sink, statsDClient, clockInstance);
     }
 
     private Sink HttpSink() {
@@ -103,8 +102,12 @@ public class LogConsumerFactory {
         CloseableHttpClient closeableHttpClient = HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig).build();
         BaseHttpClient client = new ExponentialBackoffClient(closeableHttpClient, statsDClient, clockInstance, httpSinkConfig);
 
+        Deserializer deserializer = (httpSinkConfig.getHttpSinkType() == HttpSinkType.JSON)
+                ? new JsonDeserializer(httpSinkConfig.getHttpSinkJsonProtoSchema())
+                : new JsonWrapperDeserializer();
+
         GenericHTTPClient httpClient = new GenericHTTPClient(appConfig.getServiceURL(),
-                Header.parse(appConfig.getHTTPHeaders()), client);
+                Header.parse(appConfig.getHTTPHeaders()), client, deserializer);
         return new HttpSink(httpClient);
     }
 
