@@ -2,7 +2,6 @@ package com.gojek.esb.consumer;
 
 import com.gojek.esb.client.GenericHTTPClient;
 import com.gojek.esb.sink.HttpSink;
-import com.gojek.esb.sink.deserializer.Deserializer;
 import com.gojek.esb.util.Clock;
 import com.timgroup.statsd.StatsDClient;
 import org.apache.http.HttpResponse;
@@ -45,8 +44,6 @@ public class LogConsumerTest {
     @Mock
     private Clock clock;
 
-    private String protoClassName;
-
     private LogConsumer logConsumer;
     private List<EsbMessage> messages;
 
@@ -56,12 +53,10 @@ public class LogConsumerTest {
         EsbMessage msg2 = new EsbMessage(new byte[]{}, new byte[]{}, "topic");
         messages = Arrays.asList(msg1, msg2);
 
-        protoClassName = Object.class.getName();
-
-        logConsumer = new LogConsumer(esbGenericConsumer, httpSink, statsDClient, clock, protoClassName);
+        logConsumer = new LogConsumer(esbGenericConsumer, httpSink, statsDClient, clock);
 
         when(esbGenericConsumer.readMessages()).thenReturn(messages);
-        when(genericHTTPClient.execute(any(List.class), any(Deserializer.class))).thenReturn(httpResponse);
+        when(genericHTTPClient.execute(any(List.class))).thenReturn(httpResponse);
         when(clock.now()).thenReturn(Instant.now());
     }
 
@@ -69,7 +64,7 @@ public class LogConsumerTest {
     public void shouldProcessPartitions() throws IOException {
         logConsumer.processPartitions();
 
-        verify(httpSink).pushMessage(messages, protoClassName);
+        verify(httpSink).pushMessage(messages);
     }
 
     @Test
@@ -78,7 +73,7 @@ public class LogConsumerTest {
 
         logConsumer.processPartitions();
 
-        verify(httpSink, times(0)).pushMessage(any(List.class), any());
+        verify(httpSink, times(0)).pushMessage(any(List.class));
     }
 
     @Test
