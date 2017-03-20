@@ -20,9 +20,9 @@ import com.gojek.esb.parser.Header;
 import com.gojek.esb.sink.BackOffProvider;
 import com.gojek.esb.sink.ExponentialBackOffProvider;
 import com.gojek.esb.sink.HttpSink;
-import com.gojek.esb.sink.RetrySinkCommand;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.db.DBBatchCommand;
+import com.gojek.esb.sink.db.DBBatchCommandWithRetry;
 import com.gojek.esb.sink.db.DBConnectionPool;
 import com.gojek.esb.sink.db.DBSink;
 import com.gojek.esb.sink.db.HikariDBConnectionPool;
@@ -126,9 +126,11 @@ public class LogConsumerFactory {
     private Sink DBSink() {
         DBConfig dbConfig = ConfigFactory.create(DBConfig.class, config);
         DBBatchCommand dbBatchCommand = createBatchCommand(dbConfig);
+
+        DBBatchCommandWithRetry dbBatchCommandWithRetry = createBatchCommandWithRetry(dbBatchCommand, dbConfig);
         QueryTemplate queryTemplate = createQueryTemplate(dbConfig);
 
-        return new DBSink(dbBatchCommand, queryTemplate);
+        return new DBSink(dbBatchCommandWithRetry, queryTemplate);
     }
 
     private DBBatchCommand createBatchCommand(DBConfig dbConfig) {
@@ -138,11 +140,14 @@ public class LogConsumerFactory {
                 dbConfig.getPassword(), dbConfig.getMaximumConnectionPoolSize(),
                 connectionTimeout, idleTimeout, dbConfig.getMinimumIdle());
 
+        return new DBBatchCommand(connectionPool);
+    }
+
+    private DBBatchCommandWithRetry createBatchCommandWithRetry(DBBatchCommand dbBatchCommand, DBConfig dbConfig) {
         BackOffProvider backOffProvider = new ExponentialBackOffProvider(dbConfig.getInitialExpiryTimeInMs(),
                 dbConfig.getBackOffRate(), dbConfig.getMaximumExpiryInMs());
-        RetrySinkCommand retrySinkCommand = new RetrySinkCommand(backOffProvider);
 
-        return new DBBatchCommand(retrySinkCommand, connectionPool);
+        return new DBBatchCommandWithRetry(dbBatchCommand, backOffProvider, dbConfig.getMaxBackoffRetries());
     }
 
     private QueryTemplate createQueryTemplate(DBConfig dbConfig) {
