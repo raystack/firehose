@@ -102,7 +102,7 @@ public class LogConsumerFactory {
         CloseableHttpClient closeableHttpClient = HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig).build();
         BaseHttpClient client = new ExponentialBackoffClient(closeableHttpClient, statsDClient, clockInstance, httpSinkConfig);
 
-        Deserializer deserializer = (httpSinkConfig.getHttpSinkType() == HttpSinkType.JSON)
+        Deserializer deserializer = (httpSinkConfig.getHttpSinkDataFormat() == HttpSinkType.JSON)
                 ? new JsonDeserializer(httpSinkConfig.getHttpSinkJsonProtoSchema())
                 : new JsonWrapperDeserializer();
 
