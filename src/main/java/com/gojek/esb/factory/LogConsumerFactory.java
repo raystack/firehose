@@ -147,7 +147,7 @@ public class LogConsumerFactory {
         BackOffProvider backOffProvider = new ExponentialBackOffProvider(dbConfig.getInitialExpiryTimeInMs(),
                 dbConfig.getBackOffRate(), dbConfig.getMaximumExpiryInMs());
 
-        return new DBBatchCommandWithRetry(dbBatchCommand, backOffProvider, dbConfig.getMaxBackoffRetries());
+        return new DBBatchCommandWithRetry(dbBatchCommand, backOffProvider);
     }
 
     private QueryTemplate createQueryTemplate(DBConfig dbConfig) {
