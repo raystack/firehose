@@ -1,6 +1,7 @@
 package com.gojek.esb.consumer;
 
 import com.gojek.esb.client.GenericHTTPClient;
+import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.sink.HttpSink;
 import com.gojek.esb.util.Clock;
 import com.timgroup.statsd.StatsDClient;
@@ -61,14 +62,14 @@ public class LogConsumerTest {
     }
 
     @Test
-    public void shouldProcessPartitions() throws IOException {
+    public void shouldProcessPartitions() throws IOException, DeserializerException {
         logConsumer.processPartitions();
 
         verify(httpSink).pushMessage(messages);
     }
 
     @Test
-    public void shouldProcessEmptyPartitions() throws IOException {
+    public void shouldProcessEmptyPartitions() throws IOException, DeserializerException {
         when(esbGenericConsumer.readMessages()).thenReturn(new ArrayList<>());
 
         logConsumer.processPartitions();
@@ -77,13 +78,13 @@ public class LogConsumerTest {
     }
 
     @Test
-    public void shouldSendNoOfMessagesReceivedCount() throws IOException {
+    public void shouldSendNoOfMessagesReceivedCount() throws IOException, DeserializerException {
         logConsumer.processPartitions();
         verify(statsDClient).count("messages.received", 2);
     }
 
     @Test
-    public void shouldSendPartitionProcessingTime() throws IOException {
+    public void shouldSendPartitionProcessingTime() throws IOException, DeserializerException {
         Instant beforeCall = Instant.now();
         Instant afterCall = beforeCall.plusSeconds(1);
         when(clock.now()).thenReturn(beforeCall).thenReturn(afterCall);
@@ -92,7 +93,7 @@ public class LogConsumerTest {
     }
 
     @Test
-    public void shouldSendBatchSize() throws IOException {
+    public void shouldSendBatchSize() throws IOException, DeserializerException {
         logConsumer.processPartitions();
         verify(statsDClient).gauge("messages.batch.size", 2);
     }
