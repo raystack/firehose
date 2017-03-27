@@ -1,5 +1,6 @@
 package com.gojek.esb.consumer;
 
+import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.util.Clock;
 import com.newrelic.api.agent.Trace;
@@ -30,7 +31,7 @@ public class LogConsumer {
     private final Clock clock;
 
     @Trace(dispatcher = true)
-    public void processPartitions() throws IOException {
+    public void processPartitions() throws IOException, DeserializerException {
         Instant beforeCall = clock.now();
         String batchReceivedCounter = "messages.received";
         String batchSize = "messages.batch.size";
@@ -43,7 +44,7 @@ public class LogConsumer {
             if (!messages.isEmpty()) {
                 sink.pushMessage(messages);
                 logger.info("Execution successful for {} records", messages.size());
-                consumer.commitAsync();
+                consumer.commit();
             }
         } finally {
             String timeTakenKey = "messages.process_partitions_time";

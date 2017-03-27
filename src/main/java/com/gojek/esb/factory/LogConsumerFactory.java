@@ -9,9 +9,9 @@ import com.gojek.esb.client.deserializer.JsonWrapperDeserializer;
 import com.gojek.esb.config.ApplicationConfiguration;
 import com.gojek.esb.config.AuditConfig;
 import com.gojek.esb.config.DBConfig;
+import com.gojek.esb.config.EsbConsumerConfig;
 import com.gojek.esb.config.HTTPSinkConfig;
 import com.gojek.esb.config.HttpSinkType;
-import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.config.LogConfig;
 import com.gojek.esb.config.SinkType;
 import com.gojek.esb.consumer.EsbGenericConsumer;
@@ -43,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public class LogConsumerFactory {
 
@@ -70,14 +69,9 @@ public class LogConsumerFactory {
     }
 
     public LogConsumer buildConsumer() {
-        KafkaConsumerConfig kafkaConsumerConfig = new KafkaConsumerConfig(appConfig.getKafkaAddress(),
-                appConfig.getConsumerGroupId(),
-                Pattern.compile(appConfig.getKafkaTopic()),
-                Long.MAX_VALUE,
-                config
-        );
+        EsbConsumerConfig esbConsumerConfig = ConfigFactory.create(EsbConsumerConfig.class, config);
         AuditConfig auditConfig = ConfigFactory.create(AuditConfig.class, System.getenv());
-        EsbGenericConsumer consumer = new GenericKafkaFactory().createConsumer(kafkaConsumerConfig, auditConfig);
+        EsbGenericConsumer consumer = new GenericKafkaFactory().createConsumer(esbConsumerConfig, auditConfig, config, statsDClient);
 
         Sink sink;
         if (appConfig.getSinkType() == SinkType.DB) {
