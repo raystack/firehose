@@ -2,6 +2,7 @@ package com.gojek.esb.consumer;
 
 import com.gojek.esb.client.GenericHTTPClient;
 import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.exception.FilterException;
 import com.gojek.esb.sink.HttpSink;
 import com.gojek.esb.util.Clock;
 import com.timgroup.statsd.StatsDClient;
@@ -62,14 +63,14 @@ public class LogConsumerTest {
     }
 
     @Test
-    public void shouldProcessPartitions() throws IOException, DeserializerException {
+    public void shouldProcessPartitions() throws IOException, DeserializerException, FilterException {
         logConsumer.processPartitions();
 
         verify(httpSink).pushMessage(messages);
     }
 
     @Test
-    public void shouldProcessEmptyPartitions() throws IOException, DeserializerException {
+    public void shouldProcessEmptyPartitions() throws IOException, DeserializerException, FilterException {
         when(esbGenericConsumer.readMessages()).thenReturn(new ArrayList<>());
 
         logConsumer.processPartitions();
@@ -78,13 +79,13 @@ public class LogConsumerTest {
     }
 
     @Test
-    public void shouldSendNoOfMessagesReceivedCount() throws IOException, DeserializerException {
+    public void shouldSendNoOfMessagesReceivedCount() throws IOException, DeserializerException, FilterException {
         logConsumer.processPartitions();
         verify(statsDClient).count("messages.received", 2);
     }
 
     @Test
-    public void shouldSendPartitionProcessingTime() throws IOException, DeserializerException {
+    public void shouldSendPartitionProcessingTime() throws IOException, DeserializerException, FilterException {
         Instant beforeCall = Instant.now();
         Instant afterCall = beforeCall.plusSeconds(1);
         when(clock.now()).thenReturn(beforeCall).thenReturn(afterCall);
@@ -93,7 +94,7 @@ public class LogConsumerTest {
     }
 
     @Test
-    public void shouldSendBatchSize() throws IOException, DeserializerException {
+    public void shouldSendBatchSize() throws IOException, DeserializerException, FilterException {
         logConsumer.processPartitions();
         verify(statsDClient).gauge("messages.batch.size", 2);
     }
