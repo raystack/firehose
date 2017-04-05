@@ -1,6 +1,7 @@
 package com.gojek.esb.consumer;
 
 import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.exception.FilterException;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.util.Clock;
 import com.newrelic.api.agent.Trace;
@@ -31,7 +32,7 @@ public class LogConsumer {
     private final Clock clock;
 
     @Trace(dispatcher = true)
-    public void processPartitions() throws IOException, DeserializerException {
+    public void processPartitions() throws IOException, DeserializerException, FilterException {
         Instant beforeCall = clock.now();
         String batchReceivedCounter = "messages.received";
         String batchSize = "messages.batch.size";
@@ -42,7 +43,8 @@ public class LogConsumer {
             statsDClient.gauge(batchSize, messages.size());
 
             if (!messages.isEmpty()) {
-                sink.pushMessage(messages);
+
+                sink.pushMessage((messages));
                 logger.info("Execution successful for {} records", messages.size());
                 consumer.commit();
             }

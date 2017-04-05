@@ -16,6 +16,8 @@ import com.gojek.esb.config.LogConfig;
 import com.gojek.esb.config.SinkType;
 import com.gojek.esb.consumer.EsbGenericConsumer;
 import com.gojek.esb.consumer.LogConsumer;
+import com.gojek.esb.filter.EsbMessageFilter;
+import com.gojek.esb.filter.Filter;
 import com.gojek.esb.parser.Header;
 import com.gojek.esb.sink.BackOffProvider;
 import com.gojek.esb.sink.ExponentialBackOffProvider;
@@ -71,7 +73,8 @@ public class LogConsumerFactory {
     public LogConsumer buildConsumer() {
         EsbConsumerConfig esbConsumerConfig = ConfigFactory.create(EsbConsumerConfig.class, config);
         AuditConfig auditConfig = ConfigFactory.create(AuditConfig.class, System.getenv());
-        EsbGenericConsumer consumer = new GenericKafkaFactory().createConsumer(esbConsumerConfig, auditConfig, config, statsDClient);
+        Filter filter = new EsbMessageFilter(esbConsumerConfig);
+        EsbGenericConsumer consumer = new GenericKafkaFactory().createConsumer(esbConsumerConfig, auditConfig, config, statsDClient, filter);
 
         Sink sink;
         if (appConfig.getSinkType() == SinkType.DB) {
