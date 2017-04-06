@@ -6,7 +6,7 @@ Filter expressions are allowed to filter EsbMessages just after reading from Kaf
 
 * All the expressions are like a piece of Java code.
 * Follow rules for every data type, as like writing a Java code.
-* Attach `_` at last of the outer field names.
+* Access nested fields by `.` and `()`, i.e., `driverLocationLogMessage.getVehicleType()`
 
 **Example**
 
@@ -43,14 +43,14 @@ gcm_key: "LefFCyvIVkJVgOL6d4uKBlMxlpyus1"
 
 ***Key based filter expressions examples:***
 
-* `driverId_ == 'COJRXpCPIYrIASdJ4W8gbqzeTt1PGl'`  (`''` for `string` comparison)
-* `vehicleType_ == 2` (Give Enum sequence for enum values to be compared)
-* `eventTimestamp_.seconds == 186178` (access nested elements by `.`)
-* `driverId_ == 'COJRXpCPIYrIASdJ4W8gbqzeTt1PGl' && vehicleType_ == 2` (multiple conditions example 1)
-* `vehicleType_ == 2 || eventTimestamp_.seconds == 186178` (multiple conditions example 2)
+* `driverLocationLogKey.getDriverId() == 'COJRXpCPIYrIASdJ4W8gbqzeTt1PGl'`
+* `driverLocationLogKey.getVehicleType == 'BIKE'` (Give Enum values to be compared)
+* `driverLocationLogKey.getEventTimestamp().getSeconds() == 186178`
+* `driverLocationLogKey.getDriverId() == 'COJRXpCPIYrIASdJ4W8gbqzeTt1PGl' && driverLocationLogKey.getVehicleType == 'BIKE'` (multiple conditions example 1)
+* `driverLocationLogKey.getVehicleType == 'BIKE' || driverLocationLogKey.getEventTimestamp().getSeconds() == 186178` (multiple conditions example 2)
 
 ***Message based filter expressions examples:***
 
-* `gcmKey_ == 'LefFCyvIVkJVgOL6d4uKBlMxlpyus1'`
-* `driverId_ == 'COJRXpCPIYrIASdJ4W8gbqzeTt1PGl' && driverLocation_.longitude > 0.791822075843811`
-* `driverLocation_.altitudeInMeters > 0.9949166178703308`
+* `driverLocationLogMessage.getGcmKey() == 'LefFCyvIVkJVgOL6d4uKBlMxlpyus1'`
+* `driverLocationLogMessage.getDriverId() == 'COJRXpCPIYrIASdJ4W8gbqzeTt1PGl' && driverLocationLogMessage.getDriverLocation().getLatitude() > 0.6487193703651428`
+* `driverLocationLogMessage.getDriverLocation().getAltitudeInMeters > 0.9949166178703308`
