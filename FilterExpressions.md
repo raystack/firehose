@@ -56,5 +56,6 @@ gcm_key: "LefFCyvIVkJVgOL6d4uKBlMxlpyus1"
 * `driverLocation_.altitudeInMeters > 0.9949166178703308`
 
 
-Note: Use `SINK=log` for testing the filtering 
+
+**Note: Use `SINK=log` for testing the filtering** 
 
