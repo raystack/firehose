@@ -54,3 +54,5 @@ gcm_key: "LefFCyvIVkJVgOL6d4uKBlMxlpyus1"
 * `driverLocationLogMessage.getGcmKey() == 'LefFCyvIVkJVgOL6d4uKBlMxlpyus1'`
 * `driverLocationLogMessage.getDriverId() == 'COJRXpCPIYrIASdJ4W8gbqzeTt1PGl' && driverLocationLogMessage.getDriverLocation().getLatitude() > 0.6487193703651428`
 * `driverLocationLogMessage.getDriverLocation().getAltitudeInMeters > 0.9949166178703308`
+
+**Note: Use `SINK=log` for testing the applied filtering** 
