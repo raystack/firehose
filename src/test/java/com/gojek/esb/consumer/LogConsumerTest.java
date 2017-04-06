@@ -2,7 +2,7 @@ package com.gojek.esb.consumer;
 
 import com.gojek.esb.client.GenericHTTPClient;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.exception.FilterException;
+import com.gojek.esb.exception.EsbFilterException;
 import com.gojek.esb.sink.HttpSink;
 import com.gojek.esb.util.Clock;
 import com.timgroup.statsd.StatsDClient;
@@ -63,14 +63,14 @@ public class LogConsumerTest {
     }
 
     @Test
-    public void shouldProcessPartitions() throws IOException, DeserializerException, FilterException {
+    public void shouldProcessPartitions() throws IOException, DeserializerException, EsbFilterException {
         logConsumer.processPartitions();
 
         verify(httpSink).pushMessage(messages);
     }
 
     @Test
-    public void shouldProcessEmptyPartitions() throws IOException, DeserializerException, FilterException {
+    public void shouldProcessEmptyPartitions() throws IOException, DeserializerException, EsbFilterException {
         when(esbGenericConsumer.readMessages()).thenReturn(new ArrayList<>());
 
         logConsumer.processPartitions();
@@ -79,13 +79,13 @@ public class LogConsumerTest {
     }
 
     @Test
-    public void shouldSendNoOfMessagesReceivedCount() throws IOException, DeserializerException, FilterException {
+    public void shouldSendNoOfMessagesReceivedCount() throws IOException, DeserializerException, EsbFilterException {
         logConsumer.processPartitions();
         verify(statsDClient).count("messages.received", 2);
     }
 
     @Test
-    public void shouldSendPartitionProcessingTime() throws IOException, DeserializerException, FilterException {
+    public void shouldSendPartitionProcessingTime() throws IOException, DeserializerException, EsbFilterException {
         Instant beforeCall = Instant.now();
         Instant afterCall = beforeCall.plusSeconds(1);
         when(clock.now()).thenReturn(beforeCall).thenReturn(afterCall);
@@ -94,7 +94,7 @@ public class LogConsumerTest {
     }
 
     @Test
-    public void shouldSendBatchSize() throws IOException, DeserializerException, FilterException {
+    public void shouldSendBatchSize() throws IOException, DeserializerException, EsbFilterException {
         logConsumer.processPartitions();
         verify(statsDClient).gauge("messages.batch.size", 2);
     }
