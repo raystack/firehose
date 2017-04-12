@@ -44,10 +44,10 @@ gcm_key: "LefFCyvIVkJVgOL6d4uKBlMxlpyus1"
 ***Key based filter expressions examples:***
 
 * `driverLocationLogKey.getDriverId() == 'COJRXpCPIYrIASdJ4W8gbqzeTt1PGl'`
-* `driverLocationLogKey.getVehicleType == 'BIKE'` (Give Enum values to be compared)
+* `driverLocationLogKey.getVehicleType() == 'BIKE'` (Give Enum values to be compared)
 * `driverLocationLogKey.getEventTimestamp().getSeconds() == 186178`
 * `driverLocationLogKey.getDriverId() == 'COJRXpCPIYrIASdJ4W8gbqzeTt1PGl' && driverLocationLogKey.getVehicleType == 'BIKE'` (multiple conditions example 1)
-* `driverLocationLogKey.getVehicleType == 'BIKE' || driverLocationLogKey.getEventTimestamp().getSeconds() == 186178` (multiple conditions example 2)
+* `driverLocationLogKey.getVehicleType() == 'BIKE' || driverLocationLogKey.getEventTimestamp().getSeconds() == 186178` (multiple conditions example 2)
 
 ***Message based filter expressions examples:***
 
