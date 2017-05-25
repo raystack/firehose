@@ -11,12 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
@@ -24,7 +18,7 @@ public class Main {
     public static void main(String[] args) throws IOException, DeserializerException, EsbFilterException, InterruptedException {
 
         ApplicationConfiguration appConfig = ConfigFactory.create(ApplicationConfiguration.class, System.getenv());
-        Paralleliser consumerParallerizer = new Paralleliser(appConfig.noOfConsumerThreads(), countDownLatch -> {
+        Paralleliser consumerParallerizer = new Paralleliser(appConfig.noOfConsumerThreads(), appConfig.threadCleanupDelay(), countDownLatch -> {
 
                 final LogConsumer logConsumer = new LogConsumerFactory(appConfig, System.getenv()).buildConsumer();
 
@@ -46,6 +40,12 @@ public class Main {
                     countDownLatch.countDown();
                 }
         });
+
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Executing the shutdown hook");
+            consumerParallerizer.stop();
+        }));
 
         consumerParallerizer.run().waitForCompletion();
 

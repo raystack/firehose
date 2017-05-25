@@ -17,23 +17,25 @@ public class Paralleliser {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
     private final ExecutorService executorService;
     private int parallelism;
+    private int threadCleanupDelay;
     private Consumer<CountDownLatch> fnToParallelize;
     private final CountDownLatch countDownLatch;
     private final List<Future<?>> fnFutures;
-    private final int DELAY_TO_LET_THREAD_CLEAN_UP = 2000;
 
-    public Paralleliser(int parallelism, Consumer<CountDownLatch> fnToParallelize) {
+    public Paralleliser(int parallelism, int threadCleanupDelay, Consumer<CountDownLatch> fnToParallelize) {
         executorService = Executors.newFixedThreadPool(parallelism);
         this.parallelism = parallelism;
+        this.threadCleanupDelay = threadCleanupDelay;
         this.fnToParallelize = fnToParallelize;
         this.countDownLatch = new CountDownLatch(parallelism);
         this.fnFutures = new ArrayList<>(parallelism);
-        addShutdownHook();
     }
 
     public Paralleliser run() {
         for(int i=0; i<parallelism; i++){
-            executorService.submit(() ->  fnToParallelize.accept(this.countDownLatch));
+            fnFutures.add(executorService.submit(() -> {
+                fnToParallelize.accept(this.countDownLatch);
+            }));
         }
         return this;
     }
@@ -42,16 +44,13 @@ public class Paralleliser {
        countDownLatch.await();
     }
 
-    private void addShutdownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Executing the shutdown hook");
-
-            try {
-                fnFutures.forEach(consumerThread -> consumerThread.cancel(true));
-                Thread.sleep(DELAY_TO_LET_THREAD_CLEAN_UP);
-            } catch (Exception e) {
-                e.printStackTrace(); //ignore
-            }
-        }));
+    public Paralleliser stop() {
+        try {
+            fnFutures.forEach(consumerThread -> consumerThread.cancel(true));
+            Thread.sleep(threadCleanupDelay);
+        } catch (Exception e) {
+           logger.error("error stopping tasks", e);
+        }
+        return this;
     }
 }
