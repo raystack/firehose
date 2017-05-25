@@ -1,15 +1,20 @@
 package com.gojek.esb.launch;
 
+import com.gojek.esb.config.ApplicationConfiguration;
+import com.gojek.esb.config.HTTPSinkConfig;
 import com.gojek.esb.consumer.LogConsumer;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.exception.EsbFilterException;
 import com.gojek.esb.factory.LogConsumerFactory;
+import org.aeonbits.owner.Config;
+import org.aeonbits.owner.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,13 +25,8 @@ public class Main {
 
     public static void main(String[] args) throws IOException, DeserializerException, EsbFilterException, InterruptedException {
 
-        final String eglc_parallelism = System.getenv().get("EGLC_PARALLELISM");
-
-        int parallelism = 1; // default behavior
-
-        if (eglc_parallelism != null && eglc_parallelism.length() > 0)
-            parallelism = Integer.valueOf(eglc_parallelism);
-
+        ApplicationConfiguration appConfig = ConfigFactory.create(ApplicationConfiguration.class, System.getenv());
+        int parallelism = appConfig.noOfConsumerThreads();
         logger.info("Setting EGLC Parallelism = {}", parallelism);
 
         final ExecutorService executorService = Executors.newFixedThreadPool(parallelism);
@@ -49,11 +49,12 @@ public class Main {
 
             kafkaConsumerRunnables.add(executorService.submit(() -> {
 
-                final LogConsumer logConsumer = new LogConsumerFactory(System.getenv()).buildConsumer();
+                final LogConsumer logConsumer = new LogConsumerFactory(appConfig, System.getenv()).buildConsumer();
 
                 try {
                     while (true) {
                         try {
+                            logger.info("thread interrupted: " + Thread.interrupted());
                             if (!Thread.interrupted())
                                 logConsumer.processPartitions();
                             else {

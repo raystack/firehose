@@ -55,9 +55,9 @@ public class LogConsumerFactory {
     private final Clock clockInstance;
     private static final Logger logger = LoggerFactory.getLogger(LogConsumerFactory.class);
 
-    public LogConsumerFactory(Map<String, String> config) {
+    public LogConsumerFactory(ApplicationConfiguration appConfig, Map<String, String> config) {
+        this.appConfig = appConfig;
         this.config = config;
-        appConfig = ConfigFactory.create(ApplicationConfiguration.class, config);
         logger.info("--------- Config ---------");
         logger.info(appConfig.getKafkaAddress());
         logger.info(appConfig.getKafkaTopic());
