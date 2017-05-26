@@ -57,8 +57,6 @@ public class LogConsumer {
 
     public void close() {
         if (consumer != null) {
-            //TODO: to commit or not to commit?
-            //consumer.commit();
             consumer.close();
         }
     }
