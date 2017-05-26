@@ -2,11 +2,12 @@ package com.gojek.esb.launch;
 
 import com.gojek.esb.config.ApplicationConfiguration;
 import com.gojek.esb.consumer.LogConsumer;
-import com.gojek.esb.consumer.Paralleliser;
+import com.gojek.esb.consumer.Task;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.exception.EsbFilterException;
 import com.gojek.esb.factory.LogConsumerFactory;
 import org.aeonbits.owner.ConfigFactory;
+import org.apache.kafka.common.errors.InterruptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +19,7 @@ public class Main {
     public static void main(String[] args) throws IOException, DeserializerException, EsbFilterException, InterruptedException {
 
         ApplicationConfiguration appConfig = ConfigFactory.create(ApplicationConfiguration.class, System.getenv());
-        Paralleliser consumerParallerizer = new Paralleliser(appConfig.noOfConsumerThreads(), appConfig.threadCleanupDelay(), countDownLatch -> {
+        Task consumerTask = new Task(appConfig.noOfConsumerThreads(), appConfig.threadCleanupDelay(), taskFinished -> {
 
                 final LogConsumer logConsumer = new LogConsumerFactory(appConfig, System.getenv()).buildConsumer();
 
@@ -34,22 +35,24 @@ public class Main {
                             logger.error("Exception in Consumer Thread {} {} continuing", e.getMessage(), e);
                         }
                     }
+                } catch(InterruptException ignoredInterruptException){
+
                 } catch(Exception e) {
                     logger.error("unhandled exception:", e);
                 }
                 finally{
                     ensureThreadWasInterruptedAndClose(logConsumer);
-                    countDownLatch.countDown();
+                    taskFinished.run();
                 }
         });
 
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.info("Executing the shutdown hook");
-            consumerParallerizer.stop();
+            consumerTask.stop();
         }));
 
-        consumerParallerizer.run().waitForCompletion();
+        consumerTask.run().waitForCompletion();
 
         logger.info("Exiting main thread");
     }
