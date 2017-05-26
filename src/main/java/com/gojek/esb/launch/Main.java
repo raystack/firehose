@@ -25,7 +25,6 @@ public class Main {
                 try {
                     while (true) {
                         try {
-                            logger.info("thread interrupted: " + Thread.interrupted());
                             if (Thread.interrupted()) {
                                 logger.info("Consumer Thread interrupted, leaving the loop!");
                                 break;
@@ -35,8 +34,11 @@ public class Main {
                             logger.error("Exception in Consumer Thread {} {} continuing", e.getMessage(), e);
                         }
                     }
-                } finally {
-                    logConsumer.close();
+                } catch(Exception e) {
+                    logger.error("unhandled exception:", e);
+                }
+                finally{
+                    ensureThreadWasInterruptedAndClose(logConsumer);
                     countDownLatch.countDown();
                 }
         });
@@ -50,5 +52,10 @@ public class Main {
         consumerParallerizer.run().waitForCompletion();
 
         logger.info("Exiting main thread");
+    }
+
+    private static void ensureThreadWasInterruptedAndClose(LogConsumer logConsumer) {
+        Thread.interrupted();
+        logConsumer.close();
     }
 }
