@@ -8,7 +8,6 @@ import com.gojek.esb.exception.EsbFilterException;
 import com.gojek.esb.factory.LogConsumerFactory;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.clients.consumer.CommitFailedException;
-import org.apache.kafka.common.errors.InterruptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +19,17 @@ public class Main {
     public static void main(String[] args) throws IOException, DeserializerException, EsbFilterException, InterruptedException {
 
         ApplicationConfiguration appConfig = ConfigFactory.create(ApplicationConfiguration.class, System.getenv());
+        if(appConfig.noOfConsumerThreads() == 1){
+            LogConsumer logConsumer = new LogConsumerFactory(appConfig, System.getenv()).buildConsumer();
+            while (true) {
+                logConsumer.processPartitions();
+            }
+        } else {
+            multiThreadedConsumers(appConfig);
+        }
+    }
+
+    private static void multiThreadedConsumers(ApplicationConfiguration appConfig) throws InterruptedException {
         Task consumerTask = new Task(appConfig.noOfConsumerThreads(), appConfig.threadCleanupDelay(), taskFinished -> {
 
                 final LogConsumer logConsumer = new LogConsumerFactory(appConfig, System.getenv()).buildConsumer();
