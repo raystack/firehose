@@ -44,4 +44,12 @@ public interface ApplicationConfiguration extends Config {
     @Key("SINK")
     @ConverterClass(SinkConverter.class)
     SinkType getSinkType();
+
+    @Key("NUMBER_OF_CONSUMERS_THREADS")
+    @DefaultValue("1")
+    Integer noOfConsumerThreads();
+
+    @Key("DELAY_TO_CLEAN_UP_CONSUMER_THREADS")
+    @DefaultValue("2000")
+    Integer threadCleanupDelay();
 }

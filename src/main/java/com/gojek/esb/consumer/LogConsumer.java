@@ -54,4 +54,11 @@ public class LogConsumer {
             statsDClient.recordExecutionTime(timeTakenKey, Duration.between(beforeCall, afterCall).toMillis());
         }
     }
+
+    public void close() {
+        if (consumer != null) {
+            logger.info("closing consumer");
+            consumer.close();
+        }
+    }
 }
