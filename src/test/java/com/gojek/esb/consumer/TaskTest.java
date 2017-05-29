@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(MockitoJUnitRunner.class)
 public class TaskTest {
 
-    private int PARALLELISM = 5;
+    private int PARALLELISM = 1;
 
     @Test
     public void shouldExecuteTaskWithParallelism() throws InterruptedException {
