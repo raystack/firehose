@@ -43,7 +43,8 @@ public class Task {
     }
 
     public void waitForCompletion() throws InterruptedException {
-       countDownLatch.await();
+        logger.info("waiting for completion");
+        countDownLatch.await();
     }
 
     public Task stop() {

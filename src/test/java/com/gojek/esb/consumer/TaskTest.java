@@ -37,6 +37,7 @@ public class TaskTest {
                 }
             }finally{
                 threadResults.put(Thread.currentThread().getId(), "thread closed");
+                System.out.println("counting down");
                 callback.run();
             }
         });
@@ -47,10 +48,20 @@ public class TaskTest {
             assertEquals(threadResults.get(key), "thread started");
         }
 
-        task.stop().waitForCompletion();
+        task.stop();
+        delayTaskSoWaitCallCatchesUp();
+        task.waitForCompletion();
 
         for (Long key :threadResults.keySet()) {
             assertEquals(threadResults.get(key), "thread closed");
+        }
+    }
+
+    private void delayTaskSoWaitCallCatchesUp() {
+        try {
+            Thread.sleep(1000l);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
