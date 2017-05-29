@@ -57,6 +57,7 @@ public class LogConsumer {
 
     public void close() {
         if (consumer != null) {
+            logger.info("closing consumer");
             consumer.close();
         }
     }

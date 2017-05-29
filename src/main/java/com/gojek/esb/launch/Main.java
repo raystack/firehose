@@ -7,6 +7,7 @@ import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.exception.EsbFilterException;
 import com.gojek.esb.factory.LogConsumerFactory;
 import org.aeonbits.owner.ConfigFactory;
+import org.apache.kafka.clients.consumer.CommitFailedException;
 import org.apache.kafka.common.errors.InterruptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,17 +32,15 @@ public class Main {
                                 break;
                             }
                             logConsumer.processPartitions();
-                        } catch (IOException | DeserializerException | EsbFilterException e) {
+                        } catch (IOException | DeserializerException | EsbFilterException |CommitFailedException e) {
                             logger.error("Exception in Consumer Thread {} {} continuing", e.getMessage(), e);
                         }
                     }
-                } catch(InterruptException ignoredInterruptException){
-
                 } catch(Exception e) {
                     logger.error("unhandled exception:", e);
                 }
                 finally{
-                    ensureThreadWasInterruptedAndClose(logConsumer);
+                    ensureThreadInterruptStateIsClearedAndClose(logConsumer);
                     taskFinished.run();
                 }
         });
@@ -57,7 +56,7 @@ public class Main {
         logger.info("Exiting main thread");
     }
 
-    private static void ensureThreadWasInterruptedAndClose(LogConsumer logConsumer) {
+    private static void ensureThreadInterruptStateIsClearedAndClose(LogConsumer logConsumer) {
         Thread.interrupted();
         logConsumer.close();
     }
