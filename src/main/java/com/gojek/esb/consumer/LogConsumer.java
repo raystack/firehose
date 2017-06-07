@@ -43,11 +43,11 @@ public class LogConsumer {
             statsDClient.gauge(batchSize, messages.size());
 
             if (!messages.isEmpty()) {
-
                 sink.pushMessage((messages));
                 logger.info("Execution successful for {} records", messages.size());
-                consumer.commit();
             }
+
+            consumer.commit();
         } finally {
             String timeTakenKey = "messages.process_partitions_time";
             Instant afterCall = clock.now();
