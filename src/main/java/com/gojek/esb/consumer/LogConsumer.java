@@ -22,10 +22,6 @@ public class LogConsumer {
 
     private final EsbGenericConsumer consumer;
 
-    public Sink getSink() {
-        return sink;
-    }
-
     private final Sink sink;
     private final StatsDClient statsDClient;
 
@@ -43,7 +39,7 @@ public class LogConsumer {
             statsDClient.gauge(batchSize, messages.size());
 
             if (!messages.isEmpty()) {
-                sink.pushMessage((messages));
+                sink.pushMessage(messages);
                 logger.info("Execution successful for {} records", messages.size());
             }
 

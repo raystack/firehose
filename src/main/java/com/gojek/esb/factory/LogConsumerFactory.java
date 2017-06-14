@@ -89,6 +89,7 @@ public class LogConsumerFactory {
     }
 
     private Sink HttpSink() {
+
         RequestConfig requestConfig = RequestConfig.custom()
                 .setSocketTimeout(httpSinkConfig.getRequestTimeoutInMs())
                 .setConnectionRequestTimeout(httpSinkConfig.getRequestTimeoutInMs())
