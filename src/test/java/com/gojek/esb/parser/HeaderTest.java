@@ -32,4 +32,18 @@ public class HeaderTest {
 
         assertEquals(expectedHeader, actualHeader);
     }
+
+    @Test
+    public void shouldParseWithNilHeadersInBetween(){
+
+        String header = "foo:bar,,accept:text/plain";
+        Map<String, String> expectedHeader = new HashMap<String, String>() {{
+            put("foo", "bar");
+            put("accept", "text/plain");
+        }};
+
+        Map<String, String> actualHeader = Header.parse(header);
+
+        assertEquals(expectedHeader, actualHeader);
+    }
 }
