@@ -1,7 +1,9 @@
 package com.gojek.esb.parser;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Utility class to parse the header.
@@ -9,16 +11,7 @@ import java.util.Map;
 public class Header {
 
     public static Map<String, String> parse(String headers) {
-        HashMap<String, String> map = new HashMap<>();
-
-        String[] headerStrings = headers.split(",");
-        for (String string : headerStrings) {
-            if (!string.trim().isEmpty()) {
-                String[] keyValue = string.trim().split(":");
-                map.put(keyValue[0], keyValue[1]);
-            }
-        }
-
-        return map;
+        return Arrays.stream(headers.split(",")).filter(headerKeyValue -> !headerKeyValue.trim().isEmpty()).collect(Collectors.toMap(
+                headerKeyValue -> headerKeyValue.split(":")[0], headerKeyValue -> headerKeyValue.split(":")[1]));
     }
 }
