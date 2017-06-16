@@ -1,35 +1,22 @@
 package com.gojek.esb.factory;
 
-import com.gojek.esb.client.BaseHttpClient;
-import com.gojek.esb.client.ExponentialBackoffClient;
-import com.gojek.esb.client.GenericHTTPClient;
-import com.gojek.esb.client.deserializer.Deserializer;
-import com.gojek.esb.client.deserializer.JsonDeserializer;
-import com.gojek.esb.client.deserializer.JsonWrapperDeserializer;
-import com.gojek.esb.config.ApplicationConfiguration;
-import com.gojek.esb.config.AuditConfig;
-import com.gojek.esb.config.DBConfig;
-import com.gojek.esb.config.EsbConsumerConfig;
-import com.gojek.esb.config.HTTPSinkConfig;
-import com.gojek.esb.config.HttpSinkType;
-import com.gojek.esb.config.LogConfig;
-import com.gojek.esb.config.SinkType;
+import com.gojek.esb.config.*;
 import com.gojek.esb.consumer.EsbGenericConsumer;
 import com.gojek.esb.consumer.LogConsumer;
 import com.gojek.esb.filter.EsbMessageFilter;
 import com.gojek.esb.filter.Filter;
-import com.gojek.esb.parser.Header;
 import com.gojek.esb.sink.BackOffProvider;
 import com.gojek.esb.sink.ExponentialBackOffProvider;
-import com.gojek.esb.sink.HttpSink;
 import com.gojek.esb.sink.Sink;
-import com.gojek.esb.sink.db.DBBatchCommand;
-import com.gojek.esb.sink.db.DBBatchCommandWithRetry;
-import com.gojek.esb.sink.db.DBConnectionPool;
-import com.gojek.esb.sink.db.DBSink;
-import com.gojek.esb.sink.db.HikariDBConnectionPool;
-import com.gojek.esb.sink.db.ProtoToTableMapper;
-import com.gojek.esb.sink.db.QueryTemplate;
+import com.gojek.esb.sink.db.*;
+import com.gojek.esb.sink.http.HttpSink;
+import com.gojek.esb.sink.http.client.BaseHttpClient;
+import com.gojek.esb.sink.http.client.ExponentialBackoffClient;
+import com.gojek.esb.sink.http.client.GenericHTTPClient;
+import com.gojek.esb.sink.http.client.Header;
+import com.gojek.esb.sink.http.client.deserializer.Deserializer;
+import com.gojek.esb.sink.http.client.deserializer.JsonDeserializer;
+import com.gojek.esb.sink.http.client.deserializer.JsonWrapperDeserializer;
 import com.gojek.esb.sink.log.ConsoleLogger;
 import com.gojek.esb.sink.log.LogSink;
 import com.gojek.esb.sink.log.ProtoParser;
@@ -105,7 +92,7 @@ public class LogConsumerFactory {
                 : new JsonWrapperDeserializer();
 
         GenericHTTPClient httpClient = new GenericHTTPClient(appConfig.getServiceURL(),
-                Header.parse(appConfig.getHTTPHeaders()), client, deserializer);
+                new Header(appConfig.getHTTPHeaders()), client, deserializer);
         return new HttpSink(httpClient);
     }
 
