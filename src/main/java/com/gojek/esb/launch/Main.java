@@ -32,27 +32,27 @@ public class Main {
     private static void multiThreadedConsumers(ApplicationConfiguration appConfig) throws InterruptedException {
         Task consumerTask = new Task(appConfig.noOfConsumerThreads(), appConfig.threadCleanupDelay(), taskFinished -> {
 
-                final LogConsumer logConsumer = new LogConsumerFactory(appConfig, System.getenv()).buildConsumer();
-
-                try {
-                    while (true) {
-                        try {
-                            if (Thread.interrupted()) {
-                                logger.info("Consumer Thread interrupted, leaving the loop!");
-                                break;
-                            }
-                            logConsumer.processPartitions();
-                        } catch (IOException | DeserializerException | EsbFilterException |CommitFailedException e) {
-                            logger.error("Exception in Consumer Thread {} {} continuing", e.getMessage(), e);
+            LogConsumer logConsumer = null;
+            try {
+                logConsumer = new LogConsumerFactory(appConfig, System.getenv()).buildConsumer();
+                while (true) {
+                    try {
+                        if (Thread.interrupted()) {
+                            logger.info("Consumer Thread interrupted, leaving the loop!");
+                            break;
                         }
+                        logConsumer.processPartitions();
+                    } catch (IOException | DeserializerException | EsbFilterException |CommitFailedException e) {
+                        logger.error("Exception in Consumer Thread {} {} continuing", e.getMessage(), e);
                     }
-                } catch(Exception e) {
-                    logger.error("unhandled exception:", e);
                 }
-                finally{
-                    ensureThreadInterruptStateIsClearedAndClose(logConsumer);
-                    taskFinished.run();
-                }
+            } catch(Exception e) {
+                logger.error("unhandled exception:", e);
+            }
+            finally{
+                ensureThreadInterruptStateIsClearedAndClose(logConsumer);
+                taskFinished.run();
+            }
         });
 
 
