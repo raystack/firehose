@@ -52,4 +52,7 @@ public interface ApplicationConfiguration extends Config {
     @Key("DELAY_TO_CLEAN_UP_CONSUMER_THREADS")
     @DefaultValue("2000")
     Integer threadCleanupDelay();
+
+    @Key("SINK_FACTORY_CLASS")
+    String sinkFactoryClass();
 }

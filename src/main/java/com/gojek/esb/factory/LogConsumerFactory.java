@@ -5,29 +5,15 @@ import com.gojek.esb.consumer.EsbGenericConsumer;
 import com.gojek.esb.consumer.LogConsumer;
 import com.gojek.esb.filter.EsbMessageFilter;
 import com.gojek.esb.filter.Filter;
-import com.gojek.esb.sink.BackOffProvider;
-import com.gojek.esb.sink.ExponentialBackOffProvider;
 import com.gojek.esb.sink.Sink;
-import com.gojek.esb.sink.db.*;
-import com.gojek.esb.sink.http.HttpSink;
-import com.gojek.esb.sink.http.client.BaseHttpClient;
-import com.gojek.esb.sink.http.client.ExponentialBackoffClient;
-import com.gojek.esb.sink.http.client.GenericHTTPClient;
-import com.gojek.esb.sink.http.client.Header;
-import com.gojek.esb.sink.http.client.deserializer.Deserializer;
-import com.gojek.esb.sink.http.client.deserializer.JsonDeserializer;
-import com.gojek.esb.sink.http.client.deserializer.JsonWrapperDeserializer;
-import com.gojek.esb.sink.log.ConsoleLogger;
-import com.gojek.esb.sink.log.LogSink;
-import com.gojek.esb.sink.log.ProtoParser;
+import com.gojek.esb.sink.SinkFactory;
+import com.gojek.esb.sink.db.DBSinkFactory;
+import com.gojek.esb.sink.http.HttpSinkFactory;
+import com.gojek.esb.sink.log.LogSinkFactory;
 import com.gojek.esb.util.Clock;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import org.aeonbits.owner.ConfigFactory;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,80 +49,42 @@ public class LogConsumerFactory {
         Filter filter = new EsbMessageFilter(esbConsumerConfig);
         EsbGenericConsumer consumer = new GenericKafkaFactory().createConsumer(esbConsumerConfig, auditConfig, config, statsDClient, filter);
 
-        Sink sink;
-        if (appConfig.getSinkType() == SinkType.DB) {
-            sink = DBSink();
-        } else if (appConfig.getSinkType() == SinkType.HTTP) {
-            sink = HttpSink();
-        } else {
-            sink = LogSink();
+        String syncFactoryClass = appConfig.sinkFactoryClass();
+        if(syncFactoryClass == null || syncFactoryClass.trim() == ""){
+            syncFactoryClass = factoryClassFromDepricatedSyncConfig();
         }
+
+        Sink sink = instantiateFactory(syncFactoryClass);
+
 
         return new LogConsumer(consumer, sink, statsDClient, clockInstance);
     }
 
-    private Sink HttpSink() {
+    private String factoryClassFromDepricatedSyncConfig() {
 
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setSocketTimeout(httpSinkConfig.getRequestTimeoutInMs())
-                .setConnectionRequestTimeout(httpSinkConfig.getRequestTimeoutInMs())
-                .setConnectTimeout(httpSinkConfig.getRequestTimeoutInMs())
-                .build();
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        connectionManager.setMaxTotal(httpSinkConfig.getMaxHttpConnections());
-        CloseableHttpClient closeableHttpClient = HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig).build();
-        BaseHttpClient client = new ExponentialBackoffClient(closeableHttpClient, statsDClient, clockInstance, httpSinkConfig);
+        switch (appConfig.getSinkType()){
+            case DB:
+                return DBSinkFactory.class.getName();
+            case HTTP:
+                return HttpSinkFactory.class.getName();
+            case LOG:
+                return LogSinkFactory.class.getName();
+            default:
+                throw new EglcConfigurationException("Sink factory class or sync type not defined");
+        }
+    }
 
-        Deserializer deserializer = (httpSinkConfig.getHttpSinkDataFormat() == HttpSinkType.JSON)
-                ? new JsonDeserializer(httpSinkConfig.getHttpSinkJsonProtoSchema())
-                : new JsonWrapperDeserializer();
-
-        GenericHTTPClient httpClient = new GenericHTTPClient(appConfig.getServiceURL(),
-                new Header(appConfig.getHTTPHeaders()), client, deserializer);
-        return new HttpSink(httpClient);
+    private Sink instantiateFactory(String sinkFactoryClass) {
+        SinkFactory sinkFactory = null;
+        try {
+            sinkFactory = (SinkFactory)Class.forName(sinkFactoryClass).getConstructors()[0].newInstance();
+        } catch (ReflectiveOperationException e) {
+           throw new EglcConfigurationException("Bad configuration for sink", e);
+        }
+        return sinkFactory.create(System.getenv(), statsDClient);
     }
 
     private static String getPrefix(String prefix) {
         return "log.consumer." + prefix;
-    }
-
-    private Sink LogSink() {
-        LogConfig logConfig = ConfigFactory.create(LogConfig.class, config);
-        logger.info("--------- LogSink ---------");
-        logger.info(logConfig.getProtoSchema());
-        logger.info("--------- ------- ---------");
-        return new LogSink(new ProtoParser(logConfig.getProtoSchema()), new ConsoleLogger());
-    }
-
-    private Sink DBSink() {
-        DBConfig dbConfig = ConfigFactory.create(DBConfig.class, config);
-        DBBatchCommand dbBatchCommand = createBatchCommand(dbConfig);
-
-        DBBatchCommandWithRetry dbBatchCommandWithRetry = createBatchCommandWithRetry(dbBatchCommand, dbConfig);
-        QueryTemplate queryTemplate = createQueryTemplate(dbConfig);
-
-        return new DBSink(dbBatchCommandWithRetry, queryTemplate);
-    }
-
-    private DBBatchCommand createBatchCommand(DBConfig dbConfig) {
-        long connectionTimeout = dbConfig.getConnectionTimeout();
-        long idleTimeout = dbConfig.getIdleTimeout();
-        DBConnectionPool connectionPool = new HikariDBConnectionPool(dbConfig.getDbUrl(), dbConfig.getUser(),
-                dbConfig.getPassword(), dbConfig.getMaximumConnectionPoolSize(),
-                connectionTimeout, idleTimeout, dbConfig.getMinimumIdle());
-
-        return new DBBatchCommand(connectionPool);
-    }
-
-    private DBBatchCommandWithRetry createBatchCommandWithRetry(DBBatchCommand dbBatchCommand, DBConfig dbConfig) {
-        BackOffProvider backOffProvider = new ExponentialBackOffProvider(dbConfig.getInitialExpiryTimeInMs(),
-                dbConfig.getBackOffRate(), dbConfig.getMaximumExpiryInMs());
-
-        return new DBBatchCommandWithRetry(dbBatchCommand, backOffProvider);
-    }
-
-    private QueryTemplate createQueryTemplate(DBConfig dbConfig) {
-        ProtoToTableMapper protoToTableMapper = new ProtoToTableMapper(dbConfig.getProtoSchema());
-        return new QueryTemplate(dbConfig, protoToTableMapper);
     }
 }
