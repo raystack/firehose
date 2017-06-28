@@ -23,7 +23,6 @@ public class LogConsumerFactory {
 
     private Map<String, String> config;
     private final ApplicationConfiguration appConfig;
-    private final HTTPSinkConfig httpSinkConfig;
     private final StatsDClient statsDClient;
     private final Clock clockInstance;
     private static final Logger logger = LoggerFactory.getLogger(LogConsumerFactory.class);
@@ -37,7 +36,6 @@ public class LogConsumerFactory {
         logger.info(appConfig.getConsumerGroupId());
         logger.info(appConfig.getSinkType().name());
         logger.info("--------- ------ ---------");
-        httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, config);
         statsDClient = new NonBlockingStatsDClient(getPrefix(appConfig.getDataDogPrefix()), appConfig.getDataDogHost(),
                 appConfig.getDataDogPort(), appConfig.getDataDogTags().split(","));
         clockInstance = new Clock();
