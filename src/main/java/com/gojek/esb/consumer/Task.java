@@ -1,6 +1,5 @@
 package com.gojek.esb.consumer;
 
-import com.gojek.esb.launch.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +13,7 @@ import java.util.function.Consumer;
 
 public class Task {
 
-    private static final Logger logger = LoggerFactory.getLogger(Task.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Task.class);
     private final ExecutorService executorService;
     private int parallelism;
     private int threadCleanupDelay;
@@ -30,11 +29,13 @@ public class Task {
         this.task = task;
         this.countDownLatch = new CountDownLatch(parallelism);
         this.fnFutures = new ArrayList<>(parallelism);
-        taskFinishCallback = () -> {countDownLatch.countDown();};
+        taskFinishCallback = () -> {
+            countDownLatch.countDown();
+        };
     }
 
     public Task run() {
-        for(int i=0; i<parallelism; i++){
+        for (int i = 0; i < parallelism; i++) {
             fnFutures.add(executorService.submit(() -> {
                 task.accept(taskFinishCallback);
             }));
@@ -43,7 +44,7 @@ public class Task {
     }
 
     public void waitForCompletion() throws InterruptedException {
-        logger.info("waiting for completion");
+        LOGGER.info("waiting for completion");
         countDownLatch.await();
     }
 
@@ -52,7 +53,7 @@ public class Task {
             fnFutures.forEach(consumerThread -> consumerThread.cancel(true));
             Thread.sleep(threadCleanupDelay);
         } catch (Exception e) {
-           logger.error("error stopping tasks", e);
+           LOGGER.error("error stopping tasks", e);
         }
         return this;
     }

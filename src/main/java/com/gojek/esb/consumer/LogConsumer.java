@@ -18,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 public class LogConsumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(LogConsumer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LogConsumer.class);
 
     private final EsbGenericConsumer consumer;
 
@@ -40,7 +40,7 @@ public class LogConsumer {
 
             if (!messages.isEmpty()) {
                 sink.pushMessage(messages);
-                logger.info("Execution successful for {} records", messages.size());
+                LOGGER.info("Execution successful for {} records", messages.size());
             }
 
             consumer.commit();
@@ -53,7 +53,7 @@ public class LogConsumer {
 
     public void close() {
         if (consumer != null) {
-            logger.info("closing consumer");
+            LOGGER.info("closing consumer");
             consumer.close();
         }
     }
