@@ -13,12 +13,14 @@ import static org.junit.Assert.assertEquals;
 @RunWith(MockitoJUnitRunner.class)
 public class TaskTest {
 
-    private int PARALLELISM = 1;
+    private static final int PARALLELISM = 1;
+    private static final int THREAD_CLEANUP_DELAY_IN_MS = 100;
+    private static final long SLEEP_SECONDS = 1000L;
 
     @Test
     public void shouldExecuteTaskWithParallelism() throws InterruptedException {
         final List<Long> threadList = new ArrayList<>();
-        Task task = new Task(PARALLELISM, 100, callback -> {
+        Task task = new Task(PARALLELISM, THREAD_CLEANUP_DELAY_IN_MS, callback -> {
             threadList.add(Thread.currentThread().getId());
             callback.run();
         });
@@ -30,12 +32,12 @@ public class TaskTest {
     @Test
     public void shouldExecuteTaskUntilStopped() throws InterruptedException {
         final ConcurrentHashMap<Long, String> threadResults = new ConcurrentHashMap<Long, String>();
-        Task task = new Task(PARALLELISM, 100, callback -> {
-            try{
-                while(!Thread.interrupted()){
+        Task task = new Task(PARALLELISM, THREAD_CLEANUP_DELAY_IN_MS, callback -> {
+            try {
+                while (!Thread.interrupted()) {
                     threadResults.put(Thread.currentThread().getId(), "thread started");
                 }
-            }finally{
+            } finally {
                 threadResults.put(Thread.currentThread().getId(), "thread closed");
                 System.out.println("counting down");
                 callback.run();
@@ -59,7 +61,7 @@ public class TaskTest {
 
     private void delayTaskSoWaitCallCatchesUp() {
         try {
-            Thread.sleep(1000l);
+            Thread.sleep(SLEEP_SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

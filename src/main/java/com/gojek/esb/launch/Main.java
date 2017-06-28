@@ -14,12 +14,12 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 public class Main {
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws IOException, DeserializerException, EsbFilterException, InterruptedException {
 
         ApplicationConfiguration appConfig = ConfigFactory.create(ApplicationConfiguration.class, System.getenv());
-        if(appConfig.noOfConsumerThreads() == 1){
+        if (appConfig.noOfConsumerThreads() == 1) {
             LogConsumer logConsumer = new LogConsumerFactory(appConfig, System.getenv()).buildConsumer();
             while (true) {
                 logConsumer.processPartitions();
@@ -38,18 +38,17 @@ public class Main {
                 while (true) {
                     try {
                         if (Thread.interrupted()) {
-                            logger.info("Consumer Thread interrupted, leaving the loop!");
+                            LOGGER.info("Consumer Thread interrupted, leaving the loop!");
                             break;
                         }
                         logConsumer.processPartitions();
-                    } catch (IOException | DeserializerException | EsbFilterException |CommitFailedException e) {
-                        logger.error("Exception in Consumer Thread {} {} continuing", e.getMessage(), e);
+                    } catch (IOException | DeserializerException | EsbFilterException | CommitFailedException e) {
+                        LOGGER.error("Exception in Consumer Thread {} {} continuing", e.getMessage(), e);
                     }
                 }
-            } catch(Exception e) {
-                logger.error("unhandled exception:", e);
-            }
-            finally{
+            } catch (Exception e) {
+                LOGGER.error("unhandled exception:", e);
+            } finally {
                 ensureThreadInterruptStateIsClearedAndClose(logConsumer);
                 taskFinished.run();
             }
@@ -57,13 +56,13 @@ public class Main {
 
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Executing the shutdown hook");
+            LOGGER.info("Executing the shutdown hook");
             consumerTask.stop();
         }));
 
         consumerTask.run().waitForCompletion();
 
-        logger.info("Exiting main thread");
+        LOGGER.info("Exiting main thread");
     }
 
     private static void ensureThreadInterruptStateIsClearedAndClose(LogConsumer logConsumer) {

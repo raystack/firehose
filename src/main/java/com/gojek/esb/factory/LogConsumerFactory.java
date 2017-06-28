@@ -1,6 +1,9 @@
 package com.gojek.esb.factory;
 
-import com.gojek.esb.config.*;
+import com.gojek.esb.config.ApplicationConfiguration;
+import com.gojek.esb.config.AuditConfig;
+import com.gojek.esb.config.EglcConfigurationException;
+import com.gojek.esb.config.EsbConsumerConfig;
 import com.gojek.esb.consumer.EsbGenericConsumer;
 import com.gojek.esb.consumer.LogConsumer;
 import com.gojek.esb.filter.EsbMessageFilter;
@@ -25,17 +28,17 @@ public class LogConsumerFactory {
     private final ApplicationConfiguration appConfig;
     private final StatsDClient statsDClient;
     private final Clock clockInstance;
-    private static final Logger logger = LoggerFactory.getLogger(LogConsumerFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LogConsumerFactory.class);
 
     public LogConsumerFactory(ApplicationConfiguration appConfig, Map<String, String> config) {
         this.appConfig = appConfig;
         this.config = config;
-        logger.info("--------- Config ---------");
-        logger.info(appConfig.getKafkaAddress());
-        logger.info(appConfig.getKafkaTopic());
-        logger.info(appConfig.getConsumerGroupId());
-        logger.info(appConfig.getSinkType().name());
-        logger.info("--------- ------ ---------");
+        LOGGER.info("--------- Config ---------");
+        LOGGER.info(appConfig.getKafkaAddress());
+        LOGGER.info(appConfig.getKafkaTopic());
+        LOGGER.info(appConfig.getConsumerGroupId());
+        LOGGER.info(appConfig.getSinkType().name());
+        LOGGER.info("--------- ------ ---------");
         statsDClient = new NonBlockingStatsDClient(getPrefix(appConfig.getDataDogPrefix()), appConfig.getDataDogHost(),
                 appConfig.getDataDogPort(), appConfig.getDataDogTags().split(","));
         clockInstance = new Clock();
@@ -48,7 +51,7 @@ public class LogConsumerFactory {
         EsbGenericConsumer consumer = new GenericKafkaFactory().createConsumer(esbConsumerConfig, auditConfig, config, statsDClient, filter);
 
         String syncFactoryClass = appConfig.sinkFactoryClass();
-        if(syncFactoryClass == null || syncFactoryClass.trim() == ""){
+        if (syncFactoryClass == null || syncFactoryClass.trim() == "") {
             syncFactoryClass = factoryClassFromDepricatedSyncConfig();
         }
 
@@ -60,7 +63,7 @@ public class LogConsumerFactory {
 
     private String factoryClassFromDepricatedSyncConfig() {
 
-        switch (appConfig.getSinkType()){
+        switch (appConfig.getSinkType()) {
             case DB:
                 return DBSinkFactory.class.getName();
             case HTTP:
@@ -75,7 +78,7 @@ public class LogConsumerFactory {
     private Sink instantiateFactory(String sinkFactoryClass) {
         SinkFactory sinkFactory = null;
         try {
-            sinkFactory = (SinkFactory)Class.forName(sinkFactoryClass).getConstructors()[0].newInstance();
+            sinkFactory = (SinkFactory) Class.forName(sinkFactoryClass).getConstructors()[0].newInstance();
         } catch (ReflectiveOperationException e) {
            throw new EglcConfigurationException("Bad configuration for sink", e);
         }
