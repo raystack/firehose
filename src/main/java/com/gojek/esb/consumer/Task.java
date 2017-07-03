@@ -29,9 +29,7 @@ public class Task {
         this.task = task;
         this.countDownLatch = new CountDownLatch(parallelism);
         this.fnFutures = new ArrayList<>(parallelism);
-        taskFinishCallback = () -> {
-            countDownLatch.countDown();
-        };
+        taskFinishCallback = countDownLatch::countDown;
     }
 
     public Task run() {
@@ -52,7 +50,7 @@ public class Task {
         try {
             fnFutures.forEach(consumerThread -> consumerThread.cancel(true));
             Thread.sleep(threadCleanupDelay);
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
            LOGGER.error("error stopping tasks", e);
         }
         return this;
