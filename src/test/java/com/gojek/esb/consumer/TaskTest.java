@@ -15,7 +15,7 @@ public class TaskTest {
 
     private static final int PARALLELISM = 1;
     private static final int THREAD_CLEANUP_DELAY_IN_MS = 100;
-    private static final long SLEEP_SECONDS = 1000L;
+    private static final long SLEEP_SECONDS = 10L;
 
     @Test
     public void shouldExecuteTaskWithParallelism() throws InterruptedException {
