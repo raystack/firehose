@@ -1,7 +1,7 @@
 package com.gojek.esb.consumer;
 
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.exception.EsbFilterException;
+import com.gojek.esb.filter.EsbFilterException;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.util.Clock;
 import com.newrelic.api.agent.Trace;
