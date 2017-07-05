@@ -2,10 +2,10 @@ package com.gojek.esb.factory;
 
 import com.gojek.esb.config.ApplicationConfiguration;
 import com.gojek.esb.config.AuditConfig;
-import com.gojek.esb.config.EglcConfigurationException;
 import com.gojek.esb.config.EsbConsumerConfig;
 import com.gojek.esb.consumer.EsbGenericConsumer;
 import com.gojek.esb.consumer.LogConsumer;
+import com.gojek.esb.exception.EglcConfigurationException;
 import com.gojek.esb.filter.EsbMessageFilter;
 import com.gojek.esb.filter.Filter;
 import com.gojek.esb.sink.Sink;
