@@ -1,9 +1,9 @@
 package com.gojek.esb.consumer;
 
-import com.gojek.esb.sink.http.client.GenericHTTPClient;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.exception.EsbFilterException;
+import com.gojek.esb.filter.EsbFilterException;
 import com.gojek.esb.sink.http.HttpSink;
+import com.gojek.esb.sink.http.client.GenericHTTPClient;
 import com.gojek.esb.util.Clock;
 import com.timgroup.statsd.StatsDClient;
 import org.apache.http.HttpResponse;
@@ -21,7 +21,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LogConsumerTest {
