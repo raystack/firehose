@@ -1,0 +1,5 @@
+phonebook-storage-service-eglc-worker
+alex-bookings-eglc-worker
+active-booking-service-go-eglc-worker
+customer-location-history-eglc-worker
+phonebook-referral-service-eglc-worker
