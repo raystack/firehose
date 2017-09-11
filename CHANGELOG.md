@@ -1,0 +1,22 @@
+# Changelog
+All notable changes to this project since version 4.7.0 will be documented in this file.
+
+This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [4.9.0] - 2017-09-11
+### Added
+  * Added Audit columns to DB sink.(Update in esb-log-consumer)
+    - To enable auditing in DB sink add `DB_SINK_AUDIT_ENABLED=true` as environment variable.
+    - Columns are - `kafak_topic_name`, `kafka_audit_partition`, `kafka_audit_offset`.
+### Changed
+  * `build.gradle` to use dynamic updation of minor version of esb log consumer.
+
+## [4.8.0] - 2017-08-30
+### Changed
+  * Added feedback_skip field to feedback-log in esb-log-entities
+
+## [4.7.0] - 2017-08-17
+### Changed
+  * Updated `build.gradle` to use latest version of esb-log-consumer
