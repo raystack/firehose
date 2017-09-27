@@ -5,6 +5,17 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [4.12.0] - 2017-09-27
+### Added
+  * DB Sink converts inner protobuf message as json into a single column
+### Changed
+  * Influx sink configuration for proto mapping changed to conform to standard sink mapping configuraiton
+## [4.11.0] - 2017-09-22
+### Added
+  * upgraded to 3.6 version of esb log entites
+## [4.10.0] - 2017-09-19
+### Added
+  * COMMIT_ONLY_CURRENT_PARTITIONS configuration defaults to true now.
 ## [4.9.0] - 2017-09-11
 ### Added
   * Added Audit columns to DB sink.(Update in esb-log-consumer)
