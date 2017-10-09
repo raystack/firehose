@@ -5,6 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [4.14.0] - 2017-10-09
+### Added
+  * Clevertap Sink with exponential backoff and retries
 ## [4.13.0] - 2017-10-09
 ### Added
   * Clevertap Sink bare bones version
