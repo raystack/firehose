@@ -5,6 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [4.16.0] - 2017-10-09
+### Added
+  * Removed esb-log-entites reference from esb-log-consumer and added it here
 ## [4.15.0] - 2017-10-09
 ### Added
   * Clevertap Sink handles timestamps and durations
