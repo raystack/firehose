@@ -5,6 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [4.17.0] - 2017-10-25
+### Changed
+  * Upgraded esb-log-entites from 3.7.3 to 3.8.4
 ## [4.16.0] - 2017-10-09
 ### Added
   * Removed esb-log-entites reference from esb-log-consumer and added it here
