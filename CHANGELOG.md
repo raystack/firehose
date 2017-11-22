@@ -5,6 +5,15 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [4.19.0] - 2017-22-06
+### Changed
+  * Fixed bug in HTTPSink where backoff was not invoked for error responses
+  * Exponential Back off in HttpSink is now configuraable
+  * DBSink has breaking config change. Following config keys need to be renamed:
+    BACKOFF_RATE to EXPONENTIAL_BACKOFF_RATE
+    INITIAL_EXPIRY_TIME_IN_MS to EXPONENTIAL_BACKOFF_INITIAL_BACKOFF_IN_MS
+    MAXIMUM_EXPIRY_TIME_IN_MS to EXPONENTIAL_BACKOFF_MAXIMUM_BACKOFF_IN_MS
+  * Upgraded esb-log-entites from 3.9.0 to 3.10.9
 ## [4.18.0] - 2017-11-06
 ### Changed
   * Upgraded esb-log-entites from 3.8.4 to 3.9.0
