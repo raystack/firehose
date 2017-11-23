@@ -5,6 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [4.19.1] - 2017-22-06
+### Removed
+  * clevertap sink dependency removed. Shold add sink libs as a runtime dependency.
 ## [4.19.0] - 2017-22-06
 ### Changed
   * Fixed bug in HTTPSink where backoff was not invoked for error responses
