@@ -5,10 +5,13 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
-## [4.19.1] - 2017-22-06
+## [4.20.0] - 2017-12-06
+### Changed
+  * support for null keys in kafka messages
+## [4.19.1] - 2017-11-22
 ### Removed
   * clevertap sink dependency removed. Shold add sink libs as a runtime dependency.
-## [4.19.0] - 2017-22-06
+## [4.19.0] - 2017-11-22
 ### Changed
   * Fixed bug in HTTPSink where backoff was not invoked for error responses
   * Exponential Back off in HttpSink is now configuraable
