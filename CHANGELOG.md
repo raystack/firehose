@@ -5,6 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [4.20.3] - 2017-12-19
+### Changed
+  * Upgraded esb-log-entites from 3.11.9 to 3.11.12
 ## [4.20.1] - 2017-12-07
 ### Changed
   * Upgraded esb-log-entites from 3.9.2 to 3.11.9
