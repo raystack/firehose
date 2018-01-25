@@ -43,16 +43,16 @@ gcm_key: "LefFCyvIVkJVgOL6d4uKBlMxlpyus1"
 
 ***Key based filter expressions examples:***
 
-* `driverLocationLogKey.getDriverId() == 'COJRXpCPIYrIASdJ4W8gbqzeTt1PGl'`
-* `driverLocationLogKey.getVehicleType() == 'BIKE'` (Give Enum values to be compared)
-* `driverLocationLogKey.getEventTimestamp().getSeconds() == 186178`
-* `driverLocationLogKey.getDriverId() == 'COJRXpCPIYrIASdJ4W8gbqzeTt1PGl' && driverLocationLogKey.getVehicleType == 'BIKE'` (multiple conditions example 1)
-* `driverLocationLogKey.getVehicleType() == 'BIKE' || driverLocationLogKey.getEventTimestamp().getSeconds() == 186178` (multiple conditions example 2)
+* `driverLocationLogKey.getDriverId()=="COJRXpCPIYrIASdJ4W8gbqzeTt1PGl"`
+* `driverLocationLogKey.getVehicleType()=="BIKE"` (Give Enum values to be compared)
+* `driverLocationLogKey.getEventTimestamp().getSeconds()==186178`
+* `driverLocationLogKey.getDriverId()=="COJRXpCPIYrIASdJ4W8gbqzeTt1PGl"&&driverLocationLogKey.getVehicleType=="BIKE"` (multiple conditions example 1)
+* `driverLocationLogKey.getVehicleType()=="BIKE"||driverLocationLogKey.getEventTimestamp().getSeconds()==186178` (multiple conditions example 2)
 
 ***Message based filter expressions examples:***
 
-* `driverLocationLogMessage.getGcmKey() == 'LefFCyvIVkJVgOL6d4uKBlMxlpyus1'`
-* `driverLocationLogMessage.getDriverId() == 'COJRXpCPIYrIASdJ4W8gbqzeTt1PGl' && driverLocationLogMessage.getDriverLocation().getLatitude() > 0.6487193703651428`
-* `driverLocationLogMessage.getDriverLocation().getAltitudeInMeters > 0.9949166178703308`
+* `driverLocationLogMessage.getGcmKey()=="LefFCyvIVkJVgOL6d4uKBlMxlpyus1"`
+* `driverLocationLogMessage.getDriverId()=="COJRXpCPIYrIASdJ4W8gbqzeTt1PGl"&&driverLocationLogMessage.getDriverLocation().getLatitude()>0.6487193703651428`
+* `driverLocationLogMessage.getDriverLocation().getAltitudeInMeters>0.9949166178703308`
 
 **Note: Use `SINK=log` for testing the applied filtering** 
