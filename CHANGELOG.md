@@ -5,6 +5,9 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [4.21.0] - 2018-01-31
+### Added
+  * support for sending latency and message count to statsd.On by default.
 ## [4.20.3] - 2017-12-19
 ### Changed
   * Upgraded esb-log-entites from 3.11.9 to 3.11.12
