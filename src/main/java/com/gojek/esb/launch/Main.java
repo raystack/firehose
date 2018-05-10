@@ -17,16 +17,8 @@ public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws IOException, DeserializerException, EsbFilterException, InterruptedException {
-
         ApplicationConfiguration appConfig = ConfigFactory.create(ApplicationConfiguration.class, System.getenv());
-        if (appConfig.noOfConsumerThreads() == 1) {
-            LogConsumer logConsumer = new LogConsumerFactory(appConfig, System.getenv()).buildConsumer();
-            while (true) {
-                logConsumer.processPartitions();
-            }
-        } else {
-            multiThreadedConsumers(appConfig);
-        }
+        multiThreadedConsumers(appConfig);
     }
 
     private static void multiThreadedConsumers(ApplicationConfiguration appConfig) throws InterruptedException {
