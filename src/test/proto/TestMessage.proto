@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package com.gojek.esb.consumer;
+
+option java_multiple_files = true;
+option java_package = "com.gojek.esb.consumer";
+option java_outer_classname = "TestMessageProto";
+
+message TestKey {
+    string order_number = 1;
+    string order_url = 2;
+}
+
+message TestMessage {
+    string order_number = 1;
+    string order_url = 2;
+    string order_details = 3;
+}
+
+message TestNestedMessage {
+    string nested_id = 1;
+    TestMessage single_message = 2;
+}
+
+message TestNestedRepeatedMessage {
+    TestMessage single_message = 1;
+    repeated TestMessage repeated_message = 2;
+    int32 number_field = 3;
+    repeated int32 repeated_number_field = 4;
+}
+
+message TestMapMessage {
+    string order_number = 1;
+    map<string, string> current_state = 2;
+}
