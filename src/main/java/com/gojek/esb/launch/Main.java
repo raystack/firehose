@@ -1,10 +1,10 @@
 package com.gojek.esb.launch;
 
-import com.gojek.esb.config.ApplicationConfiguration;
-import com.gojek.esb.consumer.LogConsumer;
+import com.gojek.esb.config.KafkaConsumerConfig;
+import com.gojek.esb.consumer.FireHoseConsumer;
 import com.gojek.esb.consumer.Task;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.factory.LogConsumerFactory;
+import com.gojek.esb.factory.FireHoseConsumerFactory;
 import com.gojek.esb.filter.EsbFilterException;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.clients.consumer.CommitFailedException;
@@ -17,31 +17,32 @@ public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws IOException, DeserializerException, EsbFilterException, InterruptedException {
-        ApplicationConfiguration appConfig = ConfigFactory.create(ApplicationConfiguration.class, System.getenv());
-        multiThreadedConsumers(appConfig);
+        KafkaConsumerConfig kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, System.getenv());
+        multiThreadedConsumers(kafkaConsumerConfig);
     }
 
-    private static void multiThreadedConsumers(ApplicationConfiguration appConfig) throws InterruptedException {
-        Task consumerTask = new Task(appConfig.noOfConsumerThreads(), appConfig.threadCleanupDelay(), taskFinished -> {
+    private static void multiThreadedConsumers(KafkaConsumerConfig kafkaConsumerConfig) throws InterruptedException {
+        Task consumerTask = new Task(kafkaConsumerConfig.noOfConsumerThreads(), kafkaConsumerConfig.threadCleanupDelay(), taskFinished -> {
 
-            LogConsumer logConsumer = null;
+            FireHoseConsumer fireHoseConsumer = null;
             try {
-                logConsumer = new LogConsumerFactory(appConfig, System.getenv()).buildConsumer();
+                fireHoseConsumer = new FireHoseConsumerFactory(kafkaConsumerConfig).buildConsumer();
                 while (true) {
                     try {
                         if (Thread.interrupted()) {
                             LOGGER.info("Consumer Thread interrupted, leaving the loop!");
                             break;
                         }
-                        logConsumer.processPartitions();
+                        fireHoseConsumer.processPartitions();
                     } catch (IOException | DeserializerException | EsbFilterException | CommitFailedException e) {
                         LOGGER.error("Exception in Consumer Thread {} {} continuing", e.getMessage(), e);
                     }
                 }
             } catch (Exception e) {
-                LOGGER.error("unhandled exception:", e);
+                LOGGER.error("Exception on creating the consumer, exiting the application", e);
+                System.exit(1);
             } finally {
-                ensureThreadInterruptStateIsClearedAndClose(logConsumer);
+                ensureThreadInterruptStateIsClearedAndClose(fireHoseConsumer);
                 taskFinished.run();
             }
         });
@@ -57,8 +58,8 @@ public class Main {
         LOGGER.info("Exiting main thread");
     }
 
-    private static void ensureThreadInterruptStateIsClearedAndClose(LogConsumer logConsumer) {
+    private static void ensureThreadInterruptStateIsClearedAndClose(FireHoseConsumer fireHoseConsumer) {
         Thread.interrupted();
-        logConsumer.close();
+        fireHoseConsumer.close();
     }
 }
