@@ -4,5 +4,12 @@
 build
 out
 classes
-config
 .project
+generated
+*.ipr
+*.iws
+config/checkstyle
+.classpath
+.project
+.settings
+bin
