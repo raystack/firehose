@@ -3,6 +3,7 @@ package com.gojek.esb.sink.http;
 import com.gojek.de.stencil.StencilClient;
 import com.gojek.esb.config.HTTPSinkConfig;
 import com.gojek.esb.config.ParameterizedHTTPSinkConfig;
+import com.gojek.esb.config.enums.HttpSinkDataFormat;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.parser.ProtoParser;
 import com.gojek.esb.proto.ProtoToFieldMapper;
@@ -11,6 +12,8 @@ import com.gojek.esb.sink.SinkFactory;
 import com.gojek.esb.sink.http.client.BasicHttpSinkClient;
 import com.gojek.esb.sink.http.client.Header;
 import com.gojek.esb.sink.http.client.ParameterizedHttpSinkClient;
+import com.gojek.esb.sink.http.client.deserializer.Deserializer;
+import com.gojek.esb.sink.http.client.deserializer.JsonDeserializer;
 import com.gojek.esb.sink.http.client.deserializer.JsonWrapperDeserializer;
 import com.gojek.esb.util.Clock;
 import org.aeonbits.owner.ConfigFactory;
@@ -43,11 +46,15 @@ public class HttpSinkFactory implements SinkFactory {
         CloseableHttpClient closeableHttpClient = newHttpClient(httpSinkConfig.getMaxHttpConnections(), requestConfig);
         Clock clock = new Clock();
 
-        if ((httpSinkConfig.getHttpSinkParameterSource() != DISABLED) && (httpSinkConfig.getHttpSinkParameterSource() != null)) {
+        Deserializer deserializer = (httpSinkConfig.getHttpSinkDataFormat() == HttpSinkDataFormat.JSON)
+                ? new JsonDeserializer(new ProtoParser(stencilClient, httpSinkConfig.getProtoSchema()))
+                : new JsonWrapperDeserializer();
+
+        if (httpSinkConfig.getHttpSinkParameterSource() != DISABLED) {
             ParameterizedHTTPSinkConfig parameterizedHttpSinkConfig = ConfigFactory.create(ParameterizedHTTPSinkConfig.class, configuration);
-            return newParameterizedHttpSink(parameterizedHttpSinkConfig, closeableHttpClient, clock, statsDReporter, stencilClient);
+            return newParameterizedHttpSink(parameterizedHttpSinkConfig, closeableHttpClient, deserializer, clock, statsDReporter, stencilClient);
         } else {
-            return newHttpSink(httpSinkConfig, closeableHttpClient, clock, statsDReporter);
+            return newHttpSink(httpSinkConfig, closeableHttpClient, deserializer, clock, statsDReporter);
         }
 
     }
@@ -59,21 +66,22 @@ public class HttpSinkFactory implements SinkFactory {
         return HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig).build();
     }
 
-    private ParameterizedHttpSink newParameterizedHttpSink(ParameterizedHTTPSinkConfig config, CloseableHttpClient closeableHttpClient,
+    private ParameterizedHttpSink newParameterizedHttpSink(ParameterizedHTTPSinkConfig config, CloseableHttpClient closeableHttpClient, Deserializer deserializer,
                                                            Clock clock, StatsDReporter statsDReporter, StencilClient stencilClient) {
         ProtoParser protoParser = new ProtoParser(stencilClient, config.getProtoSchema());
         ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, config.getProtoToFieldMapping());
 
         ParameterizedHttpSinkClient httpClient = new ParameterizedHttpSinkClient(config.getServiceURL(),
-                new Header(config.getHTTPHeaders()), new JsonWrapperDeserializer(), protoToFieldMapper,
+                new Header(config.getHTTPHeaders()), deserializer, protoToFieldMapper,
                 config.getHttpSinkParameterSource(), config.getHttpSinkParameterPlacement(),
                 closeableHttpClient, clock, statsDReporter);
         return new ParameterizedHttpSink(httpClient, config.retryStatusCodeRanges());
     }
 
-    private HttpSink newHttpSink(HTTPSinkConfig config, CloseableHttpClient closeableHttpClient, Clock clock, StatsDReporter statsDReporter) {
+    private HttpSink newHttpSink(HTTPSinkConfig config, CloseableHttpClient closeableHttpClient, Deserializer deserializer,
+                                 Clock clock, StatsDReporter statsDReporter) {
         BasicHttpSinkClient httpClient = new BasicHttpSinkClient(config.getServiceURL(),
-                new Header(config.getHTTPHeaders()), new JsonWrapperDeserializer(), closeableHttpClient, clock, statsDReporter);
+                new Header(config.getHTTPHeaders()), deserializer, closeableHttpClient, clock, statsDReporter);
         return new HttpSink(httpClient, config.retryStatusCodeRanges());
     }
 

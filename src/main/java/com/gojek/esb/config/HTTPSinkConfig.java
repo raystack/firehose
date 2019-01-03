@@ -1,7 +1,9 @@
 package com.gojek.esb.config;
 
+import com.gojek.esb.config.converter.HttpSinkParameterDataFormatConverter;
 import com.gojek.esb.config.converter.HttpSinkParameterSourceTypeConverter;
 import com.gojek.esb.config.converter.RangeToHashMapConverter;
+import com.gojek.esb.config.enums.HttpSinkDataFormat;
 import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
 
 import java.util.Map;
@@ -33,4 +35,8 @@ public interface HTTPSinkConfig extends AppConfig {
     @ConverterClass(HttpSinkParameterSourceTypeConverter.class)
     HttpSinkParameterSourceType getHttpSinkParameterSource();
 
+    @Key("HTTP_SINK_DATA_FORMAT")
+    @DefaultValue("proto")
+    @ConverterClass(HttpSinkParameterDataFormatConverter.class)
+    HttpSinkDataFormat getHttpSinkDataFormat();
 }
