@@ -9,4 +9,8 @@ public interface ParameterizedHTTPSinkConfig extends HTTPSinkConfig {
     @DefaultValue("header")
     @ConverterClass(HttpSinkParameterPlacementTypeConverter.class)
     HttpSinkParameterPlacementType getHttpSinkParameterPlacement();
+
+    @Key("HTTP_PARAMETER_PROTO_SCHEMA")
+    String getParameterProtoSchema();
+
 }
