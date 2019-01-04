@@ -10,7 +10,7 @@ public interface ParameterizedHTTPSinkConfig extends HTTPSinkConfig {
     @ConverterClass(HttpSinkParameterPlacementTypeConverter.class)
     HttpSinkParameterPlacementType getHttpSinkParameterPlacement();
 
-    @Key("HTTP_PARAMETER_PROTO_SCHEMA")
+    @Key("HTTP_SINK_PARAMETER_PROTO_SCHEMA")
     String getParameterProtoSchema();
 
 }
