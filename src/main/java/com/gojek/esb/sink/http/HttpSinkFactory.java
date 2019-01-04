@@ -68,7 +68,7 @@ public class HttpSinkFactory implements SinkFactory {
 
     private ParameterizedHttpSink newParameterizedHttpSink(ParameterizedHTTPSinkConfig config, CloseableHttpClient closeableHttpClient, Deserializer deserializer,
                                                            Clock clock, StatsDReporter statsDReporter, StencilClient stencilClient) {
-        ProtoParser protoParser = new ProtoParser(stencilClient, config.getProtoSchema());
+        ProtoParser protoParser = new ProtoParser(stencilClient, config.getParameterProtoSchema());
         ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, config.getProtoToFieldMapping());
 
         ParameterizedHttpSinkClient httpClient = new ParameterizedHttpSinkClient(config.getServiceURL(),
