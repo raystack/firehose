@@ -3,7 +3,7 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
-            <Pattern>%d{HH:mm:ss.SSS} [%thread] %-1level %logger{5} - %msg%n</Pattern>
+            <Pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} [%thread] %-1level %logger{5} - %msg%n</Pattern>
         </layout>
     </appender>
 
@@ -11,3 +11,5 @@
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>
+
+        /Users/shuheng/Workshop/firehose/src/main/resources/logback.xml
