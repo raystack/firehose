@@ -63,7 +63,7 @@ public class FireHoseConsumerFactory {
         statsDReporter = new StatsDReporter(statsDClient, clockInstance, this.kafkaConsumerConfig.getStatsDTags().split(","));
         String stencilUrl = this.kafkaConsumerConfig.stencilUrl();
         stencilClient = this.kafkaConsumerConfig.enableStencilClient()
-                ? StencilClientFactory.getClient(stencilUrl, config)
+                ? StencilClientFactory.getClient(stencilUrl, config, statsDClient)
                 : StencilClientFactory.getClient();
 
 
