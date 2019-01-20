@@ -1,6 +1,6 @@
 package com.gojek.esb.sink;
 
-import com.gojek.de.stencil.StencilClient;
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.esb.exception.EglcConfigurationException;
 import com.gojek.esb.config.InfluxSinkConfig;
