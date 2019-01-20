@@ -1,6 +1,6 @@
 package com.gojek.esb.sink.http;
 
-import com.gojek.de.stencil.StencilClient;
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.HTTPSinkConfig;
 import com.gojek.esb.config.ParameterizedHTTPSinkConfig;
 import com.gojek.esb.config.enums.HttpSinkDataFormat;

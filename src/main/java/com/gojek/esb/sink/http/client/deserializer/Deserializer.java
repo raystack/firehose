@@ -1,6 +1,6 @@
 package com.gojek.esb.sink.http.client.deserializer;
 
-import com.gojek.de.stencil.StencilClient;
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;

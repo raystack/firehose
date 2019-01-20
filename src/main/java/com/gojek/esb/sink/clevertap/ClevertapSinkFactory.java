@@ -1,6 +1,6 @@
 package com.gojek.esb.sink.clevertap;
 
-import com.gojek.de.stencil.StencilClient;
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.ClevertapSinkConfig;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.proto.ProtoMessage;

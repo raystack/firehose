@@ -1,6 +1,6 @@
 package com.gojek.esb.parser;
 
-import com.gojek.de.stencil.StencilClient;
+import com.gojek.de.stencil.client.StencilClient;
 import com.google.common.base.Strings;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;

@@ -1,7 +1,7 @@
 package com.gojek.esb.sink.db;
 
 
-import com.gojek.de.stencil.StencilClient;
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.DBSinkConfig;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.parser.ProtoParser;
