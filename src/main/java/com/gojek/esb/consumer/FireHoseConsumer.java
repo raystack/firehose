@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
@@ -17,7 +18,7 @@ import static com.gojek.esb.metrics.Metrics.MESSAGE_RECEIVED;
 import static com.gojek.esb.metrics.Metrics.PARTITION_PROCESS_TIME;
 
 @AllArgsConstructor
-public class FireHoseConsumer {
+public class FireHoseConsumer implements Closeable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FireHoseConsumer.class);
 
@@ -45,10 +46,12 @@ public class FireHoseConsumer {
         }
     }
 
-    public void close() {
+    @Override
+    public void close() throws IOException {
         if (consumer != null) {
             LOGGER.info("closing consumer");
             consumer.close();
         }
+        sink.close();
     }
 }
