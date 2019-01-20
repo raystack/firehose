@@ -17,6 +17,6 @@ public class InfluxSinkFactory implements SinkFactory {
     public Sink create(Map<String, String> configProperties, StatsDReporter statsDReporter, StencilClient stencilClient) {
         InfluxSinkConfig config = ConfigFactory.create(InfluxSinkConfig.class, configProperties);
         InfluxDB client = InfluxDBFactory.connect(config.getDbUrl(), config.getUser(), config.getPassword());
-        return new InfluxSink(client, new ProtoParser(stencilClient, config.getProtoSchema()), config, statsDReporter);
+        return new InfluxSink(client, new ProtoParser(stencilClient, config.getProtoSchema()), config, statsDReporter, stencilClient);
     }
 }
