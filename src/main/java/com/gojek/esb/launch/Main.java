@@ -16,7 +16,7 @@ import java.io.IOException;
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) throws IOException, DeserializerException, EsbFilterException, InterruptedException {
+    public static void main(String[] args) throws InterruptedException {
         KafkaConsumerConfig kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, System.getenv());
         multiThreadedConsumers(kafkaConsumerConfig);
     }
@@ -60,6 +60,10 @@ public class Main {
 
     private static void ensureThreadInterruptStateIsClearedAndClose(FireHoseConsumer fireHoseConsumer) {
         Thread.interrupted();
-        fireHoseConsumer.close();
+        try {
+            fireHoseConsumer.close();
+        } catch (IOException e) {
+            LOGGER.error("Exception on closing firehose consumer", e);
+        }
     }
 }

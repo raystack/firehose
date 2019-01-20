@@ -1,5 +1,6 @@
 package com.gojek.esb.sink.db;
 
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.Sink;
@@ -30,6 +31,7 @@ public class DBSink implements Sink {
     private DBBatchCommand dbBatchCommand;
     private QueryTemplate queryTemplate;
     private StatsDReporter statsDReporter;
+    private StencilClient stencilClient;
 
     @Override
     public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) {
@@ -56,5 +58,6 @@ public class DBSink implements Sink {
         } catch (InterruptedException e) {
             throw new IOException(e);
         }
+        stencilClient.close();
     }
 }

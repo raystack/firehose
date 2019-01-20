@@ -3,13 +3,14 @@ package com.gojek.esb.sink;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
 /**
  * An interface for developing custom Sinks to FireHoseConsumer.
  */
-public interface Sink {
+public interface Sink extends Closeable {
 
     /**
      * method to write batch of messages read from kafka.
@@ -21,11 +22,4 @@ public interface Sink {
      */
     List<EsbMessage> pushMessage(List<EsbMessage> esbMessage) throws IOException, DeserializerException;
 
-    /**
-     * method to relinquish the resources obtained for persisting the data.
-     * Resources can be any of file handles, sockets, database connection pools etc depending on the underlying sink.
-     *
-     * @throws IOException
-     */
-    void close() throws IOException;
 }

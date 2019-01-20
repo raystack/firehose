@@ -1,11 +1,11 @@
 package com.gojek.esb.sink;
 
-import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.StencilClientFactory;
-import com.gojek.esb.exception.EglcConfigurationException;
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.InfluxSinkConfig;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.exception.EglcConfigurationException;
 import com.gojek.esb.feedback.FeedbackLogKey;
 import com.gojek.esb.feedback.FeedbackLogMessage;
 import com.gojek.esb.metrics.StatsDReporter;
@@ -14,7 +14,6 @@ import com.gojek.esb.sink.influxdb.InfluxSink;
 import com.gojek.esb.util.Clock;
 import com.google.protobuf.Timestamp;
 import org.aeonbits.owner.ConfigFactory;
-import org.apache.http.HttpResponse;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
@@ -25,9 +24,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.mockito.Mockito.*;
-
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -36,9 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InfluxSinkTest {
@@ -70,9 +64,6 @@ public class InfluxSinkTest {
     @Mock
     private StatsDReporter statsDReporter;
 
-    @Mock
-    private HttpResponse httpResponse;
-
     @Before
     public void setUp() {
         props.setProperty("MEASUREMENT_NAME", measurementName);
@@ -99,7 +90,7 @@ public class InfluxSinkTest {
         setupTagNameIndexMappingProperties();
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
 
-        sink = new InfluxSink(client, new ProtoParser(stencilClient, config.getProtoSchema()), config, statsDReporter);
+        sink = new InfluxSink(client, new ProtoParser(stencilClient, config.getProtoSchema()), config, statsDReporter, stencilClient);
 
         ArgumentCaptor<BatchPoints> batchPointsArgumentCaptor = ArgumentCaptor.forClass(BatchPoints.class);
 
@@ -115,7 +106,7 @@ public class InfluxSinkTest {
         props.setProperty("FIELD_NAME_PROTO_INDEX_MAPPING", emptyFieldNameIndex);
         props.setProperty("TAG_NAME_PROTO_INDEX_MAPPING", emptyTagNameIndexMapping);
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
-        sink = new InfluxSink(client, new ProtoParser(stencilClient, config.getProtoSchema()), config, statsDReporter);
+        sink = new InfluxSink(client, new ProtoParser(stencilClient, config.getProtoSchema()), config, statsDReporter, stencilClient);
 
         try {
             sink.pushMessage(Arrays.asList(esbMessage));
@@ -132,7 +123,7 @@ public class InfluxSinkTest {
         setupFieldNameIndexMappingProperties();
         props.setProperty("TAG_NAME_PROTO_INDEX_MAPPING", emptyTagNameIndexMapping);
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
-        sink = new InfluxSink(client, new ProtoParser(stencilClient, config.getProtoSchema()), config, statsDReporter);
+        sink = new InfluxSink(client, new ProtoParser(stencilClient, config.getProtoSchema()), config, statsDReporter, stencilClient);
         ArgumentCaptor<BatchPoints> batchPointsArgumentCaptor = ArgumentCaptor.forClass(BatchPoints.class);
 
         sink.pushMessage(Arrays.asList(esbMessage));

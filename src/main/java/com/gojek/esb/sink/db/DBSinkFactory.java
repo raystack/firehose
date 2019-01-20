@@ -27,7 +27,7 @@ public class DBSinkFactory implements SinkFactory {
 
         QueryTemplate queryTemplate = createQueryTemplate(dbSinkConfig, client);
 
-        return new DBSink(dbBatchCommand, queryTemplate, statsDReporter);
+        return new DBSink(dbBatchCommand, queryTemplate, statsDReporter, client);
     }
 
     private DBBatchCommand createBatchCommand(DBSinkConfig dbSinkConfig) {

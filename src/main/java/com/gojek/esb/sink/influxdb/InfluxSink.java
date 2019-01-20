@@ -1,5 +1,6 @@
 package com.gojek.esb.sink.influxdb;
 
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.builder.PointBuilder;
 import com.gojek.esb.config.InfluxSinkConfig;
 import com.gojek.esb.consumer.EsbMessage;
@@ -28,15 +29,17 @@ public class InfluxSink implements Sink {
     private ProtoParser protoParser;
     private InfluxSinkConfig config;
     private PointBuilder pointBuilder;
+    private StencilClient stencilClient;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InfluxSink.class);
 
-    public InfluxSink(InfluxDB client, ProtoParser protoParser, InfluxSinkConfig config, StatsDReporter statsDReporter) {
+    public InfluxSink(InfluxDB client, ProtoParser protoParser, InfluxSinkConfig config, StatsDReporter statsDReporter, StencilClient stencilClient) {
         this.client = client;
         this.config = config;
         this.protoParser = protoParser;
         this.pointBuilder = new PointBuilder(config);
         this.statsDReporter = statsDReporter;
+        this.stencilClient = stencilClient;
     }
 
     @Override
@@ -64,6 +67,6 @@ public class InfluxSink implements Sink {
 
     @Override
     public void close() throws IOException {
-
+        stencilClient.close();
     }
 }
