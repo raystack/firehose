@@ -1,6 +1,6 @@
 package com.gojek.esb.factory;
 
-import com.gojek.de.stencil.StencilClient;
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.esb.config.AuditConfig;
 import com.gojek.esb.config.ExponentialBackOffProviderConfig;
