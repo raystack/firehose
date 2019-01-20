@@ -1,5 +1,6 @@
 package com.gojek.esb.sink;
 
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.sink.http.HttpSink;
@@ -37,6 +38,9 @@ public class HttpSinkTest {
     @Mock
     private StatusLine statusLine;
 
+    @Mock
+    private StencilClient stencilClient;
+
     @Before
     public void setUp() throws DeserializerException {
         Mockito.when(client.executeBatch(Mockito.anyList())).thenReturn(httpResponse);
@@ -48,7 +52,7 @@ public class HttpSinkTest {
     public void shouldWriteToSink() throws Exception {
         HashMap<Integer, Boolean> retryStatusCodeRanger = new HashMap<>();
         retryStatusCodeRanger.put(500, true);
-        HttpSink sink = new HttpSink(client, retryStatusCodeRanger);
+        HttpSink sink = new HttpSink(client, retryStatusCodeRanger, stencilClient);
         sink.pushMessage(Collections.singletonList(esbMessage));
 
         Mockito.verify(client, Mockito.times(1)).executeBatch(Mockito.anyList());
@@ -58,7 +62,7 @@ public class HttpSinkTest {
     public void shouldWriteJsonToSink() throws Exception {
         HashMap<Integer, Boolean> retryStatusCodeRanger = new HashMap<>();
         retryStatusCodeRanger.put(500, true);
-        HttpSink sink = new HttpSink(client, retryStatusCodeRanger);
+        HttpSink sink = new HttpSink(client, retryStatusCodeRanger, stencilClient);
         sink.pushMessage(Collections.singletonList(esbMessage));
 
         Mockito.verify(client, Mockito.times(1)).executeBatch(Mockito.anyList());
@@ -68,7 +72,7 @@ public class HttpSinkTest {
     public void shouldSendBackEmptyListOnSuccess() throws IOException, DeserializerException {
         HashMap<Integer, Boolean> retryStatusCodeRanger = new HashMap<>();
         retryStatusCodeRanger.put(500, true);
-        HttpSink sink = new HttpSink(client, retryStatusCodeRanger);
+        HttpSink sink = new HttpSink(client, retryStatusCodeRanger, stencilClient);
         List<EsbMessage> failedMessages = sink.pushMessage(Collections.singletonList(esbMessage));
 
         assertEquals(failedMessages.size(), 0);
@@ -81,7 +85,7 @@ public class HttpSinkTest {
         when(httpResponse.getStatusLine()).thenReturn(statusLine);
         HashMap<Integer, Boolean> retryStatusCodeRanger = new HashMap<>();
         retryStatusCodeRanger.put(500, true);
-        HttpSink sink = new HttpSink(client, retryStatusCodeRanger);
+        HttpSink sink = new HttpSink(client, retryStatusCodeRanger, stencilClient);
         ArrayList<EsbMessage> esbMessages = new ArrayList<>();
         esbMessages.add(esbMessage);
         esbMessages.add(esbMessage);
@@ -96,7 +100,7 @@ public class HttpSinkTest {
         Mockito.when(client.executeBatch(Mockito.anyList())).thenReturn(null);
         HashMap<Integer, Boolean> retryStatusCodeRanger = new HashMap<>();
         retryStatusCodeRanger.put(500, true);
-        HttpSink sink = new HttpSink(client, retryStatusCodeRanger);
+        HttpSink sink = new HttpSink(client, retryStatusCodeRanger, stencilClient);
         List<EsbMessage> failedMessages = sink.pushMessage(Collections.singletonList(esbMessage));
 
         assertEquals(failedMessages.size(), 1);

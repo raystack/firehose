@@ -1,5 +1,6 @@
 package com.gojek.esb.sink.db;
 
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.util.Clock;
@@ -31,10 +32,13 @@ public class DBSinkTest {
     @Mock
     private StatsDReporter statsDReporter;
 
+    @Mock
+    private StencilClient stencilClient;
+
     @Before
     public void setUp() {
         when(statsDReporter.getClock()).thenReturn(new Clock());
-        dbSink = new DBSink(dbBatchCommand, queryTemplate, statsDReporter);
+        dbSink = new DBSink(dbBatchCommand, queryTemplate, statsDReporter, stencilClient);
     }
 
     @Test

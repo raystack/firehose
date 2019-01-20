@@ -54,7 +54,7 @@ public class HttpSinkFactory implements SinkFactory {
             ParameterizedHTTPSinkConfig parameterizedHttpSinkConfig = ConfigFactory.create(ParameterizedHTTPSinkConfig.class, configuration);
             return newParameterizedHttpSink(parameterizedHttpSinkConfig, closeableHttpClient, deserializer, clock, statsDReporter, stencilClient);
         } else {
-            return newHttpSink(httpSinkConfig, closeableHttpClient, deserializer, clock, statsDReporter);
+            return newHttpSink(httpSinkConfig, closeableHttpClient, deserializer, clock, statsDReporter, stencilClient);
         }
 
     }
@@ -75,14 +75,14 @@ public class HttpSinkFactory implements SinkFactory {
                 new Header(config.getHTTPHeaders()), deserializer, protoToFieldMapper,
                 config.getHttpSinkParameterSource(), config.getHttpSinkParameterPlacement(),
                 closeableHttpClient, clock, statsDReporter);
-        return new ParameterizedHttpSink(httpClient, config.retryStatusCodeRanges());
+        return new ParameterizedHttpSink(httpClient, config.retryStatusCodeRanges(), stencilClient);
     }
 
     private HttpSink newHttpSink(HTTPSinkConfig config, CloseableHttpClient closeableHttpClient, Deserializer deserializer,
-                                 Clock clock, StatsDReporter statsDReporter) {
+                                 Clock clock, StatsDReporter statsDReporter, StencilClient stencilClient) {
         BasicHttpSinkClient httpClient = new BasicHttpSinkClient(config.getServiceURL(),
                 new Header(config.getHTTPHeaders()), deserializer, closeableHttpClient, clock, statsDReporter);
-        return new HttpSink(httpClient, config.retryStatusCodeRanges());
+        return new HttpSink(httpClient, config.retryStatusCodeRanges(), stencilClient);
     }
 
 }

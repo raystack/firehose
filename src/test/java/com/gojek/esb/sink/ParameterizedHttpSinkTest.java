@@ -1,5 +1,6 @@
 package com.gojek.esb.sink;
 
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.sink.http.ParameterizedHttpSink;
@@ -38,6 +39,9 @@ public class ParameterizedHttpSinkTest {
     @Mock
     private StatusLine statusLine;
 
+    @Mock
+    private StencilClient stencilClient;
+
     @Before
     public void setUp() throws DeserializerException, URISyntaxException {
         Mockito.when(client.execute(Mockito.any())).thenReturn(httpResponse);
@@ -50,7 +54,7 @@ public class ParameterizedHttpSinkTest {
         Mockito.when(client.execute(any(EsbMessage.class))).thenReturn(null);
         HashMap<Integer, Boolean> retryStatusCodeRanger = new HashMap<>();
         retryStatusCodeRanger.put(500, true);
-        ParameterizedHttpSink sink = new ParameterizedHttpSink(client, retryStatusCodeRanger);
+        ParameterizedHttpSink sink = new ParameterizedHttpSink(client, retryStatusCodeRanger, stencilClient);
         sink.pushMessage(Collections.singletonList(esbMessage));
 
         Mockito.verify(client, Mockito.times(1)).execute(any(EsbMessage.class));
@@ -64,7 +68,7 @@ public class ParameterizedHttpSinkTest {
 
         HashMap<Integer, Boolean> retryStatusCodeRanger = new HashMap<>();
         retryStatusCodeRanger.put(500, true);
-        ParameterizedHttpSink sink = new ParameterizedHttpSink(client, retryStatusCodeRanger);
+        ParameterizedHttpSink sink = new ParameterizedHttpSink(client, retryStatusCodeRanger, stencilClient);
 
         List<EsbMessage> failedMessages = sink.pushMessage(Collections.singletonList(esbMessage));
 
@@ -77,7 +81,7 @@ public class ParameterizedHttpSinkTest {
         doThrow(new URISyntaxException("Invalid Uri", "Uri")).when(client).execute(any(EsbMessage.class));
         HashMap<Integer, Boolean> retryStatusCodeRanger = new HashMap<>();
         retryStatusCodeRanger.put(500, true);
-        ParameterizedHttpSink sink = new ParameterizedHttpSink(client, retryStatusCodeRanger);
+        ParameterizedHttpSink sink = new ParameterizedHttpSink(client, retryStatusCodeRanger, stencilClient);
         sink.pushMessage(Collections.singletonList(esbMessage));
     }
 }

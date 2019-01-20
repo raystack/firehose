@@ -1,5 +1,6 @@
 package com.gojek.esb.sink.http;
 
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.sink.http.client.BasicHttpSinkClient;
@@ -20,8 +21,8 @@ public class HttpSink extends BaseHttpSink {
     private BasicHttpSinkClient client;
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpSink.class.getName());
 
-    public HttpSink(BasicHttpSinkClient client, Map<Integer, Boolean> retryStatusCodeRanges) {
-        super(retryStatusCodeRanges);
+    public HttpSink(BasicHttpSinkClient client, Map<Integer, Boolean> retryStatusCodeRanges, StencilClient stencilClient) {
+        super(retryStatusCodeRanges, stencilClient);
         this.client = client;
     }
 
