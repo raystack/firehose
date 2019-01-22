@@ -1,7 +1,6 @@
 package com.gojek.esb.factory;
 
 import com.gojek.esb.config.AuditConfig;
-import com.gojek.esb.config.DisabledAuditConfig;
 import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.config.RetryQueueConfig;
 import com.gojek.esb.consumer.EsbGenericConsumer;
@@ -12,12 +11,10 @@ import com.gojek.esb.filter.Filter;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.server.AuditServiceClient;
 import com.gojek.esb.server.AuditServiceClientFactory;
-import com.timgroup.statsd.StatsDClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -39,11 +36,8 @@ public class GenericKafkaFactory {
                                              StatsDReporter statsDReporter, Filter filter) {
         KafkaConsumer<byte[], byte[]> kafkaConsumer = new KafkaConsumer<>(FactoryUtil.getConfig(config, extraKafkaParameters));
         FactoryUtil.configureSubscription(config, kafkaConsumer);
-        Optional<StatsDClient> statsDClient = statsDReporter.getClient();
-        AuditServiceClient auditServiceClient;
         String auditSource = "firehose";
-        auditServiceClient = statsDClient.map(c -> new AuditServiceClientFactory(auditConfig, auditSource).create(c))
-                .orElseGet(() -> new AuditServiceClientFactory(new DisabledAuditConfig(), auditSource).create(null));
+        AuditServiceClient auditServiceClient = new AuditServiceClientFactory(auditConfig, auditSource).create(statsDReporter.getClient());
         Offsets offsets = !config.commitOnlyCurrentPartitions()
                 ? new TopicOffsets(kafkaConsumer, config, statsDReporter)
                 : new TopicPartitionOffsets(kafkaConsumer, config, statsDReporter);
