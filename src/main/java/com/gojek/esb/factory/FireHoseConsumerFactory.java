@@ -24,6 +24,7 @@ import com.gojek.esb.sink.log.LogSinkFactory;
 import com.gojek.esb.sink.SinkWithRetryQueue;
 import com.gojek.esb.sink.SinkWithRetry;
 import com.gojek.esb.util.Clock;
+import com.timgroup.statsd.NoOpStatsDClient;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import org.aeonbits.owner.ConfigFactory;
@@ -32,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.Optional;
 
 public class FireHoseConsumerFactory {
 
@@ -51,22 +51,22 @@ public class FireHoseConsumerFactory {
         LOGGER.info(this.kafkaConsumerConfig.getKafkaTopic());
         LOGGER.info(this.kafkaConsumerConfig.getConsumerGroupId());
         LOGGER.info("--------- ------ ---------");
-        Optional<StatsDClient> statsDClient = Optional.empty();
+
+        StatsDClient statsDClient;
         try {
-            statsDClient = Optional.of(new NonBlockingStatsDClient("firehose", this.kafkaConsumerConfig.getStatsDHost(),
-                    this.kafkaConsumerConfig.getStatsDPort()));
+            statsDClient = new NonBlockingStatsDClient("firehose", this.kafkaConsumerConfig.getStatsDHost(), this.kafkaConsumerConfig.getStatsDPort());
         } catch (Exception e) {
             LOGGER.error("Exception on creating StatsD client, disabling StatsD and Audit client", e);
             LOGGER.error("FireHose is running without collecting any metrics!!!!!!!!");
+            statsDClient = new NoOpStatsDClient();
         }
         clockInstance = new Clock();
         statsDReporter = new StatsDReporter(statsDClient, clockInstance, this.kafkaConsumerConfig.getStatsDTags().split(","));
         String stencilUrl = this.kafkaConsumerConfig.stencilUrl();
+
         stencilClient = this.kafkaConsumerConfig.enableStencilClient()
                 ? StencilClientFactory.getClient(stencilUrl, config, statsDClient)
                 : StencilClientFactory.getClient();
-
-
     }
 
     /**
