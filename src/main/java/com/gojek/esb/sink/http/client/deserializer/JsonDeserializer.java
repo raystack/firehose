@@ -1,8 +1,8 @@
 package com.gojek.esb.sink.http.client.deserializer;
 
+import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.parser.ProtoParser;
 import com.gojek.esb.serializer.EsbMessageJsonSerializer;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;

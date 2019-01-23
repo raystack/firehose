@@ -1,6 +1,6 @@
 package com.gojek.esb.proto;
 
-import com.gojek.esb.parser.ProtoParser;
+import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.sink.db.DBMapper;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
