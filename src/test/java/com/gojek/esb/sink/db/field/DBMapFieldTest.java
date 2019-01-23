@@ -2,8 +2,8 @@ package com.gojek.esb.sink.db.field;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.StencilClientFactory;
+import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.gofood.AuditEntityLogMessage;
-import com.gojek.esb.parser.ProtoParser;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import org.junit.Assert;

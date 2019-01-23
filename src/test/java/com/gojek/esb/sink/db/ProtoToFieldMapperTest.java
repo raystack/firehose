@@ -2,13 +2,13 @@ package com.gojek.esb.sink.db;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.StencilClientFactory;
+import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.booking.BookingLogMessage;
 import com.gojek.esb.consumer.TestMapMessage;
 import com.gojek.esb.consumer.TestMessage;
 import com.gojek.esb.consumer.TestNestedMessage;
 import com.gojek.esb.consumer.TestNestedRepeatedMessage;
 import com.gojek.esb.feedback.FeedbackLogMessage;
-import com.gojek.esb.parser.ProtoParser;
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.google.protobuf.Timestamp;
 import net.minidev.json.JSONObject;

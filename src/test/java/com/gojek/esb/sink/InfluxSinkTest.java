@@ -2,6 +2,7 @@ package com.gojek.esb.sink;
 
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
+import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.InfluxSinkConfig;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
@@ -9,7 +10,6 @@ import com.gojek.esb.exception.EglcConfigurationException;
 import com.gojek.esb.feedback.FeedbackLogKey;
 import com.gojek.esb.feedback.FeedbackLogMessage;
 import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.parser.ProtoParser;
 import com.gojek.esb.sink.influxdb.InfluxSink;
 import com.gojek.esb.util.Clock;
 import com.google.protobuf.Timestamp;

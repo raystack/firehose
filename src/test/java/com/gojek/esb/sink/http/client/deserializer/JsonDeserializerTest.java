@@ -2,10 +2,10 @@ package com.gojek.esb.sink.http.client.deserializer;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.StencilClientFactory;
+import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.aggregate.supply.AggregatedSupplyMessage;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.parser.ProtoParser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
