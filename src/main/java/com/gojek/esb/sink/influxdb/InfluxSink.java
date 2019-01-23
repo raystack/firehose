@@ -1,11 +1,11 @@
 package com.gojek.esb.sink.influxdb;
 
 import com.gojek.de.stencil.client.StencilClient;
+import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.builder.PointBuilder;
 import com.gojek.esb.config.InfluxSinkConfig;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.parser.ProtoParser;
 import com.gojek.esb.sink.Sink;
 import com.google.protobuf.DynamicMessage;
 import org.influxdb.InfluxDB;
