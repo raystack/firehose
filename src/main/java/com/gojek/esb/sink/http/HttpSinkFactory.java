@@ -1,11 +1,11 @@
 package com.gojek.esb.sink.http;
 
 import com.gojek.de.stencil.client.StencilClient;
+import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.HTTPSinkConfig;
 import com.gojek.esb.config.ParameterizedHTTPSinkConfig;
 import com.gojek.esb.config.enums.HttpSinkDataFormat;
 import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.parser.ProtoParser;
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.SinkFactory;

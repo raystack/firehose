@@ -55,9 +55,9 @@ public class DBSink implements Sink {
     public void close() throws IOException {
         try {
             dbBatchCommand.shutdownPool();
+            stencilClient.close();
         } catch (InterruptedException e) {
             throw new IOException(e);
         }
-        stencilClient.close();
     }
 }
