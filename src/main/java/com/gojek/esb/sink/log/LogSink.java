@@ -35,7 +35,7 @@ public class LogSink implements Sink {
                 try {
                     key = parse(logKey);
                 } catch (IOException e) {
-                    LOGGER.debug("Unable to parse logKey", e);
+                    LOGGER.warn("Unable to parse logKey", e);
                 }
             }
             protoLogger.log(key, parse(message.getLogMessage()));
