@@ -2,10 +2,7 @@ package com.gojek.esb.builder;
 
 import com.gojek.esb.config.InfluxSinkConfig;
 import com.gojek.esb.exception.EglcConfigurationException;
-import com.google.protobuf.Descriptors;
-import com.google.protobuf.DynamicMessage;
-import com.google.protobuf.Message;
-import com.google.protobuf.Timestamp;
+import com.google.protobuf.*;
 import org.influxdb.dto.Point;
 
 import java.util.HashMap;
@@ -31,7 +28,7 @@ public class PointBuilder {
         this.measurementName = config.getMeasurementName();
     }
 
-    public Point buildPoint(DynamicMessage message) {
+    public Point buildPoint(DynamicMessage message) throws InvalidProtocolBufferException {
         this.pointBuilder = Point.measurement(measurementName);
         addTagsToPoint(message);
         addFieldsToPoint(message);
@@ -40,13 +37,9 @@ public class PointBuilder {
         return pointBuilder.build();
     }
 
-    private Timestamp getTimestamp(DynamicMessage message) {
+    private Timestamp getTimestamp(DynamicMessage message) throws InvalidProtocolBufferException {
         DynamicMessage timestamp = (DynamicMessage) getField(message, timeStampIndex);
-        List<Descriptors.FieldDescriptor> timestampFields = timestamp.getDescriptorForType().getFields();
-        Timestamp.Builder timestampBuilder = Timestamp.newBuilder();
-        timestampFields
-                .forEach(fieldDescriptor -> timestampBuilder.setField(fieldDescriptor, timestamp.getField(fieldDescriptor)));
-        return timestampBuilder.build();
+        return Timestamp.parseFrom(timestamp.toByteArray());
     }
 
     private void addTagsToPoint(DynamicMessage message) {
@@ -76,6 +69,5 @@ public class PointBuilder {
     private Object getField(Message message, int protoIndex) {
         return message.getField(message.getDescriptorForType().findFieldByNumber(protoIndex));
     }
-
 
 }
