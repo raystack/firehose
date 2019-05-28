@@ -2,7 +2,6 @@ package com.gojek.esb.builder;
 
 import com.gojek.esb.config.InfluxSinkConfig;
 import com.gojek.esb.consumer.TestDurationMessage;
-import com.gojek.esb.consumer.TestMessage;
 import com.gojek.esb.feedback.FeedbackLogMessage;
 import com.google.protobuf.Duration;
 import com.google.protobuf.DynamicMessage;
@@ -11,8 +10,6 @@ import com.google.protobuf.Timestamp;
 import org.aeonbits.owner.ConfigFactory;
 import org.influxdb.dto.Point;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Properties;
 
