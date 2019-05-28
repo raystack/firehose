@@ -59,10 +59,7 @@ public class PointBuilder {
         Map fieldNameValueMap = new HashMap<String, Object>();
         for (Object protoFieldIndex : fieldNameProtoIndexMapping.keySet()) {
             String influxFieldName = (String) fieldNameProtoIndexMapping.get(protoFieldIndex);
-            System.out.println(influxFieldName);
             Object fieldValue = getField(message, Integer.parseInt((String) protoFieldIndex));
-            System.out.println(protoFieldIndex);
-            System.out.println(fieldValue);
             fieldNameValueMap.put(influxFieldName, fieldValue);
         }
         pointBuilder.fields(fieldNameValueMap);
