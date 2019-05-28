@@ -39,6 +39,6 @@ public class PointBuilderTest {
         Point point = new PointBuilder(influxSinkConfig)
                 .buildPoint(dynamicMessage);
 
-        assert point.lineProtocol().equals("test_point_builder,customer_id=CUSTOMER,driver_id=DRIVER event_timestamp=1000000000,tip_amount=10000.0 1000000000000000");
+        assert point.lineProtocol().equals("test_point_builder,customer_id=CUSTOMER,driver_id=DRIVER event_timestamp=1000000000i,tip_amount=10000.0 1000000000000000");
     }
 }
