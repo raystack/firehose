@@ -50,33 +50,30 @@ public class PointBuilder {
         }
     }
 
-    private void addFieldsToPoint(DynamicMessage message) {
+    private void addFieldsToPoint(DynamicMessage message) throws InvalidProtocolBufferException {
         if (fieldNameProtoIndexMapping.isEmpty()) {
             throw new EglcConfigurationException(FIELD_NAME_MAPPING_ERROR_MESSAGE);
         }
-        Map fieldNameValueMap = new HashMap<String, Object>();
+        Map<String, Object> fieldNameValueMap = new HashMap<>();
         for (Object protoFieldIndex : fieldNameProtoIndexMapping.keySet()) {
-            Integer fieldIndex = Integer.parseInt((String) protoFieldIndex);
+            int fieldIndex = Integer.parseInt((String) protoFieldIndex);
             String influxFieldName = (String) fieldNameProtoIndexMapping.get(protoFieldIndex);
 
-            Object fieldValue = null;
             Descriptors.FieldDescriptor fieldDescriptor = getFieldByIndex(message, fieldIndex);
-            if (fieldDescriptor.getType().name().equals("MESSAGE") && fieldDescriptor.getMessageType().getFullName().equals(Timestamp.getDescriptor().getFullName())) {
-                try {
-                    fieldValue = getMillisFromTimestamp(getTimestamp(message, fieldIndex));
-                } catch (InvalidProtocolBufferException e) {
-                    e.printStackTrace();
-                }
-            } else if (fieldDescriptor.getType().name().equals("MESSAGE") && fieldDescriptor.getMessageType().getFullName().equals(Duration.getDescriptor().getFullName())) {
-                try {
-                    fieldValue = getMillisFromTimestamp(getTimestamp(message, fieldIndex));
-                } catch (InvalidProtocolBufferException e) {
-                    e.printStackTrace();
-                }
-            } else fieldValue = getField(message, fieldIndex);
-            fieldNameValueMap.put(influxFieldName, fieldValue);
+            if (fieldIsOfMessageType(fieldDescriptor, Timestamp.getDescriptor())
+                    || fieldIsOfMessageType(fieldDescriptor, Duration.getDescriptor())) {
+                fieldNameValueMap.put(influxFieldName, getMillisFromTimestamp(getTimestamp(message, fieldIndex)));
+            } else {
+                fieldNameValueMap.put(influxFieldName, getField(message, fieldIndex));
+            }
         }
         pointBuilder.fields(fieldNameValueMap);
+    }
+
+    private boolean fieldIsOfMessageType(Descriptors.FieldDescriptor fieldDescriptor, Descriptors.Descriptor typeDescriptor) {
+        return fieldDescriptor.getType().name().equals("MESSAGE")
+                && fieldDescriptor.getMessageType().getFullName().equals(typeDescriptor.getFullName()
+        );
     }
 
     private Object getField(Message message, int protoIndex) {
