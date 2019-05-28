@@ -2,10 +2,7 @@ package com.gojek.esb.builder;
 
 import com.gojek.esb.config.InfluxSinkConfig;
 import com.gojek.esb.exception.EglcConfigurationException;
-import com.google.protobuf.DynamicMessage;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Message;
-import com.google.protobuf.Timestamp;
+import com.google.protobuf.*;
 import org.influxdb.dto.Point;
 
 import java.util.HashMap;
@@ -16,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class PointBuilder {
     public static final String FIELD_NAME_MAPPING_ERROR_MESSAGE = "field index mapping cannot be empty; at least one field value is required";
     private static final long SECONDS_SCALED_TO_MILLI = 1000L;
+    private static final long MILLIS_SCALED_TO_NANOS = 1000000L;
 
     private Point.Builder pointBuilder;
     private Properties tagNameProtoIndexMapping;
@@ -34,13 +32,13 @@ public class PointBuilder {
         this.pointBuilder = Point.measurement(measurementName);
         addTagsToPoint(message);
         addFieldsToPoint(message);
-        Timestamp timestamp = getTimestamp(message);
-        pointBuilder.time(timestamp.getSeconds() * SECONDS_SCALED_TO_MILLI, TimeUnit.MILLISECONDS);
+        Timestamp timestamp = getTimestamp(message, timeStampIndex);
+        pointBuilder.time(getMillisFromTimestamp(timestamp), TimeUnit.MILLISECONDS);
         return pointBuilder.build();
     }
 
-    private Timestamp getTimestamp(DynamicMessage message) throws InvalidProtocolBufferException {
-        DynamicMessage timestamp = (DynamicMessage) getField(message, timeStampIndex);
+    private Timestamp getTimestamp(DynamicMessage message, Integer fieldIndex) throws InvalidProtocolBufferException {
+        DynamicMessage timestamp = (DynamicMessage) getField(message, fieldIndex);
         return Timestamp.parseFrom(timestamp.toByteArray());
     }
 
@@ -58,15 +56,35 @@ public class PointBuilder {
         }
         Map fieldNameValueMap = new HashMap<String, Object>();
         for (Object protoFieldIndex : fieldNameProtoIndexMapping.keySet()) {
+            Integer fieldIndex = Integer.parseInt((String) protoFieldIndex);
             String influxFieldName = (String) fieldNameProtoIndexMapping.get(protoFieldIndex);
-            Object fieldValue = getField(message, Integer.parseInt((String) protoFieldIndex));
+
+            Object fieldValue = null;
+            Descriptors.FieldDescriptor fieldDescriptor = getFieldByIndex(message, fieldIndex);
+            if (fieldDescriptor.getType().name().equals("MESSAGE") && fieldDescriptor.getMessageType().getFullName().equals(Timestamp.getDescriptor().getFullName())) {
+                try {
+                    fieldValue = getMillisFromTimestamp(getTimestamp(message, fieldIndex));
+                } catch (InvalidProtocolBufferException e) {
+                    e.printStackTrace();
+                }
+            } else fieldValue = getField(message, fieldIndex);
             fieldNameValueMap.put(influxFieldName, fieldValue);
         }
         pointBuilder.fields(fieldNameValueMap);
     }
 
     private Object getField(Message message, int protoIndex) {
-        return message.getField(message.getDescriptorForType().findFieldByNumber(protoIndex));
+        return message.getField(getFieldByIndex(message, protoIndex));
+    }
+
+    private Descriptors.FieldDescriptor getFieldByIndex(Message message, int protoIndex) {
+        return message.getDescriptorForType().findFieldByNumber(protoIndex);
+    }
+
+    private Long getMillisFromTimestamp(Timestamp timestamp) {
+        Long millisFromSeconds = timestamp.getSeconds() * SECONDS_SCALED_TO_MILLI;
+        Long millisFromNanos = timestamp.getNanos() / MILLIS_SCALED_TO_NANOS;
+        return millisFromSeconds + millisFromNanos;
     }
 
 }
