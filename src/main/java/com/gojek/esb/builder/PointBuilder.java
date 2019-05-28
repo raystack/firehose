@@ -2,7 +2,12 @@ package com.gojek.esb.builder;
 
 import com.gojek.esb.config.InfluxSinkConfig;
 import com.gojek.esb.exception.EglcConfigurationException;
-import com.google.protobuf.*;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Duration;
+import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
+import com.google.protobuf.Timestamp;
 import org.influxdb.dto.Point;
 
 import java.util.HashMap;
