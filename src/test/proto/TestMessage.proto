@@ -6,6 +6,9 @@ option java_multiple_files = true;
 option java_package = "com.gojek.esb.consumer";
 option java_outer_classname = "TestMessageProto";
 
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
 message TestKey {
     string order_number = 1;
     string order_url = 2;
@@ -32,4 +35,12 @@ message TestNestedRepeatedMessage {
 message TestMapMessage {
     string order_number = 1;
     map<string, string> current_state = 2;
+}
+
+message TestDurationMessage {
+    string order_number = 1;
+    string order_url = 2;
+    string order_details = 3;
+    google.protobuf.Duration duration = 4;
+    google.protobuf.Timestamp event_timestamp = 5;
 }

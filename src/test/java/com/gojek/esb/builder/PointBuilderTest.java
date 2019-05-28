@@ -1,7 +1,10 @@
 package com.gojek.esb.builder;
 
 import com.gojek.esb.config.InfluxSinkConfig;
+import com.gojek.esb.consumer.TestDurationMessage;
+import com.gojek.esb.consumer.TestMessage;
 import com.gojek.esb.feedback.FeedbackLogMessage;
+import com.google.protobuf.Duration;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
@@ -13,7 +16,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Properties;
 
-@RunWith(MockitoJUnitRunner.class)
 public class PointBuilderTest {
 
     @Test
@@ -30,7 +32,7 @@ public class PointBuilderTest {
                 .setCustomerId("CUSTOMER")
                 .setDriverId("DRIVER")
                 .setTipAmount(10000)
-                .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000000).build()).build();
+                .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000000)).build();
 
         DynamicMessage dynamicMessage = DynamicMessage.parseFrom(FeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
 
@@ -40,5 +42,30 @@ public class PointBuilderTest {
                 .buildPoint(dynamicMessage);
 
         assert point.lineProtocol().equals("test_point_builder,customer_id=CUSTOMER,driver_id=DRIVER event_timestamp=1000000000i,tip_amount=10000.0 1000000000000000");
+    }
+
+    @Test
+    public void testMessageWithDurationIsBuiltIntoMillis() throws InvalidProtocolBufferException {
+        Properties influxConfigProps = new Properties();
+        influxConfigProps.setProperty("MEASUREMENT_NAME", "test_point_builder");
+        influxConfigProps.setProperty("PROTO_EVENT_TIMESTAMP_INDEX", "5");
+        influxConfigProps.setProperty("DATABASE_NAME", "test");
+        influxConfigProps.setProperty("PROTO_SCHEMA", FeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("FIELD_NAME_PROTO_INDEX_MAPPING", "{ \"4\": \"duration\" }");
+        influxConfigProps.setProperty("TAG_NAME_PROTO_INDEX_MAPPING", "{ \"1\": \"order_number\" }");
+
+        TestDurationMessage testDurationMessage = TestDurationMessage.newBuilder()
+                .setOrderNumber("ORDER")
+                .setDuration(Duration.newBuilder().setSeconds(1000))
+                .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000000))
+                .build();
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestDurationMessage.getDescriptor(), testDurationMessage.toByteArray());
+
+        InfluxSinkConfig influxSinkConfig = ConfigFactory.create(InfluxSinkConfig.class, influxConfigProps);
+
+        Point point = new PointBuilder(influxSinkConfig)
+                .buildPoint(dynamicMessage);
+
+        assert point.lineProtocol().equals("test_point_builder,order_number=ORDER duration=1000000i 1000000000000000");
     }
 }
