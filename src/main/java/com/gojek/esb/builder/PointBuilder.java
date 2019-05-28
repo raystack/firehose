@@ -67,6 +67,12 @@ public class PointBuilder {
                 } catch (InvalidProtocolBufferException e) {
                     e.printStackTrace();
                 }
+            } else if (fieldDescriptor.getType().name().equals("MESSAGE") && fieldDescriptor.getMessageType().getFullName().equals(Duration.getDescriptor().getFullName())) {
+                try {
+                    fieldValue = getMillisFromTimestamp(getTimestamp(message, fieldIndex));
+                } catch (InvalidProtocolBufferException e) {
+                    e.printStackTrace();
+                }
             } else fieldValue = getField(message, fieldIndex);
             fieldNameValueMap.put(influxFieldName, fieldValue);
         }
