@@ -5,5 +5,6 @@ public enum SinkType {
     HTTP,
     LOG,
     CLEVERTAP,
-    INFLUXDB
+    INFLUXDB,
+    ELASTICSEARCH
 }

@@ -34,4 +34,8 @@ public class Metrics {
     public static final String SUCCESS_TAG = "success=true";
     public static final String FAILURE_TAG = "success=false";
 
+    //ES
+    public static final String ES_SINK_PROCESSING_TIME = "es.sink.batch_processing_time";
+    public static final String ES_SINK_FAILED_DOCUMENT_COUNT = "es.sink.failed_document_count";
+    public static final String ES_SINK_SUCCESS_DOCUMENT_COUNT = "es.sink.success_document_count";
 }
