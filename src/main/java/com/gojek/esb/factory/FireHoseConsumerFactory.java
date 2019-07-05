@@ -18,6 +18,7 @@ import com.gojek.esb.sink.ExponentialBackOffProvider;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.clevertap.ClevertapSinkFactory;
 import com.gojek.esb.sink.db.DBSinkFactory;
+import com.gojek.esb.sink.elasticsearch.ESSinkFactory;
 import com.gojek.esb.sink.http.HttpSinkFactory;
 import com.gojek.esb.sink.influxdb.InfluxSinkFactory;
 import com.gojek.esb.sink.log.LogSinkFactory;
@@ -103,6 +104,8 @@ public class FireHoseConsumerFactory {
                 return new LogSinkFactory().create(config, statsDReporter, stencilClient);
             case CLEVERTAP:
                 return new ClevertapSinkFactory().create(config, statsDReporter, stencilClient);
+            case ELASTICSEARCH:
+                return new ESSinkFactory().create(config, statsDReporter, stencilClient);
             default:
                 throw new EglcConfigurationException("Invalid FireHose SINK type");
 
