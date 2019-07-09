@@ -48,7 +48,8 @@ public class ESRequestBuilder {
 
     public String extractId(EsbMessage message) {
         String payload = extractPayload(message);
-        return payload.substring(payload.indexOf("\"customer_id\"") + "customer_id".length() + 4, payload.indexOf("\","));
+        final int i = 4;
+        return payload.substring(payload.indexOf("\"customer_id\"") + "customer_id".length() + i, payload.indexOf("\","));
     }
 
     public String extractPayload(EsbMessage message) {
