@@ -10,21 +10,23 @@ import java.nio.charset.Charset;
 
 public class ESRequestBuilder {
 
+    private String esIdFieldName;
     private ESMessageType messageType;
 
     private ESRequestType esRequestType;
 
-    public ESRequestBuilder(ESRequestType esRequestType) {
+    public ESRequestBuilder(ESRequestType esRequestType, String esIdFieldName) {
         messageType = ESMessageType.JSON;
         this.esRequestType = esRequestType;
+        this.esIdFieldName = esIdFieldName;
     }
 
-    public DocWriteRequest buildRequest(String index, String type, String id, String payload) {
+    public DocWriteRequest buildRequest(String index, String type, EsbMessage message) {
         switch (getEsRequestType()) {
             case UPDATE_ONLY:
-                return buildUpdateRequest(index, type, id, payload);
+                return buildUpdateRequest(index, type, extractId(message), extractPayload(message));
             default:
-                return buildInsertRequest(index, type, id, payload);
+                return buildInsertRequest(index, type, extractId(message), extractPayload(message));
         }
     }
 
@@ -47,7 +49,7 @@ public class ESRequestBuilder {
     public String extractId(EsbMessage message) {
         String payload = extractPayload(message);
         final int i = 4;
-        return payload.substring(payload.indexOf("\"customer_id\"") + "customer_id".length() + i, payload.indexOf("\","));
+        return payload.substring(payload.indexOf("\"" + esIdFieldName + "\"") + esIdFieldName.length() + i, payload.indexOf("\","));
     }
 
     String extractPayload(EsbMessage message) {
