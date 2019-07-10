@@ -1,6 +1,5 @@
 package com.gojek.esb.sink.elasticsearch.client;
 
-//CHECKSTYLE:OFF
 import com.gojek.esb.config.ESSinkConfig;
 import com.gojek.esb.metrics.StatsDReporter;
 import org.apache.http.HttpHost;
@@ -24,9 +23,6 @@ import static com.gojek.esb.metrics.Metrics.*;
 
 public class ESSinkClient {
 
-    // Needs the ES High level restHighLevelClient
-    // Needs the bulk processor which will execute the bulk requests
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ESSinkClient.class.getName());
     private final StatsDReporter statsDReporter;
 
@@ -45,11 +41,19 @@ public class ESSinkClient {
         bulkProcessor = buildBulkProcessor(esSinkConfig.getEsBatchSize(), listenerBiConsumer, esSinkConfig.getEsBatchRetryCount());
     }
 
-    // A way to create the bulkprocessor once
-    // A way to create the restHighLevelClient and submit the requests
-    // a way to close the bulk processor when the firehose is closed
+    public void processRequest(DocWriteRequest request) {
+        getBulkProcessor().add(request);
+    }
 
-    public BulkProcessor getBulkProcessor() {
+    public void close() {
+        getBulkProcessor().close();
+    }
+
+    public RestHighLevelClient getRestHighLevelClient() {
+        return restHighLevelClient;
+    }
+
+    private BulkProcessor getBulkProcessor() {
         return bulkProcessor;
     }
 
@@ -85,20 +89,16 @@ public class ESSinkClient {
                 .build();
     }
 
-    public RestHighLevelClient getRestHighLevelClient() {
-        return restHighLevelClient;
-    }
-
     private BulkProcessor.Listener getBulkListener() {
         return new BulkProcessor.Listener() {
 
             private Instant startTime;
 
-            public Instant getStartTime() {
+            Instant getStartTime() {
                 return startTime;
             }
 
-            public void setStartTime(Instant startTime) {
+            void setStartTime(Instant startTime) {
                 this.startTime = startTime;
             }
 
@@ -119,14 +119,13 @@ public class ESSinkClient {
                     for (BulkItemResponse responses : items) {
                         LOGGER.warn("Failure response message [{}]", responses.getFailureMessage());
                     }
-                    statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, startTime, FAILURE_TAG);
+                    statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, getStartTime(), FAILURE_TAG);
                     statsDReporter.captureDurationSince(ES_SINK_FAILED_DOCUMENT_COUNT, getStartTime(), FAILURE_TAG);
                 } else {
                     LOGGER.debug("Bulk [{}] completed in {} milliseconds",
                             executionId, response.getTook().getMillis());
 
-                    System.out.printf("Bulk [%s] completed in %s milliseconds\n", executionId, response.getTook().getMillis());
-                    statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, startTime, SUCCESS_TAG);
+                    statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, getStartTime(), SUCCESS_TAG);
                     statsDReporter.captureDurationSince(ES_SINK_SUCCESS_DOCUMENT_COUNT, getStartTime(), SUCCESS_TAG);
                 }
             }
@@ -135,20 +134,9 @@ public class ESSinkClient {
             public void afterBulk(long executionId, BulkRequest request,
                                   Throwable failure) {
                 LOGGER.error("Failed to execute bulk", failure);
-                failure.printStackTrace();
-                statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, startTime, FAILURE_TAG);
-                statsDReporter.captureDurationSince(ES_SINK_FAILED_DOCUMENT_COUNT, startTime, FAILURE_TAG);
-
+                statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, getStartTime(), FAILURE_TAG);
+                statsDReporter.captureDurationSince(ES_SINK_FAILED_DOCUMENT_COUNT, getStartTime(), FAILURE_TAG);
             }
         };
     }
-
-    public void processRequest(DocWriteRequest request) {
-        getBulkProcessor().add(request);
-    }
-
-    public void close() {
-        getBulkProcessor().close();
-    }
 }
-//CHECKSTYLE:ON
