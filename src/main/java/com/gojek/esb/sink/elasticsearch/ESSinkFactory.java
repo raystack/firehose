@@ -19,7 +19,7 @@ public class ESSinkFactory implements SinkFactory {
     public Sink create(Map<String, String> configuration, StatsDReporter client, StencilClient stencilClient) {
         ESSinkConfig esSinkConfig = ConfigFactory.create(ESSinkConfig.class, configuration);
         ESRequestType esRequestType = esSinkConfig.isUpdateOnlyMode() ? UPDATE_ONLY : INSERT_OR_UPDATE;
-        ESRequestBuilder esRequestBuilder = new ESRequestBuilder(esRequestType);
+        ESRequestBuilder esRequestBuilder = new ESRequestBuilder(esRequestType, esSinkConfig.getEsIdFieldName());
         ESSinkClient esSinkClient = new ESSinkClient(esSinkConfig, client);
         return new ESSink(esRequestBuilder, esSinkClient, esSinkConfig.getEsTypeName(), esSinkConfig.getEsIndexName());
     }

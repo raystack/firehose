@@ -7,6 +7,7 @@ import com.gojek.esb.sink.elasticsearch.client.ESSinkClient;
 import lombok.AllArgsConstructor;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -22,10 +23,10 @@ public class ESSink implements Sink {
         esbMessages
                 .stream()
                 .map((message) -> esRequestBuilder.buildRequest(
-                        index, type, esRequestBuilder.extractId(message), esRequestBuilder.extractPayload(message)
-                ))
+                        index, type, message)
+                )
                 .forEach((request) -> esSinkClient.processRequest(request));
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
