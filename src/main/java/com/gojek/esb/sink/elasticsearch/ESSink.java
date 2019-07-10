@@ -5,8 +5,6 @@ import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.elasticsearch.client.ESSinkClient;
 import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,13 +12,10 @@ import java.util.List;
 @AllArgsConstructor
 public class ESSink implements Sink {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ESSink.class.getName());
-
     private ESRequestBuilder esRequestBuilder;
     private ESSinkClient esSinkClient;
     private String type;
     private String index;
-
 
     @Override
     public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) throws IOException, DeserializerException {
