@@ -23,8 +23,6 @@ public class ESRequestBuilder {
         switch (getEsRequestType()) {
             case UPDATE_ONLY:
                 return buildUpdateRequest(index, type, id, payload);
-            case INSERT_OR_UPDATE:
-                return buildInsertRequest(index, type, id, payload);
             default:
                 return buildInsertRequest(index, type, id, payload);
         }
@@ -52,7 +50,7 @@ public class ESRequestBuilder {
         return payload.substring(payload.indexOf("\"customer_id\"") + "customer_id".length() + i, payload.indexOf("\","));
     }
 
-    public String extractPayload(EsbMessage message) {
+    String extractPayload(EsbMessage message) {
         return new String(message.getLogMessage(), Charset.defaultCharset());
     }
 
