@@ -12,5 +12,5 @@ public interface ProtoLogger {
      * @param key key proto message
      * @param message message part of the protobuf.
      */
-    void log(DynamicMessage key, DynamicMessage message);
+    void log(DynamicMessage message);
 }
