@@ -5,8 +5,12 @@ import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.nio.charset.Charset;
+import java.util.Optional;
 
 public class ESRequestBuilder {
 
@@ -14,20 +18,20 @@ public class ESRequestBuilder {
     private ESMessageType messageType;
 
     private ESRequestType esRequestType;
+    private JSONParser jsonParser;
 
     public ESRequestBuilder(ESRequestType esRequestType, String esIdFieldName) {
         messageType = ESMessageType.JSON;
+        jsonParser = new JSONParser();
         this.esRequestType = esRequestType;
         this.esIdFieldName = esIdFieldName;
     }
 
     public DocWriteRequest buildRequest(String index, String type, EsbMessage message) {
-        switch (getEsRequestType()) {
-            case UPDATE_ONLY:
-                return buildUpdateRequest(index, type, extractId(message), extractPayload(message));
-            default:
-                return buildInsertRequest(index, type, extractId(message), extractPayload(message));
+        if (getEsRequestType() == ESRequestType.UPDATE_ONLY) {
+            return buildUpdateRequest(index, type, extractId(message), extractPayload(message));
         }
+        return buildInsertRequest(index, type, extractId(message), extractPayload(message));
     }
 
     private DocWriteRequest buildUpdateRequest(String index, String type, String id, String payload) {
@@ -48,8 +52,15 @@ public class ESRequestBuilder {
 
     public String extractId(EsbMessage message) {
         String payload = extractPayload(message);
-        final int i = 4;
-        return payload.substring(payload.indexOf("\"" + esIdFieldName + "\"") + esIdFieldName.length() + i, payload.indexOf("\","));
+
+        try {
+            JSONObject parse = (JSONObject) jsonParser.parse(payload);
+            return (String) Optional.of(parse.get(esIdFieldName)).get();
+        } catch (ParseException e) {
+            throw new RuntimeException();
+        } finally {
+            jsonParser.reset();
+        }
     }
 
     String extractPayload(EsbMessage message) {
