@@ -5,14 +5,12 @@ import com.gojek.esb.metrics.StatsDReporter;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.DocWriteRequest;
-import org.elasticsearch.action.bulk.BackoffPolicy;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.unit.TimeValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,12 +18,14 @@ import java.time.Instant;
 import java.util.function.BiConsumer;
 
 import static com.gojek.esb.metrics.Metrics.*;
+import static org.elasticsearch.action.bulk.BackoffPolicy.constantBackoff;
+import static org.elasticsearch.common.unit.TimeValue.timeValueSeconds;
 
 public class ESSinkClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ESSinkClient.class.getName());
-    private final StatsDReporter statsDReporter;
 
+    private final StatsDReporter statsDReporter;
     private RestHighLevelClient restHighLevelClient;
     private BulkProcessor bulkProcessor;
 
@@ -38,7 +38,8 @@ public class ESSinkClient {
         }
         BiConsumer<BulkRequest, ActionListener<BulkResponse>> listenerBiConsumer = getBulkAsyncConsumer();
         this.restHighLevelClient = new RestHighLevelClient(RestClient.builder(httpHosts));
-        bulkProcessor = buildBulkProcessor(esSinkConfig.getEsBatchSize(), listenerBiConsumer, esSinkConfig.getEsBatchRetryCount());
+        bulkProcessor = buildBulkProcessor(esSinkConfig.getEsBatchSize(), esSinkConfig.getEsBatchRetryCount(),
+                esSinkConfig.getEsRetryBackoff(), listenerBiConsumer);
     }
 
     public void processRequest(DocWriteRequest request) {
@@ -75,17 +76,16 @@ public class ESSinkClient {
                 getRestHighLevelClient().bulkAsync(request, bulkListener);
     }
 
-    private BulkProcessor buildBulkProcessor(int bulkActions, BiConsumer<BulkRequest,
-            ActionListener<BulkResponse>> consumer, int numberOfRetries) {
+    private BulkProcessor buildBulkProcessor(int bulkActionsCount, int numberOfRetries, Long esRetryBackoff,
+                                             BiConsumer<BulkRequest, ActionListener<BulkResponse>> consumer) {
         BulkProcessor.Listener bulkListener = getBulkListener();
         final long seconds = 15L;
         return BulkProcessor
                 .builder(consumer, bulkListener)
-                .setBulkActions(bulkActions)
+                .setBulkActions(bulkActionsCount)
                 .setConcurrentRequests(0)
-                .setFlushInterval(TimeValue.timeValueSeconds(seconds))
-                .setBackoffPolicy(BackoffPolicy
-                        .constantBackoff(TimeValue.timeValueSeconds(1L), numberOfRetries))
+                .setFlushInterval(timeValueSeconds(seconds))
+                .setBackoffPolicy(constantBackoff(timeValueSeconds(esRetryBackoff), numberOfRetries))
                 .build();
     }
 
@@ -111,31 +111,34 @@ public class ESSinkClient {
             }
 
             @Override
-            public void afterBulk(long executionId, BulkRequest request,
-                                  BulkResponse response) {
+            public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
                 if (response.hasFailures()) {
                     LOGGER.warn("Bulk [{}] executed with failures", executionId);
                     BulkItemResponse[] items = response.getItems();
+                    int failedCount = 0;
                     for (BulkItemResponse responses : items) {
-                        LOGGER.warn("Failure response message [{}]", responses.getFailureMessage());
+                        if (responses.isFailed()) {
+                            failedCount += 1;
+                            LOGGER.warn("Failure response message [{}]", responses.getFailureMessage());
+                        }
                     }
                     statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, getStartTime(), FAILURE_TAG);
-                    statsDReporter.captureDurationSince(ES_SINK_FAILED_DOCUMENT_COUNT, getStartTime(), FAILURE_TAG);
+                    statsDReporter.captureCount(ES_SINK_FAILED_DOCUMENT_COUNT, failedCount, FAILURE_TAG);
+                    statsDReporter.captureCount(ES_SINK_SUCCESS_DOCUMENT_COUNT, (response.getItems().length - failedCount), SUCCESS_TAG);
                 } else {
                     LOGGER.debug("Bulk [{}] completed in {} milliseconds",
                             executionId, response.getTook().getMillis());
 
                     statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, getStartTime(), SUCCESS_TAG);
-                    statsDReporter.captureDurationSince(ES_SINK_SUCCESS_DOCUMENT_COUNT, getStartTime(), SUCCESS_TAG);
+                    statsDReporter.captureCount(ES_SINK_SUCCESS_DOCUMENT_COUNT, response.getItems().length, SUCCESS_TAG);
                 }
             }
 
             @Override
-            public void afterBulk(long executionId, BulkRequest request,
-                                  Throwable failure) {
+            public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
                 LOGGER.error("Failed to execute bulk", failure);
                 statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, getStartTime(), FAILURE_TAG);
-                statsDReporter.captureDurationSince(ES_SINK_FAILED_DOCUMENT_COUNT, getStartTime(), FAILURE_TAG);
+                statsDReporter.captureCount(ES_SINK_FAILED_DOCUMENT_COUNT, request.numberOfActions(), FAILURE_TAG);
             }
         };
     }

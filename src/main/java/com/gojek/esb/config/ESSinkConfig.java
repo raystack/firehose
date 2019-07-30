@@ -17,7 +17,7 @@ public interface ESSinkConfig extends AppConfig {
     String getEsIndexName();
 
     @Key("ES_RETRY_BACKOFF")
-    @DefaultValue("1000")
+    @DefaultValue("10")
     Long getEsRetryBackoff();
 
     @Key("ES_BATCH_SIZE")
@@ -33,4 +33,8 @@ public interface ESSinkConfig extends AppConfig {
     @Key("ES_UPDATE_ONLY_MODE")
     @DefaultValue("false")
     Boolean isUpdateOnlyMode();
+
+    @Key("ES_INPUT_MESSAGE_TYPE")
+    @DefaultValue("JSON")
+    String getESMessageType();
 }
