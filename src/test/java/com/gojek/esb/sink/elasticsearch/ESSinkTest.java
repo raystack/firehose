@@ -82,11 +82,12 @@ public class ESSinkTest {
 
     @Test
     public void shouldPushProtoMessageToES() throws IOException, DeserializerException {
+        String elasticsearchServer = System.getenv("ELASTICSEARCH_SERVER");
         configuration = new HashMap<>();
         configuration.put("ES_BATCH_RETRY_COUNT", "3");
         configuration.put("ES_BATCH_SIZE", "1000");
         configuration.put("ES_ID_FIELD", "customer_id");
-        configuration.put("ES_CONNECTION_URLS", "localhost: 9200 , localhost : 9200 ");
+        configuration.put("ES_CONNECTION_URLS", elasticsearchServer + ": 9200 , " + elasticsearchServer + " : 9200 ");
         configuration.put("ES_INPUT_MESSAGE_TYPE", "PROTOBUF");
         esSinkConfig = ConfigFactory.create(ESSinkConfig.class, configuration);
         esSinkClient = new ESSinkClient(esSinkConfig, client);
