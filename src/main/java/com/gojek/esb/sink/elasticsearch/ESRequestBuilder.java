@@ -1,6 +1,8 @@
 package com.gojek.esb.sink.elasticsearch;
 
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.sink.http.client.deserializer.JsonDeserializer;
 import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -12,22 +14,31 @@ import org.json.simple.parser.ParseException;
 import java.nio.charset.Charset;
 import java.util.Optional;
 
+import static com.gojek.esb.sink.elasticsearch.ESMessageType.PROTOBUF;
+
 public class ESRequestBuilder {
 
+    private final JsonDeserializer jsonDeserializer;
     private String esIdFieldName;
     private ESMessageType messageType;
 
     private ESRequestType esRequestType;
     private JSONParser jsonParser;
 
-    public ESRequestBuilder(ESRequestType esRequestType, String esIdFieldName) {
-        messageType = ESMessageType.JSON;
+    public ESRequestBuilder(ESRequestType esRequestType, String esIdFieldName, ESMessageType messageType, JsonDeserializer jsonDeserializer) {
         jsonParser = new JSONParser();
+        this.messageType = messageType;
         this.esRequestType = esRequestType;
         this.esIdFieldName = esIdFieldName;
+        this.jsonDeserializer = jsonDeserializer;
     }
 
-    public DocWriteRequest buildRequest(String index, String type, EsbMessage message) {
+    public String extractId(EsbMessage message) {
+        String payload = extractPayload(message);
+        return getStringFromJson(payload, esIdFieldName);
+    }
+
+    DocWriteRequest buildRequest(String index, String type, EsbMessage message) {
         if (getEsRequestType() == ESRequestType.UPDATE_ONLY) {
             return buildUpdateRequest(index, type, extractId(message), extractPayload(message));
         }
@@ -50,21 +61,31 @@ public class ESRequestBuilder {
         return esRequestType;
     }
 
-    public String extractId(EsbMessage message) {
-        String payload = extractPayload(message);
-
+    private String getStringFromJson(String payload, String fieldName) {
         try {
             JSONObject parse = (JSONObject) jsonParser.parse(payload);
-            return (String) Optional.of(parse.get(esIdFieldName)).get();
+            return (String) Optional.of(parse.get(fieldName)).get();
         } catch (ParseException e) {
-            throw new RuntimeException();
+            throw new RuntimeException(e.getMessage(), e.getCause());
         } finally {
             jsonParser.reset();
         }
     }
 
-    String extractPayload(EsbMessage message) {
+    private String extractPayload(EsbMessage message) {
+        if (messageType.equals(PROTOBUF)) {
+            return extractPayloadFromProtobuf(message);
+        }
         return new String(message.getLogMessage(), Charset.defaultCharset());
+    }
+
+    private String extractPayloadFromProtobuf(EsbMessage message) {
+        try {
+            return getStringFromJson(jsonDeserializer.getParsedJsonMessage(message), "logMessage");
+        } catch (DeserializerException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage(), e.getCause());
+        }
     }
 
     private ESMessageType getMessageType() {

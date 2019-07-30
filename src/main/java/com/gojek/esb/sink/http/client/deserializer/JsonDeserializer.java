@@ -47,7 +47,7 @@ public class JsonDeserializer implements Deserializer {
         return deserializedMessageList;
     }
 
-    private String getParsedJsonMessage(EsbMessage message) throws DeserializerException {
+    public String getParsedJsonMessage(EsbMessage message) throws DeserializerException {
         try {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("topic", message.getTopic());
