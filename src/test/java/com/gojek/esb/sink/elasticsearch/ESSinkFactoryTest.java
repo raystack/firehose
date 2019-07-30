@@ -60,7 +60,7 @@ public class ESSinkFactoryTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldNotBeAbleToCreateESSink() {
-        Sink sink = esSinkFactory.create(configuration, statsDReporter, stencilClient);
+        esSinkFactory.create(configuration, statsDReporter, stencilClient);
         fail("Should not have reached here");
     }
 }

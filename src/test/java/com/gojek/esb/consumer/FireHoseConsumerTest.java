@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -65,7 +65,7 @@ public class FireHoseConsumerTest {
 
         fireHoseConsumer.processPartitions();
 
-        verify(httpSink, times(0)).pushMessage(any(List.class));
+        verify(httpSink, times(0)).pushMessage(anyList());
     }
 
     @Test
