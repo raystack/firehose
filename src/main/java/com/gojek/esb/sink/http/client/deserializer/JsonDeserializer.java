@@ -47,18 +47,18 @@ public class JsonDeserializer implements Deserializer {
         return deserializedMessageList;
     }
 
-    public String getParsedJsonMessage(EsbMessage message) throws DeserializerException {
+    public String getParsedJsonMessage(EsbMessage message, Boolean preserveFieldNames) throws DeserializerException {
         try {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("topic", message.getTopic());
 
             if (message.getLogKey() != null && message.getLogKey().length != 0) {
                 DynamicMessage key = protoParser.parse(message.getLogKey());
-                jsonObject.put("logKey", this.gson.toJson(convertDynamicMessageToJson(key)));
+                jsonObject.put("logKey", this.gson.toJson(convertDynamicMessageToJson(key, preserveFieldNames)));
             }
 
             DynamicMessage msg = protoParser.parse(message.getLogMessage());
-            jsonObject.put("logMessage", this.gson.toJson(convertDynamicMessageToJson(msg)));
+            jsonObject.put("logMessage", this.gson.toJson(convertDynamicMessageToJson(msg, preserveFieldNames)));
 
             return jsonObject.toJSONString();
         } catch (InvalidProtocolBufferException | ParseException e) {
@@ -66,7 +66,11 @@ public class JsonDeserializer implements Deserializer {
         }
     }
 
-    private Object convertDynamicMessageToJson(DynamicMessage message) throws ParseException, InvalidProtocolBufferException {
+    private String getParsedJsonMessage(EsbMessage message) throws DeserializerException {
+        return getParsedJsonMessage(message, false);
+    }
+
+    private Object convertDynamicMessageToJson(DynamicMessage message, boolean preserveFieldNames) throws ParseException, InvalidProtocolBufferException {
         Map<Descriptors.FieldDescriptor, Object> allFields = new HashMap<>();
         List<String> timeStampKeys = new ArrayList<>();
 
@@ -75,12 +79,20 @@ public class JsonDeserializer implements Deserializer {
             Object field = allFields.get(key);
             boolean fieldIsTimestamp = field instanceof DynamicMessage && ((DynamicMessage) field).getDescriptorForType().getName().equals(Timestamp.class.getSimpleName());
             if (fieldIsTimestamp) {
-                timeStampKeys.add(key.getJsonName());
+                if (preserveFieldNames) {
+                    timeStampKeys.add(key.getName());
+                } else {
+                    timeStampKeys.add(key.getJsonName());
+                }
             }
         }
 
         JSONObject tempJsonObject = new JSONObject();
-        tempJsonObject.put("tempKey", JsonFormat.printer().print(message));
+        if (preserveFieldNames) {
+            tempJsonObject.put("tempKey", JsonFormat.printer().preservingProtoFieldNames().print(message));
+        } else {
+            tempJsonObject.put("tempKey", JsonFormat.printer().print(message));
+        }
 
         for (String key : timeStampKeys) {
             convertProtoBuffTimeStampToDateTime(tempJsonObject, "tempKey", key);
