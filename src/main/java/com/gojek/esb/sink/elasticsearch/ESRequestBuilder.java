@@ -24,13 +24,16 @@ public class ESRequestBuilder {
 
     private ESRequestType esRequestType;
     private JSONParser jsonParser;
+    private final Boolean preserveProtoFieldNames;
 
-    public ESRequestBuilder(ESRequestType esRequestType, String esIdFieldName, ESMessageType messageType, JsonDeserializer jsonDeserializer) {
+    public ESRequestBuilder(ESRequestType esRequestType, String esIdFieldName, Boolean preserveProtoFieldNames,
+                            ESMessageType messageType, JsonDeserializer jsonDeserializer) {
         jsonParser = new JSONParser();
         this.messageType = messageType;
         this.esRequestType = esRequestType;
         this.esIdFieldName = esIdFieldName;
         this.jsonDeserializer = jsonDeserializer;
+        this.preserveProtoFieldNames = preserveProtoFieldNames;
     }
 
     public String extractId(EsbMessage message) {
@@ -81,7 +84,7 @@ public class ESRequestBuilder {
 
     private String extractPayloadFromProtobuf(EsbMessage message) {
         try {
-            return getStringFromJson(jsonDeserializer.getParsedJsonMessage(message), "logMessage");
+            return getStringFromJson(jsonDeserializer.getParsedJsonMessage(message, preserveProtoFieldNames), "logMessage");
         } catch (DeserializerException e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage(), e.getCause());
