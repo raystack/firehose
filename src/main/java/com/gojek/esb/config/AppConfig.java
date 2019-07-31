@@ -46,4 +46,8 @@ public interface AppConfig extends Config {
     @Key("PROTO_TO_COLUMN_MAPPING")
     @ConverterClass(ProtoIndexToFieldMapConverter.class)
     Properties getProtoToFieldMapping();
+
+    @Key("KAFKA_RECORD_PARSER_MODE")
+    @DefaultValue("message")
+    String getKafkaRecordParserMode();
 }

@@ -32,8 +32,4 @@ public interface DBSinkConfig extends AppConfig {
     @Key("DB_SINK_AUDIT_ENABLED")
     @DefaultValue("False")
     Boolean getAuditEnabled();
-
-    @Key("KAFKA_RECORD_PARSER_MODE")
-    @DefaultValue("message")
-    String getKafkaRecordParserMode();
 }
