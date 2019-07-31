@@ -37,4 +37,8 @@ public interface ESSinkConfig extends AppConfig {
     @Key("ES_INPUT_MESSAGE_TYPE")
     @DefaultValue("JSON")
     String getESMessageType();
+
+    @Key("ES_PRESERVE_PROTO_FIELD_NAMES")
+    @DefaultValue("true")
+    Boolean shouldPreserveProtoFieldNames();
 }
