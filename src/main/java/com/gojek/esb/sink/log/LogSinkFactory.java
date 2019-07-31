@@ -21,6 +21,7 @@ public class LogSinkFactory implements SinkFactory {
 
     public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         AppConfig appConfig = ConfigFactory.create(AppConfig.class, configuration);
-        return new LogSink(new ProtoParser(stencilClient, appConfig.getProtoSchema()), new ConsoleLogger());
+        KeyOrMessageParser parser = new KeyOrMessageParser(new ProtoParser(stencilClient, appConfig.getProtoSchema()), appConfig);
+        return new LogSink(parser, new ConsoleLogger());
     }
 }
