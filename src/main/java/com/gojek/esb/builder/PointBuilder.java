@@ -35,41 +35,53 @@ public class PointBuilder {
 
     public Point buildPoint(DynamicMessage message) throws InvalidProtocolBufferException {
         this.pointBuilder = Point.measurement(measurementName);
-        addTagsToPoint(message);
-        addFieldsToPoint(message);
+        addTagsToPoint(message, tagNameProtoIndexMapping);
+        addFieldsToPoint(message, fieldNameProtoIndexMapping);
         Timestamp timestamp = getTimestamp(message, timeStampIndex);
         pointBuilder.time(getMillisFromTimestamp(timestamp), TimeUnit.MILLISECONDS);
         return pointBuilder.build();
     }
 
-    private Timestamp getTimestamp(DynamicMessage message, Integer fieldIndex) throws InvalidProtocolBufferException {
+    private Timestamp getTimestamp(Message message, Integer fieldIndex) throws InvalidProtocolBufferException {
         DynamicMessage timestamp = (DynamicMessage) getField(message, fieldIndex);
         return Timestamp.parseFrom(timestamp.toByteArray());
     }
 
-    private void addTagsToPoint(DynamicMessage message) {
-        for (Object protoFieldIndex : tagNameProtoIndexMapping.keySet()) {
+    private void addTagsToPoint(Message message, Properties protoIndexMapping) {
+        for (Object protoFieldIndex : protoIndexMapping.keySet()) {
             Object tagValue = getField(message, Integer.parseInt((String) protoFieldIndex));
-            String influxTagName = (String) tagNameProtoIndexMapping.get(protoFieldIndex);
-            pointBuilder.tag(influxTagName, tagValue.toString());
+            Object tag = protoIndexMapping.get(protoFieldIndex);
+            if (tag instanceof String) {
+                pointBuilder.tag((String) tag, tagValue.toString());
+            } else if (tag instanceof Properties) {
+                addTagsToPoint((Message) tagValue, (Properties) tag);
+            } else {
+                throw new RuntimeException("column can either be properties or string");
+            }
         }
     }
 
-    private void addFieldsToPoint(DynamicMessage message) throws InvalidProtocolBufferException {
-        if (fieldNameProtoIndexMapping.isEmpty()) {
+    private void addFieldsToPoint(Message message, Properties protoIndexMapping) throws InvalidProtocolBufferException {
+        if (protoIndexMapping.isEmpty()) {
             throw new EglcConfigurationException(FIELD_NAME_MAPPING_ERROR_MESSAGE);
         }
         Map<String, Object> fieldNameValueMap = new HashMap<>();
-        for (Object protoFieldIndex : fieldNameProtoIndexMapping.keySet()) {
+        for (Object protoFieldIndex : protoIndexMapping.keySet()) {
             int fieldIndex = Integer.parseInt((String) protoFieldIndex);
-            String influxFieldName = (String) fieldNameProtoIndexMapping.get(protoFieldIndex);
+            Object field = protoIndexMapping.get(protoFieldIndex);
 
-            Descriptors.FieldDescriptor fieldDescriptor = getFieldByIndex(message, fieldIndex);
-            if (fieldIsOfMessageType(fieldDescriptor, Timestamp.getDescriptor())
-                    || fieldIsOfMessageType(fieldDescriptor, Duration.getDescriptor())) {
-                fieldNameValueMap.put(influxFieldName, getMillisFromTimestamp(getTimestamp(message, fieldIndex)));
+            if (field instanceof String) {
+                Descriptors.FieldDescriptor fieldDescriptor = getFieldByIndex(message, fieldIndex);
+                if (fieldIsOfMessageType(fieldDescriptor, Timestamp.getDescriptor())
+                        || fieldIsOfMessageType(fieldDescriptor, Duration.getDescriptor())) {
+                    fieldNameValueMap.put((String) field, getMillisFromTimestamp(getTimestamp(message, fieldIndex)));
+                } else {
+                    fieldNameValueMap.put((String) field, getField(message, fieldIndex));
+                }
+            } else if (field instanceof Properties) {
+                addFieldsToPoint((Message) getField(message, fieldIndex), (Properties) field);
             } else {
-                fieldNameValueMap.put(influxFieldName, getField(message, fieldIndex));
+                throw new RuntimeException("column can either be properties or string");
             }
         }
         pointBuilder.fields(fieldNameValueMap);
