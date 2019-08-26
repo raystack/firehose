@@ -1,5 +1,9 @@
 package com.gojek.esb.config;
 
+import com.gojek.esb.config.converter.ESMessageTypeConverter;
+import com.gojek.esb.config.enums.ESMessageType;
+
+
 public interface ESSinkConfig extends AppConfig {
 
     @Key("ES_BATCH_RETRY_COUNT")
@@ -35,8 +39,9 @@ public interface ESSinkConfig extends AppConfig {
     Boolean isUpdateOnlyMode();
 
     @Key("ES_INPUT_MESSAGE_TYPE")
+    @ConverterClass(ESMessageTypeConverter.class)
     @DefaultValue("JSON")
-    String getESMessageType();
+    ESMessageType getESMessageType();
 
     @Key("ES_PRESERVE_PROTO_FIELD_NAMES")
     @DefaultValue("true")
