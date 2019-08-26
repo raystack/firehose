@@ -1,6 +1,8 @@
 package com.gojek.esb.sink.elasticsearch;
 
+import com.gojek.esb.config.enums.ESMessageType;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.config.enums.ESRequestType;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.sink.http.client.deserializer.JsonDeserializer;
 import org.elasticsearch.action.DocWriteRequest;
@@ -14,7 +16,8 @@ import org.json.simple.parser.ParseException;
 import java.nio.charset.Charset;
 import java.util.Optional;
 
-import static com.gojek.esb.sink.elasticsearch.ESMessageType.PROTOBUF;
+import static com.gojek.esb.config.enums.ESMessageType.PROTOBUF;
+
 
 public class ESRequestBuilder {
 
