@@ -24,6 +24,7 @@ import com.gojek.esb.sink.influxdb.InfluxSinkFactory;
 import com.gojek.esb.sink.log.LogSinkFactory;
 import com.gojek.esb.sink.SinkWithRetryQueue;
 import com.gojek.esb.sink.SinkWithRetry;
+import com.gojek.esb.sink.redis.RedisSinkFactory;
 import com.gojek.esb.util.Clock;
 import com.timgroup.statsd.NoOpStatsDClient;
 import com.timgroup.statsd.NonBlockingStatsDClient;
@@ -106,6 +107,8 @@ public class FireHoseConsumerFactory {
                 return new ClevertapSinkFactory().create(config, statsDReporter, stencilClient);
             case ELASTICSEARCH:
                 return new ESSinkFactory().create(config, statsDReporter, stencilClient);
+            case REDIS:
+                return new RedisSinkFactory().create(config, statsDReporter, stencilClient);
             default:
                 throw new EglcConfigurationException("Invalid FireHose SINK type");
 

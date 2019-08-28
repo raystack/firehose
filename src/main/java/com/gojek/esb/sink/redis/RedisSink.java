@@ -1,0 +1,55 @@
+package com.gojek.esb.sink.redis;
+
+import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.sink.Sink;
+import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.gojek.esb.metrics.Metrics.*;
+
+/**
+ * RedisSink allows messages consumed from kafka to be persisted to a redis.
+ * The related configurations for RedisSink can be found here: {@see com.gojek.esb.config.RedisSinkConfig}
+ */
+@AllArgsConstructor
+public class RedisSink implements Sink {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RedisSink.class);
+    private RedisClient redisClient;
+    private RedisMessageParser redisMessageParser;
+    private StatsDReporter statsDReporter;
+
+    @Override
+    public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) {
+        Instant startExecution = statsDReporter.getClock().now();
+
+        List<RedisHashSetFieldEntry> redisHashSetFieldEntryList = esbMessages
+                .stream()
+                .map(this::getEntriesForMessage)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+        redisClient.execute(redisHashSetFieldEntryList);
+        LOGGER.info("Pushed {} messages to redis.", esbMessages.size());
+        statsDReporter.captureDurationSince(REDIS_SINK_WRITE_TIME, startExecution);
+        statsDReporter.captureCount(REDIS_SINK_MESSAGES_COUNT, esbMessages.size(), SUCCESS_TAG);
+        return new ArrayList<>();
+    }
+
+    @Override
+    public void close() throws IOException {
+        redisClient.close();
+    }
+
+    private List<RedisHashSetFieldEntry> getEntriesForMessage(EsbMessage esbMessage) {
+        return redisMessageParser.parse(esbMessage);
+    }
+}
