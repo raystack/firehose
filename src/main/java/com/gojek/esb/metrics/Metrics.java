@@ -23,6 +23,11 @@ public class Metrics {
     public static final String KAFKA_COMMIT_COUNT = KAFKA_PREFIX + "commit.async.count";
 
 
+    //REDIS SINK
+    public static final String REDIS_SINK_WRITE_TIME = "redis.sink.write.time";
+    public static final String REDIS_SINK_MESSAGES_COUNT = "redis.sink.messages.count";
+
+
     //RETRY
     public static final String RETRY_QUEUE_PREFIX = "retry.queue.";
     public static final String RETRY_ATTEMPTS = RETRY_QUEUE_PREFIX + "attempts";
