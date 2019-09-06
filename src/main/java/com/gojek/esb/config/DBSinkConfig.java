@@ -15,6 +15,7 @@ public interface DBSinkConfig extends AppConfig {
     String getTableName();
 
     @Key("UNIQUE_KEYS")
+    @DefaultValue("")
     String getUniqueKeys();
 
     @Key("MAXIMUM_CONNECTION_POOL_SIZE")
