@@ -2,10 +2,10 @@ package com.gojek.esb.sink.elasticsearch.client;
 
 import com.gojek.esb.config.ESSinkConfig;
 import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.sink.elasticsearch.BulkProcessorListener;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.DocWriteRequest;
-import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -14,11 +14,9 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
 import java.util.function.BiConsumer;
 
-import static com.gojek.esb.metrics.Metrics.*;
-import static org.elasticsearch.action.bulk.BackoffPolicy.constantBackoff;
+import static org.elasticsearch.action.bulk.BackoffPolicy.exponentialBackoff;
 import static org.elasticsearch.common.unit.TimeValue.timeValueSeconds;
 
 public class ESSinkClient {
@@ -29,8 +27,8 @@ public class ESSinkClient {
     private RestHighLevelClient restHighLevelClient;
     private BulkProcessor bulkProcessor;
 
-    public ESSinkClient(ESSinkConfig esSinkConfig, StatsDReporter client) {
-        this.statsDReporter = client;
+    public ESSinkClient(ESSinkConfig esSinkConfig, StatsDReporter statsDReporter) {
+        this.statsDReporter = statsDReporter;
         HttpHost[] httpHosts = getHttpHosts(esSinkConfig.getEsConnectionUrls());
         if (httpHosts == null) {
             LOGGER.error("ES_CONNECTION_URLS is empty or null");
@@ -85,61 +83,11 @@ public class ESSinkClient {
                 .setBulkActions(bulkActionsCount)
                 .setConcurrentRequests(0)
                 .setFlushInterval(timeValueSeconds(seconds))
-                .setBackoffPolicy(constantBackoff(timeValueSeconds(esRetryBackoff), numberOfRetries))
+                .setBackoffPolicy(exponentialBackoff(timeValueSeconds(esRetryBackoff), numberOfRetries))
                 .build();
     }
 
     private BulkProcessor.Listener getBulkListener() {
-        return new BulkProcessor.Listener() {
-
-            private Instant startTime;
-
-            Instant getStartTime() {
-                return startTime;
-            }
-
-            void setStartTime(Instant startTime) {
-                this.startTime = startTime;
-            }
-
-            @Override
-            public void beforeBulk(long executionId, BulkRequest request) {
-                int numberOfActions = request.numberOfActions();
-                LOGGER.debug("Executing bulk [{}] with {} requests",
-                        executionId, numberOfActions);
-                setStartTime(Instant.now());
-            }
-
-            @Override
-            public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
-                if (response.hasFailures()) {
-                    LOGGER.warn("Bulk [{}] executed with failures", executionId);
-                    BulkItemResponse[] items = response.getItems();
-                    int failedCount = 0;
-                    for (BulkItemResponse responses : items) {
-                        if (responses.isFailed()) {
-                            failedCount += 1;
-                            LOGGER.warn("Failure response message [{}]", responses.getFailureMessage());
-                        }
-                    }
-                    statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, getStartTime(), FAILURE_TAG);
-                    statsDReporter.captureCount(ES_SINK_FAILED_DOCUMENT_COUNT, failedCount, FAILURE_TAG);
-                    statsDReporter.captureCount(ES_SINK_SUCCESS_DOCUMENT_COUNT, (response.getItems().length - failedCount), SUCCESS_TAG);
-                } else {
-                    LOGGER.debug("Bulk [{}] completed in {} milliseconds",
-                            executionId, response.getTook().getMillis());
-
-                    statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, getStartTime(), SUCCESS_TAG);
-                    statsDReporter.captureCount(ES_SINK_SUCCESS_DOCUMENT_COUNT, response.getItems().length, SUCCESS_TAG);
-                }
-            }
-
-            @Override
-            public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
-                LOGGER.error("Failed to execute bulk", failure);
-                statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, getStartTime(), FAILURE_TAG);
-                statsDReporter.captureCount(ES_SINK_FAILED_DOCUMENT_COUNT, request.numberOfActions(), FAILURE_TAG);
-            }
-        };
+        return new BulkProcessorListener(this.statsDReporter);
     }
 }
