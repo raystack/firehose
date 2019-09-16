@@ -31,7 +31,7 @@ public class ESRequestBuilder {
 
     public ESRequestBuilder(ESRequestType esRequestType, String esIdFieldName, Boolean preserveProtoFieldNames,
                             ESMessageType messageType, JsonDeserializer jsonDeserializer) {
-        jsonParser = new JSONParser();
+        this.jsonParser = new JSONParser();
         this.messageType = messageType;
         this.esRequestType = esRequestType;
         this.esIdFieldName = esIdFieldName;
