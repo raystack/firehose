@@ -80,7 +80,6 @@ public class EsbMessageFilterTest {
     @Test
     public void shouldNotApplyFilterOnEmptyFilterType() throws EsbFilterException {
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_TYPE", "");
         filterConfigs.put("FILTER_EXPRESSION", "testMessage.getOrderNumber() == 123");
         filterConfigs.put("FILTER_PROTO_SCHEMA", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
