@@ -2,17 +2,15 @@ package com.gojek.esb.filter;
 
 import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.consumer.EsbMessage;
-import org.apache.commons.jexl2.Expression;
-import org.apache.commons.jexl2.JexlContext;
-import org.apache.commons.jexl2.JexlEngine;
-import org.apache.commons.jexl2.JexlException;
-import org.apache.commons.jexl2.MapContext;
+import org.apache.commons.jexl2.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.apache.commons.lang3.StringUtils.*;
 
 /**
  * A concrete class of Filter. This class is responsible
@@ -39,7 +37,7 @@ public class EsbMessageFilter implements Filter {
         this.filterType = consumerConfig.getFilterType();
         this.protoSchema = consumerConfig.getFilterProtoSchema();
 
-        if (!StringUtils.isEmpty(consumerConfig.getFilterType())) {
+        if (isNeitherEmptyNorNone(consumerConfig.getFilterType())) {
             this.expression = this.engine.createExpression(consumerConfig.getFilterExpression());
         }
     }
@@ -52,7 +50,7 @@ public class EsbMessageFilter implements Filter {
      */
     @Override
     public List<EsbMessage> filter(List<EsbMessage> messages) throws EsbFilterException {
-        if (StringUtils.isEmpty(filterType)) {
+        if (isEmptyOrNone(filterType)) {
             return messages;
         } else {
             List<EsbMessage> filteredMessages = new ArrayList<>();
@@ -102,5 +100,13 @@ public class EsbMessageFilter implements Filter {
         String objectAccessor = schemaNameSplit[schemaNameSplit.length - 1];
 
         return objectAccessor.substring(0, 1).toLowerCase() + objectAccessor.substring(1);
+    }
+
+    private boolean isEmptyOrNone(String filterType) {
+        return isEmpty(filterType) || equalsIgnoreCase(filterType, "none");
+    }
+
+    private boolean isNeitherEmptyNorNone(String filterType) {
+        return isNotBlank(filterType) && !isEmptyOrNone(filterType);
     }
 }
