@@ -2,7 +2,11 @@ package com.gojek.esb.filter;
 
 import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.consumer.EsbMessage;
-import org.apache.commons.jexl2.*;
+import org.apache.commons.jexl2.Expression;
+import org.apache.commons.jexl2.JexlContext;
+import org.apache.commons.jexl2.JexlEngine;
+import org.apache.commons.jexl2.JexlException;
+import org.apache.commons.jexl2.MapContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
@@ -10,7 +14,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.commons.lang3.StringUtils.*;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 
 /**
  * A concrete class of Filter. This class is responsible
@@ -102,11 +108,11 @@ public class EsbMessageFilter implements Filter {
         return objectAccessor.substring(0, 1).toLowerCase() + objectAccessor.substring(1);
     }
 
-    private boolean isEmptyOrNone(String filterType) {
-        return isEmpty(filterType) || equalsIgnoreCase(filterType, "none");
+    private boolean isEmptyOrNone(String filterTypeVal) {
+        return isEmpty(filterTypeVal) || equalsIgnoreCase(filterTypeVal, "none");
     }
 
-    private boolean isNeitherEmptyNorNone(String filterType) {
-        return isNotBlank(filterType) && !isEmptyOrNone(filterType);
+    private boolean isNeitherEmptyNorNone(String filterTypeVal) {
+        return isNotBlank(filterTypeVal) && !isEmptyOrNone(filterTypeVal);
     }
 }
