@@ -1,22 +1,18 @@
 package com.gojek.esb.filter;
 
 import com.gojek.esb.config.KafkaConsumerConfig;
+import com.gojek.esb.config.enums.EsbFilterType;
 import com.gojek.esb.consumer.EsbMessage;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
 import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.jexl2.JexlException;
 import org.apache.commons.jexl2.MapContext;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 
 /**
  * A concrete class of Filter. This class is responsible
@@ -29,10 +25,8 @@ import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 public class EsbMessageFilter implements Filter {
 
     private JexlEngine engine;
-
     private Expression expression;
-
-    private String filterType;
+    private EsbFilterType filterType;
     private String protoSchema;
 
     public EsbMessageFilter(KafkaConsumerConfig consumerConfig) {
@@ -43,7 +37,7 @@ public class EsbMessageFilter implements Filter {
         this.filterType = consumerConfig.getFilterType();
         this.protoSchema = consumerConfig.getFilterProtoSchema();
 
-        if (isNeitherEmptyNorNone(consumerConfig.getFilterType())) {
+        if (isNotNone(consumerConfig.getFilterType())) {
             this.expression = this.engine.createExpression(consumerConfig.getFilterExpression());
         }
     }
@@ -56,14 +50,14 @@ public class EsbMessageFilter implements Filter {
      */
     @Override
     public List<EsbMessage> filter(List<EsbMessage> messages) throws EsbFilterException {
-        if (isEmptyOrNone(filterType)) {
+        if (isNone(filterType)) {
             return messages;
         } else {
             List<EsbMessage> filteredMessages = new ArrayList<>();
 
             for (EsbMessage message : messages) {
                 try {
-                    Object data = (StringUtils.equals(filterType, "key")) ? message.getLogKey() : message.getLogMessage();
+                    Object data = (filterType.equals(EsbFilterType.KEY)) ? message.getLogKey() : message.getLogMessage();
                     Object obj = MethodUtils.invokeStaticMethod(Class.forName(protoSchema), "parseFrom", data);
                     if (evaluate(obj)) {
                         filteredMessages.add(message);
@@ -77,8 +71,8 @@ public class EsbMessageFilter implements Filter {
         }
     }
 
-    public boolean evaluate(Object data) throws EsbFilterException {
-        Object result = null;
+    private boolean evaluate(Object data) throws EsbFilterException {
+        Object result;
 
         try {
             result = expression.evaluate(convertDataToContext(data));
@@ -108,11 +102,11 @@ public class EsbMessageFilter implements Filter {
         return objectAccessor.substring(0, 1).toLowerCase() + objectAccessor.substring(1);
     }
 
-    private boolean isEmptyOrNone(String filterTypeVal) {
-        return isEmpty(filterTypeVal) || equalsIgnoreCase(filterTypeVal, "none");
+    private boolean isNone(EsbFilterType filterTypeVal) {
+        return filterTypeVal.equals(EsbFilterType.NONE);
     }
 
-    private boolean isNeitherEmptyNorNone(String filterTypeVal) {
-        return isNotBlank(filterTypeVal) && !isEmptyOrNone(filterTypeVal);
+    private boolean isNotNone(EsbFilterType filterTypeVal) {
+        return !isNone(filterTypeVal);
     }
 }

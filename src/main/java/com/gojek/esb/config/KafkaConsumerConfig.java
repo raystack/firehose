@@ -1,5 +1,8 @@
 package com.gojek.esb.config;
 
+import com.gojek.esb.config.converter.ESBFilterTypeConverter;
+import com.gojek.esb.config.enums.EsbFilterType;
+
 /**
  * The interface for configurations required to instantiate a consumer.
  */
@@ -43,7 +46,9 @@ public interface KafkaConsumerConfig extends AppConfig {
     Long getPollTimeOut();
 
     @Key("FILTER_TYPE")
-    String getFilterType();
+    @ConverterClass(ESBFilterTypeConverter.class)
+    @DefaultValue("NONE")
+    EsbFilterType getFilterType();
 
     @Key("FILTER_EXPRESSION")
     String getFilterExpression();
