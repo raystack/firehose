@@ -11,6 +11,8 @@ import com.gojek.esb.filter.Filter;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.server.AuditServiceClient;
 import com.gojek.esb.server.AuditServiceClientFactory;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.kafka.TracingKafkaConsumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 
@@ -33,7 +35,9 @@ public class GenericKafkaFactory {
      * @return {@see EsbGenericConsumer}
      */
     public EsbGenericConsumer createConsumer(KafkaConsumerConfig config, AuditConfig auditConfig, Map<String, String> extraKafkaParameters,
-                                             StatsDReporter statsDReporter, Filter filter) {
+                                             StatsDReporter statsDReporter, Filter filter, Tracer tracer) {
+
+
         KafkaConsumer<byte[], byte[]> kafkaConsumer = new KafkaConsumer<>(FactoryUtil.getConfig(config, extraKafkaParameters));
         FactoryUtil.configureSubscription(config, kafkaConsumer);
         String auditSource = "firehose";
@@ -41,7 +45,8 @@ public class GenericKafkaFactory {
         Offsets offsets = !config.commitOnlyCurrentPartitions()
                 ? new TopicOffsets(kafkaConsumer, config, statsDReporter)
                 : new TopicPartitionOffsets(kafkaConsumer, config, statsDReporter);
-        return new EsbGenericConsumer(kafkaConsumer, config, auditServiceClient, filter, offsets, statsDReporter);
+        TracingKafkaConsumer<byte[], byte[]> tracingKafkaConsumer = new TracingKafkaConsumer<>(kafkaConsumer, tracer);
+        return new EsbGenericConsumer(tracingKafkaConsumer, config, auditServiceClient, filter, offsets, statsDReporter);
     }
 
     public KafkaProducer<byte[], byte[]> getKafkaProducer(RetryQueueConfig config) {
