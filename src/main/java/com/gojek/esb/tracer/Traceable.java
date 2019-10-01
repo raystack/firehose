@@ -12,7 +12,7 @@ public interface Traceable {
 
     /**
      * @param messages
-     * @return List<Span>
+     * @return
      */
     List<Span> startTrace(List<EsbMessage> messages);
 
