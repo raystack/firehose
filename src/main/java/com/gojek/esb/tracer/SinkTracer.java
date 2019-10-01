@@ -33,8 +33,9 @@ public class SinkTracer implements Traceable, Closeable {
 
     private Span traceMessage(EsbMessage message) {
         SpanContext parentContext = null;
-        if (message.getHeaders() != null)
+        if (message.getHeaders() != null) {
             parentContext = TracingKafkaUtils.extractSpanContext(message.getHeaders(), tracer);
+        }
 
         Tracer.SpanBuilder spanBuilder = tracer
                 .buildSpan(name)
