@@ -7,9 +7,9 @@ import com.gojek.esb.filter.Filter;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.server.AuditServiceClient;
 import com.newrelic.api.agent.Trace;
+import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +27,7 @@ import static com.gojek.esb.metrics.Metrics.KAFKA_FILTERED_MESSAGE;
 public class EsbGenericConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(EsbGenericConsumer.class.getName());
 
-    private final KafkaConsumer kafkaConsumer;
+    private final Consumer kafkaConsumer;
     private final KafkaConsumerConfig consumerConfig;
     private final AuditServiceClient auditServiceClient;
     private Filter filter;
@@ -46,7 +46,7 @@ public class EsbGenericConsumer {
      * @param offsets            {@see Offsets}
      * @param statsDReporter     Sends StatsD metric
      */
-    public EsbGenericConsumer(KafkaConsumer kafkaConsumer, KafkaConsumerConfig config, AuditServiceClient auditServiceClient, Filter filter,
+    public EsbGenericConsumer(Consumer kafkaConsumer, KafkaConsumerConfig config, AuditServiceClient auditServiceClient, Filter filter,
                               Offsets offsets, StatsDReporter statsDReporter) {
         this.kafkaConsumer = kafkaConsumer;
         this.consumerConfig = config;
@@ -69,7 +69,7 @@ public class EsbGenericConsumer {
 
         for (ConsumerRecord<byte[], byte[]> record : records) {
             LOGGER.debug("Pulled record: {}", record);
-            messages.add(new EsbMessage(record.key(), record.value(), record.topic(), record.partition(), record.offset()));
+            messages.add(new EsbMessage(record.key(), record.value(), record.topic(), record.partition(), record.offset(), record.headers()));
         }
 
         audit(messages);

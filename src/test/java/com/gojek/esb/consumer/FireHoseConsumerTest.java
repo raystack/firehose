@@ -4,6 +4,7 @@ import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.filter.EsbFilterException;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.http.HttpSink;
+import com.gojek.esb.tracer.SinkTracer;
 import com.gojek.esb.util.Clock;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,9 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FireHoseConsumerTest {
@@ -37,6 +36,9 @@ public class FireHoseConsumerTest {
     @Mock
     private Clock clock;
 
+    @Mock
+    private SinkTracer tracer;
+
     private FireHoseConsumer fireHoseConsumer;
     private List<EsbMessage> messages;
 
@@ -46,7 +48,7 @@ public class FireHoseConsumerTest {
         EsbMessage msg2 = new EsbMessage(new byte[]{}, new byte[]{}, "topic", 0, 100);
         messages = Arrays.asList(msg1, msg2);
 
-        fireHoseConsumer = new FireHoseConsumer(esbGenericConsumer, httpSink, statsDReporter, clock);
+        fireHoseConsumer = new FireHoseConsumer(esbGenericConsumer, httpSink, statsDReporter, clock, tracer);
 
         when(esbGenericConsumer.readMessages()).thenReturn(messages);
         when(clock.now()).thenReturn(Instant.now());
@@ -81,5 +83,14 @@ public class FireHoseConsumerTest {
         when(clock.now()).thenReturn(beforeCall).thenReturn(afterCall);
         fireHoseConsumer.processPartitions();
         verify(statsDReporter).captureDurationSince("kafka.process_partitions_time", beforeCall);
+    }
+
+    @Test
+    public void shouldCallTracerWithTheSpan() throws IOException, DeserializerException, EsbFilterException {
+        fireHoseConsumer.processPartitions();
+
+        verify(httpSink).pushMessage(messages);
+        verify(tracer).startTrace(messages);
+        verify(tracer).finishTrace(any());
     }
 }
