@@ -1,11 +1,16 @@
 package com.gojek.esb.sink;
 
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.TestKey;
+import com.gojek.esb.consumer.TestMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.StatsDReporter;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Headers;
+import org.apache.kafka.common.header.internals.RecordHeader;
+import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -82,10 +87,51 @@ public class SinkWithRetryQueueTest {
     }
 
     @Test
-    public void testRunShouldSendWithCorrectArguments() throws IOException, DeserializerException {
+    public void testRunShouldSendWithCorrectArgumentsIfHeadersAreNotSet() throws IOException, DeserializerException {
         ArrayList<EsbMessage> esbMessages = new ArrayList<>();
         esbMessages.add(esbMessage);
         esbMessages.add(esbMessage);
+        when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
+
+        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic", statsDReporter, backOffProvider);
+        Thread thread = new Thread(() -> {
+            try {
+                sinkWithRetryQueue.pushMessage(esbMessages);
+            } catch (IOException | DeserializerException e) {
+                e.printStackTrace();
+            }
+        });
+
+        thread.start();
+
+        ArgumentCaptor<Callback> callbacks = ArgumentCaptor.forClass(Callback.class);
+        ArgumentCaptor<ProducerRecord> records = ArgumentCaptor.forClass(ProducerRecord.class);
+
+        verify(kafkaProducer, timeout(200).times(2)).send(records.capture(), callbacks.capture());
+        List<Callback> calls = callbacks.getAllValues();
+        List<ProducerRecord> actualRecords = records.getAllValues();
+
+        calls.get(0).onCompletion(null, null);
+        calls.get(1).onCompletion(null, null);
+
+        assertEquals(expectedRecords(esbMessages.get(0)), actualRecords.get(0));
+        assertEquals(expectedRecords(esbMessages.get(1)), actualRecords.get(1));
+    }
+
+    @Test
+    public void testRunShouldSendWithCorrectArgumentsIfHeadersAreSet() throws IOException, DeserializerException {
+        ArrayList<EsbMessage> esbMessages = new ArrayList<>();
+        Headers headers = new RecordHeaders();
+        headers.add(new RecordHeader("key1", "value1".getBytes()));
+        headers.add(new RecordHeader("key2", "value2".getBytes()));
+
+        TestMessage message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
+        TestKey key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
+
+        EsbMessage msg1 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic1", 0, 100, headers);
+        EsbMessage msg2 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic2", 0, 100, headers);
+        esbMessages.add(msg1);
+        esbMessages.add(msg2);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
 
         SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic", statsDReporter, backOffProvider);
@@ -197,6 +243,6 @@ public class SinkWithRetryQueueTest {
     }
 
     private ProducerRecord<byte[], byte[]> expectedRecords(EsbMessage expectedMessage) {
-        return new ProducerRecord<>("test-topic", expectedMessage.getLogKey(), expectedMessage.getLogMessage());
+        return new ProducerRecord<>("test-topic", null, null, expectedMessage.getLogKey(), expectedMessage.getLogMessage(), expectedMessage.getHeaders());
     }
 }

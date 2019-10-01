@@ -4,6 +4,7 @@ package com.gojek.esb.consumer;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.apache.kafka.common.header.Headers;
 
 import java.util.Base64;
 
@@ -19,6 +20,15 @@ public class EsbMessage {
     private String topic;
     private int partition;
     private long offset;
+    private Headers headers;
+
+    public EsbMessage(byte[] logKey, byte[] logMessage, String topic, int partition, long offset) {
+        this.logKey = logKey;
+        this.logMessage = logMessage;
+        this.topic = topic;
+        this.partition = partition;
+        this.offset = offset;
+    }
 
     public String getSerializedKey() {
         return encodedSerializedStringFrom(logKey);

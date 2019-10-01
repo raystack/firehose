@@ -10,6 +10,9 @@ import com.gojek.esb.server.AuditServiceClient;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.header.Headers;
+import org.apache.kafka.common.header.internals.RecordHeaders;
+import org.apache.kafka.common.record.TimestampType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,16 +28,9 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EsbGenericConsumerTest {
@@ -74,7 +70,7 @@ public class EsbGenericConsumerTest {
     private ArgumentCaptor<Stream<AuditableProtoMessage>> auditMessageCaptor;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
         consumerWithAudit = new EsbGenericConsumer(kafkaConsumer, consumerConfig, auditServiceClient, filter, offsets, statsDReporter);
@@ -104,6 +100,26 @@ public class EsbGenericConsumerTest {
     }
 
     @Test
+    public void getsMessagesFromEsbLogWithHeadersIfKafkaHeadersAreSet() throws EsbFilterException {
+        Headers headers = new RecordHeaders();
+        ConsumerRecord<byte[], byte[]> record1 = new ConsumerRecord<>("topic1", 1, 0, 0, TimestampType.CREATE_TIME, 0L, 0, 0, key.toByteArray(), message.toByteArray(), headers);
+        ConsumerRecord<byte[], byte[]> record2 = new ConsumerRecord<>("topic2", 1, 0, 0, TimestampType.CREATE_TIME, 0L, 0, 0, key.toByteArray(), message.toByteArray(), headers);
+        when(consumerRecords.iterator()).thenReturn(Arrays.asList(record1, record2).iterator());
+
+        EsbMessage expectedMsg1 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic1", 0, 100, headers);
+        EsbMessage expectedMsg2 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic2", 0, 100, headers);
+
+        when(filter.filter(any())).thenReturn(Arrays.asList(expectedMsg1, expectedMsg2));
+
+        List<EsbMessage> messages = consumerWithAudit.readMessages();
+
+        assertNotNull(messages);
+        assertThat(messages.size(), is(2));
+        assertEquals(expectedMsg1, messages.get(0));
+        assertEquals(expectedMsg2, messages.get(1));
+    }
+
+    @Test
     public void getsFilteredMessagesFromEsbLog() throws EsbFilterException {
         ConsumerRecord<byte[], byte[]> record1 = new ConsumerRecord<>("topic1", 1, 0, key.toByteArray(), message.toByteArray());
         ConsumerRecord<byte[], byte[]> record2 = new ConsumerRecord<>("topic2", 1, 0, key.toByteArray(), message.toByteArray());
@@ -119,7 +135,7 @@ public class EsbGenericConsumerTest {
         assertNotNull(messages);
         assertThat(messages.size(), is(1));
         assertEquals(expectedMsg1, messages.get(0));
-        verify(statsDReporter, times(1)).captureCount("kafka.filtered", 1,  "expr=test");
+        verify(statsDReporter, times(1)).captureCount("kafka.filtered", 1, "expr=test");
 
     }
 

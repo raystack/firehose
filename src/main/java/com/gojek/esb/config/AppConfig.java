@@ -50,4 +50,8 @@ public interface AppConfig extends Config {
     @Key("KAFKA_RECORD_PARSER_MODE")
     @DefaultValue("message")
     String getKafkaRecordParserMode();
+
+    @Key("ENABLE_TRACE")
+    @DefaultValue("false")
+    Boolean enableTracing();
 }
