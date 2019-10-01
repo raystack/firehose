@@ -1,7 +1,7 @@
 package com.gojek.esb.factory;
 
-import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.StencilClientFactory;
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.AuditConfig;
 import com.gojek.esb.config.ExponentialBackOffProviderConfig;
 import com.gojek.esb.config.KafkaConsumerConfig;
@@ -12,23 +12,23 @@ import com.gojek.esb.exception.EglcConfigurationException;
 import com.gojek.esb.filter.EsbMessageFilter;
 import com.gojek.esb.filter.Filter;
 import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.sink.BackOff;
-import com.gojek.esb.sink.BackOffProvider;
-import com.gojek.esb.sink.ExponentialBackOffProvider;
-import com.gojek.esb.sink.Sink;
+import com.gojek.esb.sink.*;
 import com.gojek.esb.sink.clevertap.ClevertapSinkFactory;
 import com.gojek.esb.sink.db.DBSinkFactory;
 import com.gojek.esb.sink.elasticsearch.ESSinkFactory;
 import com.gojek.esb.sink.http.HttpSinkFactory;
 import com.gojek.esb.sink.influxdb.InfluxSinkFactory;
 import com.gojek.esb.sink.log.LogSinkFactory;
-import com.gojek.esb.sink.SinkWithRetryQueue;
-import com.gojek.esb.sink.SinkWithRetry;
 import com.gojek.esb.sink.redis.RedisSinkFactory;
+import com.gojek.esb.tracer.SinkTracer;
 import com.gojek.esb.util.Clock;
 import com.timgroup.statsd.NoOpStatsDClient;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
+import io.jaegertracing.Configuration;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.kafka.TracingKafkaProducer;
+import io.opentracing.noop.NoopTracerFactory;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
@@ -81,11 +81,14 @@ public class FireHoseConsumerFactory {
         AuditConfig auditConfig = ConfigFactory.create(AuditConfig.class, config);
         Filter filter = new EsbMessageFilter(kafkaConsumerConfig);
         GenericKafkaFactory genericKafkaFactory = new GenericKafkaFactory();
-
-        EsbGenericConsumer consumer = genericKafkaFactory.createConsumer(kafkaConsumerConfig, auditConfig, config, statsDReporter, filter);
-
-        Sink retrySink = withRetry(getSink(), genericKafkaFactory);
-        return new FireHoseConsumer(consumer, retrySink, statsDReporter, clockInstance);
+        Tracer tracer = NoopTracerFactory.create();
+        if (kafkaConsumerConfig.enableTracing()) {
+            tracer = Configuration.fromEnv("FireHose" + ": " + kafkaConsumerConfig.getConsumerGroupId()).getTracer();
+        }
+        EsbGenericConsumer consumer = genericKafkaFactory.createConsumer(kafkaConsumerConfig, auditConfig, config, statsDReporter, filter, tracer);
+        Sink retrySink = withRetry(getSink(), genericKafkaFactory, tracer);
+        SinkTracer fireHoseTracer = new SinkTracer(tracer, kafkaConsumerConfig.getSinkType().name() + " SINK", kafkaConsumerConfig.enableTracing());
+        return new FireHoseConsumer(consumer, retrySink, statsDReporter, clockInstance, fireHoseTracer);
     }
 
     /**
@@ -122,7 +125,7 @@ public class FireHoseConsumerFactory {
      * @param genericKafkaFactory
      * @return Sink
      */
-    private Sink withRetry(Sink basicSink, GenericKafkaFactory genericKafkaFactory) {
+    private Sink withRetry(Sink basicSink, GenericKafkaFactory genericKafkaFactory, Tracer tracer) {
         ExponentialBackOffProviderConfig backOffConfig = ConfigFactory.create(
                 ExponentialBackOffProviderConfig.class, config);
         BackOffProvider backOffProvider = new ExponentialBackOffProvider(backOffConfig.exponentialBackoffInitialTimeInMs(),
@@ -131,9 +134,10 @@ public class FireHoseConsumerFactory {
         if (kafkaConsumerConfig.getRetryQueueEnabled()) {
             RetryQueueConfig retryQueueConfig = ConfigFactory.create(RetryQueueConfig.class, config);
             KafkaProducer<byte[], byte[]> kafkaProducer = genericKafkaFactory.getKafkaProducer(retryQueueConfig);
+            TracingKafkaProducer<byte[], byte[]> tracingProducer = new TracingKafkaProducer<>(kafkaProducer, tracer);
 
             return new SinkWithRetryQueue(new SinkWithRetry(basicSink, backOffProvider, statsDReporter, kafkaConsumerConfig.getMaximumRetryAttempts()),
-                    kafkaProducer, retryQueueConfig.getRetryTopic(), statsDReporter, backOffProvider);
+                    tracingProducer, retryQueueConfig.getRetryTopic(), statsDReporter, backOffProvider);
         } else {
             return new SinkWithRetry(basicSink, backOffProvider, statsDReporter);
         }
