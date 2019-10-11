@@ -75,6 +75,8 @@ public class PointBuilder {
                 if (fieldIsOfMessageType(fieldDescriptor, Timestamp.getDescriptor())
                         || fieldIsOfMessageType(fieldDescriptor, Duration.getDescriptor())) {
                     fieldNameValueMap.put((String) field, getMillisFromTimestamp(getTimestamp(message, fieldIndex)));
+                } else if (fieldIsOfEnumType(fieldDescriptor)) {
+                    fieldNameValueMap.put((String) field, getField(message, fieldIndex).toString());
                 } else {
                     fieldNameValueMap.put((String) field, getField(message, fieldIndex));
                 }
@@ -91,6 +93,10 @@ public class PointBuilder {
         return fieldDescriptor.getType().name().equals("MESSAGE")
                 && fieldDescriptor.getMessageType().getFullName().equals(typeDescriptor.getFullName()
         );
+    }
+
+    private boolean fieldIsOfEnumType(Descriptors.FieldDescriptor fieldDescriptor) {
+        return fieldDescriptor.getType().name().equals("ENUM");
     }
 
     private Object getField(Message message, int protoIndex) {
