@@ -42,6 +42,31 @@ public class PointBuilderTest {
     }
 
     @Test
+    public void testMessageWithEnum() throws InvalidProtocolBufferException {
+        Properties influxConfigProps = new Properties();
+        influxConfigProps.setProperty("MEASUREMENT_NAME", "test_point_builder");
+        influxConfigProps.setProperty("PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        influxConfigProps.setProperty("DATABASE_NAME", "test");
+        influxConfigProps.setProperty("PROTO_SCHEMA", FeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("FIELD_NAME_PROTO_INDEX_MAPPING", "{ \"10\": \"feedback_source\"}");
+        influxConfigProps.setProperty("TAG_NAME_PROTO_INDEX_MAPPING", "{ \"1\": \"order_number\" }");
+
+        FeedbackLogMessage feedbackLogMessage = FeedbackLogMessage.newBuilder()
+                .setOrderNumber("ORDER")
+                .setFeedbackSource(com.gojek.esb.feedback.FeedbackSource.Enum.DRIVER)
+                .build();
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(FeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
+
+        InfluxSinkConfig influxSinkConfig = ConfigFactory.create(InfluxSinkConfig.class, influxConfigProps);
+
+        Point point = new PointBuilder(influxSinkConfig)
+                .buildPoint(dynamicMessage);
+
+        assert point.lineProtocol().equals("test_point_builder,order_number=ORDER feedback_source=\"DRIVER\" 0");
+
+    }
+
+    @Test
     public void testMessageWithDurationIsBuiltIntoMillis() throws InvalidProtocolBufferException {
         Properties influxConfigProps = new Properties();
         influxConfigProps.setProperty("MEASUREMENT_NAME", "test_point_builder");
