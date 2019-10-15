@@ -44,7 +44,7 @@ public class InfluxSink implements Sink {
 
     @Override
     public List<EsbMessage> pushMessage(List<EsbMessage> esbMessageList) throws IOException {
-        BatchPoints batchPoints = BatchPoints.database(config.getDatabaseName()).build();
+        BatchPoints batchPoints = BatchPoints.database(config.getDatabaseName()).retentionPolicy(config.getRetentionPolicy()).build();
         LOGGER.info("Started writing to influx db for {} records", esbMessageList.size());
         for (EsbMessage esbMessage : esbMessageList) {
             DynamicMessage message = protoParser.parse(esbMessage.getLogMessage());
