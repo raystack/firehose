@@ -22,5 +22,9 @@ public interface InfluxSinkConfig extends DBSinkConfig {
 
     @Config.Key("DATABASE_NAME")
     String getDatabaseName();
+
+    @Config.Key("INFLUX_RETENTION_POLICY")
+    @DefaultValue("autogen")
+    String getRetentionPolicy();
 }
 
