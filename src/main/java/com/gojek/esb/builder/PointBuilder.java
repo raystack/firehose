@@ -53,13 +53,13 @@ public class PointBuilder {
             Object tagValue = getField(message, fieldIndex);
             Object tag = protoIndexMapping.get(protoFieldIndex);
             Descriptors.FieldDescriptor fieldDescriptor = getFieldByIndex(message, fieldIndex);
-            if (tag instanceof String) {
+            if (fieldIsOfMessageType(fieldDescriptor, Timestamp.getDescriptor())
+                    || fieldIsOfMessageType(fieldDescriptor, Duration.getDescriptor())) {
+                pointBuilder.tag((String) tag, getMillisFromTimestamp(getTimestamp(message, fieldIndex)).toString());
+            } else if (tag instanceof String) {
                 pointBuilder.tag((String) tag, tagValue.toString());
             } else if (tag instanceof Properties) {
                 addTagsToPoint((Message) tagValue, (Properties) tag);
-            } else if (fieldIsOfMessageType(fieldDescriptor, Timestamp.getDescriptor())
-                    || fieldIsOfMessageType(fieldDescriptor, Duration.getDescriptor())) {
-                pointBuilder.tag((String) tag, getMillisFromTimestamp(getTimestamp(message, fieldIndex)).toString());
             } else {
                 throw new RuntimeException("column can either be properties or string");
             }
