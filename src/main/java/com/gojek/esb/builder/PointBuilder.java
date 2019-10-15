@@ -47,14 +47,19 @@ public class PointBuilder {
         return Timestamp.parseFrom(timestamp.toByteArray());
     }
 
-    private void addTagsToPoint(Message message, Properties protoIndexMapping) {
+    private void addTagsToPoint(Message message, Properties protoIndexMapping) throws InvalidProtocolBufferException {
         for (Object protoFieldIndex : protoIndexMapping.keySet()) {
-            Object tagValue = getField(message, Integer.parseInt((String) protoFieldIndex));
+            int fieldIndex = Integer.parseInt((String) protoFieldIndex);
+            Object tagValue = getField(message, fieldIndex);
             Object tag = protoIndexMapping.get(protoFieldIndex);
+            Descriptors.FieldDescriptor fieldDescriptor = getFieldByIndex(message, fieldIndex);
             if (tag instanceof String) {
                 pointBuilder.tag((String) tag, tagValue.toString());
             } else if (tag instanceof Properties) {
                 addTagsToPoint((Message) tagValue, (Properties) tag);
+            } else if (fieldIsOfMessageType(fieldDescriptor, Timestamp.getDescriptor())
+                    || fieldIsOfMessageType(fieldDescriptor, Duration.getDescriptor())) {
+                pointBuilder.tag((String) tag, getMillisFromTimestamp(getTimestamp(message, fieldIndex)).toString());
             } else {
                 throw new RuntimeException("column can either be properties or string");
             }
