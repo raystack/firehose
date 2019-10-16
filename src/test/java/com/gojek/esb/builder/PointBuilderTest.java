@@ -127,7 +127,7 @@ public class PointBuilderTest {
         influxConfigProps.setProperty("DATABASE_NAME", "test");
         influxConfigProps.setProperty("PROTO_SCHEMA", FeedbackLogMessage.class.getName());
         influxConfigProps.setProperty("FIELD_NAME_PROTO_INDEX_MAPPING", "{ \"2\": \"event_timestamp\", \"7\": \"tip_amount\" }");
-        influxConfigProps.setProperty("TAG_NAME_PROTO_INDEX_MAPPING", "{ \"4\": \"customer_id\", \"3\": \"driver_id\", \"15\": { \"1\": \"order_completion_time_seconds\" } }");
+        influxConfigProps.setProperty("TAG_NAME_PROTO_INDEX_MAPPING", "{ \"4\": \"customer_id\", \"3\": \"driver_id\", \"15\": \"order_completion_time_seconds\" }");
 
         FeedbackLogMessage feedbackLogMessage = FeedbackLogMessage.newBuilder()
                 .setCustomerId("CUSTOMER")
@@ -144,6 +144,6 @@ public class PointBuilderTest {
         Point point = new PointBuilder(influxSinkConfig)
                 .buildPoint(dynamicMessage);
 
-        assert point.lineProtocol().equals("test_point_builder,customer_id=CUSTOMER,driver_id=DRIVER,order_completion_time_seconds=12345 event_timestamp=1000000000i,tip_amount=10000.0 1000000000000000");
+        assert point.lineProtocol().equals("test_point_builder,customer_id=CUSTOMER,driver_id=DRIVER,order_completion_time_seconds=12345000 event_timestamp=1000000000i,tip_amount=10000.0 1000000000000000");
     }
 }
