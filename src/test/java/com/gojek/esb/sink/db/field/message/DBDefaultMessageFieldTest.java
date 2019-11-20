@@ -29,7 +29,7 @@ public class DBDefaultMessageFieldTest {
         Object columnValue = feedbackParsed.getField(locationFieldDescriptor);
 
         DBDefaultMessageField dbDefaultMessageField = new DBDefaultMessageField(columnValue);
-        Assert.assertEquals("{\"name\":\"\",\"address\":\"\",\"latitude\":0.0,\"longitude\":0.0,\"type\":\"\",\"note\":\"\",\"place_id\":\"\"}", dbDefaultMessageField.getColumn());
+        Assert.assertEquals("{\"name\":\"\",\"address\":\"\",\"latitude\":0.0,\"longitude\":0.0,\"type\":\"\",\"note\":\"\",\"place_id\":\"\",\"accuracy_meter\":0.0}", dbDefaultMessageField.getColumn());
     }
 
     @Test
