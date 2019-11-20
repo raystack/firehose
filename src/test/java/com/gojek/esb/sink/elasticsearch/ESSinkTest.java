@@ -7,6 +7,7 @@ import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.elasticsearch.client.ESSinkClient;
 import com.gojek.esb.sink.http.client.deserializer.JsonDeserializer;
+import com.gojek.esb.test.categories.IntegrationTest;
 import org.aeonbits.owner.ConfigFactory;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -14,6 +15,7 @@ import org.json.simple.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -27,6 +29,7 @@ import java.util.Map;
 
 import static org.mockito.Mockito.when;
 
+@Category({IntegrationTest.class})
 @RunWith(MockitoJUnitRunner.class)
 public class ESSinkTest {
 
