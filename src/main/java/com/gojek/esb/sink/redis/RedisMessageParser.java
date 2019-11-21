@@ -28,10 +28,10 @@ public class RedisMessageParser {
 
     public List<RedisHashSetFieldEntry> parse(EsbMessage esbMessage) {
         DynamicMessage parsedMessage = parseEsbMessage(esbMessage);
-        String redisKey = renderStringTemplate(parsedMessage, redisSinkConfig.getRedisKeyPattern(), redisSinkConfig.getRedisKeyVariables());
+        String redisKey = parseTemplate(parsedMessage, redisSinkConfig.getRedisKeyTemplate());
         Map<String, Object> protoToFieldMap = protoToFieldMapper.getFields(getPayload(esbMessage));
         List<RedisHashSetFieldEntry> messageEntries = new ArrayList<>();
-        protoToFieldMap.forEach((key, value) -> messageEntries.add(new RedisHashSetFieldEntry(redisKey, parseKey(parsedMessage, key), String.valueOf(value))));
+        protoToFieldMap.forEach((key, value) -> messageEntries.add(new RedisHashSetFieldEntry(redisKey, parseTemplate(parsedMessage, key), String.valueOf(value))));
         return messageEntries;
     }
 
@@ -46,15 +46,26 @@ public class RedisMessageParser {
         return parsedMessage;
     }
 
-    private String parseKey(DynamicMessage parsedMessage, String key) {
-        String[] keyDetails = key.split(",");
-        if (keyDetails.length == 0) {
-            LOGGER.error(String.format("Empty key configuration: '%s'", key));
-            throw new InvalidConfigurationException(String.format("Empty key configuration: '%s'", key));
+    private String parseTemplate(DynamicMessage data, String template) {
+        if (StringUtils.isEmpty(template)) {
+            LOGGER.error(String.format("Template '%s' is invalid", template));
+            throw new IllegalArgumentException("Invalid configuration, Collection key or key is null or empty");
         }
-        String keyPattern = keyDetails[0];
-        String keyVariables = StringUtils.join(Arrays.copyOfRange(keyDetails, 1, keyDetails.length), ",");
-        return StringUtils.isEmpty(keyVariables) ? keyPattern : renderStringTemplate(parsedMessage, keyPattern, keyVariables);
+        String[] templateStrings = template.split(",");
+        if (templateStrings.length == 0) {
+            LOGGER.error(String.format("Empty key configuration: '%s'", template));
+            throw new InvalidConfigurationException(String.format("Empty key configuration: '%s'", template));
+        }
+        templateStrings = Arrays
+                .stream(templateStrings)
+                .map(String::trim)
+                .toArray(String[]::new);
+        String templatePattern = templateStrings[0];
+        String templateVariables = StringUtils.join(Arrays.copyOfRange(templateStrings, 1, templateStrings.length), ",");
+        String renderedTemplate = renderStringTemplate(data, templatePattern, templateVariables);
+        return StringUtils.isEmpty(templateVariables)
+                ? templatePattern
+                : renderedTemplate;
     }
 
     private String renderStringTemplate(DynamicMessage parsedMessage, String pattern, String patternVariables) {
