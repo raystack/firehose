@@ -9,9 +9,6 @@ public interface RedisSinkConfig extends AppConfig {
     @DefaultValue("6379")
     Integer getRedisPort();
 
-    @Key("REDIS_KEY_PATTERN")
-    String getRedisKeyPattern();
-
-    @Key("REDIS_KEY_VARIABLES")
-    String getRedisKeyVariables();
+    @Key("REDIS_KEY_TEMPLATE")
+    String getRedisKeyTemplate();
 }
