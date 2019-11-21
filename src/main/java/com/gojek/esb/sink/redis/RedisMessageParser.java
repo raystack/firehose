@@ -9,6 +9,7 @@ import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.kafka.common.errors.InvalidConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,43 +27,55 @@ public class RedisMessageParser {
     private RedisSinkConfig redisSinkConfig;
 
     public List<RedisHashSetFieldEntry> parse(EsbMessage esbMessage) {
-
-        String redisKey = getRedisKey(getPayload(esbMessage));
+        DynamicMessage parsedMessage = parseEsbMessage(esbMessage);
+        String redisKey = renderStringTemplate(parsedMessage, redisSinkConfig.getRedisKeyPattern(), redisSinkConfig.getRedisKeyVariables());
         Map<String, Object> protoToFieldMap = protoToFieldMapper.getFields(getPayload(esbMessage));
         List<RedisHashSetFieldEntry> messageEntries = new ArrayList<>();
-
-        protoToFieldMap.forEach((s, o) -> {
-            messageEntries.add(new RedisHashSetFieldEntry(redisKey, s, String.valueOf(o)));
-        });
-
+        protoToFieldMap.forEach((key, value) -> messageEntries.add(new RedisHashSetFieldEntry(redisKey, parseKey(parsedMessage, key), String.valueOf(value))));
         return messageEntries;
     }
 
-    private String getRedisKey(byte[] payload) {
+    private DynamicMessage parseEsbMessage(EsbMessage esbMessage) {
         DynamicMessage parsedMessage;
         try {
-            parsedMessage = protoParser.parse(payload);
+            parsedMessage = protoParser.parse(getPayload(esbMessage));
         } catch (InvalidProtocolBufferException e) {
             LOGGER.error("Unable to parse data when reading Key");
             throw new IllegalArgumentException(e);
         }
-        String redisKeyPattern = redisSinkConfig.getRedisKeyPattern();
-        String redisKeyVariables = redisSinkConfig.getRedisKeyVariables();
-        if (StringUtils.isEmpty(redisKeyVariables)) {
-            return redisKeyPattern;
+        return parsedMessage;
+    }
+
+    private String parseKey(DynamicMessage parsedMessage, String key) {
+        String[] keyDetails = key.split(",");
+        if (keyDetails.length == 0) {
+            LOGGER.error(String.format("Empty key configuration: '%s'", key));
+            throw new InvalidConfigurationException(String.format("Empty key configuration: '%s'", key));
         }
-        List<String> redisKeyVariablesIndex = Arrays.asList(redisKeyVariables.split(","));
-        Object[] redisKeyVariableData = redisKeyVariablesIndex
+        String keyPattern = keyDetails[0];
+        String keyVariables = StringUtils.join(Arrays.copyOfRange(keyDetails, 1, keyDetails.length), ",");
+        return StringUtils.isEmpty(keyVariables) ? keyPattern : renderStringTemplate(parsedMessage, keyPattern, keyVariables);
+    }
+
+    private String renderStringTemplate(DynamicMessage parsedMessage, String pattern, String patternVariables) {
+        if (StringUtils.isEmpty(patternVariables)) {
+            return pattern;
+        }
+        List<String> patternVariableFieldNumbers = Arrays.asList(patternVariables.split(","));
+        Object[] patternVariableData = patternVariableFieldNumbers
                 .stream()
-                .map(s -> {
-                    Descriptors.FieldDescriptor fieldDescriptor = parsedMessage.getDescriptorForType().findFieldByNumber(Integer.valueOf(s));
-                    if (fieldDescriptor == null) {
-                        LOGGER.error(String.format("Descriptor not found for index: %s", s));
-                        throw new IllegalArgumentException(String.format("Descriptor not found for index: %s", s));
-                    }
-                    return parsedMessage.getField(fieldDescriptor);
-                }).toArray();
-        return String.format(redisKeyPattern, redisKeyVariableData);
+                .map(fieldNumber -> getDataByFieldNumber(parsedMessage, fieldNumber))
+                .toArray();
+        return String.format(pattern, patternVariableData);
+    }
+
+    private Object getDataByFieldNumber(DynamicMessage parsedMessage, String fieldNumber) {
+        Descriptors.FieldDescriptor fieldDescriptor = parsedMessage.getDescriptorForType().findFieldByNumber(Integer.valueOf(fieldNumber));
+        if (fieldDescriptor == null) {
+            LOGGER.error(String.format("Descriptor not found for index: %s", fieldNumber));
+            throw new IllegalArgumentException(String.format("Descriptor not found for index: %s", fieldNumber));
+        }
+        return parsedMessage.getField(fieldDescriptor);
     }
 
     private byte[] getPayload(EsbMessage esbMessage) {

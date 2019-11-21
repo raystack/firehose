@@ -34,7 +34,7 @@ public class RedisSink implements Sink {
 
         List<RedisHashSetFieldEntry> redisHashSetFieldEntryList = esbMessages
                 .stream()
-                .map(this::getEntriesForMessage)
+                .map(esbMessage -> redisMessageParser.parse(esbMessage))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
         redisClient.execute(redisHashSetFieldEntryList);
@@ -49,7 +49,4 @@ public class RedisSink implements Sink {
         redisClient.close();
     }
 
-    private List<RedisHashSetFieldEntry> getEntriesForMessage(EsbMessage esbMessage) {
-        return redisMessageParser.parse(esbMessage);
-    }
 }
