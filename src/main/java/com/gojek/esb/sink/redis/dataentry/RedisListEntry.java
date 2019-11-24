@@ -1,5 +1,6 @@
 package com.gojek.esb.sink.redis;
 
+import com.gojek.esb.sink.redis.list.RedisDataEntry;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,10 +9,7 @@ import lombok.Getter;
  */
 @AllArgsConstructor
 @Getter
-public class RedisHashSetFieldEntry {
-
+public class RedisListEntry implements RedisDataEntry {
     private String key;
-    private String field;
     private String value;
-
 }

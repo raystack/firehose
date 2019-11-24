@@ -28,6 +28,9 @@ public class RedisMessageParser {
 
     public List<RedisHashSetFieldEntry> parse(EsbMessage esbMessage) {
         DynamicMessage parsedMessage = parseEsbMessage(esbMessage);
+        System.out.println("-----------------------------------------------------");
+        System.out.println(parsedMessage);
+        System.out.println("-----------------------------------------------------");
         String redisKey = parseTemplate(parsedMessage, redisSinkConfig.getRedisKeyTemplate());
         Map<String, Object> protoToFieldMap = protoToFieldMapper.getFields(getPayload(esbMessage));
         List<RedisHashSetFieldEntry> messageEntries = new ArrayList<>();
