@@ -44,7 +44,7 @@ public class RedisClientTest {
 
         List<RedisHashSetFieldEntry> entryList = Collections.singletonList(new RedisHashSetFieldEntry("order-123", "driver_id", "driver-234"));
 
-        redisClient.execute(entryList);
+        redisClient.executeHash(entryList);
         verify(jedisPipeline, times(1)).hset("order-123", "driver_id", "driver-234");
     }
 
@@ -54,7 +54,7 @@ public class RedisClientTest {
 
         List<RedisHashSetFieldEntry> entryList = Collections.singletonList(new RedisHashSetFieldEntry("order-123", "driver_id", "driver-234"));
 
-        redisClient.execute(entryList);
+        redisClient.executeHash(entryList);
     }
 
     @Test

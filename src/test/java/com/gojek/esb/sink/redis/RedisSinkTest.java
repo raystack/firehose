@@ -51,7 +51,7 @@ public class RedisSinkTest {
     @Test
     public void sendsMessagesToRedis() {
         redisSink.pushMessage(esbMessages);
-        verify(redisClient, times(1)).execute(any());
+        verify(redisClient, times(1)).executeHash(any());
     }
 
     @Test

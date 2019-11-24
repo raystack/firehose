@@ -37,7 +37,7 @@ public class RedisSink implements Sink {
                 .map(esbMessage -> redisMessageParser.parse(esbMessage))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
-        redisClient.execute(redisHashSetFieldEntryList);
+        redisClient.executeHash(redisHashSetFieldEntryList);
         LOGGER.info("Pushed {} messages to redis.", esbMessages.size());
         statsDReporter.captureDurationSince(REDIS_SINK_WRITE_TIME, startExecution);
         statsDReporter.captureCount(REDIS_SINK_MESSAGES_COUNT, esbMessages.size(), SUCCESS_TAG);
