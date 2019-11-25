@@ -4,6 +4,7 @@ import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
+import com.gojek.esb.sink.redis.parsers.RedisParser;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,7 @@ public class RedisSink implements Sink {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisSink.class);
     private RedisClient redisClient;
-    private RedisMessageParser redisMessageParser;
+    private RedisParser redisParser;
     private StatsDReporter statsDReporter;
 
     @Override
@@ -43,7 +44,7 @@ public class RedisSink implements Sink {
     private List<RedisDataEntry> getRedisDataEntries(List<EsbMessage> esbMessages) {
         return esbMessages
                 .stream()
-                .map(esbMessage -> redisMessageParser.parse(esbMessage))
+                .map(esbMessage -> redisParser.parse(esbMessage))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
@@ -52,5 +53,4 @@ public class RedisSink implements Sink {
     public void close() throws IOException {
         redisClient.close();
     }
-
 }

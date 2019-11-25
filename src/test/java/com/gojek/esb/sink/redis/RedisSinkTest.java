@@ -2,6 +2,7 @@ package com.gojek.esb.sink.redis;
 
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.sink.redis.parsers.RedisParser;
 import com.gojek.esb.util.Clock;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +30,7 @@ public class RedisSinkTest {
     private StatsDReporter statsDReporter;
 
     @Mock
-    private RedisMessageParser redisMessageParser;
+    private RedisParser redisMessageParser;
 
     @Before
     public void setUp() {
