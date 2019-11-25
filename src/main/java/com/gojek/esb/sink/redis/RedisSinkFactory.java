@@ -8,6 +8,8 @@ import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.SinkFactory;
+import com.gojek.esb.sink.redis.parsers.RedisParser;
+import com.gojek.esb.sink.redis.parsers.RedisParserFactory;
 import org.aeonbits.owner.ConfigFactory;
 import redis.clients.jedis.Jedis;
 
@@ -28,7 +30,7 @@ public class RedisSinkFactory implements SinkFactory {
         RedisClient redisClient = new RedisClient(jedis);
         ProtoParser protoParser = new ProtoParser(client, redisSinkConfig.getProtoSchema());
         ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, redisSinkConfig.getProtoToFieldMapping());
-        RedisMessageParser redisMessageParser = new RedisMessageParser(protoToFieldMapper, protoParser, redisSinkConfig);
-        return new RedisSink(redisClient, redisMessageParser, statsDReporter);
+        RedisParser redisParser = RedisParserFactory.getParser(protoToFieldMapper, protoParser, redisSinkConfig);
+        return new RedisSink(redisClient, redisParser, statsDReporter);
     }
 }
