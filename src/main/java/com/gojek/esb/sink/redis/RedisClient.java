@@ -1,6 +1,6 @@
 package com.gojek.esb.sink.redis;
 
-import com.gojek.esb.sink.redis.list.RedisListEntry;
+import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,18 +19,15 @@ public class RedisClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisClient.class);
     private Jedis jedis;
 
-    public void executeHash(List<RedisHashSetFieldEntry> entriesList) {
+    public void execute(List<RedisDataEntry> entriesList) {
         try {
             Pipeline jedisPipelined = jedis.pipelined();
             jedisPipelined.multi();
-            entriesList.forEach(redisHashSetFieldEntry -> {
-                LOGGER.debug("Pushing {}, {}, {} to redis.", redisHashSetFieldEntry.getKey(), redisHashSetFieldEntry.getField(), redisHashSetFieldEntry.getValue());
-                jedisPipelined.hset(
-                        redisHashSetFieldEntry.getKey(),
-                        redisHashSetFieldEntry.getField(),
-                        redisHashSetFieldEntry.getValue()
-                );
+
+            entriesList.forEach(redisDataEntry -> {
+                redisDataEntry.pushMessage(jedisPipelined);
             });
+
             Response<List<Object>> responses = jedisPipelined.exec();
             jedisPipelined.sync();
             if (responses.get() == null || responses.get().isEmpty()) {
@@ -41,31 +38,7 @@ public class RedisClient {
             close();
         }
     }
-
     public void close() {
         jedis.close();
-    }
-
-    public void executeList(List<RedisListEntry> entriesList) {
-        try {
-            Pipeline jedisPipelined = jedis.pipelined();
-            jedisPipelined.multi();
-
-            entriesList.forEach(redisListEntry -> {
-                LOGGER.debug("Pushing {}, {} to redis.", redisListEntry.getKey(), redisListEntry.getValue());
-                jedisPipelined.lpush(
-                        redisListEntry.getKey(),
-                        redisListEntry.getValue()
-                );
-            });
-            Response<List<Object>> responses = jedisPipelined.exec();
-            jedisPipelined.sync();
-            if (responses.get() == null || responses.get().isEmpty()) {
-                LOGGER.error("Redis Pipeline error: no responds received");
-                throw new RuntimeException("Redis Pipeline error: no responds received");
-            }
-        } finally {
-            close();
-        }
     }
 }
