@@ -1,13 +1,9 @@
-package com.gojek.esb.sink.redis;
+package com.gojek.esb.sink.redis.parsers;
 
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.RedisSinkConfig;
-import com.gojek.esb.config.enums.RedisSinkType;
 import com.gojek.esb.consumer.EsbMessage;
-import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
-import com.gojek.esb.sink.redis.dataentry.RedisHashSetFieldEntry;
-import com.gojek.esb.sink.redis.dataentry.RedisListEntry;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -17,50 +13,18 @@ import org.apache.kafka.common.errors.InvalidConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 @AllArgsConstructor
-public class RedisMessageParser {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(RedisMessageParser.class);
-    private ProtoToFieldMapper protoToFieldMapper;
+public abstract class RedisParser {
+    private static final Logger LOGGER = LoggerFactory.getLogger(com.gojek.esb.sink.redis.parsers.RedisParser.class);
     private ProtoParser protoParser;
     private RedisSinkConfig redisSinkConfig;
 
-    public List<RedisDataEntry> parse(EsbMessage esbMessage) {
-        DynamicMessage parsedMessage = parseEsbMessage(esbMessage);
-        String redisKey = parseTemplate(parsedMessage, redisSinkConfig.getRedisKeyTemplate());
-        List<RedisDataEntry> messageEntries = new ArrayList<>();
+    public abstract List<RedisDataEntry> parse(EsbMessage esbMessage);
 
-        if (redisSinkConfig.getRedisSinkType().equals(RedisSinkType.HASHSET)) {
-            createRedisHashSet(esbMessage, parsedMessage, redisKey, messageEntries);
-        } else if (redisSinkConfig.getRedisSinkType().equals(RedisSinkType.LIST)) {
-            createRedisList(parsedMessage, redisKey, messageEntries);
-        } else {
-            System.out.println("--------------------------");
-            System.out.println(redisSinkConfig.getRedisSinkType());
-            System.out.println(RedisSinkType.LIST);
-            System.out.println("--------------------------");
-//            throw new IllegalArgumentException("Invalid Redis sink type.");
-        }
-
-        return messageEntries;
-    }
-
-    private void createRedisHashSet(EsbMessage esbMessage, DynamicMessage parsedMessage, String redisKey, List<RedisDataEntry> messageEntries) {
-        Map<String, Object> protoToFieldMap = protoToFieldMapper.getFields(getPayload(esbMessage));
-        protoToFieldMap.forEach((key, value) -> messageEntries.add(new RedisHashSetFieldEntry(redisKey, parseTemplate(parsedMessage, key), String.valueOf(value))));
-    }
-
-    private void createRedisList(DynamicMessage parsedMessage, String redisKey, List<RedisDataEntry> messageEntries) {
-        String protoIndex = redisSinkConfig.getListDataProtoIndex();
-        messageEntries.add(new RedisListEntry(redisKey, getDataByFieldNumber(parsedMessage, protoIndex).toString()));
-    }
-
-    private DynamicMessage parseEsbMessage(EsbMessage esbMessage) {
+    DynamicMessage parseEsbMessage(EsbMessage esbMessage) {
         DynamicMessage parsedMessage;
         try {
             parsedMessage = protoParser.parse(getPayload(esbMessage));
@@ -71,7 +35,7 @@ public class RedisMessageParser {
         return parsedMessage;
     }
 
-    private String parseTemplate(DynamicMessage data, String template) {
+    String parseTemplate(DynamicMessage data, String template) {
         if (StringUtils.isEmpty(template)) {
             LOGGER.error(String.format("Template '%s' is invalid", template));
             throw new IllegalArgumentException("Invalid configuration, Collection key or key is null or empty");
@@ -105,8 +69,8 @@ public class RedisMessageParser {
         return String.format(pattern, patternVariableData);
     }
 
-    private Object getDataByFieldNumber(DynamicMessage parsedMessage, String fieldNumber) {
-        Descriptors.FieldDescriptor fieldDescriptor = parsedMessage.getDescriptorForType().findFieldByNumber(Integer.parseInt(fieldNumber));
+    Object getDataByFieldNumber(DynamicMessage parsedMessage, String fieldNumber) {
+        Descriptors.FieldDescriptor fieldDescriptor = parsedMessage.getDescriptorForType().findFieldByNumber(Integer.valueOf(fieldNumber));
         if (fieldDescriptor == null) {
             LOGGER.error(String.format("Descriptor not found for index: %s", fieldNumber));
             throw new IllegalArgumentException(String.format("Descriptor not found for index: %s", fieldNumber));
@@ -114,7 +78,7 @@ public class RedisMessageParser {
         return parsedMessage.getField(fieldDescriptor);
     }
 
-    private byte[] getPayload(EsbMessage esbMessage) {
+    byte[] getPayload(EsbMessage esbMessage) {
         if (redisSinkConfig.getKafkaRecordParserMode().equals("key")) {
             return esbMessage.getLogKey();
         } else {
