@@ -3,6 +3,7 @@ package com.gojek.esb.sink.redis;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.Sink;
+import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,17 +32,20 @@ public class RedisSink implements Sink {
     @Override
     public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) {
         Instant startExecution = statsDReporter.getClock().now();
-
-        List<RedisHashSetFieldEntry> redisHashSetFieldEntryList = esbMessages
-                .stream()
-                .map(esbMessage -> redisMessageParser.parse(esbMessage))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-        redisClient.executeHash(redisHashSetFieldEntryList);
+        List<RedisDataEntry> redisDataEntries = getRedisDataEntries(esbMessages);
+        redisClient.execute(redisDataEntries);
         LOGGER.info("Pushed {} messages to redis.", esbMessages.size());
         statsDReporter.captureDurationSince(REDIS_SINK_WRITE_TIME, startExecution);
         statsDReporter.captureCount(REDIS_SINK_MESSAGES_COUNT, esbMessages.size(), SUCCESS_TAG);
         return new ArrayList<>();
+    }
+
+    private List<RedisDataEntry> getRedisDataEntries(List<EsbMessage> esbMessages) {
+        return esbMessages
+                .stream()
+                .map(esbMessage -> redisMessageParser.parse(esbMessage))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
     @Override
