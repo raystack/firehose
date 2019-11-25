@@ -1,8 +1,8 @@
-package com.gojek.esb.sink.redis;
+package com.gojek.esb.sink.redis.dataentry;
 
-import com.gojek.esb.sink.redis.list.RedisDataEntry;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import redis.clients.jedis.Pipeline;
 
 /**
  * Class for Redis Hash set entry.
@@ -15,4 +15,13 @@ public class RedisHashSetFieldEntry implements RedisDataEntry {
     private String field;
     private String value;
 
+
+    @Override
+    public void pushMessage(Pipeline jedisPipelined) {
+        jedisPipelined.hset(
+                this.getKey(),
+                this.getField(),
+                this.getValue()
+        );
+    }
 }
