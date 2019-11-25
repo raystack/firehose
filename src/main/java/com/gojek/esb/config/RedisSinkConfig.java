@@ -1,6 +1,7 @@
 package com.gojek.esb.config;
 
-import org.apache.kafka.common.protocol.types.Field;
+import com.gojek.esb.config.converter.RedisSinkTypeConverter;
+import com.gojek.esb.config.enums.RedisSinkType;
 
 public interface RedisSinkConfig extends AppConfig {
 
@@ -15,7 +16,8 @@ public interface RedisSinkConfig extends AppConfig {
     String getRedisKeyTemplate();
 
     @Key("REDIS_SINK_TYPE")
-    String getRedisSinkType();
+    @ConverterClass(RedisSinkTypeConverter.class)
+    RedisSinkType getRedisSinkType();
 
     @Key("LIST_DATA_PROTO_INDEX")
     String getListDataProtoIndex();

@@ -1,5 +1,7 @@
 package com.gojek.esb.sink.redis;
 
+import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
+import com.gojek.esb.sink.redis.dataentry.RedisHashSetFieldEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,9 +44,9 @@ public class RedisClientTest {
     @Test
     public void shouldSetHashSetEntry() {
 
-        List<RedisHashSetFieldEntry> entryList = Collections.singletonList(new RedisHashSetFieldEntry("order-123", "driver_id", "driver-234"));
+        List<RedisDataEntry> entryList = Collections.singletonList(new RedisHashSetFieldEntry("order-123", "driver_id", "driver-234"));
 
-        redisClient.executeHash(entryList);
+        redisClient.execute(entryList);
         verify(jedisPipeline, times(1)).hset("order-123", "driver_id", "driver-234");
     }
 
@@ -52,9 +54,9 @@ public class RedisClientTest {
     public void shouldThroughRuntimeExceptionWhenNoResponseFromRedis() {
         when(responses.get()).thenReturn(null);
 
-        List<RedisHashSetFieldEntry> entryList = Collections.singletonList(new RedisHashSetFieldEntry("order-123", "driver_id", "driver-234"));
+        List<RedisDataEntry> entryList = Collections.singletonList(new RedisHashSetFieldEntry("order-123", "driver_id", "driver-234"));
 
-        redisClient.executeHash(entryList);
+        redisClient.execute(entryList);
     }
 
     @Test
