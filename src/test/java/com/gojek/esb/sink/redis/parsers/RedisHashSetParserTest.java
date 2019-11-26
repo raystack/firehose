@@ -322,16 +322,6 @@ public class RedisHashSetParserTest {
         redisMessageParser.parse(testEsbMessage);
     }
 
-//    @Test(expected = IllegalArgumentException.class)
-//    public void shouldThrowInvalidRedisSinkTypeExceptionWhenRandomRedisSinkTypeUsed() {
-//        setRedisSinkConfig("message", "Test-%s,1", RedisSinkType.LIST);
-//        ProtoParser protoParserForTest = new ProtoParser(stencilClient, TestNestedRepeatedMessage.class.getCanonicalName());
-//        ProtoToFieldMapper protoToFieldMapperForTest = new ProtoToFieldMapper(protoParserForTest, getProperties("3", "details"));
-//        RedisParser redisMessageParser = new RedisMessageParser(protoToFieldMapperForTest, protoParserForTest, redisSinkConfig);
-//
-//        redisMessageParser.parse(testEsbMessage);
-//    }
-
     private Properties getProperties(String s, String order) {
         Properties propertiesForKey = new Properties();
         propertiesForKey.setProperty(s, order);
