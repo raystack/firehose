@@ -11,12 +11,10 @@ public class RedisParserFactory {
 
         RedisParser redisParser;
 
-        if (redisSinkConfig.getRedisSinkType().equals(RedisSinkType.HASHSET)) {
-            redisParser = new RedisHashSetParser(protoToFieldMapper, protoParser, redisSinkConfig);
-        } else if (redisSinkConfig.getRedisSinkType().equals(RedisSinkType.LIST)) {
+        if (redisSinkConfig.getRedisSinkType().equals(RedisSinkType.LIST)) {
             redisParser = new RedisListParser(protoParser, redisSinkConfig);
         } else {
-            throw new IllegalArgumentException("Invalid Redis Sink type");
+            redisParser = new RedisHashSetParser(protoToFieldMapper, protoParser, redisSinkConfig);
         }
         return redisParser;
     }

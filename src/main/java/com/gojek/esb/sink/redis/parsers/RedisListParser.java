@@ -11,12 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RedisListParser extends RedisParser {
-    private ProtoParser protoParser;
     private RedisSinkConfig redisSinkConfig;
 
     public RedisListParser(ProtoParser protoParser, RedisSinkConfig redisSinkConfig) {
         super(protoParser, redisSinkConfig);
-        this.protoParser = protoParser;
         this.redisSinkConfig = redisSinkConfig;
     }
 
@@ -24,8 +22,11 @@ public class RedisListParser extends RedisParser {
     public List<RedisDataEntry> parse(EsbMessage esbMessage) {
         DynamicMessage parsedMessage = parseEsbMessage(esbMessage);
         String redisKey = parseTemplate(parsedMessage, redisSinkConfig.getRedisKeyTemplate());
+        String protoIndex = redisSinkConfig.getRedisListDataProtoIndex();
+        if (protoIndex == null) {
+            throw new IllegalArgumentException("Please provide REDIS_LIST_DATA_PROTO_INDEX in list sink");
+        }
         List<RedisDataEntry> messageEntries = new ArrayList<>();
-        String protoIndex = redisSinkConfig.getListDataProtoIndex();
         messageEntries.add(new RedisListEntry(redisKey, getDataByFieldNumber(parsedMessage, protoIndex).toString()));
         return messageEntries;
     }

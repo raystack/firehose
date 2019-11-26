@@ -41,7 +41,7 @@ public class RedisParserFactoryTest {
 
     private void setRedisSinkConfig(RedisSinkType redisSinkType) {
         when(redisSinkConfig.getRedisSinkType()).thenReturn(redisSinkType);
-        when(redisSinkConfig.getListDataProtoIndex()).thenReturn("1");
+        when(redisSinkConfig.getRedisListDataProtoIndex()).thenReturn("1");
     }
 
     @Test
