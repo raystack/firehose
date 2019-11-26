@@ -54,7 +54,7 @@ public class RedisListParserTest {
         when(redisSinkConfig.getKafkaRecordParserMode()).thenReturn(parserMode);
         when(redisSinkConfig.getRedisKeyTemplate()).thenReturn(collectionKeyTemplate);
         when(redisSinkConfig.getRedisSinkType()).thenReturn(redisSinkType);
-        when(redisSinkConfig.getListDataProtoIndex()).thenReturn("1");
+        when(redisSinkConfig.getRedisListDataProtoIndex()).thenReturn("1");
     }
 
     @Test
@@ -84,6 +84,18 @@ public class RedisListParserTest {
         expectedException.expectMessage("Invalid configuration, Collection key or key is null or empty");
 
         setRedisSinkConfig("message", "", RedisSinkType.LIST);
+        RedisParser redisParser = new RedisListParser(bookingMessageProtoParser, redisSinkConfig);
+
+        redisParser.parse(bookingEsbMessage);
+    }
+
+    @Test
+    public void shouldThrowExceptionForNoListProtoIndex() {
+        setRedisSinkConfig("message", "Test-%s,1", RedisSinkType.LIST);
+        when(redisSinkConfig.getRedisListDataProtoIndex()).thenReturn(null);
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Please provide REDIS_LIST_DATA_PROTO_INDEX in list sink");
+
         RedisParser redisParser = new RedisListParser(bookingMessageProtoParser, redisSinkConfig);
 
         redisParser.parse(bookingEsbMessage);
