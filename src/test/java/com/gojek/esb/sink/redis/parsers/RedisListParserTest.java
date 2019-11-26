@@ -67,4 +67,25 @@ public class RedisListParserTest {
         assertEquals("test-order", redisListEntry.getValue());
         assertEquals("Test-test-order", redisListEntry.getKey());
     }
+
+    @Test
+    public void shouldParseKeyWhenKafkaMessageParseModeSetToKey() {
+        setRedisSinkConfig("key", "Test-%s,1", RedisSinkType.LIST);
+
+        RedisParser redisParser = new RedisListParser(testKeyProtoParser, redisSinkConfig);
+        RedisListEntry redisListEntry = (RedisListEntry) redisParser.parse(bookingEsbMessage).get(0);
+
+        assertEquals(redisListEntry.getValue(), "ORDER-1-FROM-KEY");
+    }
+
+    @Test
+    public void shouldThrowExceptionForEmptyKey() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Invalid configuration, Collection key or key is null or empty");
+
+        setRedisSinkConfig("message", "", RedisSinkType.LIST);
+        RedisParser redisParser = new RedisListParser(bookingMessageProtoParser, redisSinkConfig);
+
+        redisParser.parse(bookingEsbMessage);
+    }
 }
