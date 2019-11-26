@@ -70,7 +70,13 @@ public abstract class RedisParser {
     }
 
     Object getDataByFieldNumber(DynamicMessage parsedMessage, String fieldNumber) {
-        Descriptors.FieldDescriptor fieldDescriptor = parsedMessage.getDescriptorForType().findFieldByNumber(Integer.valueOf(fieldNumber));
+        Integer fieldNumberInt = null;
+        try {
+            fieldNumberInt = Integer.valueOf(fieldNumber);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid Proto Index");
+        }
+        Descriptors.FieldDescriptor fieldDescriptor = parsedMessage.getDescriptorForType().findFieldByNumber(fieldNumberInt);
         if (fieldDescriptor == null) {
             LOGGER.error(String.format("Descriptor not found for index: %s", fieldNumber));
             throw new IllegalArgumentException(String.format("Descriptor not found for index: %s", fieldNumber));
