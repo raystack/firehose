@@ -16,9 +16,10 @@ public interface RedisSinkConfig extends AppConfig {
     String getRedisKeyTemplate();
 
     @Key("REDIS_SINK_TYPE")
+    @DefaultValue("HASHSET")
     @ConverterClass(RedisSinkTypeConverter.class)
     RedisSinkType getRedisSinkType();
 
-    @Key("LIST_DATA_PROTO_INDEX")
-    String getListDataProtoIndex();
+    @Key("REDIS_LIST_DATA_PROTO_INDEX")
+    String getRedisListDataProtoIndex();
 }
