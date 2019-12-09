@@ -70,7 +70,7 @@ public class ESRequestBuilder {
     private String getStringFromJson(String payload, String fieldName) {
         try {
             JSONObject parse = (JSONObject) jsonParser.parse(payload);
-            return (String) Optional.of(parse.get(fieldName)).get();
+            return Optional.of(parse.get(fieldName)).get().toString();
         } catch (ParseException e) {
             throw new RuntimeException(e.getMessage(), e.getCause());
         } finally {
