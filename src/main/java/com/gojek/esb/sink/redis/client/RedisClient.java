@@ -1,9 +1,7 @@
-package com.gojek.esb.sink.redis;
+package com.gojek.esb.sink.redis.client;
 
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
@@ -15,11 +13,9 @@ import java.util.List;
  */
 @AllArgsConstructor
 public class RedisClient {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(RedisClient.class);
     private Jedis jedis;
 
-    public void execute(List<RedisDataEntry> entriesList) {
+    public void execute(List<RedisDataEntry> entriesList) throws NoResponseException {
         try {
             Pipeline jedisPipelined = jedis.pipelined();
             jedisPipelined.multi();
@@ -31,13 +27,13 @@ public class RedisClient {
             Response<List<Object>> responses = jedisPipelined.exec();
             jedisPipelined.sync();
             if (responses.get() == null || responses.get().isEmpty()) {
-                LOGGER.error("Redis Pipeline error: no responds received");
-                throw new RuntimeException("Redis Pipeline error: no responds received");
+                throw new NoResponseException();
             }
         } finally {
             close();
         }
     }
+
     public void close() {
         jedis.close();
     }
