@@ -1,22 +1,17 @@
 package com.gojek.esb.sink.redis;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.gojek.esb.consumer.EsbMessage;
-import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.Sink;
+import com.gojek.esb.sink.redis.client.NoResponseException;
+import com.gojek.esb.sink.redis.client.RedisClient;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import com.gojek.esb.sink.redis.parsers.RedisParser;
+
 import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.gojek.esb.metrics.Metrics.*;
 
 /**
  * RedisSink allows messages consumed from kafka to be persisted to a redis.
@@ -25,28 +20,22 @@ import static com.gojek.esb.metrics.Metrics.*;
 @AllArgsConstructor
 public class RedisSink implements Sink {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RedisSink.class);
     private RedisClient redisClient;
     private RedisParser redisParser;
-    private StatsDReporter statsDReporter;
+    private Instrumentation instrumentation;
 
     @Override
     public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) {
-        Instant startExecution = statsDReporter.getClock().now();
-        List<RedisDataEntry> redisDataEntries = getRedisDataEntries(esbMessages);
-        redisClient.execute(redisDataEntries);
-        LOGGER.info("Pushed {} messages to redis.", esbMessages.size());
-        statsDReporter.captureDurationSince(REDIS_SINK_WRITE_TIME, startExecution);
-        statsDReporter.captureCount(REDIS_SINK_MESSAGES_COUNT, esbMessages.size(), SUCCESS_TAG);
+        instrumentation.startExecution();
+        List<RedisDataEntry> redisDataEntries = redisParser.parse(esbMessages);
+        try {
+            redisClient.execute(redisDataEntries);
+        } catch (NoResponseException e) {
+            instrumentation.captureClientError();
+            throw e;
+        }
+        instrumentation.captureExecutionTelemetry(esbMessages.size());
         return new ArrayList<>();
-    }
-
-    private List<RedisDataEntry> getRedisDataEntries(List<EsbMessage> esbMessages) {
-        return esbMessages
-                .stream()
-                .map(esbMessage -> redisParser.parse(esbMessage))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
     }
 
     @Override

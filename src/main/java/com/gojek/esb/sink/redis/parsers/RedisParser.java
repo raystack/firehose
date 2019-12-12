@@ -1,5 +1,10 @@
 package com.gojek.esb.sink.redis.parsers;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.RedisSinkConfig;
 import com.gojek.esb.consumer.EsbMessage;
@@ -7,14 +12,13 @@ import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
-import lombok.AllArgsConstructor;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.common.errors.InvalidConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.List;
+import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public abstract class RedisParser {
@@ -23,6 +27,14 @@ public abstract class RedisParser {
     private RedisSinkConfig redisSinkConfig;
 
     public abstract List<RedisDataEntry> parse(EsbMessage esbMessage);
+
+    public List<RedisDataEntry> parse(List<EsbMessage> esbMessages) {
+        return esbMessages
+            .stream()
+            .map(esbMessage -> this.parse(esbMessage))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+    }
 
     DynamicMessage parseEsbMessage(EsbMessage esbMessage) {
         DynamicMessage parsedMessage;
