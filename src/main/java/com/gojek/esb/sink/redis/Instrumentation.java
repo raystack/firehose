@@ -45,6 +45,7 @@ class Instrumentation {
   }
 
   public void captureClientError() {
+    // TODO capture as FATAL ERROR to statsdReporter
     LOGGER.error("Redis Pipeline error: no responds received");
   }
 }

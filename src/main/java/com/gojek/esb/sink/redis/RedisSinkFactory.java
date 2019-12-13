@@ -34,7 +34,7 @@ public class RedisSinkFactory implements SinkFactory {
         ProtoParser protoParser = new ProtoParser(client, redisSinkConfig.getProtoSchema());
         ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, redisSinkConfig.getProtoToFieldMapping());
 
-        RedisParser redisParser = RedisParserFactory.getParser(protoToFieldMapper, protoParser, redisSinkConfig);
+        RedisParser redisParser = RedisParserFactory.getParser(protoToFieldMapper, protoParser, redisSinkConfig, statsDReporter);
         Instrumentation instrumentation = new Instrumentation(statsDReporter);
         return new RedisSink(redisClient, redisParser, instrumentation);
     }
