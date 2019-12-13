@@ -1,24 +1,16 @@
 package com.gojek.esb.sink.db;
 
-import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.esb.consumer.EsbMessage;
-import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.sink.Sink;
-import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.gojek.esb.metrics.Metrics.DB_SINK_MESSAGES_COUNT;
-import static com.gojek.esb.metrics.Metrics.DB_SINK_WRITE_TIME;
-import static com.gojek.esb.metrics.Metrics.FAILURE_TAG;
-import static com.gojek.esb.metrics.Metrics.SUCCESS_TAG;
+import com.gojek.de.stencil.client.StencilClient;
+import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.sink.Sink;
+
+import lombok.AllArgsConstructor;
 
 /**
  * DBSink allows messages consumed from kafka to be persisted to a database.
@@ -27,10 +19,9 @@ import static com.gojek.esb.metrics.Metrics.SUCCESS_TAG;
 @AllArgsConstructor
 public class DBSink implements Sink {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DBSink.class);
     private DBBatchCommand dbBatchCommand;
     private QueryTemplate queryTemplate;
-    private StatsDReporter statsDReporter;
+    private Instrumentation instrumentation;
     private StencilClient stencilClient;
 
     @Override
@@ -39,13 +30,11 @@ public class DBSink implements Sink {
                 .map(esbMessage -> queryTemplate.toQueryString(esbMessage))
                 .collect(Collectors.toList());
         try {
-            Instant startExecution = statsDReporter.getClock().now();
+            instrumentation.startExecution();
             dbBatchCommand.execute(queries);
-            statsDReporter.captureDurationSince(DB_SINK_WRITE_TIME, startExecution);
-            statsDReporter.captureCount(DB_SINK_MESSAGES_COUNT, esbMessages.size(), SUCCESS_TAG);
+            instrumentation.captureSuccessAtempt(esbMessages);
         } catch (SQLException e) {
-            LOGGER.error("caught {} {}", e.getClass(), e.getMessage());
-            statsDReporter.captureCount(DB_SINK_MESSAGES_COUNT, esbMessages.size(), FAILURE_TAG);
+            instrumentation.captureFailedAttempt(e, esbMessages);
             return esbMessages;
         }
         return new ArrayList<>();
