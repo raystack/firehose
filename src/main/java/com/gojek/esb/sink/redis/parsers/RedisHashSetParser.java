@@ -16,8 +16,8 @@ public class RedisHashSetParser extends RedisParser {
     private ProtoToFieldMapper protoToFieldMapper;
     private RedisSinkConfig redisSinkConfig;
 
-    public RedisHashSetParser(ProtoToFieldMapper protoToFieldMapper, ProtoParser protoParser, RedisSinkConfig redisSinkConfig) {
-        super(protoParser, redisSinkConfig);
+    public RedisHashSetParser(ProtoToFieldMapper protoToFieldMapper, ProtoParser protoParser, RedisSinkConfig redisSinkConfig, Instrumentation instrumentation) {
+        super(protoParser, redisSinkConfig, instrumentation);
         this.protoToFieldMapper = protoToFieldMapper;
         this.redisSinkConfig = redisSinkConfig;
     }

@@ -12,10 +12,12 @@ import java.util.List;
 
 public class RedisListParser extends RedisParser {
     private RedisSinkConfig redisSinkConfig;
+    private Instrumentation instrumentation;
 
-    public RedisListParser(ProtoParser protoParser, RedisSinkConfig redisSinkConfig) {
-        super(protoParser, redisSinkConfig);
+    public RedisListParser(ProtoParser protoParser, RedisSinkConfig redisSinkConfig, Instrumentation instrumentation) {
+        super(protoParser, redisSinkConfig, instrumentation);
         this.redisSinkConfig = redisSinkConfig;
+        this.instrumentation = instrumentation;
     }
 
     @Override
@@ -24,7 +26,9 @@ public class RedisListParser extends RedisParser {
         String redisKey = parseTemplate(parsedMessage, redisSinkConfig.getRedisKeyTemplate());
         String protoIndex = redisSinkConfig.getRedisListDataProtoIndex();
         if (protoIndex == null) {
-            throw new IllegalArgumentException("Please provide REDIS_LIST_DATA_PROTO_INDEX in list sink");
+            IllegalArgumentException illegalArgumentException = new IllegalArgumentException("Please provide REDIS_LIST_DATA_PROTO_INDEX in list sink");
+            instrumentation.captureProtoIndexNotFoundException(illegalArgumentException);
+            throw illegalArgumentException;
         }
         List<RedisDataEntry> messageEntries = new ArrayList<>();
         messageEntries.add(new RedisListEntry(redisKey, getDataByFieldNumber(parsedMessage, protoIndex).toString()));
