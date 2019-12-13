@@ -28,6 +28,8 @@ public class RedisListParserTest {
     public ExpectedException expectedException = ExpectedException.none();
     @Mock
     private RedisSinkConfig redisSinkConfig;
+    @Mock
+    private Instrumentation instrumentation;
     private EsbMessage testEsbMessage;
     private ProtoParser testKeyProtoParser;
     private ProtoParser testMessageProtoParser;
@@ -60,7 +62,7 @@ public class RedisListParserTest {
     @Test
     public void shouldParseStringMessageForCollectionKeyTemplateInList() {
         setRedisSinkConfig("message", "Test-%s,1", RedisSinkType.LIST);
-        RedisParser redisParser = new RedisListParser(testMessageProtoParser, redisSinkConfig);
+        RedisParser redisParser = new RedisListParser(testMessageProtoParser, redisSinkConfig, instrumentation);
 
         RedisListEntry redisListEntry = (RedisListEntry) redisParser.parse(testEsbMessage).get(0);
 
@@ -72,7 +74,7 @@ public class RedisListParserTest {
     public void shouldParseKeyWhenKafkaMessageParseModeSetToKey() {
         setRedisSinkConfig("key", "Test-%s,1", RedisSinkType.LIST);
 
-        RedisParser redisParser = new RedisListParser(testKeyProtoParser, redisSinkConfig);
+        RedisParser redisParser = new RedisListParser(testKeyProtoParser, redisSinkConfig, instrumentation);
         RedisListEntry redisListEntry = (RedisListEntry) redisParser.parse(bookingEsbMessage).get(0);
 
         assertEquals(redisListEntry.getValue(), "ORDER-1-FROM-KEY");
@@ -84,7 +86,7 @@ public class RedisListParserTest {
         expectedException.expectMessage("Invalid configuration, Collection key or key is null or empty");
 
         setRedisSinkConfig("message", "", RedisSinkType.LIST);
-        RedisParser redisParser = new RedisListParser(bookingMessageProtoParser, redisSinkConfig);
+        RedisParser redisParser = new RedisListParser(bookingMessageProtoParser, redisSinkConfig, instrumentation);
 
         redisParser.parse(bookingEsbMessage);
     }
@@ -96,7 +98,7 @@ public class RedisListParserTest {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("Please provide REDIS_LIST_DATA_PROTO_INDEX in list sink");
 
-        RedisParser redisParser = new RedisListParser(bookingMessageProtoParser, redisSinkConfig);
+        RedisParser redisParser = new RedisListParser(bookingMessageProtoParser, redisSinkConfig, instrumentation);
 
         redisParser.parse(bookingEsbMessage);
     }
