@@ -1,10 +1,13 @@
-package com.gojek.esb.sink;
+package com.gojek.esb.sinkdecorator;
 
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.consumer.TestKey;
 import com.gojek.esb.consumer.TestMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.sinkdecorator.SinkWithRetry;
+import com.gojek.esb.sinkdecorator.SinkWithRetryQueue;
+
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -52,7 +55,8 @@ public class SinkWithRetryQueueTest {
     @Test
     public void shouldReturnEmptyListIfSuperReturnsEmptyList() throws IOException, DeserializerException {
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(new ArrayList<>());
-        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic", statsDReporter, backOffProvider);
+        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
+                statsDReporter, backOffProvider);
         ArrayList<EsbMessage> esbMessages = new ArrayList<>();
         esbMessages.add(esbMessage);
         List<EsbMessage> messages = sinkWithRetryQueue.pushMessage(esbMessages);
@@ -68,7 +72,8 @@ public class SinkWithRetryQueueTest {
         esbMessages.add(esbMessage);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
 
-        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic", statsDReporter, backOffProvider);
+        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
+                statsDReporter, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
                 sinkWithRetryQueue.pushMessage(esbMessages);
@@ -93,7 +98,8 @@ public class SinkWithRetryQueueTest {
         esbMessages.add(esbMessage);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
 
-        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic", statsDReporter, backOffProvider);
+        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
+                statsDReporter, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
                 sinkWithRetryQueue.pushMessage(esbMessages);
@@ -125,7 +131,8 @@ public class SinkWithRetryQueueTest {
         headers.add(new RecordHeader("key1", "value1".getBytes()));
         headers.add(new RecordHeader("key2", "value2".getBytes()));
 
-        TestMessage message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
+        TestMessage message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc")
+                .setOrderDetails("details").build();
         TestKey key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
 
         EsbMessage msg1 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic1", 0, 100, headers);
@@ -134,7 +141,8 @@ public class SinkWithRetryQueueTest {
         esbMessages.add(msg2);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
 
-        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic", statsDReporter, backOffProvider);
+        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
+                statsDReporter, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
                 sinkWithRetryQueue.pushMessage(esbMessages);
@@ -166,7 +174,8 @@ public class SinkWithRetryQueueTest {
         esbMessages.add(esbMessage);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
 
-        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic", statsDReporter, backOffProvider);
+        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
+                statsDReporter, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
                 sinkWithRetryQueue.pushMessage(esbMessages);
@@ -194,7 +203,8 @@ public class SinkWithRetryQueueTest {
         esbMessages.add(esbMessage);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
 
-        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic", statsDReporter, backOffProvider);
+        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
+                statsDReporter, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
                 sinkWithRetryQueue.pushMessage(esbMessages);
@@ -220,7 +230,8 @@ public class SinkWithRetryQueueTest {
         esbMessages.add(esbMessage);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
 
-        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic", statsDReporter, backOffProvider);
+        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
+                statsDReporter, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
                 sinkWithRetryQueue.pushMessage(esbMessages);
@@ -243,6 +254,7 @@ public class SinkWithRetryQueueTest {
     }
 
     private ProducerRecord<byte[], byte[]> expectedRecords(EsbMessage expectedMessage) {
-        return new ProducerRecord<>("test-topic", null, null, expectedMessage.getLogKey(), expectedMessage.getLogMessage(), expectedMessage.getHeaders());
+        return new ProducerRecord<>("test-topic", null, null, expectedMessage.getLogKey(),
+                expectedMessage.getLogMessage(), expectedMessage.getHeaders());
     }
 }

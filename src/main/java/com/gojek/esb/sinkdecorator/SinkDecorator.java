@@ -1,7 +1,8 @@
-package com.gojek.esb.sink;
+package com.gojek.esb.sinkdecorator;
 
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.sink.Sink;
 
 import java.io.IOException;
 import java.util.List;

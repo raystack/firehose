@@ -1,6 +1,5 @@
 package com.gojek.esb.sink.db;
 
-import com.gojek.esb.sink.BackOffProvider;
 import com.gojek.esb.sink.SinkCommandExecutionException;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,9 +33,6 @@ public class DBBatchCommandTest {
 
     @Mock
     private Statement statement;
-
-    @Mock
-    private BackOffProvider backOffProvider;
 
     private DBBatchCommand batch;
 
