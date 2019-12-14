@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Instrumentation
+ * <p>
+ * Handle DBSink logging and capturing metrics.
  */
 class Instrumentation {
 
@@ -24,7 +26,7 @@ class Instrumentation {
   private StatsDReporter statsDReporter;
   private Instant startExecutionTimestamp;
 
-  public Instrumentation(StatsDReporter statsDReporter) {
+  Instrumentation(StatsDReporter statsDReporter) {
     this.statsDReporter = statsDReporter;
   }
 

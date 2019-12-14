@@ -9,6 +9,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Instrumentation
+ * <p>
+ * Handle instrumentation for {@see RedisParser}. Instrumentation can be in form
+ * of log or StatsD Metric.
  */
 public class Instrumentation {
 
@@ -35,7 +38,7 @@ public class Instrumentation {
   }
 
   public void captureDescritptorNotFoundError(String fieldNumber, IllegalArgumentException descriptorNotFoundException) {
-    // TODO send the error message to statsdReporter FATAL 
+    // TODO send the error message to statsdReporter FATAL
     LOGGER.error(String.format("Descriptor not found for index: %s", fieldNumber));
   }
 
