@@ -1,8 +1,10 @@
-package com.gojek.esb.sink;
+package com.gojek.esb.sinkdecorator;
 
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.sink.Sink;
+
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
@@ -24,8 +26,8 @@ public class SinkWithRetryQueue extends SinkDecorator {
     private BackOffProvider backOffProvider;
     private static final Logger LOGGER = LoggerFactory.getLogger(SinkWithRetryQueue.class);
 
-
-    public SinkWithRetryQueue(Sink sink, Producer<byte[], byte[]> kafkaProducer, String topic, StatsDReporter statsDReporter, BackOffProvider backOffProvider) {
+    public SinkWithRetryQueue(Sink sink, Producer<byte[], byte[]> kafkaProducer, String topic,
+            StatsDReporter statsDReporter, BackOffProvider backOffProvider) {
         super(sink);
         this.kafkaProducer = kafkaProducer;
         this.topic = topic;
@@ -54,13 +56,14 @@ public class SinkWithRetryQueue extends SinkDecorator {
 
         LOGGER.info("Pushing {} messages to retry queue topic : {}", failedMessages.size(), topic);
         for (EsbMessage message : failedMessages) {
-            kafkaProducer.send(
-                    new ProducerRecord<>(topic, null, null, message.getLogKey(), message.getLogMessage(), message.getHeaders()), (metadata, e) -> {
+            kafkaProducer.send(new ProducerRecord<>(topic, null, null, message.getLogKey(), message.getLogMessage(),
+                    message.getHeaders()), (metadata, e) -> {
                         recordsProcessed.incrementAndGet();
 
                         if (e != null) {
                             this.statsDReporter.increment(RETRY_MESSAGE_COUNT, FAILURE_TAG);
-                            LOGGER.error("Unable to send record with key " + message.getLogKey() + " and message " + message.getLogMessage(), e);
+                            LOGGER.error("Unable to send record with key " + message.getLogKey() + " and message "
+                                    + message.getLogMessage(), e);
                             addToFailedRecords(retryMessages, message);
                         } else {
                             this.statsDReporter.increment(RETRY_MESSAGE_COUNT, SUCCESS_TAG);
