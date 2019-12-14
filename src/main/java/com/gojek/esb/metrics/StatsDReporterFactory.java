@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * StatsDReporterFactory
+ * <p>
+ * Create statsDReporter Instance.
  */
 public class StatsDReporterFactory {
 

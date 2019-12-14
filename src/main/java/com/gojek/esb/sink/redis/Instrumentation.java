@@ -19,11 +19,11 @@ import org.slf4j.LoggerFactory;
  */
 class Instrumentation {
 
-  StatsDReporter statsDReporter;
+  private StatsDReporter statsDReporter;
   private Instant startExecutionTimestamp;
   private static final Logger LOGGER = LoggerFactory.getLogger(Instrumentation.class);
 
-  public Instrumentation(StatsDReporter statsDReporter) {
+  Instrumentation(StatsDReporter statsDReporter) {
     this.statsDReporter = statsDReporter;
   }
 
