@@ -3,6 +3,8 @@ package com.gojek.esb.sink.elasticsearch.client;
 import com.gojek.esb.config.ESSinkConfig;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.elasticsearch.BulkProcessorListener;
+import com.gojek.esb.sink.elasticsearch.Instrumentation;
+
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.DocWriteRequest;
@@ -11,8 +13,6 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.function.BiConsumer;
 
@@ -21,18 +21,19 @@ import static org.elasticsearch.common.unit.TimeValue.timeValueSeconds;
 
 public class ESSinkClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ESSinkClient.class.getName());
-
     private final StatsDReporter statsDReporter;
     private RestHighLevelClient restHighLevelClient;
     private BulkProcessor bulkProcessor;
+    private Instrumentation instrumentation;
 
     public ESSinkClient(ESSinkConfig esSinkConfig, StatsDReporter statsDReporter) {
         this.statsDReporter = statsDReporter;
+        this.instrumentation = new Instrumentation(statsDReporter);
         HttpHost[] httpHosts = getHttpHosts(esSinkConfig.getEsConnectionUrls());
         if (httpHosts == null) {
-            LOGGER.error("ES_CONNECTION_URLS is empty or null");
-            throw new IllegalArgumentException("ES_CONNECTION_URLS is empty or null");
+            IllegalArgumentException e = new IllegalArgumentException("ES_CONNECTION_URLS is empty or null");
+            instrumentation.captureInvalidConfiguration(e);
+            throw e;
         }
         BiConsumer<BulkRequest, ActionListener<BulkResponse>> listenerBiConsumer = getBulkAsyncConsumer();
         this.restHighLevelClient = new RestHighLevelClient(RestClient.builder(httpHosts));
