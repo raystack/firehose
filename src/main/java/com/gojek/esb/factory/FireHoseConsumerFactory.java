@@ -139,7 +139,7 @@ public class FireHoseConsumerFactory {
             KafkaProducer<byte[], byte[]> kafkaProducer = genericKafkaFactory.getKafkaProducer(retryQueueConfig);
             TracingKafkaProducer<byte[], byte[]> tracingProducer = new TracingKafkaProducer<>(kafkaProducer, tracer);
 
-            return new SinkWithRetryQueue(
+            return SinkWithRetryQueue.withInstrumentationFactory(
                     new SinkWithRetry(basicSink, backOffProvider, statsDReporter,
                             kafkaConsumerConfig.getMaximumRetryAttempts()),
                     tracingProducer, retryQueueConfig.getRetryTopic(), statsDReporter, backOffProvider);
