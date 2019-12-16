@@ -1,5 +1,6 @@
 package com.gojek.esb.metrics;
 
+import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.util.Clock;
 import com.timgroup.statsd.NoOpStatsDClient;
 import com.timgroup.statsd.NonBlockingStatsDClient;
@@ -24,6 +25,13 @@ public class StatsDReporterFactory {
     this.statsDHost = statsDHost;
     this.statsDPort = statsDPort;
     this.globalTags = globalTags;
+  }
+
+  public static StatsDReporterFactory fromKafkaConsumerConfig(KafkaConsumerConfig kafkaConsumerConfig) {
+    return new StatsDReporterFactory(
+      kafkaConsumerConfig.getStatsDHost(),
+      kafkaConsumerConfig.getStatsDPort(),
+      kafkaConsumerConfig.getStatsDTags().split(","));
   }
 
   public StatsDReporter buildReporter() {
