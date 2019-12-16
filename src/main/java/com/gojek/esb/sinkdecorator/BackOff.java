@@ -1,18 +1,24 @@
 package com.gojek.esb.sinkdecorator;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.gojek.esb.metrics.StatsDReporter;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 public class BackOff {
 
-    private static final Logger LOGGER = (Logger) LoggerFactory.getLogger(ExponentialBackOffProvider.class);
+    private Instrumentation instrumentation;
+
+    public static BackOff withInstrumentationFactory(StatsDReporter statsDReporter) {
+        Instrumentation instrumentation = new Instrumentation(statsDReporter);
+        return new BackOff(instrumentation);
+    }
 
     public void inMilliSeconds(long milliseconds) {
         try {
             Thread.sleep(milliseconds);
         } catch (InterruptedException e) {
-            LOGGER.error("Backoff thread sleep for {} milliseconds interrupted : {} {}", milliseconds, e.getClass(),
-                    e.getMessage());
+            instrumentation.captureBackOffThreadInteruptedError(e, milliseconds);
         }
     }
 }
