@@ -131,8 +131,11 @@ public class FireHoseConsumerFactory {
         ExponentialBackOffProviderConfig backOffConfig = ConfigFactory.create(ExponentialBackOffProviderConfig.class,
                 config);
         BackOffProvider backOffProvider = new ExponentialBackOffProvider(
-                backOffConfig.exponentialBackoffInitialTimeInMs(), backOffConfig.exponentialBackoffRate(),
-                backOffConfig.exponentialBackoffMaximumBackoffInMs(), statsDReporter, new BackOff());
+                backOffConfig.exponentialBackoffInitialTimeInMs(),
+                backOffConfig.exponentialBackoffRate(),
+                backOffConfig.exponentialBackoffMaximumBackoffInMs(),
+                statsDReporter,
+                BackOff.withInstrumentationFactory(statsDReporter));
 
         if (kafkaConsumerConfig.getRetryQueueEnabled()) {
             RetryQueueConfig retryQueueConfig = ConfigFactory.create(RetryQueueConfig.class, config);

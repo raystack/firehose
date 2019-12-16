@@ -53,4 +53,17 @@ class Instrumentation {
   public void capturePushToRetryQueueSuccess(List<EsbMessage> failedMessages, List<EsbMessage> retryMessages, String topic) {
     LOGGER.info("Successfully pushed {} messages to {}", failedMessages.size() - retryMessages.size(), topic);
   }
+
+  /**
+   *  ================ BackOff Instrumentation ===================
+   * Currently only one method needed for instrumenting BackOff class.
+   * Can be extracted out later when it grows.
+   * */
+
+  public void captureBackOffThreadInteruptedError(InterruptedException e,
+  long milliseconds) {
+    // TODO add to non fatal
+    LOGGER.error("Backoff thread sleep for {} milliseconds interrupted : {} {}",
+    milliseconds, e.getClass(), e.getMessage());
+  }
 }
