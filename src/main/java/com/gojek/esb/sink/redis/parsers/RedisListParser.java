@@ -3,6 +3,7 @@ package com.gojek.esb.sink.redis.parsers;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.RedisSinkConfig;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import com.gojek.esb.sink.redis.dataentry.RedisListEntry;
 import com.google.protobuf.DynamicMessage;
@@ -27,7 +28,7 @@ public class RedisListParser extends RedisParser {
         String protoIndex = redisSinkConfig.getRedisListDataProtoIndex();
         if (protoIndex == null) {
             IllegalArgumentException illegalArgumentException = new IllegalArgumentException("Please provide REDIS_LIST_DATA_PROTO_INDEX in list sink");
-            instrumentation.captureProtoIndexNotFoundException(illegalArgumentException);
+            instrumentation.captureFatalError(illegalArgumentException);
             throw illegalArgumentException;
         }
         List<RedisDataEntry> messageEntries = new ArrayList<>();

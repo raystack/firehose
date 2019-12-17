@@ -1,9 +1,9 @@
 package com.gojek.esb.sink.elasticsearch.client;
 
 import com.gojek.esb.config.ESSinkConfig;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.elasticsearch.BulkProcessorListener;
-import com.gojek.esb.sink.elasticsearch.Instrumentation;
 
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.ActionListener;
@@ -28,11 +28,11 @@ public class ESSinkClient {
 
     public ESSinkClient(ESSinkConfig esSinkConfig, StatsDReporter statsDReporter) {
         this.statsDReporter = statsDReporter;
-        this.instrumentation = new Instrumentation(statsDReporter);
+        this.instrumentation = new Instrumentation(statsDReporter, ESSinkClient.class);
         HttpHost[] httpHosts = getHttpHosts(esSinkConfig.getEsConnectionUrls());
         if (httpHosts == null) {
             IllegalArgumentException e = new IllegalArgumentException("ES_CONNECTION_URLS is empty or null");
-            instrumentation.captureInvalidConfiguration(e);
+            instrumentation.captureFatalError(e);
             throw e;
         }
         BiConsumer<BulkRequest, ActionListener<BulkResponse>> listenerBiConsumer = getBulkAsyncConsumer();

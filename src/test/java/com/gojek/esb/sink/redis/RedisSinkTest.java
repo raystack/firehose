@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.redis.client.NoResponseException;
 import com.gojek.esb.sink.redis.client.RedisClient;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
@@ -52,10 +53,10 @@ public class RedisSinkTest {
     public void sendsMetricsForMessagesPushed() {
         redisSink.pushMessage(esbMessages);
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).captureExecutionTelemetry(esbMessages.size());
+        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("redis", esbMessages);
         InOrder inOrder = inOrder(instrumentation);
         inOrder.verify(instrumentation).startExecution();
-        inOrder.verify(instrumentation).captureExecutionTelemetry(esbMessages.size());
+        inOrder.verify(instrumentation).captureSuccessExecutionTelemetry("redis", esbMessages);
     }
 
     @Test
@@ -70,8 +71,9 @@ public class RedisSinkTest {
         doThrow(NoResponseException.class).when(redisClient).execute(redisDataEntry);
         try {
             redisSink.pushMessage(esbMessages);
-        } finally {
-            verify(instrumentation, times(1)).captureClientError();
+        } catch (NoResponseException e) {
+            verify(instrumentation, times(1)).captureFatalError(e, "Redis Pipeline error: no responds received");
+            throw e;
         }
     }
 
