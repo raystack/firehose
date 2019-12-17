@@ -9,6 +9,7 @@ import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.consumer.TestKey;
 import com.gojek.esb.consumer.TestMessage;
 import com.gojek.esb.consumer.TestNestedRepeatedMessage;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.sink.redis.dataentry.RedisHashSetFieldEntry;
 import org.junit.Before;

@@ -2,6 +2,7 @@ package com.gojek.esb.sink.db;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.util.Clock;
 import org.junit.Before;
@@ -62,7 +63,7 @@ public class DBSinkTest {
         List<String> upserts = esbMessages.stream().map(m -> queryTemplate.toQueryString(m)).collect(Collectors.toList());
         verify(dbBatchCommand, times(1)).execute(upserts);
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).captureSuccessAtempt(esbMessages);
+        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("db", esbMessages);
     }
 
     @Test
@@ -71,10 +72,10 @@ public class DBSinkTest {
                 new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
         dbSink.pushMessage(esbMessages);
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).captureSuccessAtempt(esbMessages);
+        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("db", esbMessages);
         InOrder inOrder = inOrder(instrumentation);
         inOrder.verify(instrumentation).startExecution();
-        inOrder.verify(instrumentation).captureSuccessAtempt(esbMessages);
+        inOrder.verify(instrumentation).captureSuccessExecutionTelemetry("db", esbMessages);
     }
 
     @Test
@@ -83,7 +84,7 @@ public class DBSinkTest {
                 new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
         doNothing().when(dbBatchCommand).execute(anyList());
         assertEquals(dbSink.pushMessage(esbMessages).size(), 0);
-        verify(instrumentation, times(1)).captureSuccessAtempt(esbMessages);
+        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("db", esbMessages);
     }
 
     @Test
@@ -93,6 +94,6 @@ public class DBSinkTest {
                 new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
         doThrow(sqlException).when(dbBatchCommand).execute(anyList());
         assertEquals(dbSink.pushMessage(esbMessages).size(), 2);
-        verify(instrumentation, times(1)).captureFailedAttempt(sqlException, esbMessages);
+        verify(instrumentation, times(1)).captureFailedExecutionTelemetry("db", sqlException, esbMessages);
     }
 }

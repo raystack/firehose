@@ -2,6 +2,7 @@ package com.gojek.esb.sinkdecorator;
 
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.Sink;
 
@@ -32,7 +33,7 @@ public class SinkWithRetryQueue extends SinkDecorator {
 
     public static SinkWithRetryQueue withInstrumentationFactory(Sink sink, Producer<byte[], byte[]> kafkaProducer, String topic,
     StatsDReporter statsDReporter, BackOffProvider backOffProvider) {
-        Instrumentation instrumentation = new Instrumentation(statsDReporter);
+        Instrumentation instrumentation = new Instrumentation(statsDReporter, SinkWithRetryQueue.class);
         return new SinkWithRetryQueue(sink, kafkaProducer, topic, instrumentation, backOffProvider);
     }
 
@@ -55,7 +56,7 @@ public class SinkWithRetryQueue extends SinkDecorator {
         AtomicInteger recordsProcessed = new AtomicInteger();
         ArrayList<EsbMessage> retryMessages = new ArrayList<>();
 
-        instrumentation.captureMessagesPushedToRetryQueue(failedMessages, topic);
+        instrumentation.logInfo("Pushing {} messages to retry queue topic : {}", failedMessages.size(), topic);
         for (EsbMessage message : failedMessages) {
             kafkaProducer.send(new ProducerRecord<>(topic, null, null, message.getLogKey(), message.getLogMessage(),
                     message.getHeaders()), (metadata, e) -> {
@@ -75,9 +76,9 @@ public class SinkWithRetryQueue extends SinkDecorator {
         try {
             completedLatch.await();
         } catch (InterruptedException e) {
-            instrumentation.capturePushToRetryQueueError(e);
+            instrumentation.captureNonFatalError(e);
         }
-        instrumentation.capturePushToRetryQueueSuccess(failedMessages, retryMessages, topic);
+        instrumentation.logInfo("Successfully pushed {} messages to {}", failedMessages.size() - retryMessages.size(), topic);
         return retryMessages;
     }
 

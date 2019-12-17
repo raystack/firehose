@@ -6,7 +6,7 @@ package com.gojek.esb.sink.redis.client;
  */
 public class NoResponseException extends RuntimeException {
 
-  NoResponseException() {
+  public NoResponseException() {
     super("Redis Pipeline error: no responds received");
   }
 }
