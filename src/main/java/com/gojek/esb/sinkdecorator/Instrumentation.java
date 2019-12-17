@@ -4,6 +4,9 @@ import static com.gojek.esb.metrics.Metrics.FAILURE_TAG;
 import static com.gojek.esb.metrics.Metrics.RETRY_MESSAGE_COUNT;
 import static com.gojek.esb.metrics.Metrics.SUCCESS_TAG;
 import static com.gojek.esb.metrics.Metrics.RETRY_ATTEMPTS;
+import static com.gojek.esb.metrics.Metrics.ERROR_EVENT;
+import static com.gojek.esb.metrics.Metrics.NON_FATAL_ERROR;
+import static com.gojek.esb.metrics.Metrics.ERROR_MESSAGE_TAG;
 
 import java.util.List;
 
@@ -36,9 +39,9 @@ class Instrumentation {
   }
 
   public void incrementMessageFailCount(EsbMessage message, Exception e) {
-    // TODO add to non fatal error
     statsDReporter.increment(RETRY_MESSAGE_COUNT, FAILURE_TAG);
     LOGGER.error("Unable to send record with key " + message.getLogKey() + " and message " + message.getLogMessage(), e);
+    caputreNonFatalError(e);
   }
 
   public void incrementMessageSucceedCount() {
@@ -46,8 +49,8 @@ class Instrumentation {
   }
 
   public void capturePushToRetryQueueError(InterruptedException e) {
-    // TODO add to non fatal error
     LOGGER.error(e.getMessage(), e.getClass());
+    caputreNonFatalError(e);
   }
 
   public void capturePushToRetryQueueSuccess(List<EsbMessage> failedMessages, List<EsbMessage> retryMessages, String topic) {
@@ -62,8 +65,16 @@ class Instrumentation {
 
   public void captureBackOffThreadInteruptedError(InterruptedException e,
   long milliseconds) {
-    // TODO add to non fatal
     LOGGER.error("Backoff thread sleep for {} milliseconds interrupted : {} {}",
     milliseconds, e.getClass(), e.getMessage());
+    caputreNonFatalError(e);
+  }
+
+  private void caputreNonFatalError(Exception e) {
+    statsDReporter.recordEvent(ERROR_EVENT, NON_FATAL_ERROR, errorTag(e, NON_FATAL_ERROR));
+  }
+
+  private String errorTag(Exception e, String errorType) {
+    return ERROR_MESSAGE_TAG + "=" + e.getClass().getName() + ",type=" + errorType;
   }
 }
