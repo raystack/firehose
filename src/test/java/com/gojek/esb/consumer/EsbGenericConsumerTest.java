@@ -5,6 +5,7 @@ import com.gojek.esb.audit.AuditableProtoMessage;
 import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.filter.EsbFilterException;
 import com.gojek.esb.filter.Filter;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.server.AuditServiceClient;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;

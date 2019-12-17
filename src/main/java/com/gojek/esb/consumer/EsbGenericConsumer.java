@@ -4,6 +4,7 @@ import com.gojek.esb.audit.AuditableProtoMessage;
 import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.filter.EsbFilterException;
 import com.gojek.esb.filter.Filter;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.server.AuditServiceClient;
 import com.newrelic.api.agent.Trace;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -58,11 +59,11 @@ public class EsbGenericConsumer {
      */
     public List<EsbMessage> readMessages() throws EsbFilterException {
         this.records = kafkaConsumer.poll(consumerConfig.getPollTimeOut());
-        instrumentation.logConsumedRecordsCount(records);
+        instrumentation.logInfo("Pulled {} messages", records.count());
         List<EsbMessage> messages = new ArrayList<>();
 
         for (ConsumerRecord<byte[], byte[]> record : records) {
-            instrumentation.logRecord(record);
+            instrumentation.logDebug("Pulled record: {}", record);
             messages.add(new EsbMessage(record.key(), record.value(), record.topic(), record.partition(), record.offset(), record.headers()));
         }
 
@@ -101,7 +102,7 @@ public class EsbGenericConsumer {
         try {
             this.kafkaConsumer.close();
         } catch (Exception e) {
-            instrumentation.captureClosingError(e);
+            instrumentation.captureNonFatalError(e, "Exception while closing ");
         }
     }
 }
