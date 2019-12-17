@@ -3,6 +3,9 @@ package com.gojek.esb.sink.redis;
 import static com.gojek.esb.metrics.Metrics.REDIS_SINK_MESSAGES_COUNT;
 import static com.gojek.esb.metrics.Metrics.REDIS_SINK_WRITE_TIME;
 import static com.gojek.esb.metrics.Metrics.SUCCESS_TAG;
+import static com.gojek.esb.metrics.Metrics.FATAL_ERROR;
+import static com.gojek.esb.metrics.Metrics.ERROR_EVENT;
+import static com.gojek.esb.metrics.Metrics.ERROR_MESSAGE_TAG;
 
 import java.time.Instant;
 
@@ -45,7 +48,12 @@ class Instrumentation {
   }
 
   public void captureClientError() {
-    // TODO capture as FATAL ERROR to statsdReporter
-    LOGGER.error("Redis Pipeline error: no responds received");
+    String message = "Redis Pipeline error: no responds received";
+    LOGGER.error(message);
+    statsDReporter.recordEvent(ERROR_EVENT, FATAL_ERROR, errorTag(new RuntimeException(), FATAL_ERROR));
+  }
+
+  private String errorTag(Exception e, String errorType) {
+    return ERROR_MESSAGE_TAG + "=" + e.getClass().getName() + ",type=" + errorType;
   }
 }

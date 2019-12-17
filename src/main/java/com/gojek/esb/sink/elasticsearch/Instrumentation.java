@@ -7,6 +7,10 @@ import org.slf4j.LoggerFactory;
 
 import lombok.AllArgsConstructor;
 
+import static com.gojek.esb.metrics.Metrics.ERROR_MESSAGE_TAG;
+import static com.gojek.esb.metrics.Metrics.FATAL_ERROR;
+import static com.gojek.esb.metrics.Metrics.ERROR_EVENT;
+
 /**
  * Instrumentation
  * <p>
@@ -21,7 +25,11 @@ public class Instrumentation {
   private StatsDReporter statsDReporter;
 
   public void captureInvalidConfiguration(IllegalArgumentException illegalArgumentException) {
-    // TODO add to fatal ERROR
     LOGGER.error(illegalArgumentException.getMessage());
+    statsDReporter.recordEvent(ERROR_EVENT, FATAL_ERROR, errorTag(illegalArgumentException, FATAL_ERROR));
+  }
+
+  private String errorTag(Exception e, String errorType) {
+    return ERROR_MESSAGE_TAG + "=" + e.getClass().getName() + ",type=" + errorType;
   }
 }

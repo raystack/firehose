@@ -49,5 +49,5 @@ public class Metrics {
     public static final String ERROR_EVENT = "error.event";
     public static final String NON_FATAL_ERROR = "NON_FATAL_ERROR";
     public static final String FATAL_ERROR = "FATAL_ERROR";
-    public static final String ERROR_MESSAGE_TAG = "message";
+    public static final String ERROR_MESSAGE_TAG = "class";
 }

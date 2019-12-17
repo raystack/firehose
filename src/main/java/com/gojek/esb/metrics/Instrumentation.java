@@ -59,8 +59,11 @@ public class Instrumentation {
 
   public void captureFatalError(Exception e, String message) {
     logger.error(message, e);
-    String errorTag = ERROR_MESSAGE_TAG + e;
-    statsDReporter.recordEvent(ERROR_EVENT, FATAL_ERROR, errorTag);
+    statsDReporter.recordEvent(ERROR_EVENT, FATAL_ERROR, errorTag(e, FATAL_ERROR));
+  }
+
+  private String errorTag(Exception e, String errorType) {
+    return ERROR_MESSAGE_TAG + "=" + e.getClass().getName() + ",type=" + errorType;
   }
 
 }
