@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.Sink;
 
 import lombok.AllArgsConstructor;
@@ -32,9 +33,9 @@ public class DBSink implements Sink {
         try {
             instrumentation.startExecution();
             dbBatchCommand.execute(queries);
-            instrumentation.captureSuccessAtempt(esbMessages);
+            instrumentation.captureSuccessExecutionTelemetry("db", esbMessages);
         } catch (SQLException e) {
-            instrumentation.captureFailedAttempt(e, esbMessages);
+            instrumentation.captureFailedExecutionTelemetry("db", e, esbMessages);
             return esbMessages;
         }
         return new ArrayList<>();

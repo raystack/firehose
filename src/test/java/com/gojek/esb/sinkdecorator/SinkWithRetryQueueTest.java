@@ -4,6 +4,7 @@ import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.consumer.TestKey;
 import com.gojek.esb.consumer.TestMessage;
 import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sinkdecorator.SinkWithRetry;
 import com.gojek.esb.sinkdecorator.SinkWithRetryQueue;
 

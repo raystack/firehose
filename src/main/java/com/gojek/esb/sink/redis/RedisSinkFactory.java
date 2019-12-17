@@ -6,6 +6,7 @@ import java.util.Map;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.RedisSinkConfig;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.sink.Sink;
@@ -35,7 +36,7 @@ public class RedisSinkFactory implements SinkFactory {
         ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, redisSinkConfig.getProtoToFieldMapping());
 
         RedisParser redisParser = RedisParserFactory.getParser(protoToFieldMapper, protoParser, redisSinkConfig, statsDReporter);
-        Instrumentation instrumentation = new Instrumentation(statsDReporter);
+        Instrumentation instrumentation = new Instrumentation(statsDReporter, RedisSink.class);
         return new RedisSink(redisClient, redisParser, instrumentation);
     }
 }
