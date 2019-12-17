@@ -4,7 +4,7 @@ import com.gojek.esb.config.AuditConfig;
 import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.config.RetryQueueConfig;
 import com.gojek.esb.consumer.EsbGenericConsumer;
-import com.gojek.esb.consumer.Instrumentation;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.consumer.Offsets;
 import com.gojek.esb.consumer.TopicOffsets;
 import com.gojek.esb.consumer.TopicPartitionOffsets;
