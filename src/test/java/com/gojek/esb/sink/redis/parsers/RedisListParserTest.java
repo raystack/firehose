@@ -8,6 +8,7 @@ import com.gojek.esb.config.enums.RedisSinkType;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.consumer.TestKey;
 import com.gojek.esb.consumer.TestMessage;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.redis.dataentry.RedisListEntry;
 import org.junit.Before;
 import org.junit.Rule;

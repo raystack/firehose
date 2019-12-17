@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.redis.client.NoResponseException;
 import com.gojek.esb.sink.redis.client.RedisClient;
@@ -31,10 +32,10 @@ public class RedisSink implements Sink {
         try {
             redisClient.execute(redisDataEntries);
         } catch (NoResponseException e) {
-            instrumentation.captureClientError();
+            instrumentation.captureFatalError(e, "Redis Pipeline error: no responds received");
             throw e;
         }
-        instrumentation.captureExecutionTelemetry(esbMessages.size());
+        instrumentation.captureSuccessExecutionTelemetry("redis", esbMessages);
         return new ArrayList<>();
     }
 
