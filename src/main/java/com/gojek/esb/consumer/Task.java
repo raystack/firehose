@@ -1,8 +1,5 @@
 package com.gojek.esb.consumer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -11,9 +8,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
+import com.gojek.esb.metrics.Instrumentation;
+
 public class Task {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Task.class);
     private final ExecutorService executorService;
     private int parallelism;
     private int threadCleanupDelay;
@@ -21,8 +19,9 @@ public class Task {
     private Runnable taskFinishCallback;
     private final CountDownLatch countDownLatch;
     private final List<Future<?>> fnFutures;
+    private Instrumentation instrumentation;
 
-    public Task(int parallelism, int threadCleanupDelay, Consumer<Runnable> task) {
+    public Task(int parallelism, int threadCleanupDelay, Instrumentation instrumentation, Consumer<Runnable> task) {
         executorService = Executors.newFixedThreadPool(parallelism);
         this.parallelism = parallelism;
         this.threadCleanupDelay = threadCleanupDelay;
@@ -30,6 +29,7 @@ public class Task {
         this.countDownLatch = new CountDownLatch(parallelism);
         this.fnFutures = new ArrayList<>(parallelism);
         taskFinishCallback = countDownLatch::countDown;
+        this.instrumentation = instrumentation;
     }
 
     public Task run() {
@@ -42,7 +42,7 @@ public class Task {
     }
 
     public void waitForCompletion() throws InterruptedException {
-        LOGGER.info("waiting for completion");
+        instrumentation.logInfo("waiting for completion");
         countDownLatch.await();
     }
 
@@ -51,7 +51,7 @@ public class Task {
             fnFutures.forEach(consumerThread -> consumerThread.cancel(true));
             Thread.sleep(threadCleanupDelay);
         } catch (InterruptedException e) {
-            LOGGER.error("error stopping tasks", e);
+            instrumentation.captureNonFatalError(e, "error stopping tasks");
         }
         return this;
     }

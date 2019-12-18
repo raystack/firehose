@@ -4,6 +4,7 @@ package com.gojek.esb.sink.db;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.DBSinkConfig;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.sink.Sink;
@@ -27,7 +28,9 @@ public class DBSinkFactory implements SinkFactory {
 
         QueryTemplate queryTemplate = createQueryTemplate(dbSinkConfig, client);
 
-        return new DBSink(dbBatchCommand, queryTemplate, statsDReporter, client);
+        Instrumentation instrumentation = new Instrumentation(statsDReporter, DBSink.class);
+
+        return new DBSink(dbBatchCommand, queryTemplate, instrumentation, client);
     }
 
     private DBBatchCommand createBatchCommand(DBSinkConfig dbSinkConfig) {

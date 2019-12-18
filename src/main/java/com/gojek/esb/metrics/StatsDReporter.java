@@ -52,6 +52,10 @@ public class StatsDReporter {
         captureCount(metric, 1);
     }
 
+    public void recordEvent(String metric, String eventName, String... tags) {
+        client.recordSetEvent(withTags(metric, tags), eventName);
+    }
+
     private String withGlobalTags(String metric) {
         return metric + "," + this.globalTags;
     }

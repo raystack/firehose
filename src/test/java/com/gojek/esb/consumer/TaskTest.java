@@ -3,11 +3,14 @@ package com.gojek.esb.consumer;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.gojek.esb.metrics.Instrumentation;
 
 import static org.junit.Assert.assertEquals;
 
@@ -18,10 +21,13 @@ public class TaskTest {
     private static final int THREAD_CLEANUP_DELAY_IN_MS = 100;
     private static final long SLEEP_SECONDS = 10L;
 
+    @Mock
+    private Instrumentation instrumentation;
+
     @Test
     public void shouldExecuteTaskWithParallelism() throws InterruptedException {
         final List<Long> threadList = new ArrayList<>();
-        Task task = new Task(PARALLELISM, THREAD_CLEANUP_DELAY_IN_MS, callback -> {
+        Task task = new Task(PARALLELISM, THREAD_CLEANUP_DELAY_IN_MS, instrumentation, callback -> {
             threadList.add(Thread.currentThread().getId());
             callback.run();
         });
@@ -33,7 +39,7 @@ public class TaskTest {
     @Test @Ignore
     public void shouldExecuteTaskUntilStopped() throws InterruptedException {
         final ConcurrentHashMap<Long, String> threadResults = new ConcurrentHashMap<Long, String>();
-        Task task = new Task(PARALLELISM, THREAD_CLEANUP_DELAY_IN_MS, callback -> {
+        Task task = new Task(PARALLELISM, THREAD_CLEANUP_DELAY_IN_MS, instrumentation, callback -> {
             try {
                 while (!Thread.interrupted()) {
                     threadResults.put(Thread.currentThread().getId(), "thread started");

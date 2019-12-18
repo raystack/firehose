@@ -46,4 +46,10 @@ public class Metrics {
     public static final String ES_SINK_FAILED_DOCUMENT_COUNT = "es.sink.failed_document_count";
     public static final String ES_SINK_SUCCESS_DOCUMENT_COUNT = "es.sink.success_document_count";
     public static final String ES_SINK_BATCH_FAILURE_COUNT = "es.sink.batch_failure_count";
+
+    // ERROR
+    public static final String ERROR_EVENT = "error.event";
+    public static final String NON_FATAL_ERROR = "NON_FATAL_ERROR";
+    public static final String FATAL_ERROR = "FATAL_ERROR";
+    public static final String ERROR_MESSAGE_TAG = "class";
 }
