@@ -1,8 +1,10 @@
-package com.gojek.esb.sink;
+package com.gojek.esb.sinkdecorator;
 
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.sink.Sink;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +20,8 @@ public class SinkWithRetry extends SinkDecorator {
     private int maxRetryAttempts;
     private static final Logger LOGGER = LoggerFactory.getLogger(SinkWithRetry.class);
 
-    public SinkWithRetry(Sink sink, BackOffProvider backOffProvider, StatsDReporter statsDReporter, int maxRetryAttempts) {
+    public SinkWithRetry(Sink sink, BackOffProvider backOffProvider, StatsDReporter statsDReporter,
+            int maxRetryAttempts) {
         super(sink);
         this.backOffProvider = backOffProvider;
         this.statsDReporter = statsDReporter;
@@ -41,7 +44,8 @@ public class SinkWithRetry extends SinkDecorator {
             return failedMessages;
         }
 
-        while ((attemptCount < maxRetryAttempts && !failedMessages.isEmpty()) || (maxRetryAttempts == Integer.MAX_VALUE && !failedMessages.isEmpty())) {
+        while ((attemptCount < maxRetryAttempts && !failedMessages.isEmpty())
+                || (maxRetryAttempts == Integer.MAX_VALUE && !failedMessages.isEmpty())) {
             attemptCount++;
             this.statsDReporter.increment(REQUEST_RETRY);
             LOGGER.info("Retrying messages attempt count: {}", attemptCount);

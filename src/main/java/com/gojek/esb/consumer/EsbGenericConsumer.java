@@ -4,20 +4,16 @@ import com.gojek.esb.audit.AuditableProtoMessage;
 import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.filter.EsbFilterException;
 import com.gojek.esb.filter.Filter;
-import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.server.AuditServiceClient;
 import com.newrelic.api.agent.Trace;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static com.gojek.esb.metrics.Metrics.KAFKA_FILTERED_MESSAGE;
 
 /**
  * A class responsible for consuming the messages in kafka.
@@ -25,14 +21,13 @@ import static com.gojek.esb.metrics.Metrics.KAFKA_FILTERED_MESSAGE;
  * {@see Filter}. Audit client helps audit the messages.
  */
 public class EsbGenericConsumer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EsbGenericConsumer.class.getName());
 
     private final Consumer kafkaConsumer;
     private final KafkaConsumerConfig consumerConfig;
     private final AuditServiceClient auditServiceClient;
     private Filter filter;
     private Offsets offsets;
-    private StatsDReporter statsDReporter;
+    private Instrumentation instrumentation;
 
     private ConsumerRecords<byte[], byte[]> records;
 
@@ -44,16 +39,16 @@ public class EsbGenericConsumer {
      * @param auditServiceClient {@see AuditServiceClient}
      * @param filter             a Filter implementation to filter the messages. {@see Filter}, {@see com.gojek.esb.filter.EsbMessageFilter}
      * @param offsets            {@see Offsets}
-     * @param statsDReporter     Sends StatsD metric
+     * @param instrumentation     Contain logging and metrics collection
      */
     public EsbGenericConsumer(Consumer kafkaConsumer, KafkaConsumerConfig config, AuditServiceClient auditServiceClient, Filter filter,
-                              Offsets offsets, StatsDReporter statsDReporter) {
+                              Offsets offsets, Instrumentation instrumentation) {
         this.kafkaConsumer = kafkaConsumer;
         this.consumerConfig = config;
         this.auditServiceClient = auditServiceClient;
         this.filter = filter;
         this.offsets = offsets;
-        this.statsDReporter = statsDReporter;
+        this.instrumentation = instrumentation;
     }
 
     /**
@@ -64,12 +59,12 @@ public class EsbGenericConsumer {
      */
     public List<EsbMessage> readMessages() throws EsbFilterException {
         this.records = kafkaConsumer.poll(consumerConfig.getPollTimeOut());
-        LOGGER.info("Pulled {} messages", records.count());
+        instrumentation.logInfo("Pulled {} messages", records.count());
         List<EsbMessage> messages = new ArrayList<>();
 
         for (ConsumerRecord<byte[], byte[]> record : records) {
-            LOGGER.debug("Pulled record: {}", record);
             messages.add(new EsbMessage(record.key(), record.value(), record.topic(), record.partition(), record.offset(), record.headers(), record.timestamp()));
+            instrumentation.logDebug("Pulled record: {}", record);
         }
 
         audit(messages);
@@ -93,7 +88,7 @@ public class EsbGenericConsumer {
         List<EsbMessage> filteredMessage = filter.filter(messages);
         Integer filteredMessageCount = messages.size() - filteredMessage.size();
         if (filteredMessageCount > 0) {
-            statsDReporter.captureCount(KAFKA_FILTERED_MESSAGE, filteredMessageCount, "expr=" + consumerConfig.getFilterExpression());
+            instrumentation.captureFilteredMessageCount(filteredMessageCount, consumerConfig.getFilterExpression());
         }
         return filteredMessage;
     }
@@ -107,7 +102,7 @@ public class EsbGenericConsumer {
         try {
             this.kafkaConsumer.close();
         } catch (Exception e) {
-            LOGGER.error("Exception while closing ", e);
+            instrumentation.captureNonFatalError(e, "Exception while closing ");
         }
     }
 }

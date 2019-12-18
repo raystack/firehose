@@ -1,8 +1,9 @@
-package com.gojek.esb.sink;
+package com.gojek.esb.sinkdecorator;
 
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.StatsDReporter;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -42,8 +43,8 @@ public class SinkWithRetryTest {
     public void shouldReturnEmptyListIfSuperReturnsEmptyList() throws IOException, DeserializerException {
         when(sinkDecorator.pushMessage(anyList())).thenReturn(new ArrayList<>());
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, statsDReporter, 3);
-        List<EsbMessage> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(new EsbMessage(
-                "key".getBytes(), "value".getBytes(), "topic", 1, 1)));
+        List<EsbMessage> esbMessages = sinkWithRetry.pushMessage(
+                Collections.singletonList(new EsbMessage("key".getBytes(), "value".getBytes(), "topic", 1, 1)));
 
         assertTrue(esbMessages.isEmpty());
         verify(sinkDecorator, Mockito.times(1)).pushMessage(anyList());
@@ -54,7 +55,8 @@ public class SinkWithRetryTest {
         ArrayList<EsbMessage> messages = new ArrayList<>();
         messages.add(esbMessage);
         messages.add(esbMessage);
-        when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages).thenReturn(messages);
+        when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages)
+                .thenReturn(messages);
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, statsDReporter, 3);
 
         List<EsbMessage> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(esbMessage));
@@ -68,7 +70,8 @@ public class SinkWithRetryTest {
         ArrayList<EsbMessage> messages = new ArrayList<>();
         messages.add(esbMessage);
         messages.add(esbMessage);
-        when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(new ArrayList<>());
+        when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages)
+                .thenReturn(new ArrayList<>());
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, statsDReporter, 3);
 
         List<EsbMessage> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(esbMessage));
@@ -82,13 +85,8 @@ public class SinkWithRetryTest {
         ArrayList<EsbMessage> messages = new ArrayList<>();
         messages.add(esbMessage);
         messages.add(esbMessage);
-        when(sinkDecorator.pushMessage(anyList()))
-                .thenReturn(messages)
-                .thenReturn(messages)
-                .thenReturn(messages)
-                .thenReturn(messages)
-                .thenReturn(messages)
-                .thenReturn(new ArrayList<>());
+        when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages)
+                .thenReturn(messages).thenReturn(messages).thenReturn(new ArrayList<>());
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, statsDReporter);
 
         List<EsbMessage> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(esbMessage));
@@ -102,13 +100,8 @@ public class SinkWithRetryTest {
         ArrayList<EsbMessage> messages = new ArrayList<>();
         messages.add(esbMessage);
         messages.add(esbMessage);
-        when(sinkDecorator.pushMessage(anyList()))
-                .thenReturn(messages)
-                .thenReturn(messages)
-                .thenReturn(messages)
-                .thenReturn(messages)
-                .thenReturn(messages)
-                .thenReturn(new ArrayList<>());
+        when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages)
+                .thenReturn(messages).thenReturn(messages).thenReturn(new ArrayList<>());
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, statsDReporter);
 
         List<EsbMessage> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(esbMessage));

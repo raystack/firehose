@@ -1,4 +1,4 @@
-package com.gojek.esb.sink;
+package com.gojek.esb.sinkdecorator;
 
 /**
  * Interface to provide back-off functionality.

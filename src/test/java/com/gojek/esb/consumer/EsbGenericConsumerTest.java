@@ -5,7 +5,7 @@ import com.gojek.esb.audit.AuditableProtoMessage;
 import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.filter.EsbFilterException;
 import com.gojek.esb.filter.Filter;
-import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.server.AuditServiceClient;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -53,7 +53,7 @@ public class EsbGenericConsumerTest {
     private Filter filter;
 
     @Mock
-    private StatsDReporter statsDReporter;
+    private Instrumentation instrumentation;
 
     @Mock
     private KafkaConsumerConfig consumerConfig;
@@ -73,7 +73,7 @@ public class EsbGenericConsumerTest {
     public void setUp() {
         message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
-        consumerWithAudit = new EsbGenericConsumer(kafkaConsumer, consumerConfig, auditServiceClient, filter, offsets, statsDReporter);
+        consumerWithAudit = new EsbGenericConsumer(kafkaConsumer, consumerConfig, auditServiceClient, filter, offsets, instrumentation);
         when(consumerConfig.getPollTimeOut()).thenReturn(500L);
         when(kafkaConsumer.poll(500L)).thenReturn(consumerRecords);
         consumerRecord1 = new ConsumerRecord<>("topic1", 1, 0, key.toByteArray(), message.toByteArray());
@@ -135,7 +135,7 @@ public class EsbGenericConsumerTest {
         assertNotNull(messages);
         assertThat(messages.size(), is(1));
         assertEquals(expectedMsg1, messages.get(0));
-        verify(statsDReporter, times(1)).captureCount("kafka.filtered", 1, "expr=test");
+        verify(instrumentation, times(1)).captureFilteredMessageCount(1, "test");
 
     }
 
