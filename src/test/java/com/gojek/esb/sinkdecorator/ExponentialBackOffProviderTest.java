@@ -1,6 +1,8 @@
-package com.gojek.esb.sink;
+package com.gojek.esb.sinkdecorator;
 
 import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.sinkdecorator.ExponentialBackOffProvider;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,10 +28,10 @@ public class ExponentialBackOffProviderTest {
 
     private ExponentialBackOffProvider exponentialBackOffProvider;
 
-
     @Before
     public void setup() {
-        exponentialBackOffProvider = new ExponentialBackOffProvider(initialExpiryTimeInMS, backOffRate, maximumBackoffTimeInMS, statsDReporter, backOff);
+        exponentialBackOffProvider = new ExponentialBackOffProvider(initialExpiryTimeInMS, backOffRate,
+                maximumBackoffTimeInMS, statsDReporter, backOff);
     }
 
     @Test

@@ -1,19 +1,23 @@
 package com.gojek.esb.sink.redis;
 
 
+import java.util.Map;
+
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.RedisSinkConfig;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.SinkFactory;
+import com.gojek.esb.sink.redis.client.RedisClient;
 import com.gojek.esb.sink.redis.parsers.RedisParser;
 import com.gojek.esb.sink.redis.parsers.RedisParserFactory;
-import org.aeonbits.owner.ConfigFactory;
-import redis.clients.jedis.Jedis;
 
-import java.util.Map;
+import org.aeonbits.owner.ConfigFactory;
+
+import redis.clients.jedis.Jedis;
 
 /**
  * Factory class to create the RedisSink.
@@ -31,7 +35,8 @@ public class RedisSinkFactory implements SinkFactory {
         ProtoParser protoParser = new ProtoParser(client, redisSinkConfig.getProtoSchema());
         ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, redisSinkConfig.getProtoToFieldMapping());
 
-        RedisParser redisParser = RedisParserFactory.getParser(protoToFieldMapper, protoParser, redisSinkConfig);
-        return new RedisSink(redisClient, redisParser, statsDReporter);
+        RedisParser redisParser = RedisParserFactory.getParser(protoToFieldMapper, protoParser, redisSinkConfig, statsDReporter);
+        Instrumentation instrumentation = new Instrumentation(statsDReporter, RedisSink.class);
+        return new RedisSink(redisClient, redisParser, instrumentation);
     }
 }

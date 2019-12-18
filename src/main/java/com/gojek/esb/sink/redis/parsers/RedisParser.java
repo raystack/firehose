@@ -1,35 +1,47 @@
 package com.gojek.esb.sink.redis.parsers;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.RedisSinkConfig;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
-import lombok.AllArgsConstructor;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.common.errors.InvalidConfigurationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.List;
+import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public abstract class RedisParser {
-    private static final Logger LOGGER = LoggerFactory.getLogger(com.gojek.esb.sink.redis.parsers.RedisParser.class);
+
     private ProtoParser protoParser;
     private RedisSinkConfig redisSinkConfig;
+    private Instrumentation instrumentation;
 
     public abstract List<RedisDataEntry> parse(EsbMessage esbMessage);
+
+    public List<RedisDataEntry> parse(List<EsbMessage> esbMessages) {
+        return esbMessages
+            .stream()
+            .map(esbMessage -> this.parse(esbMessage))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+    }
 
     DynamicMessage parseEsbMessage(EsbMessage esbMessage) {
         DynamicMessage parsedMessage;
         try {
             parsedMessage = protoParser.parse(getPayload(esbMessage));
         } catch (InvalidProtocolBufferException e) {
-            LOGGER.error("Unable to parse data when reading Key");
+            instrumentation.captureFatalError(e, "Unable to parse data when reading Key");
             throw new IllegalArgumentException(e);
         }
         return parsedMessage;
@@ -37,13 +49,16 @@ public abstract class RedisParser {
 
     String parseTemplate(DynamicMessage data, String template) {
         if (StringUtils.isEmpty(template)) {
-            LOGGER.error(String.format("Template '%s' is invalid", template));
-            throw new IllegalArgumentException("Invalid configuration, Collection key or key is null or empty");
+            IllegalArgumentException invalidTemplateException = new IllegalArgumentException("Invalid configuration, Collection key or key is null or empty");
+            instrumentation.captureFatalError(invalidTemplateException, "Template {} is invalid", template);
+            throw invalidTemplateException;
         }
         String[] templateStrings = template.split(",");
         if (templateStrings.length == 0) {
-            LOGGER.error(String.format("Empty key configuration: '%s'", template));
-            throw new InvalidConfigurationException(String.format("Empty key configuration: '%s'", template));
+            String message = String.format("Empty key configuration: '%s'", template);
+            InvalidConfigurationException emptyKeyException = new InvalidConfigurationException(message);
+            instrumentation.captureFatalError(emptyKeyException, message);
+            throw emptyKeyException;
         }
         templateStrings = Arrays
                 .stream(templateStrings)
@@ -78,8 +93,10 @@ public abstract class RedisParser {
         }
         Descriptors.FieldDescriptor fieldDescriptor = parsedMessage.getDescriptorForType().findFieldByNumber(fieldNumberInt);
         if (fieldDescriptor == null) {
-            LOGGER.error(String.format("Descriptor not found for index: %s", fieldNumber));
-            throw new IllegalArgumentException(String.format("Descriptor not found for index: %s", fieldNumber));
+            String message = String.format("Descriptor not found for index: %s", fieldNumber);
+            IllegalArgumentException descriptorNotFoundException = new IllegalArgumentException(message);
+            instrumentation.captureFatalError(descriptorNotFoundException, message);
+            throw descriptorNotFoundException;
         }
         return parsedMessage.getField(fieldDescriptor);
     }

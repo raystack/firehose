@@ -1,58 +1,80 @@
 package com.gojek.esb.sink.redis;
 
-import com.gojek.esb.consumer.EsbMessage;
-import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.sink.redis.parsers.RedisParser;
-import com.gojek.esb.util.Clock;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.mockito.Mockito.*;
+import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.Instrumentation;
+import com.gojek.esb.sink.redis.client.NoResponseException;
+import com.gojek.esb.sink.redis.client.RedisClient;
+import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
+import com.gojek.esb.sink.redis.parsers.RedisParser;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedisSinkTest {
 
     private RedisSink redisSink;
     private List<EsbMessage> esbMessages;
-
+    private List<RedisDataEntry> redisDataEntry;
 
     @Mock
     private RedisClient redisClient;
 
     @Mock
-    private StatsDReporter statsDReporter;
+    private Instrumentation instrumentation;
 
     @Mock
     private RedisParser redisMessageParser;
 
     @Before
     public void setUp() {
-        when(statsDReporter.getClock()).thenReturn(new Clock());
-
         esbMessages = Arrays.asList(new EsbMessage(new byte[0], new byte[0], "topic", 0, 100),
                 new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
 
-        redisSink = new RedisSink(redisClient, redisMessageParser, statsDReporter);
+        redisSink = new RedisSink(redisClient, redisMessageParser, instrumentation);
     }
 
     @Test
     public void sendsMetricsForMessagesPushed() {
         redisSink.pushMessage(esbMessages);
-        verify(statsDReporter, times(1)).captureCount(any(), any(), any());
-        verify(statsDReporter, times(1)).captureDurationSince(any(), any(), any());
+        verify(instrumentation, times(1)).startExecution();
+        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("redis", esbMessages);
+        InOrder inOrder = inOrder(instrumentation);
+        inOrder.verify(instrumentation).startExecution();
+        inOrder.verify(instrumentation).captureSuccessExecutionTelemetry("redis", esbMessages);
     }
 
     @Test
     public void sendsMessagesToRedis() {
         redisSink.pushMessage(esbMessages);
         verify(redisClient, times(1)).execute(any());
+    }
+
+    @Test(expected = NoResponseException.class)
+    public void shouldThrowAndInstrumentErrorWhenExecutionFail() {
+        when(redisMessageParser.parse(esbMessages)).thenReturn(redisDataEntry);
+        doThrow(NoResponseException.class).when(redisClient).execute(redisDataEntry);
+        try {
+            redisSink.pushMessage(esbMessages);
+        } catch (NoResponseException e) {
+            verify(instrumentation, times(1)).captureFatalError(e, "Redis Pipeline error: no responds received");
+            throw e;
+        }
     }
 
     @Test
