@@ -69,7 +69,7 @@ public class EsbGenericConsumer {
 
         for (ConsumerRecord<byte[], byte[]> record : records) {
             LOGGER.debug("Pulled record: {}", record);
-            messages.add(new EsbMessage(record.key(), record.value(), record.topic(), record.partition(), record.offset(), record.headers()));
+            messages.add(new EsbMessage(record.key(), record.value(), record.topic(), record.partition(), record.offset(), record.headers(), record.timestamp()));
         }
 
         audit(messages);

@@ -5,6 +5,7 @@ public class Metrics {
     //HTTP SINK
     public static final String HTTP_EXECUTION_TIME = "http.execution_time";
     public static final String HTTP_RESPONSE_CODE = "http.response_code";
+    public static final String HTTP_FIREHOSE_LATENCY = "http.latency";
 
     //DB SINK
     public static final String DB_SINK_WRITE_TIME = "db.sink.write.time";
@@ -13,6 +14,7 @@ public class Metrics {
     //INFLUX DB SINK
     public static final String INFLUX_DB_SINK_WRITE_TIME = "influx.db.sink.write.time";
     public static final String INFLUX_DB_SINK_MESSAGES_COUNT = "influx.db.sink.messages.count";
+    public static final String INFLUX_DB_SINK_FIREHOSE_LATENCY = "influx.db.sink.latency";
 
 
     //KAFKA
