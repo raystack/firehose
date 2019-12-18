@@ -132,7 +132,7 @@ public class InfluxSinkTest {
 
         assertEquals(expectedPoint.lineProtocol(), batchPointsList.get(0).getPoints().get(0).lineProtocol());
         verify(statsDReporter, times(1)).captureCount(any(), any(), any());
-        verify(statsDReporter, times(1)).captureDurationSince(any(), any(), any());
+        verify(statsDReporter, times(2)).captureDurationSince(any(), any(), any());
 
     }
 
