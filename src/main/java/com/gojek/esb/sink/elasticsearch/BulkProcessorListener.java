@@ -69,8 +69,14 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
     @Override
     public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
         LOGGER.error("Failed to execute bulk", failure);
+        statsDReporter.recordEvent(ERROR_EVENT, NON_FATAL_ERROR, errorTag(failure, NON_FATAL_ERROR));
+
         statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, getStartTime(), FAILURE_TAG);
         statsDReporter.captureCount(ES_SINK_FAILED_DOCUMENT_COUNT, request.numberOfActions(), FAILURE_TAG);
         statsDReporter.captureCount(ES_SINK_BATCH_FAILURE_COUNT, 1, FAILURE_TAG);
+    }
+
+    private String errorTag(Throwable e, String errorType) {
+        return ERROR_MESSAGE_TAG + "=" + e.getClass().getName() + ",type=" + errorType;
     }
 }

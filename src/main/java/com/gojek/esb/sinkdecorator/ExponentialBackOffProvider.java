@@ -1,6 +1,7 @@
-package com.gojek.esb.sink;
+package com.gojek.esb.sinkdecorator;
 
 import com.gojek.esb.metrics.StatsDReporter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +11,8 @@ import static java.lang.Math.toIntExact;
  * ExponentialBackOffProvider is a provider of exponential back-off algorithm.
  * <p>
  * The backoff time is computed as per the following formula.
- *      Min{maximumExpiryTimeInMS, initialExpiryTimeInMs * Math.pow(backoffRate, attemptCount)}
+ * Min{maximumExpiryTimeInMS, initialExpiryTimeInMs * Math.pow(backoffRate,
+ * attemptCount)}
  */
 public class ExponentialBackOffProvider implements BackOffProvider {
 
@@ -21,7 +23,8 @@ public class ExponentialBackOffProvider implements BackOffProvider {
     private final BackOff backOff;
     private static final Logger LOGGER = LoggerFactory.getLogger(ExponentialBackOffProvider.class);
 
-    public ExponentialBackOffProvider(int initialExpiryTimeInMs, int backoffRate, int maximumExpiryTimeInMS, StatsDReporter statsDReporter, BackOff backOff) {
+    public ExponentialBackOffProvider(int initialExpiryTimeInMs, int backoffRate, int maximumExpiryTimeInMS,
+            StatsDReporter statsDReporter, BackOff backOff) {
         this.initialExpiryTimeInMs = initialExpiryTimeInMs;
         this.backoffRate = backoffRate;
         this.maximumExpiryTimeInMS = maximumExpiryTimeInMS;
