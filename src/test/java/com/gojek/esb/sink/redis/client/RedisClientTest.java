@@ -1,6 +1,5 @@
 package com.gojek.esb.sink.redis.client;
 
-import com.gojek.esb.sink.redis.client.RedisClient;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import com.gojek.esb.sink.redis.dataentry.RedisHashSetFieldEntry;
 import org.junit.Before;

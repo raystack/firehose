@@ -1,7 +1,6 @@
 package com.gojek.esb.sinkdecorator;
 
 import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.sinkdecorator.ExponentialBackOffProvider;
 
 import org.junit.Before;
 import org.junit.Test;
