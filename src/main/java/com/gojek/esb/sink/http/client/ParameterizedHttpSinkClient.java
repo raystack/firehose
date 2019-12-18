@@ -22,10 +22,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.gojek.esb.metrics.Metrics.HTTP_FIREHOSE_LATENCY;
 
 @AllArgsConstructor
 public class ParameterizedHttpSinkClient implements HttpSinkClient {
@@ -53,7 +56,10 @@ public class ParameterizedHttpSinkClient implements HttpSinkClient {
 
     @Trace(dispatcher = true)
     public HttpResponse execute(EsbMessage message) throws DeserializerException, URISyntaxException {
-        return sendRequest(createPutMethod(message));
+
+        HttpPut putMethod = createPutMethod(message);
+        statsDReporter.captureDurationSince(HTTP_FIREHOSE_LATENCY, Instant.ofEpochMilli(message.getTimestamp()));
+        return sendRequest(putMethod);
     }
 
     private HttpPut createPutMethod(EsbMessage message) throws DeserializerException, URISyntaxException {

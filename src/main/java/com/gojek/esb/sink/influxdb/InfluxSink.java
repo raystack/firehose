@@ -50,6 +50,7 @@ public class InfluxSink implements Sink {
             DynamicMessage message = protoParser.parse(esbMessage.getLogMessage());
             Point point = pointBuilder.buildPoint(message);
             batchPoints.point(point);
+            statsDReporter.captureDurationSince(INFLUX_DB_SINK_FIREHOSE_LATENCY, Instant.ofEpochMilli(esbMessage.getTimestamp()));
         }
         try {
             Instant startExecution = statsDReporter.getClock().now();

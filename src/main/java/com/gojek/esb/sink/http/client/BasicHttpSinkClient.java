@@ -16,13 +16,17 @@ import org.apache.http.entity.StringEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.List;
+
+import static com.gojek.esb.metrics.Metrics.HTTP_FIREHOSE_LATENCY;
 
 @AllArgsConstructor
 public class BasicHttpSinkClient implements HttpSinkClient {
     private String requestUrl;
     private Header header;
     private Deserializer deserializer;
+
 
     @Getter
     private final HttpClient httpClient;
@@ -41,7 +45,11 @@ public class BasicHttpSinkClient implements HttpSinkClient {
 
     @Trace(dispatcher = true)
     public HttpResponse executeBatch(List<EsbMessage> messages) throws DeserializerException {
-        return sendRequest(createBatchPutMethod(messages));
+        HttpPut batchPutMethod = createBatchPutMethod(messages);
+        messages.forEach(message -> {
+            statsDReporter.captureDurationSince(HTTP_FIREHOSE_LATENCY, Instant.ofEpochMilli(message.getTimestamp()));
+        });
+        return sendRequest(batchPutMethod);
     }
 
     private HttpPut createBatchPutMethod(List<EsbMessage> messages) throws DeserializerException {

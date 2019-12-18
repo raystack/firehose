@@ -21,6 +21,7 @@ public class EsbMessage {
     private int partition;
     private long offset;
     private Headers headers;
+    private long timestamp;
 
     public EsbMessage(byte[] logKey, byte[] logMessage, String topic, int partition, long offset) {
         this.logKey = logKey;
