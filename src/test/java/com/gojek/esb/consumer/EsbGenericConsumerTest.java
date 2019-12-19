@@ -21,6 +21,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -75,7 +76,7 @@ public class EsbGenericConsumerTest {
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
         consumerWithAudit = new EsbGenericConsumer(kafkaConsumer, consumerConfig, auditServiceClient, filter, offsets, instrumentation);
         when(consumerConfig.getPollTimeOut()).thenReturn(500L);
-        when(kafkaConsumer.poll(500L)).thenReturn(consumerRecords);
+        when(kafkaConsumer.poll(Duration.ofMillis(500L))).thenReturn(consumerRecords);
         consumerRecord1 = new ConsumerRecord<>("topic1", 1, 0, key.toByteArray(), message.toByteArray());
         consumerRecord2 = new ConsumerRecord<>("topic2", 1, 0, key.toByteArray(), message.toByteArray());
     }
