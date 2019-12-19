@@ -1,22 +1,16 @@
 package com.gojek.esb.metrics;
 
-import static com.gojek.esb.metrics.Metrics.ERROR_EVENT;
-import static com.gojek.esb.metrics.Metrics.ERROR_MESSAGE_TAG;
-import static com.gojek.esb.metrics.Metrics.FAILURE_TAG;
-import static com.gojek.esb.metrics.Metrics.FATAL_ERROR;
-import static com.gojek.esb.metrics.Metrics.KAFKA_FILTERED_MESSAGE;
-import static com.gojek.esb.metrics.Metrics.NON_FATAL_ERROR;
-import static com.gojek.esb.metrics.Metrics.SUCCESS_TAG;
-import static com.gojek.esb.metrics.Metrics.RETRY_MESSAGE_COUNT;
-import static com.gojek.esb.metrics.Metrics.RETRY_ATTEMPTS;
-
 import java.time.Instant;
 import java.util.List;
 
 import com.gojek.esb.consumer.EsbMessage;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.gojek.esb.metrics.Metrics.*;
 
 /**
  * Instrumentation
@@ -135,4 +129,22 @@ public class Instrumentation {
     captureNonFatalError(e, "Unable to send record with key {} and message {} ", message.getLogKey(), message.getLogMessage());
   }
 
+  // ===================== LifetimeTillSink =====================
+
+  public void lifetimeTillSink(List<EsbMessage> messages) {
+    messages.forEach(message -> {
+      statsDReporter.captureDurationSince(HTTP_FIREHOSE_LATENCY, Instant.ofEpochMilli(message.getTimestamp()));
+    });
+  }
+
+  // ===================== MessageCountTelemetry =================
+
+  public void captureHttpStatusCount(HttpEntityEnclosingRequestBase batchPutMethod, HttpResponse response) {
+    String urlTag = "url=" + batchPutMethod.getURI().getPath();
+    String httpCodeTag = "status_code=";
+    if (response != null) {
+      httpCodeTag = "status_code=" + Integer.toString(response.getStatusLine().getStatusCode());
+    }
+    statsDReporter.captureCount(HTTP_RESPONSE_CODE, 1, httpCodeTag, urlTag);
+  }
 }
