@@ -11,6 +11,7 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -58,7 +59,7 @@ public class EsbGenericConsumer {
      * @throws EsbFilterException in case of error when applying the filter condition.
      */
     public List<EsbMessage> readMessages() throws EsbFilterException {
-        this.records = kafkaConsumer.poll(consumerConfig.getPollTimeOut());
+        this.records = kafkaConsumer.poll(Duration.ofMillis(consumerConfig.getPollTimeOut()));
         instrumentation.logInfo("Pulled {} messages", records.count());
         List<EsbMessage> messages = new ArrayList<>();
 
