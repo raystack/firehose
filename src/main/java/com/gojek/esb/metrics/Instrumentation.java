@@ -131,10 +131,14 @@ public class Instrumentation {
 
   // ===================== LifetimeTillSink =====================
 
-  public void lifetimeTillSink(List<EsbMessage> messages) {
+  public void lifetimeTillSink(String sinkType, List<EsbMessage> messages) {
     messages.forEach(message -> {
-      statsDReporter.captureDurationSince(HTTP_FIREHOSE_LATENCY, Instant.ofEpochMilli(message.getTimestamp()));
+      statsDReporter.captureDurationSince(getLifeTimeMetric(sinkType), Instant.ofEpochMilli(message.getTimestamp()));
     });
+  }
+
+  private String getLifeTimeMetric(String sinkType) {
+    return sinkType + ".lifetimeTillSink";
   }
 
   // ===================== MessageCountTelemetry =================
