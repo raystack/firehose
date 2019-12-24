@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,25 +19,25 @@ public abstract class AbstractSink implements Closeable, Sink {
 
     public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) throws IOException, DeserializerException {
         List<EsbMessage> failedMessages = new ArrayList<>();
-        prepare(esbMessages);
         try {
+            prepare(esbMessages);
             instrumentation.lifetimeTillSink(sinkType, esbMessages);
             instrumentation.startExecution();
             instrumentation.logInfo("pushing {} messages", esbMessages.size());
             failedMessages = execute();
             instrumentation.captureSuccessExecutionTelemetry(sinkType, esbMessages);
+        } catch (IOException | DeserializerException e) {
+            throw e;
         } catch (Exception e) {
             instrumentation.captureFailedExecutionTelemetry(sinkType, e, esbMessages);
             return esbMessages;
-        } finally {
-            close();
         }
         return failedMessages;
     }
 
     protected abstract List<EsbMessage> execute() throws Exception;
 
-    protected abstract void prepare(List<EsbMessage> esbMessages) throws DeserializerException, IOException;
+    protected abstract void prepare(List<EsbMessage> esbMessages) throws DeserializerException, IOException, SQLException;
 
 
 }
