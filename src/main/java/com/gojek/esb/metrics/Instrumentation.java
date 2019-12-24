@@ -43,8 +43,8 @@ public class Instrumentation {
     logger.info(template, t);
   }
 
-  public void logDebug(String message, Object arg1) {
-    logger.debug(message, arg1);
+  public void logDebug(String template, Object... t) {
+    logger.debug(template, t);
   }
 
   // ============== FILTER MESSAGES ==============
