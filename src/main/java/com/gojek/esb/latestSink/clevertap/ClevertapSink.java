@@ -73,6 +73,7 @@ public class ClevertapSink extends AbstractSink {
             NewRelic.noticeError(e);
             throw e;
         } finally {
+            consumeResponse(response);
             instrumentation.captureHttpStatusCount(request, response);
         }
         return new ArrayList<>();
@@ -80,7 +81,6 @@ public class ClevertapSink extends AbstractSink {
 
     @Override
     public void close() {
-        consumeResponse(response);
     }
 
     private ClevertapEvent toCleverTapEvent(EsbMessage esbMessage) {
