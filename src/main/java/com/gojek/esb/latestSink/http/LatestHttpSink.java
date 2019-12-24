@@ -55,13 +55,13 @@ public class LatestHttpSink extends AbstractSink {
             throw e;
         } finally {
             instrumentation.captureHttpStatusCount(batchPutMethod, response);
+            consumeResponse(response);
         }
         return new ArrayList<>();
     }
 
     @Override
     public void close() throws IOException {
-        consumeResponse(response);
         stencilClient.close();
     }
 
