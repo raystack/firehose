@@ -12,7 +12,7 @@ import com.gojek.esb.consumer.EsbMessage;
  */
 public class BasicHeader implements SupportParamerizedHeader {
 
-  String headerConfig;
+  private String headerConfig;
 
   public BasicHeader(String headerConfig) {
     this.headerConfig = headerConfig;
