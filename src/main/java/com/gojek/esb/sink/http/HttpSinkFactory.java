@@ -5,17 +5,15 @@ import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.HTTPSinkConfig;
 import com.gojek.esb.config.ParameterizedHTTPSinkConfig;
 import com.gojek.esb.config.enums.HttpSinkDataFormat;
-import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.proto.ProtoToFieldMapper;
-import com.gojek.esb.sink.Sink;
+import com.gojek.esb.sink.AbstractSink;
 import com.gojek.esb.sink.SinkFactory;
-import com.gojek.esb.sink.http.client.BasicHttpSinkClient;
 import com.gojek.esb.sink.http.client.Header;
-import com.gojek.esb.sink.http.client.ParameterizedHttpSinkClient;
 import com.gojek.esb.sink.http.client.deserializer.Deserializer;
 import com.gojek.esb.sink.http.client.deserializer.JsonDeserializer;
 import com.gojek.esb.sink.http.client.deserializer.JsonWrapperDeserializer;
-import com.gojek.esb.util.Clock;
+import com.gojek.esb.metrics.Instrumentation;
+import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.proto.ProtoToFieldMapper;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -35,7 +33,7 @@ import static com.gojek.esb.config.enums.HttpSinkParameterSourceType.DISABLED;
 public class HttpSinkFactory implements SinkFactory {
 
     @Override
-    public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
+    public AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
 
         HTTPSinkConfig httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
         RequestConfig requestConfig = RequestConfig.custom()
@@ -44,7 +42,6 @@ public class HttpSinkFactory implements SinkFactory {
                 .setConnectTimeout(httpSinkConfig.getRequestTimeoutInMs())
                 .build();
         CloseableHttpClient closeableHttpClient = newHttpClient(httpSinkConfig.getMaxHttpConnections(), requestConfig);
-        Clock clock = new Clock();
 
         Deserializer deserializer = (httpSinkConfig.getHttpSinkDataFormat() == HttpSinkDataFormat.JSON)
                 ? new JsonDeserializer(new ProtoParser(stencilClient, httpSinkConfig.getProtoSchema()))
@@ -52,9 +49,9 @@ public class HttpSinkFactory implements SinkFactory {
 
         if (httpSinkConfig.getHttpSinkParameterSource() != DISABLED) {
             ParameterizedHTTPSinkConfig parameterizedHttpSinkConfig = ConfigFactory.create(ParameterizedHTTPSinkConfig.class, configuration);
-            return newParameterizedHttpSink(parameterizedHttpSinkConfig, closeableHttpClient, deserializer, clock, statsDReporter, stencilClient);
+            return newParameterizedHttpSink(parameterizedHttpSinkConfig, closeableHttpClient, deserializer, statsDReporter, stencilClient);
         } else {
-            return newHttpSink(httpSinkConfig, closeableHttpClient, deserializer, clock, statsDReporter, stencilClient);
+            return newHttpSink(httpSinkConfig, closeableHttpClient, deserializer, statsDReporter, stencilClient);
         }
 
     }
@@ -67,22 +64,17 @@ public class HttpSinkFactory implements SinkFactory {
     }
 
     private ParameterizedHttpSink newParameterizedHttpSink(ParameterizedHTTPSinkConfig config, CloseableHttpClient closeableHttpClient, Deserializer deserializer,
-                                                           Clock clock, StatsDReporter statsDReporter, StencilClient stencilClient) {
+                                                           StatsDReporter statsDReporter, StencilClient stencilClient) {
         ProtoParser protoParser = new ProtoParser(stencilClient, config.getParameterProtoSchema());
         ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, config.getProtoToFieldMapping());
 
-        ParameterizedHttpSinkClient httpClient = new ParameterizedHttpSinkClient(config.getServiceURL(),
-                new Header(config.getHTTPHeaders()), deserializer, protoToFieldMapper,
-                config.getHttpSinkParameterSource(), config.getHttpSinkParameterPlacement(),
-                closeableHttpClient, clock, statsDReporter);
-        return new ParameterizedHttpSink(httpClient, config.retryStatusCodeRanges(), stencilClient);
+        return new ParameterizedHttpSink(new Instrumentation(statsDReporter, ParameterizedHttpSink.class), "http", protoToFieldMapper, config, deserializer, closeableHttpClient, stencilClient);
     }
 
     private HttpSink newHttpSink(HTTPSinkConfig config, CloseableHttpClient closeableHttpClient, Deserializer deserializer,
-                                 Clock clock, StatsDReporter statsDReporter, StencilClient stencilClient) {
-        BasicHttpSinkClient httpClient = new BasicHttpSinkClient(config.getServiceURL(),
-                new Header(config.getHTTPHeaders()), deserializer, closeableHttpClient, clock, statsDReporter);
-        return new HttpSink(httpClient, config.retryStatusCodeRanges(), stencilClient);
+                                 StatsDReporter statsDReporter, StencilClient stencilClient) {
+        return new HttpSink(new Instrumentation(statsDReporter, HttpSink.class), "http", deserializer, config.getServiceURL(), new Header(config.getHTTPHeaders()), closeableHttpClient, stencilClient);
     }
+
 
 }

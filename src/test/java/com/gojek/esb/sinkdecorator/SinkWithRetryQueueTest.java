@@ -135,8 +135,8 @@ public class SinkWithRetryQueueTest {
                 .setOrderDetails("details").build();
         TestKey key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
 
-        EsbMessage msg1 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic1", 0, 100, headers, 1L);
-        EsbMessage msg2 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic2", 0, 100, headers, 1L);
+        EsbMessage msg1 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic1", 0, 100, headers, 1L, 1L);
+        EsbMessage msg2 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic2", 0, 100, headers, 1L, 1L);
         esbMessages.add(msg1);
         esbMessages.add(msg2);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);

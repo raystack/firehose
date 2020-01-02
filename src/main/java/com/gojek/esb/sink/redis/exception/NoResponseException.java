@@ -1,4 +1,4 @@
-package com.gojek.esb.latestSink.redis.exception;
+package com.gojek.esb.sink.redis.exception;
 /**
  * NoResponseException
  * <p>
