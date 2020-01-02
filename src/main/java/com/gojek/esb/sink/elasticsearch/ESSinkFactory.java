@@ -4,11 +4,11 @@ import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.ESSinkConfig;
 import com.gojek.esb.config.enums.ESRequestType;
-import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.SinkFactory;
 import com.gojek.esb.sink.elasticsearch.client.ESSinkClient;
 import com.gojek.esb.sink.http.client.deserializer.JsonDeserializer;
+import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.sink.Sink;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.util.Map;

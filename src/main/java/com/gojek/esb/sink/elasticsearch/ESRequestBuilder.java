@@ -1,8 +1,8 @@
 package com.gojek.esb.sink.elasticsearch;
 
 import com.gojek.esb.config.enums.ESMessageType;
-import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.config.enums.ESRequestType;
+import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.sink.http.client.deserializer.JsonDeserializer;
 import org.elasticsearch.action.DocWriteRequest;

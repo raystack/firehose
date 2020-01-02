@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 public class Header {
 
-    private java.util.Map<String, String> headerMap;
+    private Map<String, String> headerMap;
 
     public Header(String headerConfig) {
         headerMap = Arrays

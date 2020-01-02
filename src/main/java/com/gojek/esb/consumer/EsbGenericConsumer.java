@@ -63,7 +63,7 @@ public class EsbGenericConsumer {
         List<EsbMessage> messages = new ArrayList<>();
 
         for (ConsumerRecord<byte[], byte[]> record : records) {
-            messages.add(new EsbMessage(record.key(), record.value(), record.topic(), record.partition(), record.offset(), record.headers(), record.timestamp()));
+            messages.add(new EsbMessage(record.key(), record.value(), record.topic(), record.partition(), record.offset(), record.headers(), record.timestamp(), System.currentTimeMillis()));
             instrumentation.logDebug("Pulled record: {}", record);
         }
 
