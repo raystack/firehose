@@ -10,6 +10,7 @@ import com.gojek.esb.config.HTTPSinkConfig;
 import com.gojek.esb.config.ParameterizedHTTPSinkConfig;
 import com.gojek.esb.config.enums.HttpSinkParameterPlacementType;
 import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
+import com.gojek.esb.latestSink.http.factory.SerializerFactory;
 import com.gojek.esb.latestSink.http.request.body.JsonBody;
 import com.gojek.esb.latestSink.http.request.header.BasicHeader;
 import com.gojek.esb.latestSink.http.request.header.ParameterizedHeader;
@@ -18,7 +19,6 @@ import com.gojek.esb.latestSink.http.request.uri.ParameterizedUri;
 
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.serializer.EsbMessageSerializer;
-import com.gojek.esb.serializer.SerializerFactory;
 
 import org.aeonbits.owner.ConfigFactory;
 
