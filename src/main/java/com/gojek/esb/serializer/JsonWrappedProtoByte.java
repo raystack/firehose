@@ -1,8 +1,7 @@
-package com.gojek.esb.latestSink.http.serializer;
+package com.gojek.esb.serializer;
 
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.serializer.EsbMessageJsonSerializer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -13,8 +12,9 @@ import com.google.gson.GsonBuilder;
  * {
  *   "topic":"sample-topic",
  *   "log_key":"CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM\u003d",
- *   "log_message":"CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM\u003d" 
+ *   "log_message":"CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM\u003d"
  * }
+ * </pre>
  */
 public class JsonWrappedProtoByte implements EsbMessageSerializer {
 
