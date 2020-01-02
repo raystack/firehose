@@ -1,13 +1,16 @@
-package com.gojek.esb.latestSink.http.serializer;
+package com.gojek.esb.latestSink.http.factory;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.enums.HttpSinkDataFormat;
+import com.gojek.esb.serializer.EsbMessageSerializer;
+import com.gojek.esb.serializer.EsbMessageToJson;
+import com.gojek.esb.serializer.JsonWrappedProtoByte;
 
 import lombok.AllArgsConstructor;
 
 /**
- * SerializerFactory
+ * SerializerFactory build json serializer for proto using http sink config.
  */
 @AllArgsConstructor
 public class SerializerFactory {
