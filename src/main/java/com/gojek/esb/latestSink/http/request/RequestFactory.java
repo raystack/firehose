@@ -15,15 +15,13 @@ import com.gojek.esb.latestSink.http.request.header.BasicHeader;
 import com.gojek.esb.latestSink.http.request.header.ParameterizedHeader;
 import com.gojek.esb.latestSink.http.request.uri.BasicUri;
 import com.gojek.esb.latestSink.http.request.uri.ParameterizedUri;
-import com.gojek.esb.latestSink.http.serializer.EsbMessageSerializer;
-import com.gojek.esb.latestSink.http.serializer.SerializerFactory;
+
 import com.gojek.esb.proto.ProtoToFieldMapper;
+import com.gojek.esb.serializer.EsbMessageSerializer;
+import com.gojek.esb.serializer.SerializerFactory;
 
 import org.aeonbits.owner.ConfigFactory;
 
-/**
- * RequestFactory
- */
 public class RequestFactory {
 
   private Map<String, String> configuration;
@@ -52,7 +50,7 @@ public class RequestFactory {
     HttpSinkParameterPlacementType placementType =  parameterizedHttpSinkConfig.getHttpSinkParameterPlacement();
     HttpSinkParameterSourceType parameterSource = parameterizedHttpSinkConfig.getHttpSinkParameterSource();
     String headers = parameterizedHttpSinkConfig.getHTTPHeaders();
-    if(placementType == HEADER) {
+    if (placementType == HEADER) {
       BasicUri basicUri = new BasicUri(httpSinkConfig.getServiceURL());
       ParameterizedHeader parameterizedHeader = new ParameterizedHeader(protoToFieldMapper, parameterSource, new BasicHeader(headers));
       return new MultipleRequest(basicUri, parameterizedHeader, createBody());

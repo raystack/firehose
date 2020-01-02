@@ -1,4 +1,4 @@
-package com.gojek.esb.latestSink.http.serializer;
+package com.gojek.esb.serializer;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -10,7 +10,6 @@ import java.util.Map;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.serializer.EsbMessageJsonSerializer;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
@@ -40,7 +39,6 @@ public class EsbMessageToJson implements EsbMessageSerializer {
     this.gson = new GsonBuilder().registerTypeAdapter(EsbMessage.class, new EsbMessageJsonSerializer())
         .setExclusionStrategies(createGsonExclusionStrategy())
         .setFieldNamingStrategy(field -> field.getName().replaceAll("_", "")).create();
-    ;
   }
 
   @Override
@@ -51,11 +49,11 @@ public class EsbMessageToJson implements EsbMessageSerializer {
 
       if (esbMessage.getLogKey() != null && esbMessage.getLogKey().length != 0) {
         DynamicMessage key = protoParser.parse(esbMessage.getLogKey());
-        jsonObject.put("logKey", this.gson.toJson(convertDynamicMessageToJson(key, preserveFieldNames)));
+        jsonObject.put("logKey", this.gson.toJson(convertDynamicMessageToJson(key)));
       }
 
       DynamicMessage msg = protoParser.parse(esbMessage.getLogMessage());
-      jsonObject.put("logMessage", this.gson.toJson(convertDynamicMessageToJson(msg, preserveFieldNames)));
+      jsonObject.put("logMessage", this.gson.toJson(convertDynamicMessageToJson(msg)));
 
       return jsonObject.toJSONString();
     } catch (InvalidProtocolBufferException | ParseException e) {
@@ -63,7 +61,7 @@ public class EsbMessageToJson implements EsbMessageSerializer {
     }
   }
 
-  private Object convertDynamicMessageToJson(DynamicMessage message, boolean preserveFieldNames)
+  private Object convertDynamicMessageToJson(DynamicMessage message)
       throws ParseException, InvalidProtocolBufferException {
     Map<Descriptors.FieldDescriptor, Object> allFields = new HashMap<>();
     List<String> timeStampKeys = new ArrayList<>();
