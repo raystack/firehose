@@ -1,4 +1,4 @@
-package com.gojek.esb.latestSink.http.serializer;
+package com.gojek.esb.serializer;
 
 import static org.junit.Assert.assertEquals;
 

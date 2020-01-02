@@ -8,7 +8,7 @@ import java.util.List;
 
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.latestSink.http.serializer.EsbMessageSerializer;
+import com.gojek.esb.serializer.EsbMessageSerializer;
 
 import org.junit.Before;
 import org.junit.Test;
