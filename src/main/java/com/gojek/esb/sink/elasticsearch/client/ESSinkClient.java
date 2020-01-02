@@ -1,10 +1,9 @@
 package com.gojek.esb.sink.elasticsearch.client;
 
 import com.gojek.esb.config.ESSinkConfig;
+import com.gojek.esb.sink.elasticsearch.BulkProcessorListener;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.sink.elasticsearch.BulkProcessorListener;
-
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.DocWriteRequest;

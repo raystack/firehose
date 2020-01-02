@@ -106,8 +106,8 @@ public class EsbGenericConsumerTest {
         ConsumerRecord<byte[], byte[]> record2 = new ConsumerRecord<>("topic2", 1, 0, 0, TimestampType.CREATE_TIME, 0L, 0, 0, key.toByteArray(), message.toByteArray(), headers);
         when(consumerRecords.iterator()).thenReturn(Arrays.asList(record1, record2).iterator());
 
-        EsbMessage expectedMsg1 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic1", 0, 100, headers, 1L);
-        EsbMessage expectedMsg2 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic2", 0, 100, headers, 1L);
+        EsbMessage expectedMsg1 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic1", 0, 100, headers, 1L, 1L);
+        EsbMessage expectedMsg2 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic2", 0, 100, headers, 1L, 1L);
 
         when(filter.filter(any())).thenReturn(Arrays.asList(expectedMsg1, expectedMsg2));
 

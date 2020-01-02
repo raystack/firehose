@@ -2,6 +2,7 @@ package com.gojek.esb.sink.db;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.util.Clock;
@@ -12,19 +13,18 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DBSinkTest {
-
-    @Mock
-    private DBBatchCommand dbBatchCommand;
 
     @Mock
     private QueryTemplate queryTemplate;
@@ -40,37 +40,47 @@ public class DBSinkTest {
     @Mock
     private Instrumentation instrumentation;
 
+    @Mock
+    private DBConnectionPool dbConnectionPool;
+
+    @Mock
+    private Connection connection;
+
+    @Mock
+    private Statement statement;
+
     @Before
-    public void setUp() {
+    public void setUp() throws SQLException {
+        when(dbConnectionPool.get()).thenReturn(connection);
+        when(connection.createStatement()).thenReturn(statement);
         when(statsDReporter.getClock()).thenReturn(new Clock());
-        dbSink = new DBSink(dbBatchCommand, queryTemplate, instrumentation, stencilClient);
+        dbSink = new DBSink(instrumentation, "db", dbConnectionPool, queryTemplate, stencilClient);
     }
 
     @Test
-    public void shouldPopulateQueryString() {
+    public void shouldPopulateQueryString() throws IOException, DeserializerException, SQLException {
         EsbMessage esbMessage = new EsbMessage("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
-
         dbSink.pushMessage(Arrays.asList(esbMessage));
 
         verify(queryTemplate, times(1)).toQueryString(any(EsbMessage.class));
     }
 
     @Test
-    public void shouldUseBatchForPushMessage() throws SQLException {
+    public void shouldUseBatchForPushMessage() throws SQLException, IOException, DeserializerException {
         List<EsbMessage> esbMessages = Arrays.asList(new EsbMessage(new byte[0], new byte[0], "topic", 0, 100),
                 new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
         dbSink.pushMessage(esbMessages);
-        List<String> upserts = esbMessages.stream().map(m -> queryTemplate.toQueryString(m)).collect(Collectors.toList());
-        verify(dbBatchCommand, times(1)).execute(upserts);
+
         verify(instrumentation, times(1)).startExecution();
         verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("db", esbMessages);
     }
 
     @Test
-    public void shouldCallStartExecutionBeforeCaptureSuccessAtempt() {
+    public void shouldCallStartExecutionBeforeCaptureSuccessAtempt() throws IOException, DeserializerException, SQLException {
         List<EsbMessage> esbMessages = Arrays.asList(new EsbMessage(new byte[0], new byte[0], "topic", 0, 100),
                 new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
         dbSink.pushMessage(esbMessages);
+
         verify(instrumentation, times(1)).startExecution();
         verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("db", esbMessages);
         InOrder inOrder = inOrder(instrumentation);
@@ -79,21 +89,106 @@ public class DBSinkTest {
     }
 
     @Test
-    public void shouldReturnEmptyListWhenNoException() throws SQLException {
+    public void shouldReturnEmptyListWhenNoException() throws IOException, DeserializerException {
         List<EsbMessage> esbMessages = Arrays.asList(new EsbMessage(new byte[0], new byte[0], "topic", 0, 100),
                 new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
-        doNothing().when(dbBatchCommand).execute(anyList());
+
         assertEquals(dbSink.pushMessage(esbMessages).size(), 0);
         verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("db", esbMessages);
     }
 
     @Test
-    public void shouldReturnFailedMessagesWhenExecuteThrowsException() throws SQLException {
+    public void shouldReturnFailedMessagesWhenExecuteThrowsException() throws SQLException, IOException, DeserializerException {
         SQLException sqlException = new SQLException();
+        when(connection.createStatement()).thenThrow(sqlException);
         List<EsbMessage> esbMessages = Arrays.asList(new EsbMessage(new byte[0], new byte[0], "topic", 0, 100),
                 new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
-        doThrow(sqlException).when(dbBatchCommand).execute(anyList());
+
         assertEquals(dbSink.pushMessage(esbMessages).size(), 2);
-        verify(instrumentation, times(1)).captureFailedExecutionTelemetry("db", sqlException, esbMessages);
+        verify(instrumentation, times(1)).captureFailedExecutionTelemetry(sqlException, esbMessages);
+    }
+
+    @Test
+    public void shouldPrepareBatchForQueries() throws SQLException {
+        List<String> queries = Arrays.asList("select * from table", "select count(*) from table");
+        List<EsbMessage> esbMessages = Arrays.asList(new EsbMessage(new byte[0], new byte[0], "topic", 0, 100),
+                new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
+
+        DBSinkStub dbSinkStub = new DBSinkStub(instrumentation, "db", dbConnectionPool, queryTemplate, stencilClient, queries);
+
+        dbSinkStub.prepare(esbMessages);
+        verify(statement, times(queries.size())).addBatch(anyString());
+    }
+
+    @Test
+    public void shouldReleaseConnectionAfterSuccessfulQuery() throws Exception {
+        when(statement.executeBatch()).thenReturn(new int[]{});
+        String sql = "select * from table";
+        List<EsbMessage> esbMessages = Arrays.asList(new EsbMessage(new byte[0], new byte[0], "topic", 0, 100),
+                new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
+        DBSinkStub dbSinkStub = new DBSinkStub(instrumentation, "db", dbConnectionPool, queryTemplate, stencilClient, Arrays.asList(sql));
+
+        dbSinkStub.pushMessage(esbMessages);
+        verify(dbConnectionPool).release(connection);
+    }
+
+    @Test
+    public void shouldReleaseConnectionOnException() throws Exception {
+        List<EsbMessage> esbMessages = Arrays.asList(new EsbMessage(new byte[0], new byte[0], "topic", 0, 100),
+                new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
+
+        dbSink.pushMessage(esbMessages);
+        verify(dbConnectionPool).release(connection);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void shouldNotAttemptConnectionReleaseIfPoolReturnsNull() throws SQLException, IOException, DeserializerException {
+        when(dbConnectionPool.get()).thenReturn(null);
+        List<EsbMessage> esbMessages = Arrays.asList(new EsbMessage(new byte[0], new byte[0], "topic", 0, 100),
+                new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
+
+        dbSink.pushMessage(esbMessages);
+        verify(dbConnectionPool, never()).release(any());
+    }
+
+    @Test
+    public void shouldCloseConnectionPool() throws IOException, InterruptedException {
+        String sql = "select * from table";
+        DBSinkStub dbSinkStub = new DBSinkStub(instrumentation, "db", dbConnectionPool, queryTemplate, stencilClient, Arrays.asList(sql));
+        dbSinkStub.close();
+
+        verify(dbConnectionPool, times(1)).shutdown();
+    }
+
+    @Test
+    public void shouldCloseStencilClient() throws IOException {
+        String sql = "select * from table";
+        DBSinkStub dbSinkStub = new DBSinkStub(instrumentation, "db", dbConnectionPool, queryTemplate, stencilClient, Arrays.asList(sql));
+        dbSinkStub.close();
+
+        verify(stencilClient, times(1)).close();
+    }
+
+    @Test(expected = IOException.class)
+    public void shouldThrowIOExceptionWhenFailToClose() throws InterruptedException, IOException {
+        doThrow(InterruptedException.class).when(dbConnectionPool).shutdown();
+
+        List<String> queriesList = Arrays.asList("select * from table", "select * from table2");
+        DBSinkStub dbSinkStub = new DBSinkStub(instrumentation, "db", dbConnectionPool, queryTemplate, stencilClient, queriesList);
+
+        dbSinkStub.close();
+    }
+
+    public class DBSinkStub extends DBSink {
+        private List<String> queries;
+
+        public DBSinkStub(Instrumentation instrumentation, String sinkType, DBConnectionPool pool, QueryTemplate queryTemplate, StencilClient stencilClient, List<String> queries) {
+            super(instrumentation, sinkType, pool, queryTemplate, stencilClient);
+            this.queries = queries;
+        }
+
+        protected List<String> createQueries(List<EsbMessage> messages) {
+            return queries;
+        }
     }
 }

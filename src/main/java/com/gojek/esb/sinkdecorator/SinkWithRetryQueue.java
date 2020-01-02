@@ -5,7 +5,6 @@ import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.Sink;
-
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
@@ -23,7 +22,7 @@ public class SinkWithRetryQueue extends SinkDecorator {
     private Instrumentation instrumentation;
 
     public SinkWithRetryQueue(Sink sink, Producer<byte[], byte[]> kafkaProducer, String topic,
-            Instrumentation instrumentation, BackOffProvider backOffProvider) {
+                              Instrumentation instrumentation, BackOffProvider backOffProvider) {
         super(sink);
         this.kafkaProducer = kafkaProducer;
         this.topic = topic;
@@ -32,7 +31,7 @@ public class SinkWithRetryQueue extends SinkDecorator {
     }
 
     public static SinkWithRetryQueue withInstrumentationFactory(Sink sink, Producer<byte[], byte[]> kafkaProducer, String topic,
-    StatsDReporter statsDReporter, BackOffProvider backOffProvider) {
+                                                                StatsDReporter statsDReporter, BackOffProvider backOffProvider) {
         Instrumentation instrumentation = new Instrumentation(statsDReporter, SinkWithRetryQueue.class);
         return new SinkWithRetryQueue(sink, kafkaProducer, topic, instrumentation, backOffProvider);
     }
@@ -60,18 +59,18 @@ public class SinkWithRetryQueue extends SinkDecorator {
         for (EsbMessage message : failedMessages) {
             kafkaProducer.send(new ProducerRecord<>(topic, null, null, message.getLogKey(), message.getLogMessage(),
                     message.getHeaders()), (metadata, e) -> {
-                        recordsProcessed.incrementAndGet();
+                recordsProcessed.incrementAndGet();
 
-                        if (e != null) {
-                            instrumentation.incrementMessageFailCount(message, e);
-                            addToFailedRecords(retryMessages, message);
-                        } else {
-                            instrumentation.incrementMessageSucceedCount();
-                        }
-                        if (recordsProcessed.get() == failedMessages.size()) {
-                            completedLatch.countDown();
-                        }
-                    });
+                if (e != null) {
+                    instrumentation.incrementMessageFailCount(message, e);
+                    addToFailedRecords(retryMessages, message);
+                } else {
+                    instrumentation.incrementMessageSucceedCount();
+                }
+                if (recordsProcessed.get() == failedMessages.size()) {
+                    completedLatch.countDown();
+                }
+            });
         }
         try {
             completedLatch.await();
