@@ -4,10 +4,7 @@ import java.util.Map;
 
 import com.gojek.esb.consumer.EsbMessage;
 
-/**
- * SupportParamerizedHeader
- */
 public interface SupportParamerizedHeader {
 
-  public Map<String, String> build(EsbMessage esbMessage);
+  Map<String, String> build(EsbMessage esbMessage);
 }

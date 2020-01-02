@@ -20,7 +20,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 
 /**
- * HttpSink
+ * HttpSink implement {@link AbstractSink} lifecycle for HTTP.
  */
 public class HttpSink extends AbstractSink {
 
@@ -49,9 +49,9 @@ public class HttpSink extends AbstractSink {
   @Trace(dispatcher = true)
   protected List<EsbMessage> execute() throws Exception {
     HttpResponse response = null;
-    for (HttpPut request : httpPuts) {
+    for (HttpPut httpPut : httpPuts) {
       try {
-        response = httpClient.execute(request);
+        response = httpClient.execute(httpPut);
         getInstrumentation().logInfo("Response Status: {}", response.getStatusLine().getStatusCode());
       } catch (IOException e) {
         getInstrumentation().captureFatalError(e, "Error while calling http sink service url");
@@ -59,7 +59,7 @@ public class HttpSink extends AbstractSink {
         throw e;
       } finally {
         consumeResponse(response);
-        getInstrumentation().captureHttpStatusCount(request, response);
+        getInstrumentation().captureHttpStatusCount(httpPut, response);
         response = null;
       }
     }
