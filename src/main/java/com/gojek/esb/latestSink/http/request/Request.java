@@ -9,9 +9,9 @@ import com.gojek.esb.exception.DeserializerException;
 import org.apache.http.client.methods.HttpPut;
 
 /**
- * Request
+ * Request interface for building HTTP method. Request will be used by {@link HttpSink} to make actual call.
  */
 public interface Request {
 
-  public List<HttpPut> build(List<EsbMessage> esbMessages) throws URISyntaxException, DeserializerException;
+  List<HttpPut> build(List<EsbMessage> esbMessages) throws URISyntaxException, DeserializerException;
 }

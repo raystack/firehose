@@ -6,9 +6,9 @@ import java.net.URISyntaxException;
 import com.gojek.esb.consumer.EsbMessage;
 
 /**
- * SupportParameterizedUri
+ * SupportParameterizedUri interface for request that need parameterized URI.
  */
 public interface SupportParameterizedUri {
 
-  public URI build(EsbMessage esbMessage) throws URISyntaxException;
+  URI build(EsbMessage esbMessage) throws URISyntaxException;
 }
