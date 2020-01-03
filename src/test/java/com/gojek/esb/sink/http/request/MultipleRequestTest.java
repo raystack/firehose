@@ -22,15 +22,15 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class MultipleRequestTest {
   @Mock
-  ParameterizedUri parameterizedUri;
+  private ParameterizedUri parameterizedUri;
   @Mock
-  ParameterizedHeader parameterizedHeader;
+  private ParameterizedHeader parameterizedHeader;
   @Mock
-  JsonBody jsonBody;
+  private JsonBody jsonBody;
 
   @Test
   public void shouldCreateRequestsPerEsbMessage() {
-    EsbMessage esbMessage = new EsbMessage(new byte[] { 10, 20 }, new byte[] { 1, 2 }, "sample-topic", 0, 100);
+    EsbMessage esbMessage = new EsbMessage(new byte[] {10, 20 }, new byte[] {1, 2 }, "sample-topic", 0, 100);
     List<EsbMessage> esbMessages = new ArrayList<EsbMessage>();
     esbMessages.add(esbMessage);
     esbMessages.add(esbMessage);
@@ -51,7 +51,7 @@ public class MultipleRequestTest {
       verify(parameterizedUri, times(4)).build(esbMessage);
       verify(parameterizedHeader, times(4)).build(esbMessage);
       verify(jsonBody, times(1)).serialize(esbMessages);
-    } catch (URISyntaxException|DeserializerException e) {
+    } catch (URISyntaxException | DeserializerException e) {
       throw new RuntimeException(e);
     }
   }

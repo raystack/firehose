@@ -20,21 +20,21 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class JsonBodyTest {
 
   @Mock
-  EsbMessageSerializer esbMessageSerializer;
+  private EsbMessageSerializer esbMessageSerializer;
 
-  EsbMessage esbMessage;
-  List<EsbMessage> esbMessages;
+  private EsbMessage esbMessage;
+  private List<EsbMessage> esbMessages;
 
   @Before
   public void setUp() {
-    esbMessage = new EsbMessage(new byte[] { 10, 20 }, new byte[] { 1, 2 }, "sample-topic", 0, 100);
+    esbMessage = new EsbMessage(new byte[] {10, 20 }, new byte[] {1, 2 }, "sample-topic", 0, 100);
     esbMessages = Collections.singletonList(esbMessage);
   }
 
   @Test
   public void shouldReturnSameSizeOfBodyAsEsbMessage() {
     JsonBody jsonBody = new JsonBody(esbMessageSerializer);
-    
+
     List<String> bodyContent;
     try {
       bodyContent = jsonBody.serialize(esbMessages);
@@ -53,7 +53,7 @@ public class JsonBodyTest {
 
       JsonBody jsonBody = new JsonBody(esbMessageSerializer);
       contentString = jsonBody.serialize(esbMessages);
-      
+
     } catch (DeserializerException e) {
       throw new RuntimeException(e.toString());
     }

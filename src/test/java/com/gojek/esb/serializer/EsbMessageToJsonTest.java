@@ -15,8 +15,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class EsbMessageToJsonTest {
-  String logMessage;
-  String logKey;
+  private String logMessage;
+  private String logKey;
   private ProtoParser protoParser;
 
   @Before

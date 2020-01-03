@@ -17,7 +17,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class BasicHeaderTest {
 
   @Mock
-  List<EsbMessage> esbMessages;
+  private List<EsbMessage> esbMessages;
 
   @Test
   public void shouldGenerateBaseHeader() {

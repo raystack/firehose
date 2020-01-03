@@ -27,20 +27,20 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class BatchRequestTest {
 
   @Mock
-  BasicUri uri;
+  private BasicUri uri;
 
   @Mock
-  BasicHeader header;
+  private BasicHeader header;
 
   @Mock
-  JsonBody body;
+  private JsonBody body;
 
   private EsbMessage esbMessage;
   private List<EsbMessage> esbMessages;
 
   @Before
   public void setup() throws URISyntaxException {
-    esbMessage = new EsbMessage(new byte[] { 10, 20 }, new byte[] { 1, 2 }, "sample-topic", 0, 100);
+    esbMessage = new EsbMessage(new byte[] {10, 20 }, new byte[] {1, 2 }, "sample-topic", 0, 100);
     esbMessages = Collections.singletonList(esbMessage);
     when(uri.build()).thenReturn(new URI("http://dummy.com"));
   }
