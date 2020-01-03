@@ -23,9 +23,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ParameterizedHeaderTest {
 
   @Mock
-  ProtoToFieldMapper protoToFieldMapper;
+  private ProtoToFieldMapper protoToFieldMapper;
   @Mock
-  BasicHeader basicHeader;
+  private BasicHeader basicHeader;
 
   private EsbMessage esbMessage;
 
