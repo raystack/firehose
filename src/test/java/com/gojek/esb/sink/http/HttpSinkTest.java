@@ -28,32 +28,32 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class HttpSinkTest {
   @Mock
-  Instrumentation instrumentation;
+  private Instrumentation instrumentation;
   @Mock
-  Request request;
+  private Request request;
   @Mock
-  HttpClient httpClient;
+  private HttpClient httpClient;
   @Mock
-  StencilClient stencilClient;
+  private StencilClient stencilClient;
   @Mock
-  HttpPut httpPut;
+  private HttpPut httpPut;
   @Mock
-  HttpResponse response;
+  private HttpResponse response;
   @Mock
-  StatusLine statusLine;
+  private StatusLine statusLine;
   @Mock
-  Map<Integer, Boolean> retryStatusCodeRange;
+  private Map<Integer, Boolean> retryStatusCodeRange;
 
   private List<EsbMessage> esbMessages;
 
   @Before
   public void setup() {
-    EsbMessage esbMessage = new EsbMessage(new byte[] { 10, 20 }, new byte[] { 1, 2 }, "sample-topic", 0, 100);
+    EsbMessage esbMessage = new EsbMessage(new byte[] {10, 20 }, new byte[] {1, 2 }, "sample-topic", 0, 100);
     esbMessages = Collections.singletonList(esbMessage);
   }
 
   @Test
-  public void shouldPrepareRequestDuringPreparationAndCallItDuringExecution() throws Exception{
+  public void shouldPrepareRequestDuringPreparationAndCallItDuringExecution() throws Exception {
     when(response.getStatusLine()).thenReturn(statusLine, statusLine);
     when(statusLine.getStatusCode()).thenReturn(200, 200);
 
@@ -79,9 +79,8 @@ public class HttpSinkTest {
     when(request.build(esbMessages)).thenReturn(httpPuts);
     when(httpClient.execute(httpPut)).thenReturn(response);
 
-    Map<Integer, Boolean> retryStatusCodeRange = new RangeToHashMapConverter().convert(null, "400-505");
-
-    HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange);
+    HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+        new RangeToHashMapConverter().convert(null, "400-505"));
     httpSink.prepare(esbMessages);
     httpSink.execute();
   }
@@ -92,8 +91,6 @@ public class HttpSinkTest {
     List<HttpPut> httpPuts = Arrays.asList(httpPut);
     when(request.build(esbMessages)).thenReturn(httpPuts);
     when(httpClient.execute(httpPut)).thenReturn(null);
-
-    Map<Integer, Boolean> retryStatusCodeRange = new RangeToHashMapConverter().convert(null, "400-505");
 
     HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange);
     httpSink.prepare(esbMessages);
