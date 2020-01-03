@@ -2,6 +2,7 @@ package com.gojek.esb.serializer;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -32,10 +33,16 @@ public class EsbMessageToJson implements EsbMessageSerializer {
   private ProtoParser protoParser;
   private Gson gson;
   private boolean preserveFieldNames;
+  private boolean wrapInsideArray;
 
   public EsbMessageToJson(ProtoParser protoParser, boolean preserveFieldNames) {
+    this(protoParser, preserveFieldNames, false);
+  }
+
+  public EsbMessageToJson(ProtoParser protoParser, boolean preserveFieldNames, boolean wrappedInsideArray) {
     this.protoParser = protoParser;
     this.preserveFieldNames = preserveFieldNames;
+    this.wrapInsideArray = wrappedInsideArray;
     this.gson = new GsonBuilder().registerTypeAdapter(EsbMessage.class, new EsbMessageJsonSerializer())
         .setExclusionStrategies(createGsonExclusionStrategy())
         .setFieldNamingStrategy(field -> field.getName().replaceAll("_", "")).create();
@@ -55,6 +62,9 @@ public class EsbMessageToJson implements EsbMessageSerializer {
       DynamicMessage msg = protoParser.parse(esbMessage.getLogMessage());
       jsonObject.put("logMessage", this.gson.toJson(convertDynamicMessageToJson(msg)));
 
+      if (wrapInsideArray) {
+        return Collections.singletonList(jsonObject.toJSONString()).toString();
+      }
       return jsonObject.toJSONString();
     } catch (InvalidProtocolBufferException | ParseException e) {
       throw new DeserializerException(e.getMessage());
