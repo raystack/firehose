@@ -26,7 +26,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ParametrizedUriTest {
 
   @Mock
-  ProtoToFieldMapper protoToFieldMapper;
+  private ProtoToFieldMapper protoToFieldMapper;
 
   private EsbMessage esbMessage;
 
