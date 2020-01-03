@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
@@ -28,12 +29,14 @@ public class HttpSink extends AbstractSink {
   private List<HttpPut> httpPuts;
   private HttpClient httpClient;
   private StencilClient stencilClient;
+  private Map<Integer, Boolean> retryStatusCodeRanges;
 
-  public HttpSink(Instrumentation instrumentation, Request request, HttpClient httpClient, StencilClient stencilClient) {
+  public HttpSink(Instrumentation instrumentation, Request request, HttpClient httpClient, StencilClient stencilClient, Map<Integer, Boolean> retryStatusCodeRanges) {
     super(instrumentation, "http");
     this.request = request;
     this.httpClient = httpClient;
     this.stencilClient = stencilClient;
+    this.retryStatusCodeRanges = retryStatusCodeRanges;
   }
 
   @Override
@@ -52,7 +55,7 @@ public class HttpSink extends AbstractSink {
     for (HttpPut httpPut : httpPuts) {
       try {
         response = httpClient.execute(httpPut);
-        getInstrumentation().logInfo("Response Status: {}", response.getStatusLine().getStatusCode());
+        getInstrumentation().logInfo("Response Status: {}", statusCode(response));
       } catch (IOException e) {
         getInstrumentation().captureFatalError(e, "Error while calling http sink service url");
         NewRelic.noticeError(e);
@@ -60,6 +63,9 @@ public class HttpSink extends AbstractSink {
       } finally {
         consumeResponse(response);
         getInstrumentation().captureHttpStatusCount(httpPut, response);
+        if (shouldRetry(response)) {
+          throw new NeedToRetry(statusCode(response));
+        }
         response = null;
       }
     }
@@ -75,6 +81,18 @@ public class HttpSink extends AbstractSink {
   private void consumeResponse(HttpResponse response) {
     if (response != null) {
       EntityUtils.consumeQuietly(response.getEntity());
+    }
+  }
+
+  private boolean shouldRetry(HttpResponse response) {
+    return response == null || retryStatusCodeRanges.containsKey(response.getStatusLine().getStatusCode());
+  }
+
+  private String statusCode(HttpResponse response) {
+    if (response != null) {
+      return Integer.toString(response.getStatusLine().getStatusCode());
+    } else {
+      return "null";
     }
   }
 

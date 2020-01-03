@@ -35,7 +35,7 @@ public class HttpSinkFactory implements SinkFactory {
 
     Request request = new RequestFactory(configuration, stencilClient).create();
 
-    return new HttpSink(instrumentation, request, closeableHttpClient, stencilClient);
+    return new HttpSink(instrumentation, request, closeableHttpClient, stencilClient, httpSinkConfig.retryStatusCodeRanges());
   }
 
   private CloseableHttpClient newHttpClient(HTTPSinkConfig httpSinkConfig) {
