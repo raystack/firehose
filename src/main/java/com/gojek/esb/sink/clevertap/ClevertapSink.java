@@ -6,7 +6,7 @@ import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.proto.ProtoMessage;
 import com.gojek.esb.sink.AbstractSink;
-import com.gojek.esb.sink.http.client.Header;
+import com.gojek.esb.sink.http.request.header.BasicHeader;
 import com.google.gson.GsonBuilder;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Duration;
@@ -34,7 +34,7 @@ public class ClevertapSink extends AbstractSink {
     private int eventTimestampIndex;
     private Properties fieldMapping;
     private String url;
-    private Header headers;
+    private BasicHeader headers;
     private HttpResponse response;
     private HttpClient httpClient;
 
@@ -49,7 +49,7 @@ public class ClevertapSink extends AbstractSink {
         this.eventTimestampIndex = config.eventTimestampIndex();
         this.fieldMapping = config.getProtoToFieldMapping();
         this.url = config.getServiceURL();
-        this.headers = new Header(config.getHTTPHeaders());
+        this.headers = new BasicHeader(config.getHTTPHeaders());
         this.httpClient = httpClient;
     }
 
@@ -60,7 +60,7 @@ public class ClevertapSink extends AbstractSink {
         String eventPayload = new GsonBuilder().create().toJson(events);
         getInstrumentation().logDebug("{d:%s}", eventPayload);
         request.setEntity(new StringEntity(String.format("{d:%s}", eventPayload), ContentType.APPLICATION_JSON));
-        headers.getAll().forEach(request::addHeader);
+        headers.build().forEach(request::addHeader);
     }
 
     @Override
