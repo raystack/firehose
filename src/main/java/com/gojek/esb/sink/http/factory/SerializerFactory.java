@@ -25,7 +25,7 @@ public class SerializerFactory {
     }
     if (httpSinkDataFormat == HttpSinkDataFormat.JSON) {
       ProtoParser protoParser = new ProtoParser(stencilClient, protoSchema);
-      return new EsbMessageToJson(protoParser, false);
+      return new EsbMessageToJson(protoParser, false, true);
     } else {
       return new JsonWrappedProtoByte();
     }
