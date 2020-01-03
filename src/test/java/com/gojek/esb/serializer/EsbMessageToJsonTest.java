@@ -69,4 +69,19 @@ public class EsbMessageToJsonTest {
         + "\\\"windowEndTime\\\":\\\"Mar 20, 2017 10:55:00 AM\\\",\\\"s2IdLevel\\\":13,\\\"vehicleType\\\":\\\"BIKE\\\","
         + "\\\"s2Id\\\":\\\"3344472187078705152\\\"}\",\"topic\":\"sample-topic\"}", actualOutput);
   }
+
+  @Test
+  public void shouldWrappedSerializedJsonInArrayWhenEnabled() throws DeserializerException {
+    boolean wrappedInsideArray = true;
+    EsbMessageToJson esbMessageToJson = new EsbMessageToJson(protoParser, false, wrappedInsideArray);
+
+    EsbMessage esbMessage = new EsbMessage(new byte[] {}, Base64.getDecoder().decode(logMessage.getBytes()),
+        "sample-topic", 0, 100);
+
+    String actualOutput = esbMessageToJson.serialize(esbMessage);
+    assertEquals("[{\"logMessage\":\"{\\\"uniqueDrivers\\\":\\\"3\\\","
+        + "\\\"windowStartTime\\\":\\\"Mar 20, 2017 10:54:00 AM\\\","
+        + "\\\"windowEndTime\\\":\\\"Mar 20, 2017 10:55:00 AM\\\",\\\"s2IdLevel\\\":13,\\\"vehicleType\\\":\\\"BIKE\\\","
+        + "\\\"s2Id\\\":\\\"3344472187078705152\\\"}\",\"topic\":\"sample-topic\"}]", actualOutput);
+  }
 }
