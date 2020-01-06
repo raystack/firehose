@@ -1,5 +1,6 @@
 package com.gojek.esb.sink.elasticsearch;
 
+import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.metrics.StatsDReporter;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.List;
 
 import static com.gojek.esb.metrics.Metrics.*;
 
@@ -19,13 +21,16 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
     private static final Logger LOGGER = LoggerFactory.getLogger(BulkProcessorListener.class.getName());
 
     private Instant startTime;
+    private List<EsbMessage> esbMessages;
+    private int bulkStartIndex;
 
     private Instant getStartTime() {
         return startTime;
     }
 
-    public BulkProcessorListener(StatsDReporter statsDReporter) {
+    public BulkProcessorListener(StatsDReporter statsDReporter, List<EsbMessage> esbMessages) {
         this.statsDReporter = statsDReporter;
+        this.esbMessages = esbMessages;
     }
 
     private void setStartTime(Instant startTime) {
@@ -54,15 +59,25 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
                 }
             }
             statsDReporter.captureDurationSince(RESPONSE_TIME, getStartTime(), FAILURE_TAG);
-            statsDReporter.captureCount(ES_SINK_FAILED_DOCUMENT_COUNT, failedCount, FAILURE_TAG);
-            statsDReporter.captureCount(ES_SINK_SUCCESS_DOCUMENT_COUNT, (response.getItems().length - failedCount), SUCCESS_TAG);
+            statsDReporter.captureCount(MESSAGE_COUNT, failedCount, FAILURE_TAG);
+            statsDReporter.captureCount(MESSAGE_COUNT, (response.getItems().length - failedCount), SUCCESS_TAG);
             statsDReporter.captureCount(ES_SINK_BATCH_FAILURE_COUNT, 1, FAILURE_TAG);
         } else {
             LOGGER.debug("Bulk [{}] completed in {} milliseconds",
                     executionId, response.getTook().getMillis());
+            int bulkSize = response.getItems().length;
 
             statsDReporter.captureDurationSince(RESPONSE_TIME, getStartTime(), SUCCESS_TAG);
-            statsDReporter.captureCount(ES_SINK_SUCCESS_DOCUMENT_COUNT, response.getItems().length, SUCCESS_TAG);
+            statsDReporter.captureCount(MESSAGE_COUNT, bulkSize, SUCCESS_TAG);
+
+            List<EsbMessage> processedMessages = esbMessages.subList(bulkStartIndex, bulkStartIndex + bulkSize);
+            bulkStartIndex += bulkSize;
+
+            processedMessages.forEach(message -> {
+                statsDReporter.captureDurationSince(LATENCY_ACROSS_FIREHOSE, Instant.ofEpochMilli(message.getConsumeTimestamp()));
+                LOGGER.info("-----------***********------------");
+            });
+
         }
     }
 
@@ -72,7 +87,7 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
         statsDReporter.recordEvent(ERROR_EVENT, NON_FATAL_ERROR, errorTag(failure, NON_FATAL_ERROR));
 
         statsDReporter.captureDurationSince(RESPONSE_TIME, getStartTime(), FAILURE_TAG);
-        statsDReporter.captureCount(ES_SINK_FAILED_DOCUMENT_COUNT, request.numberOfActions(), FAILURE_TAG);
+        statsDReporter.captureCount(MESSAGE_COUNT, request.numberOfActions(), FAILURE_TAG);
         statsDReporter.captureCount(ES_SINK_BATCH_FAILURE_COUNT, 1, FAILURE_TAG);
     }
 
