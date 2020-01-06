@@ -4,6 +4,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -12,6 +14,7 @@ import java.util.Map;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.converter.RangeToHashMapConverter;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.http.request.Request;
 
@@ -95,6 +98,22 @@ public class HttpSinkTest {
     HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange);
     httpSink.prepare(esbMessages);
     httpSink.execute();
+  }
+
+  @Test(expected = IOException.class)
+  public void shouldCatchURISyntaxExceptionAndThrowIOException() throws URISyntaxException, DeserializerException, IOException {
+    when(request.build(esbMessages)).thenThrow(new URISyntaxException("", ""));
+
+    HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange);
+    httpSink.prepare(esbMessages);
+  }
+
+  @Test
+  public void shouldCloseStencilClient() throws IOException {
+    HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange);
+
+    httpSink.close();
+    verify(stencilClient, times(1)).close();
   }
 
 }
