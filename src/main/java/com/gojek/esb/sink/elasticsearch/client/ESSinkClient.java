@@ -1,6 +1,7 @@
 package com.gojek.esb.sink.elasticsearch.client;
 
 import com.gojek.esb.config.ESSinkConfig;
+import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.sink.elasticsearch.BulkProcessorListener;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
@@ -13,6 +14,7 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 
+import java.util.List;
 import java.util.function.BiConsumer;
 
 import static org.elasticsearch.action.bulk.BackoffPolicy.exponentialBackoff;
@@ -20,12 +22,16 @@ import static org.elasticsearch.common.unit.TimeValue.timeValueSeconds;
 
 public class ESSinkClient {
 
+    private ESSinkConfig esSinkConfig;
     private final StatsDReporter statsDReporter;
     private RestHighLevelClient restHighLevelClient;
     private BulkProcessor bulkProcessor;
     private Instrumentation instrumentation;
+    private List<EsbMessage> esbMessages;
+    private BiConsumer<BulkRequest, ActionListener<BulkResponse>> listenerBiConsumer;
 
     public ESSinkClient(ESSinkConfig esSinkConfig, StatsDReporter statsDReporter) {
+        this.esSinkConfig = esSinkConfig;
         this.statsDReporter = statsDReporter;
         this.instrumentation = new Instrumentation(statsDReporter, ESSinkClient.class);
         HttpHost[] httpHosts = getHttpHosts(esSinkConfig.getEsConnectionUrls());
@@ -34,8 +40,12 @@ public class ESSinkClient {
             instrumentation.captureFatalError(e);
             throw e;
         }
-        BiConsumer<BulkRequest, ActionListener<BulkResponse>> listenerBiConsumer = getBulkAsyncConsumer();
+        listenerBiConsumer = getBulkAsyncConsumer();
         this.restHighLevelClient = new RestHighLevelClient(RestClient.builder(httpHosts));
+    }
+
+    public void buildBulkProcessor(List<EsbMessage> messageList) {
+        this.esbMessages = messageList;
         bulkProcessor = buildBulkProcessor(esSinkConfig.getEsBatchSize(), esSinkConfig.getEsBatchRetryCount(),
                 esSinkConfig.getEsRetryBackoff(), listenerBiConsumer);
     }
@@ -88,6 +98,6 @@ public class ESSinkClient {
     }
 
     private BulkProcessor.Listener getBulkListener() {
-        return new BulkProcessorListener(this.statsDReporter);
+        return new BulkProcessorListener(this.statsDReporter, this.esbMessages);
     }
 }
