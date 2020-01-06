@@ -56,6 +56,9 @@ public class HttpSink extends AbstractSink {
       try {
         response = httpClient.execute(httpPut);
         getInstrumentation().logInfo("Response Status: {}", statusCode(response));
+        if (shouldRetry(response)) {
+          throw new NeedToRetry(statusCode(response));
+        }
       } catch (IOException e) {
         getInstrumentation().captureFatalError(e, "Error while calling http sink service url");
         NewRelic.noticeError(e);
@@ -63,9 +66,6 @@ public class HttpSink extends AbstractSink {
       } finally {
         consumeResponse(response);
         getInstrumentation().captureHttpStatusCount(httpPut, response);
-        if (shouldRetry(response)) {
-          throw new NeedToRetry(statusCode(response));
-        }
         response = null;
       }
     }

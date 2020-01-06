@@ -2,8 +2,8 @@ package com.gojek.esb.sink.elasticsearch;
 
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.sink.elasticsearch.client.ESSinkClient;
 import com.gojek.esb.sink.Sink;
+import com.gojek.esb.sink.elasticsearch.client.ESSinkClient;
 import lombok.AllArgsConstructor;
 
 import java.io.IOException;
@@ -20,6 +20,8 @@ public class ESSink implements Sink {
 
     @Override
     public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) throws IOException, DeserializerException {
+        esSinkClient.buildBulkProcessor(esbMessages);
+
         esbMessages
                 .stream()
                 .map((message) -> esRequestBuilder.buildRequest(
