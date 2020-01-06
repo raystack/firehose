@@ -36,9 +36,6 @@ public class RedisSinkTest {
     private List<RedisDataEntry> redisDataEntries;
 
     @Mock
-    private RedisDataEntry redisDataEntry;
-
-    @Mock
     private Instrumentation instrumentation;
 
     @Mock
