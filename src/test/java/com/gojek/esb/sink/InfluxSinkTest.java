@@ -73,6 +73,9 @@ public class InfluxSinkTest {
     @Mock
     private Instrumentation instrumentation;
 
+    @Mock
+    private StencilClient mockStencilClient;
+
     @Before
     public void setUp() {
         props.setProperty("MEASUREMENT_NAME", measurementName);
@@ -176,6 +179,16 @@ public class InfluxSinkTest {
         List<BatchPoints> batchPointsList = batchPointsArgumentCaptor.getAllValues();
 
         assertEquals(expectedPoint.lineProtocol(), batchPointsList.get(0).getPoints().get(0).lineProtocol());
+    }
+
+    @Test
+    public void shouldCloseStencilClient() throws IOException {
+        config = ConfigFactory.create(InfluxSinkConfig.class, props);
+
+        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(mockStencilClient, config.getProtoSchema()), client, mockStencilClient);
+        sink.close();
+
+        verify(mockStencilClient, times(1)).close();
     }
 
     private void setupFieldNameIndexMappingProperties() {
