@@ -10,8 +10,8 @@ public class Metrics {
     public static final String KAFKA_COMMIT_COUNT = KAFKA_PREFIX + "commit.async.count";
 
     //TELEMETRY MEASUREMENTS
-    public static final String LIFETIME_TILL_SINK = "lifetime.till.sink";
-    public static final String RESPONSE_TIME = "response.time";
+    public static final String LIFETIME_TILL_EXECUTION = "lifetime.till.execution";
+    public static final String SINK_RESPONSE_TIME = "sink.response.time";
     public static final String MESSAGE_COUNT = "messages.count";
     public static final String LATENCY_ACROSS_FIREHOSE = "latency";
     public static final String HTTP_RESPONSE_CODE = "http.response.code";

@@ -116,7 +116,7 @@ public class InstrumentationTest {
         List<EsbMessage> esbMessages = Collections.singletonList(esbMessage);
         instrumentation.captureSuccessExecutionTelemetry("test", esbMessages);
         verify(logger, times(1)).info("Pushed {} messages to {}.", esbMessages.size(), "test");
-        verify(statsDReporter, times(1)).captureDurationSince("response.time", instrumentation.getStartExecutionTime());
+        verify(statsDReporter, times(1)).captureDurationSince("sink.response.time", instrumentation.getStartExecutionTime());
         verify(statsDReporter, times(1)).captureCount("messages.count", esbMessages.size(), SUCCESS_TAG);
         verify(statsDReporter, times(esbMessages.size())).captureDurationSince("latency", Instant.ofEpochSecond(esbMessage.getConsumeTimestamp()));
     }
@@ -151,7 +151,7 @@ public class InstrumentationTest {
     public void shouldCaptureLifetimeTillSink() {
         List<EsbMessage> esbMessages = Collections.singletonList(esbMessage);
         instrumentation.lifetimeTillExecution(esbMessages);
-        verify(statsDReporter, times(esbMessages.size())).captureDurationSince("lifetime.till.sink", Instant.ofEpochSecond(esbMessage.getTimestamp()));
+        verify(statsDReporter, times(esbMessages.size())).captureDurationSince("lifetime.till.execution", Instant.ofEpochSecond(esbMessage.getTimestamp()));
     }
 
     @Test
