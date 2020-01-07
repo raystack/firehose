@@ -99,7 +99,7 @@ public class Instrumentation {
 
     public void captureSuccessExecutionTelemetry(String sinkType, List<EsbMessage> esbMessages) {
         logger.info("Pushed {} messages to {}.", esbMessages.size(), sinkType);
-        statsDReporter.captureDurationSince(RESPONSE_TIME, this.startExecutionTime);
+        statsDReporter.captureDurationSince(SINK_RESPONSE_TIME, this.startExecutionTime);
         statsDReporter.captureCount(MESSAGE_COUNT, esbMessages.size(), SUCCESS_TAG);
         esbMessages.forEach(esbMessage ->
                 statsDReporter.captureDurationSince(LATENCY_ACROSS_FIREHOSE, Instant.ofEpochMilli(esbMessage.getConsumeTimestamp()))
@@ -130,7 +130,7 @@ public class Instrumentation {
 
     public void lifetimeTillExecution(List<EsbMessage> messages) {
         messages.forEach(message -> {
-            statsDReporter.captureDurationSince(LIFETIME_TILL_SINK, Instant.ofEpochMilli(message.getTimestamp()));
+            statsDReporter.captureDurationSince(LIFETIME_TILL_EXECUTION, Instant.ofEpochMilli(message.getTimestamp()));
         });
     }
 
