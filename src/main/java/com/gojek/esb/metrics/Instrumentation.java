@@ -1,8 +1,6 @@
 package com.gojek.esb.metrics;
 
 import com.gojek.esb.consumer.EsbMessage;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,21 +128,16 @@ public class Instrumentation {
 
     // ===================== Latency / LifetimeTillSink =====================
 
-    public void lifetimeTillSink(List<EsbMessage> messages) {
+    public void lifetimeTillExecution(List<EsbMessage> messages) {
         messages.forEach(message -> {
             statsDReporter.captureDurationSince(LIFETIME_TILL_SINK, Instant.ofEpochMilli(message.getTimestamp()));
         });
     }
 
 
-    // ===================== MessageCountTelemetry =================
+    // ===================== CountTelemetry =================
 
-    public void captureHttpStatusCount(HttpEntityEnclosingRequestBase batchPutMethod, HttpResponse response) {
-        String urlTag = "url=" + batchPutMethod.getURI().getPath();
-        String httpCodeTag = "status_code=";
-        if (response != null) {
-            httpCodeTag = "status_code=" + Integer.toString(response.getStatusLine().getStatusCode());
-        }
-        statsDReporter.captureCount("http.response.code", 1, httpCodeTag, urlTag);
+    public void captureCountWithTags(String metric, String... tags) {
+        statsDReporter.captureCount(metric, 1, tags);
     }
 }
