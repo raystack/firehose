@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -176,10 +177,11 @@ public class ClevertapSinkTest {
         config = ConfigFactory.create(ClevertapSinkConfig.class, properties);
         ClevertapSink clevertapSink = new ClevertapSink(instrumentation, CLEVERTAP, config, protoMessage, httpClient);
 
+        clevertapSink.prepare(Collections.singletonList(esbMessage));
         List<EsbMessage> execute = clevertapSink.execute();
 
         verify(instrumentation, times(1)).logInfo("Response Status: {}", 200);
-        verify(instrumentation, times(1)).captureHttpStatusCount(any(), any(HttpResponse.class));
+        verify(instrumentation, times(1)).captureCountWithTags(any(), any());
         Assert.assertEquals(0, execute.size());
     }
 
@@ -192,10 +194,11 @@ public class ClevertapSinkTest {
         IOException ioException = new IOException();
         when(httpClient.execute(any())).thenThrow(ioException);
 
+        clevertapSink.prepare(Collections.singletonList(esbMessage));
         clevertapSink.execute();
 
         verify(instrumentation, times(1)).captureFatalError(ioException, "Error while calling http sink service url");
-        verify(instrumentation, times(1)).captureHttpStatusCount(any(), any(HttpResponse.class));
+        verify(instrumentation, times(1)).captureCountWithTags(any(), any());
     }
 
 }
