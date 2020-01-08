@@ -31,6 +31,7 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
     public BulkProcessorListener(StatsDReporter statsDReporter, List<EsbMessage> esbMessages) {
         this.statsDReporter = statsDReporter;
         this.esbMessages = esbMessages;
+        this.bulkStartIndex = 0;
     }
 
     private void setStartTime(Instant startTime) {
@@ -40,8 +41,15 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
     @Override
     public void beforeBulk(long executionId, BulkRequest request) {
         int numberOfActions = request.numberOfActions();
+
+//        int bulkEndIndex = Math.min(batchSize, esbMessages.s);
+//        List<EsbMessage> messageBulk = esbMessages.subList(bulkStartIndex, bulkEndIndex);
+//        messageBulk.forEach(message -> {
+//            statsDReporter.captureDurationSince(LIFETIME_TILL_EXECUTION, Instant.ofEpochMilli(message.getTimestamp()));
+//        });
         LOGGER.debug("Executing bulk [{}] with {} requests",
                 executionId, numberOfActions);
+
         setStartTime(Instant.now());
     }
 
@@ -58,24 +66,23 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
                     LOGGER.warn("Failure response message [{}]", responses.getFailureMessage());
                 }
             }
-            statsDReporter.captureDurationSince(RESPONSE_TIME, getStartTime(), FAILURE_TAG);
+            statsDReporter.captureDurationSince(SINK_RESPONSE_TIME, getStartTime(), FAILURE_TAG);
             statsDReporter.captureCount(MESSAGE_COUNT, failedCount, FAILURE_TAG);
             statsDReporter.captureCount(MESSAGE_COUNT, (response.getItems().length - failedCount), SUCCESS_TAG);
             statsDReporter.captureCount(ES_SINK_BATCH_FAILURE_COUNT, 1, FAILURE_TAG);
         } else {
             LOGGER.debug("Bulk [{}] completed in {} milliseconds",
                     executionId, response.getTook().getMillis());
-            int bulkSize = response.getItems().length;
 
-            statsDReporter.captureDurationSince(RESPONSE_TIME, getStartTime(), SUCCESS_TAG);
+            int bulkSize = response.getItems().length;
+            statsDReporter.captureDurationSince(SINK_RESPONSE_TIME, getStartTime(), SUCCESS_TAG);
             statsDReporter.captureCount(MESSAGE_COUNT, bulkSize, SUCCESS_TAG);
 
-            List<EsbMessage> processedMessages = esbMessages.subList(bulkStartIndex, bulkStartIndex + bulkSize);
+            List<EsbMessage> processedMessages = esbMessages.subList(bulkStartIndex, bulkStartIndex + bulkSize - 1);
             bulkStartIndex += bulkSize;
 
             processedMessages.forEach(message -> {
                 statsDReporter.captureDurationSince(LATENCY_ACROSS_FIREHOSE, Instant.ofEpochMilli(message.getConsumeTimestamp()));
-                LOGGER.info("-----------***********------------");
             });
 
         }
@@ -86,7 +93,7 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
         LOGGER.error("Failed to execute bulk", failure);
         statsDReporter.recordEvent(ERROR_EVENT, NON_FATAL_ERROR, errorTag(failure, NON_FATAL_ERROR));
 
-        statsDReporter.captureDurationSince(RESPONSE_TIME, getStartTime(), FAILURE_TAG);
+        statsDReporter.captureDurationSince(SINK_RESPONSE_TIME, getStartTime(), FAILURE_TAG);
         statsDReporter.captureCount(MESSAGE_COUNT, request.numberOfActions(), FAILURE_TAG);
         statsDReporter.captureCount(ES_SINK_BATCH_FAILURE_COUNT, 1, FAILURE_TAG);
     }
