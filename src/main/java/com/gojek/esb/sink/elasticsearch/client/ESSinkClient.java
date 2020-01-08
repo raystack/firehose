@@ -2,9 +2,9 @@ package com.gojek.esb.sink.elasticsearch.client;
 
 import com.gojek.esb.config.ESSinkConfig;
 import com.gojek.esb.consumer.EsbMessage;
-import com.gojek.esb.sink.elasticsearch.BulkProcessorListener;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.sink.elasticsearch.BulkProcessorListener;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.DocWriteRequest;
@@ -51,19 +51,15 @@ public class ESSinkClient {
     }
 
     public void processRequest(DocWriteRequest request) {
-        getBulkProcessor().add(request);
+        bulkProcessor.add(request);
     }
 
     public void close() {
-        getBulkProcessor().close();
+        bulkProcessor.close();
     }
 
     public RestHighLevelClient getRestHighLevelClient() {
         return restHighLevelClient;
-    }
-
-    private BulkProcessor getBulkProcessor() {
-        return bulkProcessor;
     }
 
     private HttpHost[] getHttpHosts(String esConnectionUrls) {
