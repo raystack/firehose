@@ -3,9 +3,9 @@ package com.gojek.esb.sink.redis.parsers;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.RedisSinkConfig;
 import com.gojek.esb.consumer.EsbMessage;
-import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import com.gojek.esb.sink.redis.dataentry.RedisListEntry;
+import com.gojek.esb.metrics.Instrumentation;
 import com.google.protobuf.DynamicMessage;
 
 import java.util.ArrayList;

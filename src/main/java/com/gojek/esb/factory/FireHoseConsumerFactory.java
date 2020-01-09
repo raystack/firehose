@@ -1,7 +1,5 @@
 package com.gojek.esb.factory;
 
-import java.util.Map;
-
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.AuditConfig;
@@ -13,11 +11,6 @@ import com.gojek.esb.consumer.FireHoseConsumer;
 import com.gojek.esb.exception.EglcConfigurationException;
 import com.gojek.esb.filter.EsbMessageFilter;
 import com.gojek.esb.filter.Filter;
-import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.metrics.StatsDReporterFactory;
-import com.gojek.esb.sinkdecorator.BackOff;
-import com.gojek.esb.sinkdecorator.BackOffProvider;
-import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.clevertap.ClevertapSinkFactory;
 import com.gojek.esb.sink.db.DBSinkFactory;
 import com.gojek.esb.sink.elasticsearch.ESSinkFactory;
@@ -25,21 +18,26 @@ import com.gojek.esb.sink.http.HttpSinkFactory;
 import com.gojek.esb.sink.influxdb.InfluxSinkFactory;
 import com.gojek.esb.sink.log.LogSinkFactory;
 import com.gojek.esb.sink.redis.RedisSinkFactory;
+import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.metrics.StatsDReporterFactory;
+import com.gojek.esb.sink.Sink;
+import com.gojek.esb.sinkdecorator.BackOff;
+import com.gojek.esb.sinkdecorator.BackOffProvider;
 import com.gojek.esb.sinkdecorator.ExponentialBackOffProvider;
 import com.gojek.esb.sinkdecorator.SinkWithRetry;
 import com.gojek.esb.sinkdecorator.SinkWithRetryQueue;
 import com.gojek.esb.tracer.SinkTracer;
 import com.gojek.esb.util.Clock;
-
+import io.jaegertracing.Configuration;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.kafka.TracingKafkaProducer;
+import io.opentracing.noop.NoopTracerFactory;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.jaegertracing.Configuration;
-import io.opentracing.Tracer;
-import io.opentracing.contrib.kafka.TracingKafkaProducer;
-import io.opentracing.noop.NoopTracerFactory;
+import java.util.Map;
 
 public class FireHoseConsumerFactory {
 
@@ -59,9 +57,9 @@ public class FireHoseConsumerFactory {
         LOGGER.info("--------- ------ ---------");
         clockInstance = new Clock();
         StatsDReporterFactory statsDReporterFactory = new StatsDReporterFactory(
-            this.kafkaConsumerConfig.getStatsDHost(),
-            this.kafkaConsumerConfig.getStatsDPort(),
-            this.kafkaConsumerConfig.getStatsDTags().split(",")
+                this.kafkaConsumerConfig.getStatsDHost(),
+                this.kafkaConsumerConfig.getStatsDPort(),
+                this.kafkaConsumerConfig.getStatsDTags().split(",")
         );
         statsDReporter = statsDReporterFactory.buildReporter();
 
@@ -100,22 +98,22 @@ public class FireHoseConsumerFactory {
      */
     private Sink getSink() {
         switch (kafkaConsumerConfig.getSinkType()) {
-        case DB:
-            return new DBSinkFactory().create(config, statsDReporter, stencilClient);
-        case HTTP:
-            return new HttpSinkFactory().create(config, statsDReporter, stencilClient);
-        case INFLUXDB:
-            return new InfluxSinkFactory().create(config, statsDReporter, stencilClient);
-        case LOG:
-            return new LogSinkFactory().create(config, statsDReporter, stencilClient);
-        case CLEVERTAP:
-            return new ClevertapSinkFactory().create(config, statsDReporter, stencilClient);
-        case ELASTICSEARCH:
-            return new ESSinkFactory().create(config, statsDReporter, stencilClient);
-        case REDIS:
-            return new RedisSinkFactory().create(config, statsDReporter, stencilClient);
-        default:
-            throw new EglcConfigurationException("Invalid FireHose SINK type");
+            case DB:
+                return new DBSinkFactory().create(config, statsDReporter, stencilClient);
+            case HTTP:
+                return new HttpSinkFactory().create(config, statsDReporter, stencilClient);
+            case INFLUXDB:
+                return new InfluxSinkFactory().create(config, statsDReporter, stencilClient);
+            case LOG:
+                return new LogSinkFactory().create(config, statsDReporter, stencilClient);
+            case CLEVERTAP:
+                return new ClevertapSinkFactory().create(config, statsDReporter, stencilClient);
+            case ELASTICSEARCH:
+                return new ESSinkFactory().create(config, statsDReporter, stencilClient);
+            case REDIS:
+                return new RedisSinkFactory().create(config, statsDReporter, stencilClient);
+            default:
+                throw new EglcConfigurationException("Invalid FireHose SINK type");
 
         }
     }

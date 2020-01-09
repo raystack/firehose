@@ -1,10 +1,10 @@
 package com.gojek.esb.sink.elasticsearch;
 
 import com.gojek.esb.config.enums.ESMessageType;
-import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.config.enums.ESRequestType;
+import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.sink.http.client.deserializer.JsonDeserializer;
+import com.gojek.esb.serializer.EsbMessageToJson;
 import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -21,22 +21,22 @@ import static com.gojek.esb.config.enums.ESMessageType.PROTOBUF;
 
 public class ESRequestBuilder {
 
-    private final JsonDeserializer jsonDeserializer;
+    // private final JsonDeserializer jsonDeserializer;
+    private final EsbMessageToJson jsonSerializer;
     private String esIdFieldName;
     private ESMessageType messageType;
 
     private ESRequestType esRequestType;
     private JSONParser jsonParser;
-    private final Boolean preserveProtoFieldNames;
+    // private final Boolean preserveProtoFieldNames;
 
-    public ESRequestBuilder(ESRequestType esRequestType, String esIdFieldName, Boolean preserveProtoFieldNames,
-                            ESMessageType messageType, JsonDeserializer jsonDeserializer) {
+    public ESRequestBuilder(ESRequestType esRequestType, String esIdFieldName, ESMessageType messageType, EsbMessageToJson jsonSerializer) {
         this.jsonParser = new JSONParser();
         this.messageType = messageType;
         this.esRequestType = esRequestType;
         this.esIdFieldName = esIdFieldName;
-        this.jsonDeserializer = jsonDeserializer;
-        this.preserveProtoFieldNames = preserveProtoFieldNames;
+        this.jsonSerializer = jsonSerializer;
+        // this.preserveProtoFieldNames = preserveProtoFieldNames;
     }
 
     public String extractId(EsbMessage message) {
@@ -87,7 +87,7 @@ public class ESRequestBuilder {
 
     private String extractPayloadFromProtobuf(EsbMessage message) {
         try {
-            return getStringFromJson(jsonDeserializer.getParsedJsonMessage(message, preserveProtoFieldNames), "logMessage");
+            return getStringFromJson(jsonSerializer.serialize(message), "logMessage");
         } catch (DeserializerException e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage(), e.getCause());
