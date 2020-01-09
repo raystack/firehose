@@ -4,7 +4,6 @@ import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.Sink;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +20,7 @@ public class SinkWithRetry extends SinkDecorator {
     private static final Logger LOGGER = LoggerFactory.getLogger(SinkWithRetry.class);
 
     public SinkWithRetry(Sink sink, BackOffProvider backOffProvider, StatsDReporter statsDReporter,
-            int maxRetryAttempts) {
+                         int maxRetryAttempts) {
         super(sink);
         this.backOffProvider = backOffProvider;
         this.statsDReporter = statsDReporter;

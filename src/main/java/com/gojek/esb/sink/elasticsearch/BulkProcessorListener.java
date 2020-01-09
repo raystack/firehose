@@ -53,7 +53,7 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
                     LOGGER.warn("Failure response message [{}]", responses.getFailureMessage());
                 }
             }
-            statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, getStartTime(), FAILURE_TAG);
+            statsDReporter.captureDurationSince(SINK_RESPONSE_TIME, getStartTime(), FAILURE_TAG);
             statsDReporter.captureCount(ES_SINK_FAILED_DOCUMENT_COUNT, failedCount, FAILURE_TAG);
             statsDReporter.captureCount(ES_SINK_SUCCESS_DOCUMENT_COUNT, (response.getItems().length - failedCount), SUCCESS_TAG);
             statsDReporter.captureCount(ES_SINK_BATCH_FAILURE_COUNT, 1, FAILURE_TAG);
@@ -61,7 +61,7 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
             LOGGER.debug("Bulk [{}] completed in {} milliseconds",
                     executionId, response.getTook().getMillis());
 
-            statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, getStartTime(), SUCCESS_TAG);
+            statsDReporter.captureDurationSince(SINK_RESPONSE_TIME, getStartTime(), SUCCESS_TAG);
             statsDReporter.captureCount(ES_SINK_SUCCESS_DOCUMENT_COUNT, response.getItems().length, SUCCESS_TAG);
         }
     }
@@ -71,7 +71,7 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
         LOGGER.error("Failed to execute bulk", failure);
         statsDReporter.recordEvent(ERROR_EVENT, NON_FATAL_ERROR, errorTag(failure, NON_FATAL_ERROR));
 
-        statsDReporter.captureDurationSince(ES_SINK_PROCESSING_TIME, getStartTime(), FAILURE_TAG);
+        statsDReporter.captureDurationSince(SINK_RESPONSE_TIME, getStartTime(), FAILURE_TAG);
         statsDReporter.captureCount(ES_SINK_FAILED_DOCUMENT_COUNT, request.numberOfActions(), FAILURE_TAG);
         statsDReporter.captureCount(ES_SINK_BATCH_FAILURE_COUNT, 1, FAILURE_TAG);
     }

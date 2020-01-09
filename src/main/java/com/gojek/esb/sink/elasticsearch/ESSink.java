@@ -2,8 +2,8 @@ package com.gojek.esb.sink.elasticsearch;
 
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.elasticsearch.client.ESSinkClient;
+import com.gojek.esb.sink.Sink;
 import lombok.AllArgsConstructor;
 
 import java.io.IOException;

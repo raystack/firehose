@@ -2,21 +2,6 @@ package com.gojek.esb.metrics;
 
 public class Metrics {
 
-    //HTTP SINK
-    public static final String HTTP_EXECUTION_TIME = "http.execution_time";
-    public static final String HTTP_RESPONSE_CODE = "http.response_code";
-    public static final String HTTP_FIREHOSE_LATENCY = "http.latency";
-
-    //DB SINK
-    public static final String DB_SINK_WRITE_TIME = "db.sink.write.time";
-    public static final String DB_SINK_MESSAGES_COUNT = "db.sink.messages.count";
-
-    //INFLUX DB SINK
-    public static final String INFLUX_DB_SINK_WRITE_TIME = "influx.db.sink.write.time";
-    public static final String INFLUX_DB_SINK_MESSAGES_COUNT = "influx.db.sink.messages.count";
-    public static final String INFLUX_DB_SINK_FIREHOSE_LATENCY = "influx.db.sink.latency";
-
-
     //KAFKA
     public static final String KAFKA_PREFIX = "kafka.";
     public static final String KAFKA_FILTERED_MESSAGE = KAFKA_PREFIX + "filtered";
@@ -24,10 +9,12 @@ public class Metrics {
     public static final String MESSAGE_RECEIVED = KAFKA_PREFIX + "messages.received";
     public static final String KAFKA_COMMIT_COUNT = KAFKA_PREFIX + "commit.async.count";
 
-
-    //REDIS SINK
-    public static final String REDIS_SINK_WRITE_TIME = "redis.sink.write.time";
-    public static final String REDIS_SINK_MESSAGES_COUNT = "redis.sink.messages.count";
+    //TELEMETRY MEASUREMENTS
+    public static final String LIFETIME_TILL_EXECUTION = "lifetime.till.execution";
+    public static final String SINK_RESPONSE_TIME = "sink.response.time";
+    public static final String MESSAGE_COUNT = "messages.count";
+    public static final String LATENCY_ACROSS_FIREHOSE = "latency";
+    public static final String HTTP_RESPONSE_CODE = "http.response.code";
 
 
     //RETRY
@@ -35,6 +22,7 @@ public class Metrics {
     public static final String RETRY_ATTEMPTS = RETRY_QUEUE_PREFIX + "attempts";
     public static final String RETRY_MESSAGE_COUNT = RETRY_QUEUE_PREFIX + "messages.count";
     public static final String REQUEST_RETRY = "request_retries";
+
 
 
     //TAGS
@@ -48,8 +36,8 @@ public class Metrics {
     public static final String ES_SINK_BATCH_FAILURE_COUNT = "es.sink.batch_failure_count";
 
     // ERROR
+    public static final String ERROR_MESSAGE_TAG = "class";
     public static final String ERROR_EVENT = "error.event";
     public static final String NON_FATAL_ERROR = "NON_FATAL_ERROR";
     public static final String FATAL_ERROR = "FATAL_ERROR";
-    public static final String ERROR_MESSAGE_TAG = "class";
 }
