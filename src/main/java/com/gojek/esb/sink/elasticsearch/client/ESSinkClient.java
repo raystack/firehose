@@ -94,6 +94,6 @@ public class ESSinkClient {
     }
 
     private BulkProcessor.Listener getBulkListener() {
-        return new BulkProcessorListener(this.statsDReporter, this.esbMessages);
+        return new BulkProcessorListener(this.statsDReporter, this.esbMessages, esSinkConfig.getEsBatchSize());
     }
 }
