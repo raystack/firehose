@@ -3,12 +3,21 @@ package com.gojek.esb.sink.clevertap;
 import com.gojek.esb.config.ClevertapSinkConfig;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.proto.ProtoMessage;
-import com.gojek.esb.sink.Sink;
+import com.gojek.esb.sink.AbstractSink;
+import com.gojek.esb.sink.http.request.header.BasicHeader;
+import com.google.gson.GsonBuilder;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
+import com.newrelic.api.agent.NewRelic;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,43 +26,69 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-public class ClevertapSink implements Sink {
+import static com.gojek.esb.metrics.Metrics.HTTP_RESPONSE_CODE;
 
-    private final String eventName;
-    private final String eventType;
-    private final int eventTimestampIndex;
-    private final int userIdIndex;
-    private final Properties fieldMapping;
-    private Clevertap clevertap;
+public class ClevertapSink extends AbstractSink {
+    private String eventName;
+    private String eventType;
     private ProtoMessage protoMessage;
-    private ClevertapSinkConfig config;
+    private int userIdIndex;
+    private int eventTimestampIndex;
+    private Properties fieldMapping;
+    private String url;
+    private BasicHeader headers;
+    private HttpResponse response;
+    private HttpClient httpClient;
 
-    public ClevertapSink(ClevertapSinkConfig config, Clevertap clevertap, ProtoMessage protoMessage) {
+    private HttpPost request;
+
+    public ClevertapSink(Instrumentation instrumentation, String sinkType, ClevertapSinkConfig config, ProtoMessage protoMessage, HttpClient httpClient) {
+        super(instrumentation, sinkType);
         this.eventName = config.eventName();
         this.eventType = config.eventType();
-        this.eventTimestampIndex = config.eventTimestampIndex();
-        this.userIdIndex = config.useridIndex();
-        this.fieldMapping = config.getProtoToFieldMapping();
-        this.clevertap = clevertap;
         this.protoMessage = protoMessage;
-        this.config = config;
+        this.userIdIndex = config.useridIndex();
+        this.eventTimestampIndex = config.eventTimestampIndex();
+        this.fieldMapping = config.getProtoToFieldMapping();
+        this.url = config.getServiceURL();
+        this.headers = new BasicHeader(config.getHTTPHeaders());
+        this.httpClient = httpClient;
     }
 
     @Override
-    public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) throws IOException {
-
-        List<EsbMessage> failedMessages = new ArrayList<>();
-
+    protected void prepare(List<EsbMessage> esbMessages) {
         List<ClevertapEvent> events = esbMessages.stream().map(this::toCleverTapEvent).collect(Collectors.toList());
-        HttpResponse response = clevertap.sendEvents(events);
-        if (callUnsuccessful(response)) {
-            failedMessages = esbMessages;
+        request = new HttpPost(this.url);
+        String eventPayload = new GsonBuilder().create().toJson(events);
+        getInstrumentation().logDebug("{d:%s}", eventPayload);
+        request.setEntity(new StringEntity(String.format("{d:%s}", eventPayload), ContentType.APPLICATION_JSON));
+        headers.build().forEach(request::addHeader);
+    }
+
+    @Override
+    protected List<EsbMessage> execute() throws Exception {
+        try {
+            response = httpClient.execute(request);
+            getInstrumentation().logInfo("Response Status: {}", response.getStatusLine().getStatusCode());
+        } catch (IOException e) {
+            getInstrumentation().captureFatalError(e, "Error while calling http sink service url");
+            NewRelic.noticeError(e);
+            throw e;
+        } finally {
+            if (response != null) {
+                EntityUtils.consumeQuietly(response.getEntity());
+            }
+            captureHttpStatusCount();
         }
-        return failedMessages;
+        return new ArrayList<>();
+    }
+
+
+    @Override
+    public void close() {
     }
 
     private ClevertapEvent toCleverTapEvent(EsbMessage esbMessage) {
-
         return new ClevertapEvent(eventName, eventType, timestamp(esbMessage), userid(esbMessage), eventData(esbMessage));
     }
 
@@ -61,6 +96,15 @@ public class ClevertapSink implements Sink {
         return fieldMapping.keySet().stream().collect(
                 Collectors.toMap(fieldIndex -> (String) fieldMapping.get(fieldIndex),
                         fieldIndex -> protoFieldValue(esbMessage, Integer.parseInt(fieldIndex.toString()))));
+    }
+
+    private void captureHttpStatusCount() {
+        String urlTag = "url=" + request.getURI().getPath();
+        String httpCodeTag = "status_code=";
+        if (response != null) {
+            httpCodeTag = "status_code=" + Integer.toString(response.getStatusLine().getStatusCode());
+        }
+        getInstrumentation().captureCountWithTags(HTTP_RESPONSE_CODE, httpCodeTag, urlTag);
     }
 
     private Object protoFieldValue(EsbMessage esbMessage, int fieldIndex) {
@@ -95,18 +139,5 @@ public class ClevertapSink implements Sink {
             throw new RuntimeException("Eventimestamp field deserialization failed", e);
         }
         return eventTimestampField.getSeconds();
-    }
-
-    protected boolean callUnsuccessful(HttpResponse response) {
-        return response == null || config.retryStatusCodeRanges().containsKey(status(response));
-    }
-
-    protected int status(HttpResponse response) {
-        return response.getStatusLine().getStatusCode();
-    }
-
-    @Override
-    public void close() throws IOException {
-
     }
 }
