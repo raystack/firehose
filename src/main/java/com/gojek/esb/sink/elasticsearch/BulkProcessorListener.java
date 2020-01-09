@@ -23,14 +23,17 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
     private Instant startTime;
     private List<EsbMessage> esbMessages;
     private int bulkStartIndex;
+    private int batchSize;
+    private List<EsbMessage> messageBulk;
 
     private Instant getStartTime() {
         return startTime;
     }
 
-    public BulkProcessorListener(StatsDReporter statsDReporter, List<EsbMessage> esbMessages) {
+    public BulkProcessorListener(StatsDReporter statsDReporter, List<EsbMessage> esbMessages, int batchSize) {
         this.statsDReporter = statsDReporter;
         this.esbMessages = esbMessages;
+        this.batchSize = batchSize;
         this.bulkStartIndex = 0;
     }
 
@@ -42,11 +45,12 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
     public void beforeBulk(long executionId, BulkRequest request) {
         int numberOfActions = request.numberOfActions();
 
-//        int bulkEndIndex = Math.min(batchSize, esbMessages.s);
-//        List<EsbMessage> messageBulk = esbMessages.subList(bulkStartIndex, bulkEndIndex);
-//        messageBulk.forEach(message -> {
-//            statsDReporter.captureDurationSince(LIFETIME_TILL_EXECUTION, Instant.ofEpochMilli(message.getTimestamp()));
-//        });
+        messageBulk = esbMessages.subList(bulkStartIndex, bulkStartIndex + Math.min(batchSize, esbMessages.size() - bulkStartIndex));
+
+        messageBulk.forEach(message -> {
+            statsDReporter.captureDurationSince(LIFETIME_TILL_EXECUTION, Instant.ofEpochMilli(message.getTimestamp()));
+        });
+
         LOGGER.debug("Executing bulk [{}] with {} requests",
                 executionId, numberOfActions);
 
@@ -74,14 +78,12 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
             LOGGER.debug("Bulk [{}] completed in {} milliseconds",
                     executionId, response.getTook().getMillis());
 
-            int bulkSize = response.getItems().length;
             statsDReporter.captureDurationSince(SINK_RESPONSE_TIME, getStartTime(), SUCCESS_TAG);
-            statsDReporter.captureCount(MESSAGE_COUNT, bulkSize, SUCCESS_TAG);
+            statsDReporter.captureCount(MESSAGE_COUNT, batchSize, SUCCESS_TAG);
 
-            List<EsbMessage> processedMessages = esbMessages.subList(bulkStartIndex, bulkStartIndex + bulkSize - 1);
-            bulkStartIndex += bulkSize;
+            bulkStartIndex += batchSize;
 
-            processedMessages.forEach(message -> {
+            messageBulk.forEach(message -> {
                 statsDReporter.captureDurationSince(LATENCY_ACROSS_FIREHOSE, Instant.ofEpochMilli(message.getConsumeTimestamp()));
             });
 
