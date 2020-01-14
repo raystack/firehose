@@ -2,7 +2,9 @@ package com.gojek.esb.sink.http.factory;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
+import com.gojek.esb.config.HTTPSinkConfig;
 import com.gojek.esb.config.enums.HttpSinkDataFormat;
+import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
 import com.gojek.esb.serializer.EsbMessageSerializer;
 import com.gojek.esb.serializer.EsbMessageToJson;
 import com.gojek.esb.serializer.JsonWrappedProtoByte;
@@ -15,19 +17,34 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class SerializerFactory {
 
-  private HttpSinkDataFormat httpSinkDataFormat;
-  private String protoSchema;
+  private HTTPSinkConfig httpSinkConfig;
   private StencilClient stencilClient;
 
   public EsbMessageSerializer build() {
-    if (protoSchema == null || protoSchema.equals("")) {
+    if (isProtoSchemaEmpty() || httpSinkConfig.getHttpSinkDataFormat() == HttpSinkDataFormat.PROTO) {
+      // Fallback to json wrapped proto byte
       return new JsonWrappedProtoByte();
     }
-    if (httpSinkDataFormat == HttpSinkDataFormat.JSON) {
-      ProtoParser protoParser = new ProtoParser(stencilClient, protoSchema);
-      return new EsbMessageToJson(protoParser, false, true);
-    } else {
-      return new JsonWrappedProtoByte();
+
+    if (httpSinkConfig.getHttpSinkDataFormat() == HttpSinkDataFormat.JSON) {
+      ProtoParser protoParser = new ProtoParser(stencilClient, httpSinkConfig.getProtoSchema());
+      if (isParameterizedHttpSink()) {
+        return new EsbMessageToJson(protoParser, false, true);
+      } else {
+        return new EsbMessageToJson(protoParser, false);
+      }
     }
+
+    // Ideally this code will never be executed because getHttpSinkDataFormat() will return proto as default value.
+    // This is required to satisfy compilation.
+    return new JsonWrappedProtoByte();
+  }
+
+  private boolean isProtoSchemaEmpty() {
+    return httpSinkConfig.getProtoSchema() == null || httpSinkConfig.getProtoSchema().equals("");
+  }
+
+  private boolean isParameterizedHttpSink() {
+    return !httpSinkConfig.getHttpSinkParameterSource().equals(HttpSinkParameterSourceType.DISABLED);
   }
 }

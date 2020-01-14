@@ -64,8 +64,7 @@ public class RequestFactory {
 
   private JsonBody createBody() {
     EsbMessageSerializer esbMessageSerializer = new SerializerFactory(
-      httpSinkConfig.getHttpSinkDataFormat(),
-      httpSinkConfig.getProtoSchema(),
+      httpSinkConfig,
       stencilClient).build();
     return new JsonBody(esbMessageSerializer);
   }
