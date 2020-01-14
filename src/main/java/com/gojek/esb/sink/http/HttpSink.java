@@ -61,7 +61,6 @@ public class HttpSink extends AbstractSink {
                     throw new NeedToRetry(statusCode(response));
                 }
             } catch (IOException e) {
-                getInstrumentation().captureFatalError(e, "Error while calling http sink service url");
                 NewRelic.noticeError(e);
                 throw e;
             } finally {

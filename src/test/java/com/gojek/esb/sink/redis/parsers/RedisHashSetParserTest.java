@@ -70,7 +70,7 @@ public class RedisHashSetParserTest {
     public void shouldParseStringMessageForCollectionKeyTemplate() {
         setRedisSinkConfig("message", "Test-%s,1", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForTestMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("3", "details"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForTestMessage, testMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForTestMessage, testMessageProtoParser, redisSinkConfig);
 
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parse(testEsbMessage).get(0);
 
@@ -83,7 +83,7 @@ public class RedisHashSetParserTest {
     public void shouldParseStringMessageWithSpacesForCollectionKeyTemplate() {
         setRedisSinkConfig("message", "Test-%s, 1", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForTestMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("3", "details"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForTestMessage, testMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForTestMessage, testMessageProtoParser, redisSinkConfig);
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parse(testEsbMessage).get(0);
 
         assertEquals("ORDER-DETAILS", redisHashSetFieldEntry.getValue());
@@ -96,7 +96,7 @@ public class RedisHashSetParserTest {
     public void shouldParseFloatMessageForCollectionKeyTemplate() {
         setRedisSinkConfig("message", "Test-%.2f,16", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number_1"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parse(bookingEsbMessage).get(0);
 
@@ -109,7 +109,7 @@ public class RedisHashSetParserTest {
     public void shouldParseLongMessageForCollectionKeyTemplate() {
         setRedisSinkConfig("message", "Test-%d,52", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number_1"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parse(bookingEsbMessage).get(0);
 
@@ -125,7 +125,7 @@ public class RedisHashSetParserTest {
 
         setRedisSinkConfig("message", "Test-%,52", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number_1"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         redisMessageParser.parse(bookingEsbMessage);
     }
@@ -137,7 +137,7 @@ public class RedisHashSetParserTest {
 
         setRedisSinkConfig("message", "Test-%f,52", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number_1"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         redisMessageParser.parse(bookingEsbMessage);
     }
@@ -149,7 +149,7 @@ public class RedisHashSetParserTest {
 
         setRedisSinkConfig("message", "Test-%f,20000", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number_1"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         redisMessageParser.parse(bookingEsbMessage);
     }
@@ -157,11 +157,11 @@ public class RedisHashSetParserTest {
     @Test
     public void shouldThrowExceptionForNullCollectionKeyTemplate() {
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Invalid configuration, Collection key or key is null or empty");
+        expectedException.expectMessage("Template 'null' is invalid");
 
         setRedisSinkConfig("message", null, RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number_1"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         redisMessageParser.parse(bookingEsbMessage);
     }
@@ -169,11 +169,11 @@ public class RedisHashSetParserTest {
     @Test
     public void shouldThrowExceptionForEmptyCollectionKeyTemplate() {
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Invalid configuration, Collection key or key is null or empty");
+        expectedException.expectMessage("Template '' is invalid");
 
         setRedisSinkConfig("message", "", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number_1"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         redisMessageParser.parse(bookingEsbMessage);
     }
@@ -183,7 +183,7 @@ public class RedisHashSetParserTest {
         setRedisSinkConfig("message", "Test", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number_1"));
 
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parse(bookingEsbMessage).get(0);
         assertEquals("Test", redisHashSetFieldEntry.getKey());
@@ -195,7 +195,7 @@ public class RedisHashSetParserTest {
         setRedisSinkConfig("message", "Test-%s", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number_1"));
 
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parse(bookingEsbMessage).get(0);
         assertEquals("Test-%s", redisHashSetFieldEntry.getKey());
         assertEquals("booking-order-1", redisHashSetFieldEntry.getValue());
@@ -205,7 +205,7 @@ public class RedisHashSetParserTest {
     public void shouldParseLongMessageForKey() {
         setRedisSinkConfig("message", "Test-%d,52", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number_%d,52"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parse(bookingEsbMessage).get(0);
 
@@ -218,7 +218,7 @@ public class RedisHashSetParserTest {
     public void shouldParseLongMessageWithSpaceForKey() {
         setRedisSinkConfig("message", "Test-%d,52", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number_%d, 52"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parse(bookingEsbMessage).get(0);
 
@@ -231,7 +231,7 @@ public class RedisHashSetParserTest {
     public void shouldParseStringMessageForKey() {
         setRedisSinkConfig("message", "Test-%d,52", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number_%s,2"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parse(bookingEsbMessage).get(0);
 
@@ -244,7 +244,7 @@ public class RedisHashSetParserTest {
     public void shouldHandleStaticStringForKey() {
         setRedisSinkConfig("message", "Test-%d,52", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parse(bookingEsbMessage).get(0);
         assertEquals("Test-2000", redisHashSetFieldEntry.getKey());
@@ -256,7 +256,7 @@ public class RedisHashSetParserTest {
     public void shouldHandleStaticStringWithPatternForKey() {
         setRedisSinkConfig("message", "Test-%d,52", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number%s"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parse(bookingEsbMessage).get(0);
         assertEquals("Test-2000", redisHashSetFieldEntry.getKey());
@@ -271,7 +271,7 @@ public class RedisHashSetParserTest {
 
         setRedisSinkConfig("message", "Test-%d,52", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number-%,52"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         redisMessageParser.parse(bookingEsbMessage);
     }
@@ -283,7 +283,7 @@ public class RedisHashSetParserTest {
 
         setRedisSinkConfig("message", "Test-%d,52", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", "order_number-%d,2"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parse(testEsbMessage).get(0);
 
@@ -295,11 +295,11 @@ public class RedisHashSetParserTest {
     @Test
     public void shouldThrowExceptionForEmptyKey() {
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Invalid configuration, Collection key or key is null or empty");
+        expectedException.expectMessage("Template '' is invalid");
 
         setRedisSinkConfig("message", "Test-%d,52", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForBookingMessage = new ProtoToFieldMapper(testMessageProtoParser, getProperties("2", ""));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForBookingMessage, bookingMessageProtoParser, redisSinkConfig);
 
         redisMessageParser.parse(bookingEsbMessage);
     }
@@ -309,7 +309,7 @@ public class RedisHashSetParserTest {
         setRedisSinkConfig("key", "Test-%s,1", RedisSinkType.HASHSET);
         ProtoToFieldMapper protoToFieldMapperForKey = new ProtoToFieldMapper(testKeyProtoParser, getProperties("1", "order"));
 
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForKey, testKeyProtoParser, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForKey, testKeyProtoParser, redisSinkConfig);
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parse(bookingEsbMessage).get(0);
 
         assertEquals(redisHashSetFieldEntry.getValue(), "ORDER-1-FROM-KEY");
@@ -320,7 +320,7 @@ public class RedisHashSetParserTest {
         setRedisSinkConfig("message", "Test-%s,1", RedisSinkType.HASHSET);
         ProtoParser protoParserForTest = new ProtoParser(stencilClient, TestNestedRepeatedMessage.class.getCanonicalName());
         ProtoToFieldMapper protoToFieldMapperForTest = new ProtoToFieldMapper(protoParserForTest, getProperties("3", "details"));
-        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForTest, protoParserForTest, redisSinkConfig, instrumentation);
+        RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForTest, protoParserForTest, redisSinkConfig);
 
         redisMessageParser.parse(testEsbMessage);
     }
