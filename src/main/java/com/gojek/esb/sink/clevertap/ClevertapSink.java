@@ -71,7 +71,6 @@ public class ClevertapSink extends AbstractSink {
             response = httpClient.execute(request);
             getInstrumentation().logInfo("Response Status: {}", response.getStatusLine().getStatusCode());
         } catch (IOException e) {
-            getInstrumentation().captureFatalError(e, "Error while calling http sink service url");
             NewRelic.noticeError(e);
             throw e;
         } finally {

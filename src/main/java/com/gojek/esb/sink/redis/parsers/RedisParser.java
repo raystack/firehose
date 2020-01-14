@@ -4,7 +4,6 @@ import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.RedisSinkConfig;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
-import com.gojek.esb.metrics.Instrumentation;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -22,7 +21,6 @@ public abstract class RedisParser {
 
     private ProtoParser protoParser;
     private RedisSinkConfig redisSinkConfig;
-    private Instrumentation instrumentation;
 
     public abstract List<RedisDataEntry> parse(EsbMessage esbMessage);
 
@@ -39,24 +37,18 @@ public abstract class RedisParser {
         try {
             parsedMessage = protoParser.parse(getPayload(esbMessage));
         } catch (InvalidProtocolBufferException e) {
-            instrumentation.captureFatalError(e, "Unable to parse data when reading Key");
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException("Unable to parse data when reading Key", e);
         }
         return parsedMessage;
     }
 
     String parseTemplate(DynamicMessage data, String template) {
         if (StringUtils.isEmpty(template)) {
-            IllegalArgumentException invalidTemplateException = new IllegalArgumentException("Invalid configuration, Collection key or key is null or empty");
-            instrumentation.captureFatalError(invalidTemplateException, "Template {} is invalid", template);
-            throw invalidTemplateException;
+            throw new IllegalArgumentException("Template '" + template + "' is invalid");
         }
         String[] templateStrings = template.split(",");
         if (templateStrings.length == 0) {
-            String message = String.format("Empty key configuration: '%s'", template);
-            InvalidConfigurationException emptyKeyException = new InvalidConfigurationException(message);
-            instrumentation.captureFatalError(emptyKeyException, message);
-            throw emptyKeyException;
+            throw new InvalidConfigurationException("Empty key configuration: '" + template + "'");
         }
         templateStrings = Arrays
                 .stream(templateStrings)
@@ -91,10 +83,7 @@ public abstract class RedisParser {
         }
         Descriptors.FieldDescriptor fieldDescriptor = parsedMessage.getDescriptorForType().findFieldByNumber(fieldNumberInt);
         if (fieldDescriptor == null) {
-            String message = String.format("Descriptor not found for index: %s", fieldNumber);
-            IllegalArgumentException descriptorNotFoundException = new IllegalArgumentException(message);
-            instrumentation.captureFatalError(descriptorNotFoundException, message);
-            throw descriptorNotFoundException;
+            throw new IllegalArgumentException(String.format("Descriptor not found for index: %s", fieldNumber));
         }
         return parsedMessage.getField(fieldDescriptor);
     }
