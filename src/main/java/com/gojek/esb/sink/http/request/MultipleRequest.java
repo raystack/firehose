@@ -2,6 +2,7 @@ package com.gojek.esb.sink.http.request;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.gojek.esb.consumer.EsbMessage;
@@ -53,6 +54,7 @@ public class MultipleRequest implements Request {
   }
 
   private StringEntity buildHttpEntity(String bodyContent) {
-    return new StringEntity(bodyContent, ContentType.APPLICATION_JSON);
+    String arrayWrappedBody = Collections.singletonList(bodyContent).toString();
+    return new StringEntity(arrayWrappedBody, ContentType.APPLICATION_JSON);
   }
 }

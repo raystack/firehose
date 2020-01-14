@@ -4,7 +4,6 @@ import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.HTTPSinkConfig;
 import com.gojek.esb.config.enums.HttpSinkDataFormat;
-import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
 import com.gojek.esb.serializer.EsbMessageSerializer;
 import com.gojek.esb.serializer.EsbMessageToJson;
 import com.gojek.esb.serializer.JsonWrappedProtoByte;
@@ -28,11 +27,7 @@ public class SerializerFactory {
 
     if (httpSinkConfig.getHttpSinkDataFormat() == HttpSinkDataFormat.JSON) {
       ProtoParser protoParser = new ProtoParser(stencilClient, httpSinkConfig.getProtoSchema());
-      if (isParameterizedHttpSink()) {
-        return new EsbMessageToJson(protoParser, false, true);
-      } else {
-        return new EsbMessageToJson(protoParser, false);
-      }
+      return new EsbMessageToJson(protoParser, false);
     }
 
     // Ideally this code will never be executed because getHttpSinkDataFormat() will return proto as default value.
@@ -42,9 +37,5 @@ public class SerializerFactory {
 
   private boolean isProtoSchemaEmpty() {
     return httpSinkConfig.getProtoSchema() == null || httpSinkConfig.getProtoSchema().equals("");
-  }
-
-  private boolean isParameterizedHttpSink() {
-    return !httpSinkConfig.getHttpSinkParameterSource().equals(HttpSinkParameterSourceType.DISABLED);
   }
 }
