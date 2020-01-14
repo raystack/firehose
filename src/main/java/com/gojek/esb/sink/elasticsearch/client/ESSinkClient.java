@@ -1,9 +1,14 @@
 package com.gojek.esb.sink.elasticsearch.client;
 
+import static org.elasticsearch.action.bulk.BackoffPolicy.exponentialBackoff;
+import static org.elasticsearch.common.unit.TimeValue.timeValueSeconds;
+
+import java.util.function.BiConsumer;
+
 import com.gojek.esb.config.ESSinkConfig;
-import com.gojek.esb.sink.elasticsearch.BulkProcessorListener;
-import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.sink.elasticsearch.BulkProcessorListener;
+
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.DocWriteRequest;
@@ -13,26 +18,17 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 
-import java.util.function.BiConsumer;
-
-import static org.elasticsearch.action.bulk.BackoffPolicy.exponentialBackoff;
-import static org.elasticsearch.common.unit.TimeValue.timeValueSeconds;
-
 public class ESSinkClient {
 
     private final StatsDReporter statsDReporter;
     private RestHighLevelClient restHighLevelClient;
     private BulkProcessor bulkProcessor;
-    private Instrumentation instrumentation;
 
     public ESSinkClient(ESSinkConfig esSinkConfig, StatsDReporter statsDReporter) {
         this.statsDReporter = statsDReporter;
-        this.instrumentation = new Instrumentation(statsDReporter, ESSinkClient.class);
         HttpHost[] httpHosts = getHttpHosts(esSinkConfig.getEsConnectionUrls());
         if (httpHosts == null) {
-            IllegalArgumentException e = new IllegalArgumentException("ES_CONNECTION_URLS is empty or null");
-            instrumentation.captureFatalError(e);
-            throw e;
+            throw new IllegalArgumentException("ES_CONNECTION_URLS is empty or null");
         }
         BiConsumer<BulkRequest, ActionListener<BulkResponse>> listenerBiConsumer = getBulkAsyncConsumer();
         this.restHighLevelClient = new RestHighLevelClient(RestClient.builder(httpHosts));
