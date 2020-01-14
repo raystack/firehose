@@ -5,7 +5,7 @@ import com.gojek.esb.config.enums.HttpSinkParameterPlacementType;
 
 public interface ParameterizedHTTPSinkConfig extends HTTPSinkConfig {
 
-    @Key("HTTP_SINK_PARAMETER_PLACEMEMT")
+    @Key("HTTP_SINK_PARAMETER_PLACEMENT")
     @DefaultValue("header")
     @ConverterClass(HttpSinkParameterPlacementTypeConverter.class)
     HttpSinkParameterPlacementType getHttpSinkParameterPlacement();
