@@ -1,12 +1,25 @@
 package com.gojek.esb.consumer;
 
-import com.gojek.esb.audit.AuditMessage;
-import com.gojek.esb.audit.AuditableProtoMessage;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
+
 import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.filter.EsbFilterException;
 import com.gojek.esb.filter.Filter;
 import com.gojek.esb.metrics.Instrumentation;
-import com.gojek.esb.server.AuditServiceClient;
+
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -16,22 +29,8 @@ import org.apache.kafka.common.record.TimestampType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.time.Duration;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static java.util.Collections.emptyList;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EsbGenericConsumerTest {
@@ -40,12 +39,6 @@ public class EsbGenericConsumerTest {
 
     @Mock
     private ConsumerRecords consumerRecords;
-
-    @Mock
-    private AuditServiceClient auditServiceClient;
-
-    @Mock
-    private AuditMessage auditMessage;
 
     @Mock
     private Offsets offsets;
@@ -63,22 +56,15 @@ public class EsbGenericConsumerTest {
 
     private TestKey key;
 
-    private EsbGenericConsumer consumerWithAudit;
-    private ConsumerRecord<byte[], byte[]> consumerRecord1;
-    private ConsumerRecord<byte[], byte[]> consumerRecord2;
-
-    @Captor
-    private ArgumentCaptor<Stream<AuditableProtoMessage>> auditMessageCaptor;
+    private EsbGenericConsumer esbGenericConsumer;
 
     @Before
     public void setUp() {
         message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
-        consumerWithAudit = new EsbGenericConsumer(kafkaConsumer, consumerConfig, auditServiceClient, filter, offsets, instrumentation);
+        esbGenericConsumer = new EsbGenericConsumer(kafkaConsumer, consumerConfig, filter, offsets, instrumentation);
         when(consumerConfig.getPollTimeOut()).thenReturn(500L);
         when(kafkaConsumer.poll(Duration.ofMillis(500L))).thenReturn(consumerRecords);
-        consumerRecord1 = new ConsumerRecord<>("topic1", 1, 0, key.toByteArray(), message.toByteArray());
-        consumerRecord2 = new ConsumerRecord<>("topic2", 1, 0, key.toByteArray(), message.toByteArray());
     }
 
     @Test
@@ -92,7 +78,7 @@ public class EsbGenericConsumerTest {
 
         when(filter.filter(any())).thenReturn(Arrays.asList(expectedMsg1, expectedMsg2));
 
-        List<EsbMessage> messages = consumerWithAudit.readMessages();
+        List<EsbMessage> messages = esbGenericConsumer.readMessages();
 
         assertNotNull(messages);
         assertThat(messages.size(), is(2));
@@ -112,7 +98,7 @@ public class EsbGenericConsumerTest {
 
         when(filter.filter(any())).thenReturn(Arrays.asList(expectedMsg1, expectedMsg2));
 
-        List<EsbMessage> messages = consumerWithAudit.readMessages();
+        List<EsbMessage> messages = esbGenericConsumer.readMessages();
 
         assertNotNull(messages);
         assertThat(messages.size(), is(2));
@@ -131,7 +117,7 @@ public class EsbGenericConsumerTest {
 
         when(filter.filter(any())).thenReturn(Arrays.asList(expectedMsg1));
 
-        List<EsbMessage> messages = consumerWithAudit.readMessages();
+        List<EsbMessage> messages = esbGenericConsumer.readMessages();
 
         assertNotNull(messages);
         assertThat(messages.size(), is(1));
@@ -141,50 +127,15 @@ public class EsbGenericConsumerTest {
     }
 
     @Test
-    public void shouldAuditMessages() throws Exception {
-        when(consumerRecords.iterator()).thenReturn(Arrays.asList(consumerRecord1, consumerRecord2).iterator());
-
-        consumerWithAudit.readMessages();
-
-        verify(auditServiceClient).sendAuditableMessages(auditMessageCaptor.capture());
-        List<AuditableProtoMessage> actualMessages = auditMessageCaptor.getValue().collect(Collectors.toList());
-        assertThat(actualMessages.get(0).getLogKey(), is(key.toByteArray()));
-        assertThat(actualMessages.get(0).getTopic(), is("topic1"));
-        assertThat(actualMessages.get(1).getLogKey(), is(key.toByteArray()));
-        assertThat(actualMessages.get(1).getTopic(), is("topic2"));
-    }
-
-    @Test
-    public void shouldNotAuditMessagesWithoutKey() throws Exception {
-        ConsumerRecord<Object, byte[]> recordWithoutKey = new ConsumerRecord<>("topic2", 1, 0, null, message.toByteArray());
-        when(consumerRecords.iterator()).thenReturn(Arrays.asList(consumerRecord1, recordWithoutKey).iterator());
-
-        consumerWithAudit.readMessages();
-
-        verify(auditServiceClient).sendAuditableMessages(auditMessageCaptor.capture());
-        List<AuditableProtoMessage> expectedAuditPayload = Arrays.asList(new AuditableProtoMessage(key.toByteArray(), "topic1"));
-        assertThat(auditMessageCaptor.getValue().collect(Collectors.toList()), is(expectedAuditPayload));
-    }
-
-    @Test
-    public void shouldNotAuditWhenThereIsEmptyMessagesDuringRead() throws Exception {
-        when(consumerRecords.iterator()).thenReturn(emptyList().iterator());
-
-        consumerWithAudit.readMessages();
-
-        verify(auditServiceClient, never()).sendAuditableMessages(any());
-    }
-
-    @Test
     public void shouldCallCommitOnOffsets() {
-        consumerWithAudit.commit();
+        esbGenericConsumer.commit();
 
         verify(offsets, times(1)).commit(any());
     }
 
     @Test
     public void shouldCallCloseOnConsumer() {
-        consumerWithAudit.close();
+        esbGenericConsumer.close();
 
         verify(kafkaConsumer).close();
     }
@@ -194,7 +145,7 @@ public class EsbGenericConsumerTest {
         doThrow(new RuntimeException()).when(kafkaConsumer).close();
 
         try {
-            consumerWithAudit.close();
+            esbGenericConsumer.close();
         } catch (Exception kafkaConsumerException) {
             fail("Failed to supress exception on close");
         }
