@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.gojek.esb.metrics.Metrics.*;
@@ -19,10 +20,8 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
 
     private final StatsDReporter statsDReporter;
     private static final Logger LOGGER = LoggerFactory.getLogger(BulkProcessorListener.class.getName());
-
     private Instant startTime;
-    private List<EsbMessage> esbMessages;
-    private int bulkStartIndex;
+    private List<EsbMessage> esbMessages = new ArrayList<>();
     private int batchSize;
     private List<EsbMessage> messageBulk;
 
@@ -30,11 +29,9 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
         return startTime;
     }
 
-    public BulkProcessorListener(StatsDReporter statsDReporter, List<EsbMessage> esbMessages, int batchSize) {
+    public BulkProcessorListener(StatsDReporter statsDReporter, int batchSize) {
         this.statsDReporter = statsDReporter;
-        this.esbMessages = esbMessages;
         this.batchSize = batchSize;
-        this.bulkStartIndex = 0;
     }
 
     private void setStartTime(Instant startTime) {
@@ -45,8 +42,8 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
     public void beforeBulk(long executionId, BulkRequest request) {
         int numberOfActions = request.numberOfActions();
 
-        messageBulk = esbMessages.subList(bulkStartIndex, bulkStartIndex + Math.min(batchSize, esbMessages.size() - bulkStartIndex));
-
+        messageBulk = esbMessages.subList(0, request.numberOfActions());
+        esbMessages = esbMessages.subList(request.numberOfActions(), esbMessages.size());
         messageBulk.forEach(message -> {
             statsDReporter.captureDurationSince(LIFETIME_TILL_EXECUTION, Instant.ofEpochMilli(message.getTimestamp()));
             statsDReporter.captureDurationSince(LATENCY_ACROSS_FIREHOSE, Instant.ofEpochMilli(message.getConsumeTimestamp()));
@@ -60,6 +57,10 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
                 executionId, numberOfActions);
 
         setStartTime(Instant.now());
+    }
+
+    public void updateEsbMessages(List<EsbMessage> esbMessageList) {
+        this.esbMessages.addAll(esbMessageList);
     }
 
     @Override
@@ -80,13 +81,11 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
             statsDReporter.captureCount(MESSAGE_COUNT, (response.getItems().length - failedCount), SUCCESS_TAG);
             statsDReporter.captureCount(ES_SINK_BATCH_FAILURE_COUNT, 1, FAILURE_TAG);
         } else {
-            LOGGER.debug("Bulk [{}] completed in {} milliseconds",
-                    executionId, response.getTook().getMillis());
+            LOGGER.debug("Bulk [{}] of {} messages completed in {} milliseconds",
+                    executionId, request.numberOfActions(), response.getTook().getMillis());
 
             statsDReporter.captureDurationSince(SINK_RESPONSE_TIME, getStartTime(), SUCCESS_TAG);
             statsDReporter.captureCount(MESSAGE_COUNT, batchSize, SUCCESS_TAG);
-
-            bulkStartIndex += batchSize;
         }
     }
 

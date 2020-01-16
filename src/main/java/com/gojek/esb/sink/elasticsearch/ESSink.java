@@ -18,8 +18,7 @@ public class ESSink implements Sink {
 
     @Override
     public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) {
-        esSinkClient.buildBulkProcessor(esbMessages);
-
+        esSinkClient.updateEsbMessages(esbMessages);
         esbMessages
                 .stream()
                 .map((message) -> esRequestBuilder.buildRequest(
