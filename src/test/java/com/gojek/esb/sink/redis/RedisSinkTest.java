@@ -74,12 +74,12 @@ public class RedisSinkTest {
     @Test
     public void sendsMetricsForSuccessfullyPushedMessages() throws IOException, DeserializerException {
         redisSink.pushMessage(esbMessages);
-        verify(instrumentation, times(1)).lifetimeTillExecution(esbMessages);
+        verify(instrumentation, times(1)).capturePreExecutionLatencies(esbMessages);
         verify(instrumentation, times(1)).startExecution();
         verify(instrumentation, times(1)).logInfo("pushing {} messages", esbMessages.size());
         verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("redis", esbMessages);
         InOrder inOrder = inOrder(instrumentation);
-        inOrder.verify(instrumentation).lifetimeTillExecution(esbMessages);
+        inOrder.verify(instrumentation).capturePreExecutionLatencies(esbMessages);
         inOrder.verify(instrumentation).startExecution();
         inOrder.verify(instrumentation).logInfo("pushing {} messages", esbMessages.size());
         inOrder.verify(instrumentation).captureSuccessExecutionTelemetry("redis", esbMessages);
@@ -90,12 +90,12 @@ public class RedisSinkTest {
         when(responses.get()).thenReturn(null);
         redisSink.pushMessage(esbMessages);
 
-        verify(instrumentation, times(1)).lifetimeTillExecution(esbMessages);
+        verify(instrumentation, times(1)).capturePreExecutionLatencies(esbMessages);
         verify(instrumentation, times(1)).startExecution();
         verify(instrumentation, times(1)).logInfo("pushing {} messages", esbMessages.size());
         verify(instrumentation, times(1)).captureFailedExecutionTelemetry(any(), any());
         InOrder inOrder = inOrder(instrumentation);
-        inOrder.verify(instrumentation).lifetimeTillExecution(esbMessages);
+        inOrder.verify(instrumentation).capturePreExecutionLatencies(esbMessages);
         inOrder.verify(instrumentation).startExecution();
         inOrder.verify(instrumentation).logInfo("pushing {} messages", esbMessages.size());
         inOrder.verify(instrumentation).captureFailedExecutionTelemetry(any(), any());
