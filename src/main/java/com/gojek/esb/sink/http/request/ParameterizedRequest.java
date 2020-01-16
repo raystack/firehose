@@ -2,6 +2,7 @@ package com.gojek.esb.sink.http.request;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.gojek.esb.consumer.EsbMessage;
@@ -17,18 +18,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * MultipleRequest create one HttpPut per-message. Uri and Header are
+ * ParameterizedRequest create one HttpPut per-message. Uri and Header are
  * parametrized according to incoming message.
  */
-public class MultipleRequest implements Request {
+public class ParameterizedRequest implements Request {
 
   private SupportParameterizedUri parameterizedUri;
   private SupportParamerizedHeader parameterizedHeader;
   private JsonBody body;
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MultipleRequest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ParameterizedRequest.class);
 
-  public MultipleRequest(SupportParameterizedUri parameterizedUri, SupportParamerizedHeader parameterizedHeader, JsonBody body) {
+  public ParameterizedRequest(SupportParameterizedUri parameterizedUri, SupportParamerizedHeader parameterizedHeader, JsonBody body) {
     this.parameterizedUri = parameterizedUri;
     this.parameterizedHeader = parameterizedHeader;
     this.body = body;
@@ -53,6 +54,7 @@ public class MultipleRequest implements Request {
   }
 
   private StringEntity buildHttpEntity(String bodyContent) {
-    return new StringEntity(bodyContent, ContentType.APPLICATION_JSON);
+    String arrayWrappedBody = Collections.singletonList(bodyContent).toString();
+    return new StringEntity(arrayWrappedBody, ContentType.APPLICATION_JSON);
   }
 }
