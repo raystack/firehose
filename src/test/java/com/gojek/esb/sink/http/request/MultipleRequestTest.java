@@ -44,7 +44,7 @@ public class MultipleRequestTest {
       throw new RuntimeException(e);
     }
 
-    MultipleRequest multipleRequest = new MultipleRequest(parameterizedUri, parameterizedHeader, jsonBody);
+    ParameterizedRequest multipleRequest = new ParameterizedRequest(parameterizedUri, parameterizedHeader, jsonBody);
 
     try {
       multipleRequest.build(esbMessages);

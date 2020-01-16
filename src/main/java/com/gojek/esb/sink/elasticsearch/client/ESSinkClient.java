@@ -33,12 +33,9 @@ public class ESSinkClient {
     public ESSinkClient(ESSinkConfig esSinkConfig, StatsDReporter statsDReporter) {
         this.esSinkConfig = esSinkConfig;
         this.statsDReporter = statsDReporter;
-        this.instrumentation = new Instrumentation(statsDReporter, ESSinkClient.class);
         HttpHost[] httpHosts = getHttpHosts(esSinkConfig.getEsConnectionUrls());
         if (httpHosts == null) {
-            IllegalArgumentException e = new IllegalArgumentException("ES_CONNECTION_URLS is empty or null");
-            instrumentation.captureFatalError(e);
-            throw e;
+            throw new IllegalArgumentException("ES_CONNECTION_URLS is empty or null");
         }
         listenerBiConsumer = getBulkAsyncConsumer();
         this.restHighLevelClient = new RestHighLevelClient(RestClient.builder(httpHosts));

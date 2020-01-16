@@ -1,8 +1,9 @@
 package com.gojek.esb.factory;
 
+import java.util.Map;
+
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.esb.config.AuditConfig;
 import com.gojek.esb.config.ExponentialBackOffProviderConfig;
 import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.config.RetryQueueConfig;
@@ -11,6 +12,9 @@ import com.gojek.esb.consumer.FireHoseConsumer;
 import com.gojek.esb.exception.EglcConfigurationException;
 import com.gojek.esb.filter.EsbMessageFilter;
 import com.gojek.esb.filter.Filter;
+import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.metrics.StatsDReporterFactory;
+import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.clevertap.ClevertapSinkFactory;
 import com.gojek.esb.sink.db.DBSinkFactory;
 import com.gojek.esb.sink.elasticsearch.ESSinkFactory;
@@ -18,9 +22,6 @@ import com.gojek.esb.sink.http.HttpSinkFactory;
 import com.gojek.esb.sink.influxdb.InfluxSinkFactory;
 import com.gojek.esb.sink.log.LogSinkFactory;
 import com.gojek.esb.sink.redis.RedisSinkFactory;
-import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.metrics.StatsDReporterFactory;
-import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sinkdecorator.BackOff;
 import com.gojek.esb.sinkdecorator.BackOffProvider;
 import com.gojek.esb.sinkdecorator.ExponentialBackOffProvider;
@@ -28,16 +29,16 @@ import com.gojek.esb.sinkdecorator.SinkWithRetry;
 import com.gojek.esb.sinkdecorator.SinkWithRetryQueue;
 import com.gojek.esb.tracer.SinkTracer;
 import com.gojek.esb.util.Clock;
-import io.jaegertracing.Configuration;
-import io.opentracing.Tracer;
-import io.opentracing.contrib.kafka.TracingKafkaProducer;
-import io.opentracing.noop.NoopTracerFactory;
+
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
+import io.jaegertracing.Configuration;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.kafka.TracingKafkaProducer;
+import io.opentracing.noop.NoopTracerFactory;
 
 public class FireHoseConsumerFactory {
 
@@ -76,14 +77,13 @@ public class FireHoseConsumerFactory {
      */
     public FireHoseConsumer buildConsumer() {
 
-        AuditConfig auditConfig = ConfigFactory.create(AuditConfig.class, config);
         Filter filter = new EsbMessageFilter(kafkaConsumerConfig);
         GenericKafkaFactory genericKafkaFactory = new GenericKafkaFactory();
         Tracer tracer = NoopTracerFactory.create();
         if (kafkaConsumerConfig.enableTracing()) {
             tracer = Configuration.fromEnv("FireHose" + ": " + kafkaConsumerConfig.getConsumerGroupId()).getTracer();
         }
-        EsbGenericConsumer consumer = genericKafkaFactory.createConsumer(kafkaConsumerConfig, auditConfig, config,
+        EsbGenericConsumer consumer = genericKafkaFactory.createConsumer(kafkaConsumerConfig, config,
                 statsDReporter, filter, tracer);
         Sink retrySink = withRetry(getSink(), genericKafkaFactory, tracer);
         SinkTracer fireHoseTracer = new SinkTracer(tracer, kafkaConsumerConfig.getSinkType().name() + " SINK",

@@ -21,7 +21,7 @@ public abstract class AbstractSink implements Closeable, Sink {
         List<EsbMessage> failedMessages;
         try {
             prepare(esbMessages);
-            instrumentation.lifetimeTillSink(esbMessages);
+            instrumentation.lifetimeTillExecution(esbMessages);
             instrumentation.startExecution();
             instrumentation.logInfo("pushing {} messages", esbMessages.size());
             failedMessages = execute();

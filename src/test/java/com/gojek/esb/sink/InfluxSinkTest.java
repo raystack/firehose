@@ -172,7 +172,7 @@ public class InfluxSinkTest {
         ArgumentCaptor<BatchPoints> batchPointsArgumentCaptor = ArgumentCaptor.forClass(BatchPoints.class);
 
         sink.pushMessage(esbMessages);
-        verify(instrumentation, times(1)).lifetimeTillSink(esbMessages);
+        verify(instrumentation, times(1)).lifetimeTillExecution(esbMessages);
         verify(instrumentation, times(1)).startExecution();
         verify(instrumentation, times(1)).logInfo("pushing {} messages", esbMessages.size());
         verify(client, times(1)).write(batchPointsArgumentCaptor.capture());

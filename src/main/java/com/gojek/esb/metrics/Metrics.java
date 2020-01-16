@@ -14,6 +14,8 @@ public class Metrics {
     public static final String SINK_RESPONSE_TIME = "sink.response.time";
     public static final String MESSAGE_COUNT = "messages.count";
     public static final String LATENCY_ACROSS_FIREHOSE = "latency";
+    public static final String HTTP_RESPONSE_CODE = "http.response.code";
+
 
     //RETRY
     public static final String RETRY_QUEUE_PREFIX = "retry.queue.";
