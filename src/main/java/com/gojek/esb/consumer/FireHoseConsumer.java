@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
-import static com.gojek.esb.metrics.Metrics.MESSAGE_RECEIVED;
 import static com.gojek.esb.metrics.Metrics.PARTITION_PROCESS_TIME;
 
 @AllArgsConstructor
@@ -35,7 +34,6 @@ public class FireHoseConsumer implements Closeable {
         try {
             List<EsbMessage> messages = consumer.readMessages();
             List<Span> spans = tracer.startTrace(messages);
-            statsDReporter.captureCount(MESSAGE_RECEIVED, messages.size());
             if (!messages.isEmpty()) {
                 sink.pushMessage(messages);
                 LOGGER.info("Execution successful for {} records", messages.size());

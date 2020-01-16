@@ -1,24 +1,23 @@
 package com.gojek.esb.sink.redis.parsers;
 
-import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.config.RedisSinkConfig;
-import com.gojek.esb.consumer.EsbMessage;
-import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
-import com.gojek.esb.sink.redis.dataentry.RedisHashSetFieldEntry;
-import com.gojek.esb.metrics.Instrumentation;
-import com.gojek.esb.proto.ProtoToFieldMapper;
-import com.google.protobuf.DynamicMessage;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import com.gojek.de.stencil.parser.ProtoParser;
+import com.gojek.esb.config.RedisSinkConfig;
+import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.proto.ProtoToFieldMapper;
+import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
+import com.gojek.esb.sink.redis.dataentry.RedisHashSetFieldEntry;
+import com.google.protobuf.DynamicMessage;
 
 public class RedisHashSetParser extends RedisParser {
     private ProtoToFieldMapper protoToFieldMapper;
     private RedisSinkConfig redisSinkConfig;
 
-    public RedisHashSetParser(ProtoToFieldMapper protoToFieldMapper, ProtoParser protoParser, RedisSinkConfig redisSinkConfig, Instrumentation instrumentation) {
-        super(protoParser, redisSinkConfig, instrumentation);
+    public RedisHashSetParser(ProtoToFieldMapper protoToFieldMapper, ProtoParser protoParser, RedisSinkConfig redisSinkConfig) {
+        super(protoParser, redisSinkConfig);
         this.protoToFieldMapper = protoToFieldMapper;
         this.redisSinkConfig = redisSinkConfig;
     }

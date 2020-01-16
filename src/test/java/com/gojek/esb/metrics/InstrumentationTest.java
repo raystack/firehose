@@ -2,10 +2,6 @@ package com.gojek.esb.metrics;
 
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.util.Clock;
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,10 +25,6 @@ public class InstrumentationTest {
     private Logger logger;
     @Mock
     private EsbMessage esbMessage;
-    @Mock
-    private HttpResponse httpResponse;
-    @Mock
-    private StatusLine statusLine;
 
     private Instrumentation instrumentation;
     private String testMessage;
@@ -124,7 +116,7 @@ public class InstrumentationTest {
         List<EsbMessage> esbMessages = Collections.singletonList(esbMessage);
         instrumentation.captureSuccessExecutionTelemetry("test", esbMessages);
         verify(logger, times(1)).info("Pushed {} messages to {}.", esbMessages.size(), "test");
-        verify(statsDReporter, times(1)).captureDurationSince("response.time", instrumentation.getStartExecutionTime());
+        verify(statsDReporter, times(1)).captureDurationSince("sink.response.time", instrumentation.getStartExecutionTime());
         verify(statsDReporter, times(1)).captureCount("messages.count", esbMessages.size(), SUCCESS_TAG);
         verify(statsDReporter, times(esbMessages.size())).captureDurationSince("latency", Instant.ofEpochSecond(esbMessage.getConsumeTimestamp()));
     }
@@ -158,22 +150,17 @@ public class InstrumentationTest {
     @Test
     public void shouldCaptureLifetimeTillSink() {
         List<EsbMessage> esbMessages = Collections.singletonList(esbMessage);
-        instrumentation.lifetimeTillSink(esbMessages);
-        verify(statsDReporter, times(esbMessages.size())).captureDurationSince("lifetime.till.sink", Instant.ofEpochSecond(esbMessage.getTimestamp()));
+        instrumentation.lifetimeTillExecution(esbMessages);
+        verify(statsDReporter, times(esbMessages.size())).captureDurationSince("lifetime.till.execution", Instant.ofEpochSecond(esbMessage.getTimestamp()));
     }
 
     @Test
-    public void shouldCaptureHttpStatusCount() {
-        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+    public void shouldCaptureCountWithTags() {
+        String metric = "test.metric";
+        String urlTag = "url=test";
+        String httpCodeTag = "status_code=200";
+        instrumentation.captureCountWithTags(metric, httpCodeTag, urlTag);
 
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        connectionManager.setMaxTotal(4);
-        connectionManager.setDefaultMaxPerRoute(4);
-
-        HttpPut batchPutMethod = new HttpPut("testUrl");
-        instrumentation.captureHttpStatusCount(batchPutMethod, httpResponse);
-
-        verify(statsDReporter, times(1)).captureCount(any(), any(), any(), any());
-        verify(statusLine, times(1)).getStatusCode();
+        verify(statsDReporter, times(1)).captureCount(metric, 1, httpCodeTag, urlTag);
     }
 }

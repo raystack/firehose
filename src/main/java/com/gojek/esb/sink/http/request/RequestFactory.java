@@ -53,19 +53,18 @@ public class RequestFactory {
     if (placementType == HEADER) {
       BasicUri basicUri = new BasicUri(httpSinkConfig.getServiceURL());
       ParameterizedHeader parameterizedHeader = new ParameterizedHeader(protoToFieldMapper, parameterSource, new BasicHeader(headers));
-      return new MultipleRequest(basicUri, parameterizedHeader, createBody());
+      return new ParameterizedRequest(basicUri, parameterizedHeader, createBody());
 
     } else {
       ParameterizedUri parameterizedUri = new ParameterizedUri(httpSinkConfig.getServiceURL(), protoToFieldMapper, parameterSource);
       BasicHeader basicHeader = new BasicHeader(headers);
-      return new MultipleRequest(parameterizedUri, basicHeader, createBody());
+      return new ParameterizedRequest(parameterizedUri, basicHeader, createBody());
     }
   }
 
   private JsonBody createBody() {
     EsbMessageSerializer esbMessageSerializer = new SerializerFactory(
-      httpSinkConfig.getHttpSinkDataFormat(),
-      httpSinkConfig.getProtoSchema(),
+      httpSinkConfig,
       stencilClient).build();
     return new JsonBody(esbMessageSerializer);
   }
