@@ -118,7 +118,6 @@ public class InstrumentationTest {
         verify(logger, times(1)).info("Pushed {} messages to {}.", esbMessages.size(), "test");
         verify(statsDReporter, times(1)).captureDurationSince("sink.response.time", instrumentation.getStartExecutionTime());
         verify(statsDReporter, times(1)).captureCount("messages.count", esbMessages.size(), SUCCESS_TAG);
-        verify(statsDReporter, times(esbMessages.size())).captureDurationSince("latency", Instant.ofEpochSecond(esbMessage.getConsumeTimestamp()));
     }
 
     @Test
@@ -150,8 +149,16 @@ public class InstrumentationTest {
     @Test
     public void shouldCaptureLifetimeTillSink() {
         List<EsbMessage> esbMessages = Collections.singletonList(esbMessage);
-        instrumentation.lifetimeTillExecution(esbMessages);
+        instrumentation.capturePreExecutionLatencies(esbMessages);
         verify(statsDReporter, times(esbMessages.size())).captureDurationSince("lifetime.till.execution", Instant.ofEpochSecond(esbMessage.getTimestamp()));
+    }
+
+    @Test
+    public void shouldCaptureLatencyAcrossFirehose() {
+        List<EsbMessage> esbMessages = Collections.singletonList(esbMessage);
+        instrumentation.capturePreExecutionLatencies(esbMessages);
+        verify(statsDReporter, times(esbMessages.size())).captureDurationSince("latency", Instant.ofEpochSecond(esbMessage.getConsumeTimestamp()));
+
     }
 
     @Test
