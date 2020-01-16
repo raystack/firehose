@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import static com.gojek.esb.metrics.Metrics.HTTP_RESPONSE_CODE;
+
 public class ClevertapSink extends AbstractSink {
     private String eventName;
     private String eventType;
@@ -69,17 +71,17 @@ public class ClevertapSink extends AbstractSink {
             response = httpClient.execute(request);
             getInstrumentation().logInfo("Response Status: {}", response.getStatusLine().getStatusCode());
         } catch (IOException e) {
-            getInstrumentation().captureFatalError(e, "Error while calling http sink service url");
             NewRelic.noticeError(e);
             throw e;
         } finally {
             if (response != null) {
                 EntityUtils.consumeQuietly(response.getEntity());
             }
-            getInstrumentation().captureHttpStatusCount(request, response);
+            captureHttpStatusCount();
         }
         return new ArrayList<>();
     }
+
 
     @Override
     public void close() {
@@ -93,6 +95,15 @@ public class ClevertapSink extends AbstractSink {
         return fieldMapping.keySet().stream().collect(
                 Collectors.toMap(fieldIndex -> (String) fieldMapping.get(fieldIndex),
                         fieldIndex -> protoFieldValue(esbMessage, Integer.parseInt(fieldIndex.toString()))));
+    }
+
+    private void captureHttpStatusCount() {
+        String urlTag = "url=" + request.getURI().getPath();
+        String httpCodeTag = "status_code=";
+        if (response != null) {
+            httpCodeTag = "status_code=" + Integer.toString(response.getStatusLine().getStatusCode());
+        }
+        getInstrumentation().captureCountWithTags(HTTP_RESPONSE_CODE, httpCodeTag, urlTag);
     }
 
     private Object protoFieldValue(EsbMessage esbMessage, int fieldIndex) {
