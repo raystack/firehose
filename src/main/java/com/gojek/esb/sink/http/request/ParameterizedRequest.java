@@ -18,18 +18,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * MultipleRequest create one HttpPut per-message. Uri and Header are
+ * ParameterizedRequest create one HttpPut per-message. Uri and Header are
  * parametrized according to incoming message.
  */
-public class MultipleRequest implements Request {
+public class ParameterizedRequest implements Request {
 
   private SupportParameterizedUri parameterizedUri;
   private SupportParamerizedHeader parameterizedHeader;
   private JsonBody body;
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MultipleRequest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ParameterizedRequest.class);
 
-  public MultipleRequest(SupportParameterizedUri parameterizedUri, SupportParamerizedHeader parameterizedHeader, JsonBody body) {
+  public ParameterizedRequest(SupportParameterizedUri parameterizedUri, SupportParamerizedHeader parameterizedHeader, JsonBody body) {
     this.parameterizedUri = parameterizedUri;
     this.parameterizedHeader = parameterizedHeader;
     this.body = body;
