@@ -51,6 +51,10 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
             statsDReporter.captureDurationSince(LIFETIME_TILL_EXECUTION, Instant.ofEpochMilli(message.getTimestamp()));
         });
 
+        messageBulk.forEach(message -> {
+            statsDReporter.captureDurationSince(LATENCY_ACROSS_FIREHOSE, Instant.ofEpochMilli(message.getConsumeTimestamp()));
+        });
+
         LOGGER.debug("Executing bulk [{}] with {} requests",
                 executionId, numberOfActions);
 
@@ -82,11 +86,6 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
             statsDReporter.captureCount(MESSAGE_COUNT, batchSize, SUCCESS_TAG);
 
             bulkStartIndex += batchSize;
-
-            messageBulk.forEach(message -> {
-                statsDReporter.captureDurationSince(LATENCY_ACROSS_FIREHOSE, Instant.ofEpochMilli(message.getConsumeTimestamp()));
-            });
-
         }
     }
 
