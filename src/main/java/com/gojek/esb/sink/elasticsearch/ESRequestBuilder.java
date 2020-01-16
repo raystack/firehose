@@ -21,14 +21,12 @@ import static com.gojek.esb.config.enums.ESMessageType.PROTOBUF;
 
 public class ESRequestBuilder {
 
-    // private final JsonDeserializer jsonDeserializer;
     private final EsbMessageToJson jsonSerializer;
     private String esIdFieldName;
     private ESMessageType messageType;
 
     private ESRequestType esRequestType;
     private JSONParser jsonParser;
-    // private final Boolean preserveProtoFieldNames;
 
     public ESRequestBuilder(ESRequestType esRequestType, String esIdFieldName, ESMessageType messageType, EsbMessageToJson jsonSerializer) {
         this.jsonParser = new JSONParser();
@@ -36,7 +34,6 @@ public class ESRequestBuilder {
         this.esRequestType = esRequestType;
         this.esIdFieldName = esIdFieldName;
         this.jsonSerializer = jsonSerializer;
-        // this.preserveProtoFieldNames = preserveProtoFieldNames;
     }
 
     public String extractId(EsbMessage message) {

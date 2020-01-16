@@ -2,7 +2,6 @@ package com.gojek.esb.sink.elasticsearch.client;
 
 import com.gojek.esb.config.ESSinkConfig;
 import com.gojek.esb.consumer.EsbMessage;
-import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.elasticsearch.BulkProcessorListener;
 import org.apache.http.HttpHost;
@@ -22,12 +21,11 @@ import static org.elasticsearch.common.unit.TimeValue.timeValueSeconds;
 
 public class ESSinkClient {
 
+    private BulkProcessorListener bulkProcessorListener;
     private ESSinkConfig esSinkConfig;
     private final StatsDReporter statsDReporter;
     private RestHighLevelClient restHighLevelClient;
     private BulkProcessor bulkProcessor;
-    private Instrumentation instrumentation;
-    private List<EsbMessage> esbMessages;
     private BiConsumer<BulkRequest, ActionListener<BulkResponse>> listenerBiConsumer;
 
     public ESSinkClient(ESSinkConfig esSinkConfig, StatsDReporter statsDReporter) {
@@ -39,10 +37,6 @@ public class ESSinkClient {
         }
         listenerBiConsumer = getBulkAsyncConsumer();
         this.restHighLevelClient = new RestHighLevelClient(RestClient.builder(httpHosts));
-    }
-
-    public void buildBulkProcessor(List<EsbMessage> messageList) {
-        this.esbMessages = messageList;
         bulkProcessor = buildBulkProcessor(esSinkConfig.getEsBatchSize(), esSinkConfig.getEsBatchRetryCount(),
                 esSinkConfig.getEsRetryBackoff(), listenerBiConsumer);
     }
@@ -79,10 +73,10 @@ public class ESSinkClient {
 
     private BulkProcessor buildBulkProcessor(int bulkActionsCount, int numberOfRetries, Long esRetryBackoff,
                                              BiConsumer<BulkRequest, ActionListener<BulkResponse>> consumer) {
-        BulkProcessor.Listener bulkListener = getBulkListener();
+        bulkProcessorListener = getBulkProcessorListener();
         final long seconds = 15L;
         return BulkProcessor
-                .builder(consumer, bulkListener)
+                .builder(consumer, bulkProcessorListener)
                 .setBulkActions(bulkActionsCount)
                 .setConcurrentRequests(0)
                 .setFlushInterval(timeValueSeconds(seconds))
@@ -90,7 +84,11 @@ public class ESSinkClient {
                 .build();
     }
 
-    private BulkProcessor.Listener getBulkListener() {
-        return new BulkProcessorListener(this.statsDReporter, this.esbMessages, esSinkConfig.getEsBatchSize());
+    private BulkProcessorListener getBulkProcessorListener() {
+        return new BulkProcessorListener(this.statsDReporter, esSinkConfig.getEsBatchSize());
+    }
+
+    public void updateEsbMessages(List<EsbMessage> esbMessages) {
+        bulkProcessorListener.updateEsbMessages(esbMessages);
     }
 }
