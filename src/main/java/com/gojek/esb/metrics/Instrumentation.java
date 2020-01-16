@@ -130,6 +130,11 @@ public class Instrumentation {
             statsDReporter.captureDurationSince(LIFETIME_TILL_EXECUTION, Instant.ofEpochMilli(message.getTimestamp()));
             statsDReporter.captureDurationSince(LATENCY_ACROSS_FIREHOSE, Instant.ofEpochMilli(message.getConsumeTimestamp()));
         });
+
+        messages.forEach(esbMessage ->
+                statsDReporter.captureDurationSince(LATENCY_ACROSS_FIREHOSE, Instant.ofEpochMilli(esbMessage.getConsumeTimestamp()))
+        );
+
     }
 
 

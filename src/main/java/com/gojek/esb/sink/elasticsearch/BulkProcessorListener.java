@@ -52,6 +52,10 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
             statsDReporter.captureDurationSince(LATENCY_ACROSS_FIREHOSE, Instant.ofEpochMilli(message.getConsumeTimestamp()));
         });
 
+        messageBulk.forEach(message -> {
+            statsDReporter.captureDurationSince(LATENCY_ACROSS_FIREHOSE, Instant.ofEpochMilli(message.getConsumeTimestamp()));
+        });
+
         LOGGER.debug("Executing bulk [{}] with {} requests",
                 executionId, numberOfActions);
 
