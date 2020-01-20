@@ -51,7 +51,7 @@ public class BulkProcessorListener implements BulkProcessor.Listener {
             for (BulkItemResponse responses : items) {
                 if (responses.isFailed()) {
                     failedCount += 1;
-                    instrumentation.logWarn("Failure response message [{}]", responses.getFailureMessage());
+                    instrumentation.captureNonFatalError(new Exception(String.valueOf(responses.getFailure())));
                 }
             }
             instrumentation.captureCountWithTags(MESSAGE_COUNT, failedCount, FAILURE_TAG);
