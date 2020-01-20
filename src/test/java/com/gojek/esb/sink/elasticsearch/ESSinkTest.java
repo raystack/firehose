@@ -8,6 +8,7 @@ import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.serializer.EsbMessageToJson;
 import com.gojek.esb.sink.elasticsearch.client.ESSinkClient;
 import com.gojek.esb.test.categories.IntegrationTest;
+import com.gojek.esb.util.Clock;
 import org.aeonbits.owner.ConfigFactory;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -62,6 +63,8 @@ public class ESSinkTest {
         index = "i-customer-tagstore";
         type = "customer";
         esSink = new ESSink(esRequestBuilder, esSinkClient, type, index);
+        Clock clock = new Clock();
+        when(client.getClock()).thenReturn(clock);
     }
 
     @Test

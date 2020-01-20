@@ -72,7 +72,7 @@ public class DBSinkTest {
         dbSink.pushMessage(esbMessages);
 
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("db", esbMessages);
+        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("db", esbMessages.size());
     }
 
     @Test
@@ -82,10 +82,10 @@ public class DBSinkTest {
         dbSink.pushMessage(esbMessages);
 
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("db", esbMessages);
+        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("db", esbMessages.size());
         InOrder inOrder = inOrder(instrumentation);
         inOrder.verify(instrumentation).startExecution();
-        inOrder.verify(instrumentation).captureSuccessExecutionTelemetry("db", esbMessages);
+        inOrder.verify(instrumentation).captureSuccessExecutionTelemetry("db", esbMessages.size());
     }
 
     @Test
@@ -94,7 +94,7 @@ public class DBSinkTest {
                 new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
 
         assertEquals(dbSink.pushMessage(esbMessages).size(), 0);
-        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("db", esbMessages);
+        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("db", esbMessages.size());
     }
 
     @Test
@@ -105,7 +105,7 @@ public class DBSinkTest {
                 new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
 
         assertEquals(dbSink.pushMessage(esbMessages).size(), 2);
-        verify(instrumentation, times(1)).captureFailedExecutionTelemetry(sqlException, esbMessages);
+        verify(instrumentation, times(1)).captureFailedExecutionTelemetry(sqlException, esbMessages.size());
     }
 
     @Test
