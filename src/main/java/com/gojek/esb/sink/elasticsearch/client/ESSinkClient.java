@@ -2,6 +2,7 @@ package com.gojek.esb.sink.elasticsearch.client;
 
 import com.gojek.esb.config.ESSinkConfig;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.elasticsearch.BulkProcessorListener;
 import org.apache.http.HttpHost;
@@ -22,14 +23,12 @@ import static org.elasticsearch.common.unit.TimeValue.timeValueSeconds;
 public class ESSinkClient {
 
     private BulkProcessorListener bulkProcessorListener;
-    private ESSinkConfig esSinkConfig;
     private final StatsDReporter statsDReporter;
     private RestHighLevelClient restHighLevelClient;
     private BulkProcessor bulkProcessor;
     private BiConsumer<BulkRequest, ActionListener<BulkResponse>> listenerBiConsumer;
 
     public ESSinkClient(ESSinkConfig esSinkConfig, StatsDReporter statsDReporter) {
-        this.esSinkConfig = esSinkConfig;
         this.statsDReporter = statsDReporter;
         HttpHost[] httpHosts = getHttpHosts(esSinkConfig.getEsConnectionUrls());
         if (httpHosts == null) {
@@ -85,7 +84,8 @@ public class ESSinkClient {
     }
 
     private BulkProcessorListener getBulkProcessorListener() {
-        return new BulkProcessorListener(this.statsDReporter, esSinkConfig.getEsBatchSize());
+        Instrumentation instrumentation = new Instrumentation(this.statsDReporter, BulkProcessorListener.class);
+        return new BulkProcessorListener(instrumentation);
     }
 
     public void updateEsbMessages(List<EsbMessage> esbMessages) {

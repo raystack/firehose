@@ -158,7 +158,7 @@ public class InfluxSinkTest {
 
         sink.pushMessage(esbMessages);
 
-        verify(instrumentation, times(1)).captureFailedExecutionTelemetry(runtimeException, esbMessages);
+        verify(instrumentation, times(1)).captureFailedExecutionTelemetry(runtimeException, esbMessages.size());
     }
 
 
