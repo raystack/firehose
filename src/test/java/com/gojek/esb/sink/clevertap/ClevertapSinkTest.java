@@ -181,7 +181,7 @@ public class ClevertapSinkTest {
         List<EsbMessage> execute = clevertapSink.execute();
 
         verify(instrumentation, times(1)).logInfo("Response Status: {}", 200);
-        verify(instrumentation, times(1)).captureCountWithTags(any(), any());
+        verify(instrumentation, times(1)).captureCountWithTags(any(), any(), any());
         Assert.assertEquals(0, execute.size());
     }
 
@@ -198,7 +198,7 @@ public class ClevertapSinkTest {
         clevertapSink.execute();
 
         verify(instrumentation, times(1)).captureFatalError(ioException, "Error while calling http sink service url");
-        verify(instrumentation, times(1)).captureCountWithTags(any(), any());
+        verify(instrumentation, times(1)).captureCountWithTags(any(), any(), any());
     }
 
 }

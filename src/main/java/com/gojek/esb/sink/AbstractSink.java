@@ -25,11 +25,11 @@ public abstract class AbstractSink implements Closeable, Sink {
             instrumentation.startExecution();
             instrumentation.logInfo("pushing {} messages", esbMessages.size());
             failedMessages = execute();
-            instrumentation.captureSuccessExecutionTelemetry(sinkType, esbMessages);
+            instrumentation.captureSuccessExecutionTelemetry(sinkType, esbMessages.size());
         } catch (IOException | DeserializerException | EglcConfigurationException | NullPointerException e) {
             throw e;
         } catch (Exception e) {
-            instrumentation.captureFailedExecutionTelemetry(e, esbMessages);
+            instrumentation.captureFailedExecutionTelemetry(e, esbMessages.size());
             return esbMessages;
         }
         return failedMessages;

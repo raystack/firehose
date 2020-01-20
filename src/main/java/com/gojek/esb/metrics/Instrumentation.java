@@ -45,6 +45,10 @@ public class Instrumentation {
         logger.info(template, t);
     }
 
+    public void logWarn(String template, Object... t) {
+        logger.warn(template, t);
+    }
+
     public void logDebug(String template, Object... t) {
         logger.debug(template, t);
     }
@@ -97,15 +101,15 @@ public class Instrumentation {
         startExecutionTime = statsDReporter.getClock().now();
     }
 
-    public void captureSuccessExecutionTelemetry(String sinkType, List<EsbMessage> esbMessages) {
-        logger.info("Pushed {} messages to {}.", esbMessages.size(), sinkType);
+    public void captureSuccessExecutionTelemetry(String sinkType, Integer messageListSize) {
+        logger.info("Pushed {} messages to {}.", messageListSize, sinkType);
         statsDReporter.captureDurationSince(SINK_RESPONSE_TIME, this.startExecutionTime);
-        statsDReporter.captureCount(MESSAGE_COUNT, esbMessages.size(), SUCCESS_TAG);
+        statsDReporter.captureCount(MESSAGE_COUNT, messageListSize, SUCCESS_TAG);
     }
 
-    public void captureFailedExecutionTelemetry(Exception e, List<EsbMessage> esbMessages) {
+    public void captureFailedExecutionTelemetry(Exception e, Integer messageListSize) {
         captureNonFatalError(e, "caught {} {}", e.getClass(), e.getMessage());
-        statsDReporter.captureCount(MESSAGE_COUNT, esbMessages.size(), FAILURE_TAG);
+        statsDReporter.captureCount(MESSAGE_COUNT, messageListSize, FAILURE_TAG);
     }
 
     // =================== RetryTelemetry ======================
@@ -135,7 +139,7 @@ public class Instrumentation {
 
     // ===================== CountTelemetry =================
 
-    public void captureCountWithTags(String metric, String... tags) {
-        statsDReporter.captureCount(metric, 1, tags);
+    public void captureCountWithTags(String metric, Integer count, String... tags) {
+        statsDReporter.captureCount(metric, count, tags);
     }
 }

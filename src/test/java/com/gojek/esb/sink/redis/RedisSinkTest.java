@@ -77,12 +77,12 @@ public class RedisSinkTest {
         verify(instrumentation, times(1)).capturePreExecutionLatencies(esbMessages);
         verify(instrumentation, times(1)).startExecution();
         verify(instrumentation, times(1)).logInfo("pushing {} messages", esbMessages.size());
-        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("redis", esbMessages);
+        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("redis", esbMessages.size());
         InOrder inOrder = inOrder(instrumentation);
         inOrder.verify(instrumentation).capturePreExecutionLatencies(esbMessages);
         inOrder.verify(instrumentation).startExecution();
         inOrder.verify(instrumentation).logInfo("pushing {} messages", esbMessages.size());
-        inOrder.verify(instrumentation).captureSuccessExecutionTelemetry("redis", esbMessages);
+        inOrder.verify(instrumentation).captureSuccessExecutionTelemetry("redis", esbMessages.size());
     }
 
     @Test
