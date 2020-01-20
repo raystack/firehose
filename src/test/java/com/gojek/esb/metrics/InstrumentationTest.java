@@ -54,6 +54,13 @@ public class InstrumentationTest {
     }
 
     @Test
+    public void shouldLogWarnStringTemplate() {
+
+        instrumentation.logWarn(testTemplate, 1, 2, 3);
+        verify(logger, times(1)).warn(testTemplate, 1, 2, 3);
+    }
+
+    @Test
     public void shouldLogDebugStringTemplate() {
         instrumentation.logDebug(testTemplate, 1, 2, 3);
         verify(logger, times(1)).debug(testTemplate, 1, 2, 3);
@@ -114,7 +121,7 @@ public class InstrumentationTest {
     @Test
     public void shouldCaptureSuccessExecutionTelemetry() {
         List<EsbMessage> esbMessages = Collections.singletonList(esbMessage);
-        instrumentation.captureSuccessExecutionTelemetry("test", esbMessages);
+        instrumentation.captureSuccessExecutionTelemetry("test", esbMessages.size());
         verify(logger, times(1)).info("Pushed {} messages to {}.", esbMessages.size(), "test");
         verify(statsDReporter, times(1)).captureDurationSince("sink.response.time", instrumentation.getStartExecutionTime());
         verify(statsDReporter, times(1)).captureCount("messages.count", esbMessages.size(), SUCCESS_TAG);
@@ -123,7 +130,7 @@ public class InstrumentationTest {
     @Test
     public void shouldCaptureFailedExecutionTelemetry() {
         List<EsbMessage> esbMessages = Collections.singletonList(esbMessage);
-        instrumentation.captureFailedExecutionTelemetry(e, esbMessages);
+        instrumentation.captureFailedExecutionTelemetry(e, esbMessages.size());
         verify(statsDReporter, times(1)).captureCount("messages.count", esbMessages.size(), FAILURE_TAG);
     }
 
@@ -166,7 +173,7 @@ public class InstrumentationTest {
         String metric = "test.metric";
         String urlTag = "url=test";
         String httpCodeTag = "status_code=200";
-        instrumentation.captureCountWithTags(metric, httpCodeTag, urlTag);
+        instrumentation.captureCountWithTags(metric, 1, httpCodeTag, urlTag);
 
         verify(statsDReporter, times(1)).captureCount(metric, 1, httpCodeTag, urlTag);
     }

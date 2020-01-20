@@ -103,7 +103,7 @@ public class ClevertapSink extends AbstractSink {
         if (response != null) {
             httpCodeTag = "status_code=" + Integer.toString(response.getStatusLine().getStatusCode());
         }
-        getInstrumentation().captureCountWithTags(HTTP_RESPONSE_CODE, httpCodeTag, urlTag);
+        getInstrumentation().captureCountWithTags(HTTP_RESPONSE_CODE, 1, httpCodeTag, urlTag);
     }
 
     private Object protoFieldValue(EsbMessage esbMessage, int fieldIndex) {
