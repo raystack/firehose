@@ -3,11 +3,12 @@ package com.gojek.esb.metrics;
 import com.gojek.esb.util.Clock;
 import com.timgroup.statsd.StatsDClient;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 
-
-public class StatsDReporter {
+public class StatsDReporter implements Closeable {
 
     private StatsDClient client;
     private String globalTags;
@@ -62,6 +63,11 @@ public class StatsDReporter {
 
     private String withTags(String metric, String... tags) {
         return metric + "," + this.globalTags + "," + String.join(",", tags);
+    }
+
+    @Override
+    public void close() throws IOException {
+        client.stop();
     }
 
 }

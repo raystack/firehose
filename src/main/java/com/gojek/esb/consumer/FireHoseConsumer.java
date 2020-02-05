@@ -54,5 +54,6 @@ public class FireHoseConsumer implements Closeable {
             consumer.close();
         }
         sink.close();
+        statsDReporter.close();
     }
 }
