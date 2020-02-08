@@ -1,70 +1,65 @@
 package com.gojek.esb.sink.elasticsearch;
 
-import com.gojek.esb.consumer.EsbMessage;
-import com.gojek.esb.metrics.Instrumentation;
+import com.gojek.esb.metrics.StatsDReporter;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.gojek.esb.metrics.Metrics.*;
+import java.time.Instant;
 
 
 public class BulkProcessorListener implements BulkProcessor.Listener {
 
-    private Instrumentation instrumentation;
-    private List<EsbMessage> esbMessages = new ArrayList<>();
-    private List<EsbMessage> messageBulk;
+    private final StatsDReporter statsDReporter;
+    private static final Logger LOGGER = LoggerFactory.getLogger(BulkProcessorListener.class.getName());
 
-    public BulkProcessorListener(Instrumentation instrumentation) {
-        this.instrumentation = instrumentation;
+    private Instant startTime;
+
+    private Instant getStartTime() {
+        return startTime;
+    }
+
+    public BulkProcessorListener(StatsDReporter statsDReporter) {
+        this.statsDReporter = statsDReporter;
+    }
+
+    private void setStartTime(Instant startTime) {
+        this.startTime = startTime;
     }
 
     @Override
     public void beforeBulk(long executionId, BulkRequest request) {
         int numberOfActions = request.numberOfActions();
-
-        messageBulk = esbMessages.subList(0, request.numberOfActions());
-        esbMessages = esbMessages.subList(request.numberOfActions(), esbMessages.size());
-
-        instrumentation.capturePreExecutionLatencies(messageBulk);
-        instrumentation.logDebug("Executing bulk [{}] with {} requests", executionId, numberOfActions);
-
-        instrumentation.startExecution();
-    }
-
-    public void updateEsbMessages(List<EsbMessage> esbMessageList) {
-        this.esbMessages.addAll(esbMessageList);
+        LOGGER.debug("Executing bulk [{}] with {} requests",
+                executionId, numberOfActions);
+        setStartTime(Instant.now());
     }
 
     @Override
     public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
         if (response.hasFailures()) {
-            instrumentation.logWarn("Bulk [{}] executed with failures", executionId);
-            instrumentation.logDebug("Failure message is [{}]", response.buildFailureMessage());
-
+            LOGGER.warn("Bulk [{}] executed with failures", executionId);
+            LOGGER.debug("Failure message is [{}]", response.buildFailureMessage());
             BulkItemResponse[] items = response.getItems();
             int failedCount = 0;
             for (BulkItemResponse responses : items) {
                 if (responses.isFailed()) {
                     failedCount += 1;
-                    instrumentation.captureNonFatalError(new Exception(String.valueOf(responses.getFailure())));
+                    LOGGER.warn("Failure response message [{}]", responses.getFailureMessage());
                 }
             }
-            instrumentation.captureCountWithTags(MESSAGE_COUNT, failedCount, FAILURE_TAG);
-            instrumentation.captureCountWithTags(MESSAGE_COUNT, (response.getItems().length - failedCount), SUCCESS_TAG);
         } else {
-            instrumentation.logDebug("Bulk [{}] of {} messages completed in {} milliseconds", executionId, request.numberOfActions(), response.getTook().getMillis());
-            instrumentation.captureSuccessExecutionTelemetry("elasticsearch", request.numberOfActions());
+            LOGGER.debug("Bulk [{}] completed in {} milliseconds",
+                    executionId, response.getTook().getMillis());
+
         }
     }
 
     @Override
     public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
-        instrumentation.captureFailedExecutionTelemetry(new Exception(failure), request.numberOfActions());
+        LOGGER.error("Failed to execute bulk", failure);
     }
-
 }

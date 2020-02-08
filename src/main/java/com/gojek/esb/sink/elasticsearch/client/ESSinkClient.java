@@ -1,8 +1,6 @@
 package com.gojek.esb.sink.elasticsearch.client;
 
 import com.gojek.esb.config.ESSinkConfig;
-import com.gojek.esb.consumer.EsbMessage;
-import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.elasticsearch.BulkProcessorListener;
 import org.apache.http.HttpHost;
@@ -13,8 +11,9 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.function.BiConsumer;
 
 import static org.elasticsearch.action.bulk.BackoffPolicy.exponentialBackoff;
@@ -22,34 +21,39 @@ import static org.elasticsearch.common.unit.TimeValue.timeValueSeconds;
 
 public class ESSinkClient {
 
-    private BulkProcessorListener bulkProcessorListener;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ESSinkClient.class.getName());
+
     private final StatsDReporter statsDReporter;
     private RestHighLevelClient restHighLevelClient;
     private BulkProcessor bulkProcessor;
-    private BiConsumer<BulkRequest, ActionListener<BulkResponse>> listenerBiConsumer;
 
     public ESSinkClient(ESSinkConfig esSinkConfig, StatsDReporter statsDReporter) {
         this.statsDReporter = statsDReporter;
         HttpHost[] httpHosts = getHttpHosts(esSinkConfig.getEsConnectionUrls());
         if (httpHosts == null) {
+            LOGGER.error("ES_CONNECTION_URLS is empty or null");
             throw new IllegalArgumentException("ES_CONNECTION_URLS is empty or null");
         }
-        listenerBiConsumer = getBulkAsyncConsumer();
+        BiConsumer<BulkRequest, ActionListener<BulkResponse>> listenerBiConsumer = getBulkAsyncConsumer();
         this.restHighLevelClient = new RestHighLevelClient(RestClient.builder(httpHosts));
         bulkProcessor = buildBulkProcessor(esSinkConfig.getEsBatchSize(), esSinkConfig.getEsBatchRetryCount(),
                 esSinkConfig.getEsRetryBackoff(), listenerBiConsumer);
     }
 
     public void processRequest(DocWriteRequest request) {
-        bulkProcessor.add(request);
+        getBulkProcessor().add(request);
     }
 
     public void close() {
-        bulkProcessor.close();
+        getBulkProcessor().close();
     }
 
     public RestHighLevelClient getRestHighLevelClient() {
         return restHighLevelClient;
+    }
+
+    private BulkProcessor getBulkProcessor() {
+        return bulkProcessor;
     }
 
     private HttpHost[] getHttpHosts(String esConnectionUrls) {
@@ -72,10 +76,10 @@ public class ESSinkClient {
 
     private BulkProcessor buildBulkProcessor(int bulkActionsCount, int numberOfRetries, Long esRetryBackoff,
                                              BiConsumer<BulkRequest, ActionListener<BulkResponse>> consumer) {
-        bulkProcessorListener = getBulkProcessorListener();
+        BulkProcessor.Listener bulkListener = getBulkListener();
         final long seconds = 15L;
         return BulkProcessor
-                .builder(consumer, bulkProcessorListener)
+                .builder(consumer, bulkListener)
                 .setBulkActions(bulkActionsCount)
                 .setConcurrentRequests(0)
                 .setFlushInterval(timeValueSeconds(seconds))
@@ -83,12 +87,7 @@ public class ESSinkClient {
                 .build();
     }
 
-    private BulkProcessorListener getBulkProcessorListener() {
-        Instrumentation instrumentation = new Instrumentation(this.statsDReporter, BulkProcessorListener.class);
-        return new BulkProcessorListener(instrumentation);
-    }
-
-    public void updateEsbMessages(List<EsbMessage> esbMessages) {
-        bulkProcessorListener.updateEsbMessages(esbMessages);
+    private BulkProcessor.Listener getBulkListener() {
+        return new BulkProcessorListener(this.statsDReporter);
     }
 }

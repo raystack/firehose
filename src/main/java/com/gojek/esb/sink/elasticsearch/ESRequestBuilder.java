@@ -29,11 +29,11 @@ public class ESRequestBuilder {
     private JSONParser jsonParser;
 
     public ESRequestBuilder(ESRequestType esRequestType, String esIdFieldName, ESMessageType messageType, EsbMessageToJson jsonSerializer) {
+        this.jsonSerializer = jsonSerializer;
         this.jsonParser = new JSONParser();
         this.messageType = messageType;
         this.esRequestType = esRequestType;
         this.esIdFieldName = esIdFieldName;
-        this.jsonSerializer = jsonSerializer;
     }
 
     public String extractId(EsbMessage message) {
