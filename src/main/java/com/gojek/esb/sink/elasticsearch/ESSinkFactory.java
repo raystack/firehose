@@ -4,11 +4,11 @@ import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.ESSinkConfig;
 import com.gojek.esb.config.enums.ESRequestType;
-import com.gojek.esb.sink.SinkFactory;
-import com.gojek.esb.sink.elasticsearch.client.ESSinkClient;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.serializer.EsbMessageToJson;
 import com.gojek.esb.sink.Sink;
+import com.gojek.esb.sink.SinkFactory;
+import com.gojek.esb.sink.elasticsearch.client.ESSinkClient;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.util.Map;
@@ -24,12 +24,12 @@ public class ESSinkFactory implements SinkFactory {
         ESSinkConfig esSinkConfig = ConfigFactory.create(ESSinkConfig.class, configuration);
         ESRequestType esRequestType = esSinkConfig.isUpdateOnlyMode() ? UPDATE_ONLY : INSERT_OR_UPDATE;
         ESRequestBuilder esRequestBuilder = new ESRequestBuilder(
-            esRequestType,
-            esSinkConfig.getEsIdFieldName(),
-            esSinkConfig.getESMessageType(),
-            new EsbMessageToJson(
-                new ProtoParser(stencilClient, esSinkConfig.getProtoSchema()), esSinkConfig.shouldPreserveProtoFieldNames())
-            );
+                esRequestType,
+                esSinkConfig.getEsIdFieldName(),
+                esSinkConfig.getESMessageType(),
+                new EsbMessageToJson(
+                        new ProtoParser(stencilClient, esSinkConfig.getProtoSchema()), esSinkConfig.shouldPreserveProtoFieldNames())
+        );
         ESSinkClient esSinkClient = new ESSinkClient(esSinkConfig, client);
         return new ESSink(esRequestBuilder, esSinkClient, esSinkConfig.getEsTypeName(), esSinkConfig.getEsIndexName());
     }
