@@ -2,6 +2,7 @@ package com.gojek.esb.sink.http;
 
 import java.util.Map;
 
+import com.gojek.auth.OAuth2Credential;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.HTTPSinkConfig;
 import com.gojek.esb.metrics.Instrumentation;
@@ -14,6 +15,7 @@ import com.gojek.esb.sink.http.request.RequestFactory;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
@@ -46,6 +48,15 @@ public class HttpSinkFactory implements SinkFactory {
     PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
     connectionManager.setMaxTotal(maxHttpConnections);
     connectionManager.setDefaultMaxPerRoute(maxHttpConnections);
-    return HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig).build();
+    HttpClientBuilder builder = HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig);
+    if (httpSinkConfig.getHttpSinkOAuth2Enabled()) {
+        OAuth2Credential oauth2 = new OAuth2Credential(
+                httpSinkConfig.getHttpSinkOAuth2ClientName(),
+                httpSinkConfig.getHttpSinkOAuth2ClientSecret(),
+                httpSinkConfig.getHttpSinkOAuth2Scope(),
+                httpSinkConfig.getHttpSinkOAuth2AccessTokenURL());
+        builder = oauth2.initialize(builder);
+    }
+    return builder.build();
   }
 }
