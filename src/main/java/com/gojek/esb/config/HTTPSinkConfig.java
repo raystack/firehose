@@ -39,4 +39,24 @@ public interface HTTPSinkConfig extends AppConfig {
     @DefaultValue("proto")
     @ConverterClass(HttpSinkParameterDataFormatConverter.class)
     HttpSinkDataFormat getHttpSinkDataFormat();
+
+    @Key("HTTP_SINK_OAUTH2_ENABLED")
+    @DefaultValue("false")
+    Boolean getHttpSinkOAuth2Enabled();
+
+    @Key("HTTP_SINK_OAUTH2_ACCESS_TOKEN_URL")
+    @DefaultValue("https://localhost:8888")
+    String getHttpSinkOAuth2AccessTokenURL();
+
+    @Key("HTTP_SINK_OAUTH2_CLIENT_NAME")
+    @DefaultValue("client_name")
+    String getHttpSinkOAuth2ClientName();
+
+    @Key("HTTP_SINK_OAUTH2_CLIENT_SECRET")
+    @DefaultValue("client_secret")
+    String getHttpSinkOAuth2ClientSecret();
+
+    @Key("HTTP_SINK_OAUTH2_SCOPE")
+    @DefaultValue("scope")
+    String getHttpSinkOAuth2Scope();
 }
