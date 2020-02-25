@@ -4,6 +4,7 @@ import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.converter.RangeToHashMapConverter;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.exception.NeedToRetry;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.http.request.Request;
 import org.apache.http.HttpResponse;
