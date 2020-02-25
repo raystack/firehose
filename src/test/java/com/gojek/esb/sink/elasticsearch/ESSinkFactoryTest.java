@@ -70,6 +70,17 @@ public class ESSinkFactoryTest {
     }
 
     @Test
+    public void shouldThrowIllegalArgumentExceptionForEmptyPort() {
+        ESSinkFactory esSinkFactory = new ESSinkFactory();
+        String esConnectionURLs = "localhost:";
+        try {
+            esSinkFactory.getHttpHosts(esConnectionURLs);
+        } catch (Exception e) {
+            assertEquals(IllegalArgumentException.class, e.getClass());
+        }
+    }
+
+    @Test
     public void shouldGetHttpHostsForValidESConnectionURLs() {
         ESSinkFactory esSinkFactory = new ESSinkFactory();
         String esConnectionURLs = "localhost_1:1000,localhost_2:1000";
@@ -101,6 +112,18 @@ public class ESSinkFactoryTest {
 
         assertEquals("172.28.32.156", httpHosts[0].getHostName());
         assertEquals(1000, httpHosts[0].getPort());
+    }
+
+    @Test
+    public void shouldThrowExceptionIfHostAndPortNotProvidedProperly() {
+        ESSinkFactory esSinkFactory = new ESSinkFactory();
+        String esConnectionURLs = "test";
+        try {
+            esSinkFactory.getHttpHosts(esConnectionURLs);
+        } catch (Exception e) {
+            assertEquals(IllegalArgumentException.class, e.getClass());
+            assertEquals("ES_CONNECTION_URLS should contain host and port both", e.getMessage());
+        }
     }
 
 }
