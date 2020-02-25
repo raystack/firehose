@@ -43,6 +43,9 @@ public class ESSinkFactory implements SinkFactory {
             HttpHost[] httpHosts = new HttpHost[esNodes.length];
             for (int i = 0; i < esNodes.length; i++) {
                 String[] node = esNodes[i].trim().split(":");
+                if (node.length <= 1) {
+                    throw new IllegalArgumentException("ES_CONNECTION_URLS should contain host and port both");
+                }
                 httpHosts[i] = new HttpHost(node[0].trim(), Integer.parseInt(node[1].trim()));
             }
             return httpHosts;
