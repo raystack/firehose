@@ -1,36 +1,47 @@
 package com.gojek.esb.sink.elasticsearch;
 
 import com.gojek.esb.consumer.EsbMessage;
-import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.sink.Sink;
-import com.gojek.esb.sink.elasticsearch.client.ESSinkClient;
-import lombok.AllArgsConstructor;
+import com.gojek.esb.exception.NeedToRetry;
+import com.gojek.esb.metrics.Instrumentation;
+import com.gojek.esb.sink.AbstractSink;
+import com.gojek.esb.sink.elasticsearch.request.ESRequestHandler;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.client.RestHighLevelClient;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@AllArgsConstructor
-public class ESSink implements Sink {
+public class ESSink extends AbstractSink {
+    private RestHighLevelClient client;
+    private ESRequestHandler esRequestHandler;
+    private BulkRequest bulkRequest;
 
-    private ESRequestBuilder esRequestBuilder;
-    private ESSinkClient esSinkClient;
-    private String type;
-    private String index;
+    public ESSink(Instrumentation instrumentation, String sinkType, RestHighLevelClient client, ESRequestHandler esRequestHandler) {
+        super(instrumentation, sinkType);
+        this.client = client;
+        this.esRequestHandler = esRequestHandler;
+    }
 
     @Override
-    public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) throws IOException, DeserializerException {
-        esbMessages
-                .stream()
-                .map((message) -> esRequestBuilder.buildRequest(
-                        index, type, message)
-                )
-                .forEach((request) -> esSinkClient.processRequest(request));
+    protected void prepare(List<EsbMessage> esbMessages) {
+        bulkRequest = new BulkRequest();
+        esbMessages.forEach(esbMessage -> bulkRequest.add(esRequestHandler.getRequest(esbMessage)));
+    }
+
+    @Override
+    protected List<EsbMessage> execute() throws Exception {
+        BulkResponse bulkResponse = client.bulk(bulkRequest);
+        if (bulkResponse.hasFailures()) {
+            getInstrumentation().logInfo("Bulk executed with failures");
+            throw new NeedToRetry(bulkResponse.buildFailureMessage());
+        }
         return new ArrayList<>();
     }
 
     @Override
     public void close() throws IOException {
-        esSinkClient.close();
+        this.client.close();
     }
 }

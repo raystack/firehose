@@ -3,6 +3,7 @@ package com.gojek.esb.sink.http;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.exception.NeedToRetry;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.AbstractSink;
 import com.gojek.esb.sink.http.request.Request;

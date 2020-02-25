@@ -1,4 +1,4 @@
-package com.gojek.esb.sink.http;
+package com.gojek.esb.exception;
 
 public class NeedToRetry extends Exception {
   public NeedToRetry(String statusCode) {
