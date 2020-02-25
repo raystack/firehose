@@ -4,12 +4,14 @@ import com.gojek.esb.config.ESSinkConfig;
 import com.gojek.esb.config.enums.ESMessageType;
 import com.gojek.esb.config.enums.ESRequestType;
 import com.gojek.esb.serializer.EsbMessageToJson;
+import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
 
 import static com.gojek.esb.config.enums.ESRequestType.INSERT_OR_UPDATE;
 import static com.gojek.esb.config.enums.ESRequestType.UPDATE_ONLY;
 
+@AllArgsConstructor
 public class ESRequestHandlerFactory {
 
     private ESSinkConfig esSinkConfig;
@@ -18,16 +20,6 @@ public class ESRequestHandlerFactory {
     private final EsbMessageToJson jsonSerializer;
     private final String esTypeName;
     private final String esIndexName;
-
-    public ESRequestHandlerFactory(ESSinkConfig esSinkConfig, String esIdFieldName, ESMessageType messageType,
-                                   EsbMessageToJson jsonSerializer, String esTypeName, String esIndexName) {
-        this.esSinkConfig = esSinkConfig;
-        this.esIdFieldName = esIdFieldName;
-        this.messageType = messageType;
-        this.jsonSerializer = jsonSerializer;
-        this.esTypeName = esTypeName;
-        this.esIndexName = esIndexName;
-    }
 
     public ESRequestHandler getRequestHandler() {
         ESRequestType esRequestType = esSinkConfig.isUpdateOnlyMode() ? UPDATE_ONLY : INSERT_OR_UPDATE;
