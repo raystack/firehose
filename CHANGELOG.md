@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
-## [4.22.0] - 2020-02-18
+## [6.5.0] - 2020-02-25
 ### Added
   * support for OAuth2 to HTTP Sink
 ## [4.21.0] - 2018-01-31
