@@ -19,18 +19,22 @@ public class ESSink extends AbstractSink {
     private ESRequestHandler esRequestHandler;
     private BulkRequest bulkRequest;
     private long esRequestTimeoutInMs;
+    private Integer esWaitForActiveShardsCount;
 
-    public ESSink(Instrumentation instrumentation, String sinkType, RestHighLevelClient client, ESRequestHandler esRequestHandler, long esRequestTimeoutInMs) {
+    public ESSink(Instrumentation instrumentation, String sinkType, RestHighLevelClient client, ESRequestHandler esRequestHandler,
+                  long esRequestTimeoutInMs, Integer esWaitForActiveShardsCount) {
         super(instrumentation, sinkType);
         this.client = client;
         this.esRequestHandler = esRequestHandler;
         this.esRequestTimeoutInMs = esRequestTimeoutInMs;
+        this.esWaitForActiveShardsCount = esWaitForActiveShardsCount;
     }
 
     @Override
     protected void prepare(List<EsbMessage> esbMessages) {
         bulkRequest = new BulkRequest();
         bulkRequest.timeout(TimeValue.timeValueMillis(esRequestTimeoutInMs));
+        bulkRequest.waitForActiveShards(esWaitForActiveShardsCount);
         esbMessages.forEach(esbMessage -> bulkRequest.add(esRequestHandler.getRequest(esbMessage)));
     }
 

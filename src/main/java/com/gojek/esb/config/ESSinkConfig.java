@@ -6,9 +6,9 @@ import com.gojek.esb.config.enums.ESMessageType;
 
 public interface ESSinkConfig extends AppConfig {
 
-    @Key("ES_BATCH_RETRY_COUNT")
-    @DefaultValue("3")
-    Integer getEsBatchRetryCount();
+    @Key("ES_WAIT_FOR_ACTIVE_SHARDS_COUNT")
+    @DefaultValue("1")
+    Integer getEsWaitForActiveShardsCount();
 
     @Key("ES_REQUEST_TIMEOUT_IN_MS")
     @DefaultValue("60000")
@@ -19,14 +19,6 @@ public interface ESSinkConfig extends AppConfig {
 
     @Key("ES_INDEX_NAME")
     String getEsIndexName();
-
-    @Key("ES_RETRY_BACKOFF")
-    @DefaultValue("10")
-    Long getEsRetryBackoff();
-
-    @Key("ES_BATCH_SIZE")
-    @DefaultValue("1000")
-    Integer getEsBatchSize();
 
     @Key("ES_TYPE_NAME")
     String getEsTypeName();
