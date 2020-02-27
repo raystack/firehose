@@ -10,9 +10,9 @@ public interface ESSinkConfig extends AppConfig {
     @DefaultValue("3")
     Integer getEsBatchRetryCount();
 
-    @Key("ES_READ_TIMEOUT")
+    @Key("ES_REQUEST_TIMEOUT_IN_MS")
     @DefaultValue("60000")
-    Long getEsReadTimeout();
+    Long getEsRequestTimeoutInMs();
 
     @Key("ES_CONNECTION_URLS")
     String getEsConnectionUrls();
