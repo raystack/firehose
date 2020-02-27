@@ -34,7 +34,8 @@ public class ESSinkFactory implements SinkFactory {
 
         HttpHost[] httpHosts = getHttpHosts(esSinkConfig.getEsConnectionUrls());
         RestHighLevelClient client = new RestHighLevelClient(RestClient.builder(httpHosts));
-        return new ESSink(new Instrumentation(statsDReporter, ESSink.class), SinkType.ELASTICSEARCH.name(), client, esRequestHandler, esSinkConfig.getEsRequestTimeoutInMs());
+        return new ESSink(new Instrumentation(statsDReporter, ESSink.class), SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
+                esSinkConfig.getEsRequestTimeoutInMs(), esSinkConfig.getEsWaitForActiveShardsCount());
     }
 
     HttpHost[] getHttpHosts(String esConnectionUrls) {
