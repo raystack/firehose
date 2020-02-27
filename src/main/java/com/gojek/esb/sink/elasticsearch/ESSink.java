@@ -36,9 +36,9 @@ public class ESSink extends AbstractSink {
 
     @Override
     protected List<EsbMessage> execute() throws Exception {
-        BulkResponse bulkResponse = client.bulk(bulkRequest);
+        BulkResponse bulkResponse = getBulkResponse();
         if (bulkResponse.hasFailures()) {
-            getInstrumentation().logInfo("Bulk executed with failures");
+            getInstrumentation().logInfo("Bulk request failed");
             throw new NeedToRetry(bulkResponse.buildFailureMessage());
         }
         return new ArrayList<>();
@@ -47,5 +47,9 @@ public class ESSink extends AbstractSink {
     @Override
     public void close() throws IOException {
         this.client.close();
+    }
+
+    BulkResponse getBulkResponse() throws IOException {
+        return client.bulk(bulkRequest);
     }
 }
