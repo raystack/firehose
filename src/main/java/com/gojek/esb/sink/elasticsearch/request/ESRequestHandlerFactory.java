@@ -24,12 +24,12 @@ public class ESRequestHandlerFactory {
     public ESRequestHandler getRequestHandler() {
         ESRequestType esRequestType = esSinkConfig.isUpdateOnlyMode() ? UPDATE_ONLY : INSERT_OR_UPDATE;
         ArrayList<ESRequestHandler> esRequestHandlers = new ArrayList<>();
-        esRequestHandlers.add(new ESUpdateRequestHandler(esRequestType, esIdFieldName, messageType, jsonSerializer, esTypeName, esIndexName));
-        esRequestHandlers.add(new ESInsertRequestHandler(esRequestType, esIdFieldName, messageType, jsonSerializer, esTypeName, esIndexName));
+        esRequestHandlers.add(new ESUpdateRequestHandler(messageType, jsonSerializer, esTypeName, esIndexName, esRequestType, esIdFieldName));
+        esRequestHandlers.add(new ESInsertRequestHandler(messageType, jsonSerializer, esTypeName, esIndexName, esRequestType, esIdFieldName));
 
         return esRequestHandlers
                 .stream()
-                .filter(esRequestHandler -> esRequestHandler.canCreate(esRequestType))
+                .filter(ESRequestHandler::canCreate)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Es Request Type " + esRequestType.name() + " not supported"));
     }

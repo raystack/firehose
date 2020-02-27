@@ -1,6 +1,6 @@
 package com.gojek.esb.exception;
 
-public class DeserializerException extends Exception {
+public class DeserializerException extends RuntimeException {
 
     public DeserializerException(String message) {
         super(message);
