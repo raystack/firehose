@@ -59,7 +59,7 @@ public class ESSinkTest {
 
     @Test
     public void shouldGetRequestForEachMessageInEsbMessagesList() {
-        ESSink esSink = new ESSink(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler, 5000);
+        ESSink esSink = new ESSink(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler, 5000, 1);
 
         esSink.prepare(esbMessages);
         verify(esRequestHandler, times(1)).getRequest(esbMessages.get(0));
@@ -69,7 +69,7 @@ public class ESSinkTest {
     @Test
     public void shouldReturnEmptyArrayListWhenBulkResponseExecutedSuccessfully() throws IOException {
         when(bulkResponse.hasFailures()).thenReturn(false);
-        ESSinkMock esSinkMock = new ESSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler, 5000, bulkResponse);
+        ESSinkMock esSinkMock = new ESSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler, 5000, 1, bulkResponse);
 
         List<EsbMessage> failedMessages = esSinkMock.pushMessage(this.esbMessages);
         Assert.assertEquals(0, failedMessages.size());
@@ -79,7 +79,7 @@ public class ESSinkTest {
     public void shouldThrowNeedToRetryExceptionWhenBulkResponseHasFailures() {
         when(bulkResponse.hasFailures()).thenReturn(true);
         when(bulkResponse.buildFailureMessage()).thenReturn("400");
-        ESSinkMock esSinkMock = new ESSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler, 5000, bulkResponse);
+        ESSinkMock esSinkMock = new ESSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler, 5000, 1, bulkResponse);
 
         esSinkMock.prepare(esbMessages);
         try {
@@ -94,7 +94,7 @@ public class ESSinkTest {
     public void shouldReturnEsbMessagesListWhenBulkResponseHasFailures() throws IOException {
         when(bulkResponse.hasFailures()).thenReturn(true);
         when(bulkResponse.buildFailureMessage()).thenReturn("400");
-        ESSinkMock esSinkMock = new ESSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler, 5000, bulkResponse);
+        ESSinkMock esSinkMock = new ESSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler, 5000, 1, bulkResponse);
 
         List<EsbMessage> failedMessages = esSinkMock.pushMessage(this.esbMessages);
         Assert.assertEquals(esbMessages.get(0), failedMessages.get(0));
@@ -105,8 +105,9 @@ public class ESSinkTest {
 
         private BulkResponse bulkResponse;
 
-        public ESSinkMock(Instrumentation instrumentation, String sinkType, RestHighLevelClient client, ESRequestHandler esRequestHandler, long esRequestTimeoutInMs, BulkResponse bulkResponse) {
-            super(instrumentation, sinkType, client, esRequestHandler, esRequestTimeoutInMs);
+        public ESSinkMock(Instrumentation instrumentation, String sinkType, RestHighLevelClient client, ESRequestHandler esRequestHandler,
+                          long esRequestTimeoutInMs, Integer esWaitForActiveShardsCount, BulkResponse bulkResponse) {
+            super(instrumentation, sinkType, client, esRequestHandler, esRequestTimeoutInMs, esWaitForActiveShardsCount);
             this.bulkResponse = bulkResponse;
         }
 
