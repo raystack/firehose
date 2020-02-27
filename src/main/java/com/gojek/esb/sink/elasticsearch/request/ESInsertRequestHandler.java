@@ -9,18 +9,28 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.common.xcontent.XContentType;
 
 public class ESInsertRequestHandler extends ESRequestHandler {
-    public ESInsertRequestHandler(ESRequestType esRequestType, String esIdFieldName, ESMessageType messageType, EsbMessageToJson jsonSerializer, String esTypeName, String esIndexName) {
-        super(esRequestType, esIdFieldName, messageType, jsonSerializer, esTypeName, esIndexName);
+    private final String esTypeName;
+    private final String esIndexName;
+    private ESRequestType esRequestType;
+    private String esIdFieldName;
+
+    public ESInsertRequestHandler(ESMessageType messageType, EsbMessageToJson jsonSerializer, String esTypeName, String esIndexName, ESRequestType esRequestType, String esIdFieldName) {
+        super(messageType, jsonSerializer);
+        this.esTypeName = esTypeName;
+        this.esIndexName = esIndexName;
+        this.esRequestType = esRequestType;
+        this.esIdFieldName = esIdFieldName;
     }
 
     @Override
-    public boolean canCreate(ESRequestType esRequestType) {
+    public boolean canCreate() {
         return esRequestType == ESRequestType.INSERT_OR_UPDATE;
     }
 
     public DocWriteRequest getRequest(EsbMessage esbMessage) {
-        IndexRequest request = new IndexRequest(getEsIndexName(), getEsTypeName(), extractId(esbMessage));
-        request.source(extractPayload(esbMessage), getMessageType().equals(ESMessageType.JSON) ? XContentType.JSON : XContentType.JSON);
+        String esbLogMessage = extractPayload(esbMessage);
+        IndexRequest request = new IndexRequest(esIndexName, esTypeName, getFieldFromJSON(esbLogMessage, esIdFieldName));
+        request.source(esbLogMessage, XContentType.JSON);
         return request;
     }
 }
