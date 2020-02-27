@@ -67,7 +67,7 @@ public class HttpSinkFactoryTest {
 
     @Test(expected = Test.None.class)
     public void shouldNotEmbedAccessTokenIfGoAuthDisabled() throws IOException, DeserializerException {
-        Map<String,String> configuration = new HashMap<>();
+        Map<String, String> configuration = new HashMap<>();
         configuration.put("HTTP_SINK_OAUTH2_ENABLED", "false");
         configuration.put("HTTP_SINK_OAUTH2_ACCESS_TOKEN_URL", "http://127.0.0.1:1080/oauth2/token");
         configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api");
@@ -81,7 +81,7 @@ public class HttpSinkFactoryTest {
 
     @Test(expected = Test.None.class)
     public void shouldEmbedAccessTokenIfGoAuthEnabled() throws IOException, DeserializerException {
-        Map<String,String> configuration = new HashMap<>();
+        Map<String, String> configuration = new HashMap<>();
         configuration.put("HTTP_SINK_OAUTH2_ENABLED", "true");
         configuration.put("HTTP_SINK_OAUTH2_ACCESS_TOKEN_URL", "http://127.0.0.1:1080/oauth2/token");
         configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api");
