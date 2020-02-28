@@ -27,7 +27,7 @@ public class SerializerFactory {
 
     if (httpSinkConfig.getHttpSinkDataFormat() == HttpSinkDataFormat.JSON) {
       ProtoParser protoParser = new ProtoParser(stencilClient, httpSinkConfig.getProtoSchema());
-      return new EsbMessageToJson(protoParser, false);
+      return new EsbMessageToJson(protoParser, false, true);
     }
 
     // Ideally this code will never be executed because getHttpSinkDataFormat() will return proto as default value.
