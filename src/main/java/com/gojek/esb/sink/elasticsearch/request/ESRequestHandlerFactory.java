@@ -25,7 +25,7 @@ public class ESRequestHandlerFactory {
         ESRequestType esRequestType = esSinkConfig.isUpdateOnlyMode() ? UPDATE_ONLY : INSERT_OR_UPDATE;
         ArrayList<ESRequestHandler> esRequestHandlers = new ArrayList<>();
         esRequestHandlers.add(new ESUpdateRequestHandler(messageType, jsonSerializer, esTypeName, esIndexName, esRequestType, esIdFieldName));
-        esRequestHandlers.add(new ESInsertRequestHandler(messageType, jsonSerializer, esTypeName, esIndexName, esRequestType, esIdFieldName));
+        esRequestHandlers.add(new ESUpsertRequestHandler(messageType, jsonSerializer, esTypeName, esIndexName, esRequestType, esIdFieldName));
 
         return esRequestHandlers
                 .stream()
