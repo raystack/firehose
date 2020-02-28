@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class ESInsertRequestHandlerTest {
+public class ESUpsertRequestHandlerTest {
 
     @Mock
     private StencilClient stencilClient;
@@ -44,39 +44,39 @@ public class ESInsertRequestHandlerTest {
         esbMessageWithProto = new EsbMessage(null, Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
         String protoClassName = AggregatedSupplyMessage.class.getName();
-        jsonSerializer = new EsbMessageToJson(new ProtoParser(stencilClient, protoClassName), true);
+        jsonSerializer = new EsbMessageToJson(new ProtoParser(stencilClient, protoClassName), true, false);
 
         when(stencilClient.get(protoClassName)).thenReturn(AggregatedSupplyMessage.getDescriptor());
     }
 
     @Test
     public void shouldReturnTrueForInsertMode() {
-        ESInsertRequestHandler esInsertRequestHandler = new ESInsertRequestHandler(
+        ESUpsertRequestHandler esUpsertRequestHandler = new ESUpsertRequestHandler(
                 ESMessageType.JSON, jsonSerializer, "customer", "booking", ESRequestType.INSERT_OR_UPDATE, "customer_id");
 
-        assertTrue(esInsertRequestHandler.canCreate());
+        assertTrue(esUpsertRequestHandler.canCreate());
     }
 
     @Test
     public void shouldReturnFalseForUpdateOnlyMode() {
-        ESInsertRequestHandler esInsertRequestHandler = new ESInsertRequestHandler(ESMessageType.JSON, jsonSerializer, "customer", "booking", ESRequestType.UPDATE_ONLY, "customer_id");
+        ESUpsertRequestHandler esUpsertRequestHandler = new ESUpsertRequestHandler(ESMessageType.JSON, jsonSerializer, "customer", "booking", ESRequestType.UPDATE_ONLY, "customer_id");
 
-        assertFalse(esInsertRequestHandler.canCreate());
+        assertFalse(esUpsertRequestHandler.canCreate());
     }
 
     @Test
     public void shouldReturnInsertRequestHandlerForJsonMessageType() {
-        ESInsertRequestHandler esInsertRequestHandler = new ESInsertRequestHandler(ESMessageType.JSON, jsonSerializer, "customer", "booking", ESRequestType.INSERT_OR_UPDATE, "customer_id");
+        ESUpsertRequestHandler esUpsertRequestHandler = new ESUpsertRequestHandler(ESMessageType.JSON, jsonSerializer, "customer", "booking", ESRequestType.INSERT_OR_UPDATE, "customer_id");
 
-        DocWriteRequest request = esInsertRequestHandler.getRequest(esbMessageWithJSON);
+        DocWriteRequest request = esUpsertRequestHandler.getRequest(esbMessageWithJSON);
         assertEquals(IndexRequest.class, request.getClass());
     }
 
     @Test
     public void shouldReturnRequestWithCorrectIdIndexAndTypeForJsonMessageType() {
-        ESInsertRequestHandler esInsertRequestHandler = new ESInsertRequestHandler(ESMessageType.JSON, jsonSerializer, "customer", "booking", ESRequestType.INSERT_OR_UPDATE, "customer_id");
+        ESUpsertRequestHandler esUpsertRequestHandler = new ESUpsertRequestHandler(ESMessageType.JSON, jsonSerializer, "customer", "booking", ESRequestType.INSERT_OR_UPDATE, "customer_id");
 
-        DocWriteRequest request = esInsertRequestHandler.getRequest(esbMessageWithJSON);
+        DocWriteRequest request = esUpsertRequestHandler.getRequest(esbMessageWithJSON);
         assertEquals("544131618", request.id());
         assertEquals("booking", request.index());
         assertEquals("customer", request.type());
@@ -84,9 +84,9 @@ public class ESInsertRequestHandlerTest {
 
     @Test
     public void shouldReturnRequestWithCorrectPayloadForJsonMessageType() {
-        ESInsertRequestHandler esInsertRequestHandler = new ESInsertRequestHandler(ESMessageType.JSON, jsonSerializer, "customer", "booking", ESRequestType.INSERT_OR_UPDATE, "customer_id");
+        ESUpsertRequestHandler esUpsertRequestHandler = new ESUpsertRequestHandler(ESMessageType.JSON, jsonSerializer, "customer", "booking", ESRequestType.INSERT_OR_UPDATE, "customer_id");
 
-        IndexRequest request = (IndexRequest) esInsertRequestHandler.getRequest(esbMessageWithJSON);
+        IndexRequest request = (IndexRequest) esUpsertRequestHandler.getRequest(esbMessageWithJSON);
         HashMap<String, Object> inputMap = new Gson().fromJson(
                 jsonString, new TypeToken<HashMap<String, Object>>() {
                 }.getType()
@@ -100,26 +100,26 @@ public class ESInsertRequestHandlerTest {
 
     @Test
     public void shouldReturnRequestWithCorrectContentTypeForJsonMessageType() {
-        ESInsertRequestHandler esInsertRequestHandler = new ESInsertRequestHandler(ESMessageType.JSON, jsonSerializer, "customer", "booking", ESRequestType.INSERT_OR_UPDATE, "customer_id");
+        ESUpsertRequestHandler esUpsertRequestHandler = new ESUpsertRequestHandler(ESMessageType.JSON, jsonSerializer, "customer", "booking", ESRequestType.INSERT_OR_UPDATE, "customer_id");
 
-        IndexRequest request = (IndexRequest) esInsertRequestHandler.getRequest(esbMessageWithJSON);
+        IndexRequest request = (IndexRequest) esUpsertRequestHandler.getRequest(esbMessageWithJSON);
         assertEquals(XContentType.JSON, request.getContentType());
     }
 
     @Test
     public void shouldReturnInsertRequestHandlerForProtoMessageType() {
-        ESInsertRequestHandler esInsertRequestHandler = new ESInsertRequestHandler(ESMessageType.PROTOBUF, jsonSerializer, "driver", "supply", ESRequestType.INSERT_OR_UPDATE,
+        ESUpsertRequestHandler esUpsertRequestHandler = new ESUpsertRequestHandler(ESMessageType.PROTOBUF, jsonSerializer, "driver", "supply", ESRequestType.INSERT_OR_UPDATE,
                 "s2_id_level");
 
-        assertEquals(IndexRequest.class, esInsertRequestHandler.getRequest(esbMessageWithProto).getClass());
+        assertEquals(IndexRequest.class, esUpsertRequestHandler.getRequest(esbMessageWithProto).getClass());
     }
 
     @Test
     public void shouldReturnRequestWithCorrectIdIndexAndTypeForProtoMessageType() {
-        ESInsertRequestHandler esInsertRequestHandler = new ESInsertRequestHandler(ESMessageType.PROTOBUF, jsonSerializer, "driver", "supply", ESRequestType.INSERT_OR_UPDATE,
+        ESUpsertRequestHandler esUpsertRequestHandler = new ESUpsertRequestHandler(ESMessageType.PROTOBUF, jsonSerializer, "driver", "supply", ESRequestType.INSERT_OR_UPDATE,
                 "s2_id_level");
 
-        DocWriteRequest request = esInsertRequestHandler.getRequest(esbMessageWithProto);
+        DocWriteRequest request = esUpsertRequestHandler.getRequest(esbMessageWithProto);
         assertEquals("13", request.id());
         assertEquals("supply", request.index());
         assertEquals("driver", request.type());
@@ -127,19 +127,19 @@ public class ESInsertRequestHandlerTest {
 
     @Test
     public void shouldReturnRequestWithCorrectContentTypeForProtoMessageType() {
-        ESInsertRequestHandler esInsertRequestHandler = new ESInsertRequestHandler(ESMessageType.PROTOBUF, jsonSerializer, "driver", "supply", ESRequestType.INSERT_OR_UPDATE,
+        ESUpsertRequestHandler esUpsertRequestHandler = new ESUpsertRequestHandler(ESMessageType.PROTOBUF, jsonSerializer, "driver", "supply", ESRequestType.INSERT_OR_UPDATE,
                 "s2_id_level");
 
-        IndexRequest request = (IndexRequest) esInsertRequestHandler.getRequest(esbMessageWithProto);
+        IndexRequest request = (IndexRequest) esUpsertRequestHandler.getRequest(esbMessageWithProto);
         assertEquals(XContentType.JSON, request.getContentType());
     }
 
     @Test
     public void shouldReturnRequestWithCorrectPayloadForProtoMessageType() {
-        ESInsertRequestHandler esInsertRequestHandler = new ESInsertRequestHandler(ESMessageType.PROTOBUF, jsonSerializer, "driver", "supply", ESRequestType.INSERT_OR_UPDATE,
+        ESUpsertRequestHandler esUpsertRequestHandler = new ESUpsertRequestHandler(ESMessageType.PROTOBUF, jsonSerializer, "driver", "supply", ESRequestType.INSERT_OR_UPDATE,
                 "s2_id_level");
 
-        IndexRequest request = (IndexRequest) esInsertRequestHandler.getRequest(esbMessageWithProto);
+        IndexRequest request = (IndexRequest) esUpsertRequestHandler.getRequest(esbMessageWithProto);
         HashMap<String, Object> outputMap = (HashMap<String, Object>) request.sourceAsMap();
 
         assertEquals("BIKE", outputMap.get("vehicle_type"));
@@ -148,11 +148,11 @@ public class ESInsertRequestHandlerTest {
 
     @Test
     public void shouldThrowJSONParseExceptionForInvalidJson() {
-        ESInsertRequestHandler esInsertRequestHandler = new ESInsertRequestHandler(ESMessageType.PROTOBUF, jsonSerializer, "driver", "supply", ESRequestType.INSERT_OR_UPDATE,
+        ESUpsertRequestHandler esUpsertRequestHandler = new ESUpsertRequestHandler(ESMessageType.PROTOBUF, jsonSerializer, "driver", "supply", ESRequestType.INSERT_OR_UPDATE,
                 "s2_id_level");
 
         try {
-            esInsertRequestHandler.getFieldFromJSON("", "s2_id_level");
+            esUpsertRequestHandler.getFieldFromJSON("", "s2_id_level");
         } catch (Exception e) {
             assertEquals(JsonParseException.class, e.getClass());
         }
@@ -160,10 +160,10 @@ public class ESInsertRequestHandlerTest {
 
     @Test
     public void shouldThrowExceptionForInvalidKey() {
-        ESInsertRequestHandler esInsertRequestHandler = new ESInsertRequestHandler(ESMessageType.PROTOBUF, jsonSerializer, "driver", "supply", ESRequestType.INSERT_OR_UPDATE,
+        ESUpsertRequestHandler esUpsertRequestHandler = new ESUpsertRequestHandler(ESMessageType.PROTOBUF, jsonSerializer, "driver", "supply", ESRequestType.INSERT_OR_UPDATE,
                 "s2_id_level");
         try {
-            esInsertRequestHandler.getFieldFromJSON(jsonSerializer.serialize(esbMessageWithProto), "wrongKey");
+            esUpsertRequestHandler.getFieldFromJSON(jsonSerializer.serialize(esbMessageWithProto), "wrongKey");
         } catch (Exception e) {
             assertEquals(IllegalArgumentException.class, e.getClass());
             assertEquals("Key: wrongKey not found in ESB Message", e.getMessage());
