@@ -44,7 +44,7 @@ public class ESUpdateRequestHandlerTest {
         esbMessageWithProto = new EsbMessage(null, Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
         String protoClassName = AggregatedSupplyMessage.class.getName();
-        jsonSerializer = new EsbMessageToJson(new ProtoParser(stencilClient, protoClassName), true);
+        jsonSerializer = new EsbMessageToJson(new ProtoParser(stencilClient, protoClassName), true, false);
 
         when(stencilClient.get(protoClassName)).thenReturn(AggregatedSupplyMessage.getDescriptor());
     }
