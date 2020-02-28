@@ -27,7 +27,7 @@ public class ESSinkFactory implements SinkFactory {
     public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         ESSinkConfig esSinkConfig = ConfigFactory.create(ESSinkConfig.class, configuration);
         ESRequestHandler esRequestHandler = new ESRequestHandlerFactory(esSinkConfig, esSinkConfig.getEsIdFieldName(), esSinkConfig.getESMessageType(), new EsbMessageToJson(
-                new ProtoParser(stencilClient, esSinkConfig.getProtoSchema()), esSinkConfig.shouldPreserveProtoFieldNames()),
+                new ProtoParser(stencilClient, esSinkConfig.getProtoSchema()), esSinkConfig.shouldPreserveProtoFieldNames(), false),
                 esSinkConfig.getEsTypeName(),
                 esSinkConfig.getEsIndexName())
                 .getRequestHandler();
