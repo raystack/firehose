@@ -30,7 +30,7 @@ public class ESRequestHandlerFactoryTest {
                 ESMessageType.JSON, jsonSerializer, "customer_id", "booking");
         ESRequestHandler requestHandler = esRequestHandlerFactory.getRequestHandler();
 
-        assertEquals(ESInsertRequestHandler.class, requestHandler.getClass());
+        assertEquals(ESUpsertRequestHandler.class, requestHandler.getClass());
     }
 
     @Test
