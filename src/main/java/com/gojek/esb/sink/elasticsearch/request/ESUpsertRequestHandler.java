@@ -8,13 +8,13 @@ import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.common.xcontent.XContentType;
 
-public class ESInsertRequestHandler extends ESRequestHandler {
+public class ESUpsertRequestHandler extends ESRequestHandler {
     private final String esTypeName;
     private final String esIndexName;
     private ESRequestType esRequestType;
     private String esIdFieldName;
 
-    public ESInsertRequestHandler(ESMessageType messageType, EsbMessageToJson jsonSerializer, String esTypeName, String esIndexName, ESRequestType esRequestType, String esIdFieldName) {
+    public ESUpsertRequestHandler(ESMessageType messageType, EsbMessageToJson jsonSerializer, String esTypeName, String esIndexName, ESRequestType esRequestType, String esIdFieldName) {
         super(messageType, jsonSerializer);
         this.esTypeName = esTypeName;
         this.esIndexName = esIndexName;
