@@ -142,4 +142,8 @@ public class Instrumentation {
     public void captureCountWithTags(String metric, Integer count, String... tags) {
         statsDReporter.captureCount(metric, count, tags);
     }
+
+    public void incrementCounterWithTags(String metric, String... tags) {
+        statsDReporter.increment(metric, tags);
+    }
 }
