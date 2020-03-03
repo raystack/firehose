@@ -17,7 +17,7 @@ public abstract class AbstractSink implements Closeable, Sink {
     private Instrumentation instrumentation;
     private String sinkType;
 
-    public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) throws IOException, DeserializerException {
+    public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) throws DeserializerException {
         List<EsbMessage> failedMessages;
         try {
             prepare(esbMessages);
@@ -26,7 +26,7 @@ public abstract class AbstractSink implements Closeable, Sink {
             instrumentation.logInfo("pushing {} messages", esbMessages.size());
             failedMessages = execute();
             instrumentation.captureSuccessExecutionTelemetry(sinkType, esbMessages.size());
-        } catch (IOException | DeserializerException | EglcConfigurationException | NullPointerException e) {
+        } catch (DeserializerException | EglcConfigurationException | NullPointerException e) {
             throw e;
         } catch (Exception e) {
             instrumentation.captureFailedExecutionTelemetry(e, esbMessages.size());
