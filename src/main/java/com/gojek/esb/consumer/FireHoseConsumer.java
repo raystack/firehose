@@ -34,12 +34,12 @@ public class FireHoseConsumer implements Closeable {
         try {
             List<EsbMessage> messages = consumer.readMessages();
             List<Span> spans = tracer.startTrace(messages);
+
             if (!messages.isEmpty()) {
                 sink.pushMessage(messages);
-                LOGGER.info("Execution successful for {} records", messages.size());
             }
-
             consumer.commit();
+            LOGGER.info("Execution successful for {} records", messages.size());
             tracer.finishTrace(spans);
         } finally {
             statsDReporter.captureDurationSince(PARTITION_PROCESS_TIME, beforeCall);
