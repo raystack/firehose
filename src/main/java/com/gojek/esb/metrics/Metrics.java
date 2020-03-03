@@ -24,6 +24,7 @@ public class Metrics {
     //TAGS
     public static final String SUCCESS_TAG = "success=true";
     public static final String FAILURE_TAG = "success=false";
+    public static final String ES_DOCUMENT_NOT_FOUND = "error=es_document_not_found";
 
     // ERROR
     public static final String ERROR_MESSAGE_TAG = "class";
