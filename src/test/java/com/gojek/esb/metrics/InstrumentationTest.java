@@ -177,4 +177,13 @@ public class InstrumentationTest {
 
         verify(statsDReporter, times(1)).captureCount(metric, 1, httpCodeTag, urlTag);
     }
+
+    @Test
+    public void shouldIncrementCounterWithTags() {
+        String metric = "test.metric";
+        String httpCodeTag = "status_code=200";
+        instrumentation.incrementCounterWithTags(metric, httpCodeTag);
+
+        verify(statsDReporter, times(1)).increment(metric, httpCodeTag);
+    }
 }
