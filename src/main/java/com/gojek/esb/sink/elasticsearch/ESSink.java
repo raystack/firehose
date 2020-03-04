@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.gojek.esb.metrics.Metrics.ES_DOCUMENT_NOT_FOUND;
 import static com.gojek.esb.metrics.Metrics.MESSAGES_DROPPED_COUNT;
 
 public class ESSink extends AbstractSink {
@@ -68,7 +67,7 @@ public class ESSink extends AbstractSink {
             if (response.isFailed()) {
                 String responseStatus = String.valueOf(response.status().getStatus());
                 if (esRetryStatusCodeBlacklist.contains(responseStatus)) {
-                    getInstrumentation().incrementCounterWithTags(MESSAGES_DROPPED_COUNT, ES_DOCUMENT_NOT_FOUND);
+                    getInstrumentation().incrementCounterWithTags(MESSAGES_DROPPED_COUNT, "cause=" + response.status().name());
                     getInstrumentation().logInfo("Message dropped because of status code: " + responseStatus);
                 } else {
                     throw new NeedToRetry(bulkResponse.buildFailureMessage());

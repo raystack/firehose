@@ -24,8 +24,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-import static com.gojek.esb.metrics.Metrics.ES_DOCUMENT_NOT_FOUND;
-import static com.gojek.esb.metrics.Metrics.MESSAGES_DROPPED_COUNT;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -167,7 +165,7 @@ public class ESSinkTest {
         esSinkMock.setBulkResponse(bulkResponse);
 
         esSinkMock.pushMessage(this.esbMessages);
-        verify(instrumentation, times(2)).incrementCounterWithTags(MESSAGES_DROPPED_COUNT, ES_DOCUMENT_NOT_FOUND);
+        verify(instrumentation, times(2)).incrementCounterWithTags(any(String.class), any(String.class));
     }
 
     @Test
@@ -185,7 +183,7 @@ public class ESSinkTest {
         EsbMessage esbMessageWithProto = new EsbMessage(null, Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
         esbMessages.add(esbMessageWithProto);
         List<EsbMessage> failedMessages = esSinkMock.pushMessage(this.esbMessages);
-        verify(instrumentation, times(2)).incrementCounterWithTags(MESSAGES_DROPPED_COUNT, ES_DOCUMENT_NOT_FOUND);
+        verify(instrumentation, times(2)).incrementCounterWithTags(any(String.class), any(String.class));
         Assert.assertEquals(3, failedMessages.size());
     }
 
