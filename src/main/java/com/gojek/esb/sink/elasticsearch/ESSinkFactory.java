@@ -18,7 +18,10 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ESSinkFactory implements SinkFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(ESSinkFactory.class.getName());
@@ -35,7 +38,7 @@ public class ESSinkFactory implements SinkFactory {
         HttpHost[] httpHosts = getHttpHosts(esSinkConfig.getEsConnectionUrls());
         RestHighLevelClient client = new RestHighLevelClient(RestClient.builder(httpHosts));
         return new ESSink(new Instrumentation(statsDReporter, ESSink.class), SinkType.ELASTICSEARCH.name().toLowerCase(), client, esRequestHandler,
-                esSinkConfig.getEsRequestTimeoutInMs(), esSinkConfig.getEsWaitForActiveShardsCount());
+                esSinkConfig.getEsRequestTimeoutInMs(), esSinkConfig.getEsWaitForActiveShardsCount(), getStatusCodesAsList(esSinkConfig.getEsRetryStatusCodeBlacklist()));
     }
 
     HttpHost[] getHttpHosts(String esConnectionUrls) {
@@ -54,5 +57,13 @@ public class ESSinkFactory implements SinkFactory {
             LOGGER.error("ES_CONNECTION_URLS is empty or null");
             throw new IllegalArgumentException("ES_CONNECTION_URLS is empty or null");
         }
+    }
+
+    List<String> getStatusCodesAsList(String esRetryStatusCodeBlacklist) {
+        return Arrays
+                .stream(esRetryStatusCodeBlacklist.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
     }
 }

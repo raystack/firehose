@@ -14,6 +14,10 @@ public interface ESSinkConfig extends AppConfig {
     @DefaultValue("60000")
     Long getEsRequestTimeoutInMs();
 
+    @Key("ES_RETRY_STATUS_CODE_BLACKLIST")
+    @DefaultValue("404")
+    String getEsRetryStatusCodeBlacklist();
+
     @Key("ES_CONNECTION_URLS")
     String getEsConnectionUrls();
 

@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -124,6 +125,23 @@ public class ESSinkFactoryTest {
             assertEquals(IllegalArgumentException.class, e.getClass());
             assertEquals("ES_CONNECTION_URLS should contain host and port both", e.getMessage());
         }
+    }
+
+    @Test
+    public void shouldReturnBlackListRetryStatusCodesAsList() {
+        ESSinkFactory esSinkFactory = new ESSinkFactory();
+        String inputRetryStatusCodeBlacklist = "404, 502";
+        List<String> statusCodesAsList = esSinkFactory.getStatusCodesAsList(inputRetryStatusCodeBlacklist);
+        assertEquals("404", statusCodesAsList.get(0));
+        assertEquals("502", statusCodesAsList.get(1));
+    }
+
+    @Test
+    public void shouldReturnEmptyBlackListRetryStatusCodesAsEmptyList() {
+        ESSinkFactory esSinkFactory = new ESSinkFactory();
+        String inputRetryStatusCodeBlacklist = "";
+        List<String> statusCodesAsList = esSinkFactory.getStatusCodesAsList(inputRetryStatusCodeBlacklist);
+        assertEquals(0, statusCodesAsList.size());
     }
 
 }
