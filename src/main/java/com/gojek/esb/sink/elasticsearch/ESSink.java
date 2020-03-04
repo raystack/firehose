@@ -69,6 +69,7 @@ public class ESSink extends AbstractSink {
                 String responseStatus = String.valueOf(response.status().getStatus());
                 if (esRetryStatusCodeBlacklist.contains(responseStatus)) {
                     getInstrumentation().incrementCounterWithTags(MESSAGES_DROPPED_COUNT, ES_DOCUMENT_NOT_FOUND);
+                    getInstrumentation().logInfo("Message dropped because of status code: " + responseStatus);
                 } else {
                     throw new NeedToRetry(bulkResponse.buildFailureMessage());
                 }
