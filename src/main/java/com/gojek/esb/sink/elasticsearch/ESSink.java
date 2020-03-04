@@ -15,23 +15,25 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.gojek.esb.metrics.Metrics.*;
+import static com.gojek.esb.metrics.Metrics.ES_DOCUMENT_NOT_FOUND;
+import static com.gojek.esb.metrics.Metrics.MESSAGES_DROPPED_COUNT;
 
 public class ESSink extends AbstractSink {
-    private static final int NOT_FOUND = 404;
     private RestHighLevelClient client;
     private ESRequestHandler esRequestHandler;
     private BulkRequest bulkRequest;
     private long esRequestTimeoutInMs;
     private Integer esWaitForActiveShardsCount;
+    private List<String> esRetryStatusCodeBlacklist;
 
     public ESSink(Instrumentation instrumentation, String sinkType, RestHighLevelClient client, ESRequestHandler esRequestHandler,
-                  long esRequestTimeoutInMs, Integer esWaitForActiveShardsCount) {
+                  long esRequestTimeoutInMs, Integer esWaitForActiveShardsCount, List<String> esRetryStatusCodeBlacklist) {
         super(instrumentation, sinkType);
         this.client = client;
         this.esRequestHandler = esRequestHandler;
         this.esRequestTimeoutInMs = esRequestTimeoutInMs;
         this.esWaitForActiveShardsCount = esWaitForActiveShardsCount;
+        this.esRetryStatusCodeBlacklist = esRetryStatusCodeBlacklist;
     }
 
     @Override
@@ -64,8 +66,9 @@ public class ESSink extends AbstractSink {
     private void handleResponse(BulkResponse bulkResponse) throws NeedToRetry {
         for (BulkItemResponse response : bulkResponse.getItems()) {
             if (response.isFailed()) {
-                if (response.status().getStatus() == NOT_FOUND) {
-                    getInstrumentation().incrementCounterWithTags(MESSAGE_COUNT, FAILURE_TAG, ES_DOCUMENT_NOT_FOUND);
+                String responseStatus = String.valueOf(response.status().getStatus());
+                if (esRetryStatusCodeBlacklist.contains(responseStatus)) {
+                    getInstrumentation().incrementCounterWithTags(MESSAGES_DROPPED_COUNT, ES_DOCUMENT_NOT_FOUND);
                 } else {
                     throw new NeedToRetry(bulkResponse.buildFailureMessage());
                 }

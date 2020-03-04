@@ -12,6 +12,7 @@ public class Metrics {
     public static final String LIFETIME_TILL_EXECUTION = "lifetime.till.execution";
     public static final String SINK_RESPONSE_TIME = "sink.response.time";
     public static final String MESSAGE_COUNT = "messages.count";
+    public static final String MESSAGES_DROPPED_COUNT = "messages.dropped.count";
     public static final String LATENCY_ACROSS_FIREHOSE = "latency";
     public static final String HTTP_RESPONSE_CODE = "http.response.code";
 
@@ -24,7 +25,7 @@ public class Metrics {
     //TAGS
     public static final String SUCCESS_TAG = "success=true";
     public static final String FAILURE_TAG = "success=false";
-    public static final String ES_DOCUMENT_NOT_FOUND = "error=es_document_not_found";
+    public static final String ES_DOCUMENT_NOT_FOUND = "cause=es_document_not_found";
 
     // ERROR
     public static final String ERROR_MESSAGE_TAG = "class";
