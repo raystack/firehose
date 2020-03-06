@@ -27,7 +27,7 @@ public abstract class RedisParser {
     public List<RedisDataEntry> parse(List<EsbMessage> esbMessages) {
         return esbMessages
             .stream()
-            .map(esbMessage -> this.parse(esbMessage))
+            .map(this::parse)
             .flatMap(Collection::stream)
             .collect(Collectors.toList());
     }
@@ -75,9 +75,9 @@ public abstract class RedisParser {
     }
 
     Object getDataByFieldNumber(DynamicMessage parsedMessage, String fieldNumber) {
-        Integer fieldNumberInt = null;
+        int fieldNumberInt;
         try {
-            fieldNumberInt = Integer.valueOf(fieldNumber);
+            fieldNumberInt = Integer.parseInt(fieldNumber);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid Proto Index");
         }
