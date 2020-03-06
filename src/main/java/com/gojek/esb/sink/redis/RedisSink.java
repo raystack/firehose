@@ -1,11 +1,12 @@
 package com.gojek.esb.sink.redis;
 
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.AbstractSink;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import com.gojek.esb.sink.redis.exception.NoResponseException;
 import com.gojek.esb.sink.redis.parsers.RedisParser;
-import com.gojek.esb.metrics.Instrumentation;
+import com.gojek.esb.sink.redis.ttl.RedisTTL;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
@@ -23,19 +24,22 @@ public class RedisSink extends AbstractSink {
     private RedisParser redisParser;
     private List<RedisDataEntry> redisDataEntries;
     private Jedis jedis;
+    private RedisTTL redisTTL;
     private Pipeline jedisPipelined;
 
-    public RedisSink(Instrumentation instrumentation, String sinkType, RedisParser redisParser, Jedis jedis) {
+    public RedisSink(Instrumentation instrumentation, String sinkType, RedisParser redisParser, Jedis jedis, RedisTTL redisTTL) {
         super(instrumentation, sinkType);
         this.redisParser = redisParser;
         this.jedis = jedis;
+        this.redisTTL = redisTTL;
     }
 
-    public RedisSink(Instrumentation instrumentation, String sinkType, RedisParser redisParser, Jedis jedis, Pipeline jedisPipelined) {
+    public RedisSink(Instrumentation instrumentation, String sinkType, RedisParser redisParser, Jedis jedis, Pipeline jedisPipelined, RedisTTL redisTTL) {
         super(instrumentation, sinkType);
         this.redisParser = redisParser;
         this.jedis = jedis;
         this.jedisPipelined = jedisPipelined;
+        this.redisTTL = redisTTL;
     }
 
 
@@ -46,7 +50,7 @@ public class RedisSink extends AbstractSink {
         jedisPipelined.multi();
 
         redisDataEntries.forEach(redisDataEntry -> {
-            redisDataEntry.pushMessage(jedisPipelined);
+            redisDataEntry.pushMessage(jedisPipelined, redisTTL);
         });
 
     }

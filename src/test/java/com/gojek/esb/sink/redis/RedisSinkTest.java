@@ -8,6 +8,7 @@ import com.gojek.esb.sink.redis.dataentry.RedisHashSetFieldEntry;
 import com.gojek.esb.sink.redis.dataentry.RedisListEntry;
 import com.gojek.esb.sink.redis.exception.NoResponseException;
 import com.gojek.esb.sink.redis.parsers.RedisParser;
+import com.gojek.esb.sink.redis.ttl.RedisTTL;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,6 +43,9 @@ public class RedisSinkTest {
     private RedisParser redisMessageParser;
 
     @Mock
+    private RedisTTL redisTTL;
+
+    @Mock
     private Jedis jedis;
 
     @Mock
@@ -56,7 +60,7 @@ public class RedisSinkTest {
         esbMessages = Arrays.asList(new EsbMessage(new byte[0], new byte[0], "topic", 0, 100),
                 new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
 
-        redisSink = new RedisSink(instrumentation, "redis", redisMessageParser, jedis);
+        redisSink = new RedisSink(instrumentation, "redis", redisMessageParser, jedis, redisTTL);
 
         redisDataEntries = new ArrayList<>();
 
@@ -117,13 +121,13 @@ public class RedisSinkTest {
         when(redisMessageParser.parse(esbMessages)).thenReturn(redisDataEntries);
         when(responses.get()).thenReturn(null);
 
-        RedisSink redisSinkStub = new RedisSink(instrumentation, "redis", redisMessageParser, jedis, jedisPipeline);
+        RedisSink redisSinkStub = new RedisSink(instrumentation, "redis", redisMessageParser, jedis, jedisPipeline, redisTTL);
         redisSinkStub.execute();
     }
 
     @Test
     public void shouldExecuteSuccessfully() {
-        RedisSink redisSinkStub = new RedisSink(instrumentation, "redis", redisMessageParser, jedis, jedisPipeline);
+        RedisSink redisSinkStub = new RedisSink(instrumentation, "redis", redisMessageParser, jedis, jedisPipeline, redisTTL);
         List<EsbMessage> execute = redisSinkStub.execute();
 
         verify(jedisPipeline, times(1)).sync();
@@ -138,6 +142,23 @@ public class RedisSinkTest {
         redisSink.pushMessage(esbMessages);
         verify(jedisPipeline, times(entryList.size())).hset("order-123", "driver_id", "driver-234");
         verify(jedisPipeline, times(1)).sync();
+    }
+
+    @Test
+    public void shouldSetTTLWhenPushingHashSetEntry() {
+        List<RedisDataEntry> entryList = Collections.singletonList(new RedisHashSetFieldEntry("order-123", "driver_id", "driver-234"));
+        when(redisMessageParser.parse(esbMessages)).thenReturn(entryList);
+
+        redisSink.pushMessage(esbMessages);
+        verify(redisTTL, times(1)).setTTL(jedisPipeline, "order-123");
+    }
+
+    @Test
+    public void shouldSetTTLWhenPushingListEntryPerKey() {
+        when(redisMessageParser.parse(esbMessages)).thenReturn(redisDataEntries);
+
+        redisSink.pushMessage(esbMessages);
+        verify(redisTTL, times(2)).setTTL(any(Pipeline.class), any(String.class));
     }
 
     @Test
