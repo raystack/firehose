@@ -10,6 +10,8 @@ import com.gojek.esb.sink.http.request.Request;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,6 +43,8 @@ public class HttpSinkTest {
     @Mock
     private HttpPut httpPut;
     @Mock
+    private HttpPost httpPost;
+    @Mock
     private HttpResponse response;
     @Mock
     private StatusLine statusLine;
@@ -65,19 +69,22 @@ public class HttpSinkTest {
     @Test
     public void shouldPrepareRequestDuringPreparationAndCallItDuringExecution() throws Exception {
         when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
+        when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
         when(response.getStatusLine()).thenReturn(statusLine, statusLine);
         when(statusLine.getStatusCode()).thenReturn(200, 200);
 
-        List<HttpPut> httpPuts = Arrays.asList(httpPut, httpPut);
-        when(request.build(esbMessages)).thenReturn(httpPuts);
+        List<HttpEntityEnclosingRequestBase> httpRequests = Arrays.asList(httpPut, httpPost);
+        when(request.build(esbMessages)).thenReturn(httpRequests);
         when(httpClient.execute(httpPut)).thenReturn(response, response);
+        when(httpClient.execute(httpPost)).thenReturn(response, response);
 
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange);
         httpSink.prepare(esbMessages);
         httpSink.execute();
 
         verify(request, times(1)).build(esbMessages);
-        verify(httpClient, times(2)).execute(httpPut);
+        verify(httpClient, times(1)).execute(httpPut);
+        verify(httpClient, times(1)).execute(httpPost);
 
     }
 
@@ -86,10 +93,10 @@ public class HttpSinkTest {
         when(response.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(500);
 
-        List<HttpPut> httpPuts = Arrays.asList(httpPut);
+        List<HttpEntityEnclosingRequestBase> httpRequests = Arrays.asList(httpPut);
 
         when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
-        when(request.build(esbMessages)).thenReturn(httpPuts);
+        when(request.build(esbMessages)).thenReturn(httpRequests);
         when(httpClient.execute(httpPut)).thenReturn(response);
 
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
@@ -101,10 +108,10 @@ public class HttpSinkTest {
     @Test(expected = NeedToRetry.class)
     public void shouldThrowNeedToRetryExceptionWhenResponseCodeIsNull() throws Exception {
 
-        List<HttpPut> httpPuts = Arrays.asList(httpPut);
+        List<HttpEntityEnclosingRequestBase> httpRequests = Arrays.asList(httpPut);
 
         when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
-        when(request.build(esbMessages)).thenReturn(httpPuts);
+        when(request.build(esbMessages)).thenReturn(httpRequests);
         when(httpClient.execute(httpPut)).thenReturn(null);
 
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange);
@@ -123,9 +130,10 @@ public class HttpSinkTest {
     @Test
     public void shouldCatchIOExceptionInAbstractSinkAndCaptureFailedExecutionTelemetry() throws Exception {
         when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
-        List<HttpPut> httpPuts = Arrays.asList(httpPut, httpPut);
+        when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
+        List<HttpEntityEnclosingRequestBase> httpRequests = Arrays.asList(httpPut, httpPost);
 
-        when(request.build(esbMessages)).thenReturn(httpPuts);
+        when(request.build(esbMessages)).thenReturn(httpRequests);
         when(httpClient.execute(any(HttpPut.class))).thenThrow(IOException.class);
 
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange);

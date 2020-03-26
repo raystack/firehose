@@ -1,8 +1,10 @@
 package com.gojek.esb.config;
 
+import com.gojek.esb.config.converter.HttpRequestMethodConverter;
 import com.gojek.esb.config.converter.HttpSinkParameterDataFormatConverter;
 import com.gojek.esb.config.converter.HttpSinkParameterSourceTypeConverter;
 import com.gojek.esb.config.converter.RangeToHashMapConverter;
+import com.gojek.esb.config.enums.HttpRequestMethod;
 import com.gojek.esb.config.enums.HttpSinkDataFormat;
 import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
 
@@ -18,6 +20,11 @@ public interface HTTPSinkConfig extends AppConfig {
     @Key("HTTPSINK_REQUEST_TIMEOUT_IN_MS")
     @DefaultValue("10000")
     Integer getRequestTimeoutInMs();
+
+    @Key("HTTP_SINK_REQUEST_METHOD")
+    @DefaultValue("put")
+    @ConverterClass(HttpRequestMethodConverter.class)
+    HttpRequestMethod getHttpSinkRequestMethod();
 
     @Key("HTTPSINK_MAX_HTTP_CONNECTIONS")
     @DefaultValue("10")
