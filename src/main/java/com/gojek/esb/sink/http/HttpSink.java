@@ -11,7 +11,7 @@ import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Trace;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
@@ -28,7 +28,7 @@ import static com.gojek.esb.metrics.Metrics.HTTP_RESPONSE_CODE;
 public class HttpSink extends AbstractSink {
 
     private Request request;
-    private List<HttpPut> httpPuts;
+    private List<HttpEntityEnclosingRequestBase> httpRequests;
     private HttpClient httpClient;
     private StencilClient stencilClient;
     private Map<Integer, Boolean> retryStatusCodeRanges;
@@ -44,7 +44,7 @@ public class HttpSink extends AbstractSink {
     @Override
     protected void prepare(List<EsbMessage> esbMessages) throws DeserializerException, IOException {
         try {
-            httpPuts = request.build(esbMessages);
+            httpRequests = request.build(esbMessages);
         } catch (URISyntaxException e) {
             throw new IOException(e);
         }
@@ -54,9 +54,9 @@ public class HttpSink extends AbstractSink {
     @Trace(dispatcher = true)
     protected List<EsbMessage> execute() throws Exception {
         HttpResponse response = null;
-        for (HttpPut httpPut : httpPuts) {
+        for (HttpEntityEnclosingRequestBase httpRequest : httpRequests) {
             try {
-                response = httpClient.execute(httpPut);
+                response = httpClient.execute(httpRequest);
                 getInstrumentation().logInfo("Response Status: {}", statusCode(response));
                 if (shouldRetry(response)) {
                     throw new NeedToRetry(statusCode(response));
@@ -66,7 +66,7 @@ public class HttpSink extends AbstractSink {
                 throw e;
             } finally {
                 consumeResponse(response);
-                captureHttpStatusCount(httpPut, response);
+                captureHttpStatusCount(httpRequest, response);
                 response = null;
             }
         }
@@ -76,7 +76,7 @@ public class HttpSink extends AbstractSink {
 
     @Override
     public void close() throws IOException {
-        this.httpPuts = new ArrayList<>();
+        this.httpRequests = new ArrayList<>();
         stencilClient.close();
     }
 
@@ -98,8 +98,8 @@ public class HttpSink extends AbstractSink {
         }
     }
 
-    private void captureHttpStatusCount(HttpPut httpPut, HttpResponse response) {
-        String urlTag = "url=" + httpPut.getURI().getPath();
+    private void captureHttpStatusCount(HttpEntityEnclosingRequestBase httpRequestMethod, HttpResponse response) {
+        String urlTag = "url=" + httpRequestMethod.getURI().getPath();
         String httpCodeTag = "status_code=";
         if (response != null) {
             httpCodeTag = "status_code=" + Integer.toString(response.getStatusLine().getStatusCode());
