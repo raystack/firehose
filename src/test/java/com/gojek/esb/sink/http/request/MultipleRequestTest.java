@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gojek.esb.config.enums.HttpRequestMethod;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.sink.http.request.body.JsonBody;
@@ -29,7 +30,7 @@ public class MultipleRequestTest {
   private JsonBody jsonBody;
 
   @Test
-  public void shouldCreateRequestsPerEsbMessage() {
+  public void shouldCreatePUTRequestsPerEsbMessage() {
     EsbMessage esbMessage = new EsbMessage(new byte[] {10, 20 }, new byte[] {1, 2 }, "sample-topic", 0, 100);
     List<EsbMessage> esbMessages = new ArrayList<EsbMessage>();
     esbMessages.add(esbMessage);
@@ -44,7 +45,8 @@ public class MultipleRequestTest {
       throw new RuntimeException(e);
     }
 
-    ParameterizedRequest multipleRequest = new ParameterizedRequest(parameterizedUri, parameterizedHeader, jsonBody);
+    HttpRequestMethod httpRequestMethod = HttpRequestMethod.PUT;
+    ParameterizedRequest multipleRequest = new ParameterizedRequest(parameterizedUri, parameterizedHeader, jsonBody, httpRequestMethod);
 
     try {
       multipleRequest.build(esbMessages);
@@ -55,4 +57,34 @@ public class MultipleRequestTest {
       throw new RuntimeException(e);
     }
   }
+
+  @Test
+  public void shouldCreatePOSTRequestsPerEsbMessage() {
+    EsbMessage esbMessage = new EsbMessage(new byte[] {10, 20 }, new byte[] {1, 2 }, "sample-topic", 0, 100);
+    List<EsbMessage> esbMessages = new ArrayList<EsbMessage>();
+    esbMessages.add(esbMessage);
+    esbMessages.add(esbMessage);
+
+    try {
+      List<String> bodyContent = new ArrayList<String>();
+      bodyContent.add("{}");
+      bodyContent.add("{}");
+      when(jsonBody.serialize(esbMessages)).thenReturn(bodyContent);
+    } catch (DeserializerException e) {
+      throw new RuntimeException(e);
+    }
+
+    HttpRequestMethod httpRequestMethod = HttpRequestMethod.POST;
+    ParameterizedRequest multipleRequest = new ParameterizedRequest(parameterizedUri, parameterizedHeader, jsonBody, httpRequestMethod);
+
+    try {
+      multipleRequest.build(esbMessages);
+      verify(parameterizedUri, times(4)).build(esbMessage);
+      verify(parameterizedHeader, times(4)).build(esbMessage);
+      verify(jsonBody, times(1)).serialize(esbMessages);
+    } catch (URISyntaxException | DeserializerException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
 }
