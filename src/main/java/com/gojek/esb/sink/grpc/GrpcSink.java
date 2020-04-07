@@ -1,0 +1,46 @@
+package com.gojek.esb.sink.grpc;
+
+
+import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.grpc.response.GrpcResponse;
+import com.gojek.esb.sink.Sink;
+import com.gojek.esb.sink.grpc.client.GrpcClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * HTTPSink allows messages consumed from kafka to be relayed to a http service.
+ * The related configurations for HTTPSink can be found here: {@see com.gojek.esb.config.HTTPSinkConfig}
+ */
+public class GrpcSink implements Sink {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GrpcSink.class.getName());
+    private final GrpcClient grpcClient;
+
+    public GrpcSink(GrpcClient grpcClient) {
+        this.grpcClient = grpcClient;
+    }
+
+    @Override
+    public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) throws IOException, DeserializerException {
+        ArrayList<EsbMessage> failedEsbMessages = new ArrayList<>();
+        LOGGER.info("pushing {} messages", esbMessages.size());
+        for (EsbMessage message : esbMessages) {
+            LOGGER.info("grpc sink " + message.getLogMessage());
+//            GrpcResponse response = grpcClient.execute(message.getLogMessage(), message.getHeaders());
+//            if (!response.getSuccess()) {
+//                failedEsbMessages.add(message);
+//            }
+        }
+        return failedEsbMessages;
+    }
+
+    @Override
+    public void close() throws IOException {
+    }
+}

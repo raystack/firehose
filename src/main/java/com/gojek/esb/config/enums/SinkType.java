@@ -7,5 +7,6 @@ public enum SinkType {
     CLEVERTAP,
     INFLUXDB,
     ELASTICSEARCH,
-    REDIS
+    REDIS,
+    GRPC
 }
