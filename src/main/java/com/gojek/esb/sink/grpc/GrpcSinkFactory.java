@@ -31,7 +31,6 @@ import java.util.Map;
 
 public class GrpcSinkFactory implements SinkFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GrpcSinkFactory.class.getName());
 
     public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter) {
         GrpcConfig grpcConfig = ConfigFactory.create(GrpcConfig.class, configuration);
@@ -43,7 +42,7 @@ public class GrpcSinkFactory implements SinkFactory {
         try {
             connection = createConnection(grpcConfig);
         } catch (ChannelPoolException e) {
-            LOGGER.error("Channel Pool Exception:", e.getMessage());
+            System.out.println("Channel Pool Exception:"+ e.getMessage());
         }
 
         GrpcClient grpcClient = new GrpcClient(connection, grpcConfig);

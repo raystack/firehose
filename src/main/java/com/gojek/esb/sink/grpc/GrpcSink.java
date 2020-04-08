@@ -19,7 +19,6 @@ import java.util.List;
  */
 public class GrpcSink implements Sink {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GrpcSink.class.getName());
     private final GrpcClient grpcClient;
 
     public GrpcSink(GrpcClient grpcClient) {
@@ -29,13 +28,15 @@ public class GrpcSink implements Sink {
     @Override
     public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) throws IOException, DeserializerException {
         ArrayList<EsbMessage> failedEsbMessages = new ArrayList<>();
-        LOGGER.info("pushing {} messages", esbMessages.size());
+        System.out.println("pushing messages: " + esbMessages.size());
+
         for (EsbMessage message : esbMessages) {
-            LOGGER.info("grpc sink " + message.getLogMessage());
-//            GrpcResponse response = grpcClient.execute(message.getLogMessage(), message.getHeaders());
-//            if (!response.getSuccess()) {
-//                failedEsbMessages.add(message);
-//            }
+            System.out.println(message.getLogKey());
+            System.out.println(message.getLogMessage());
+            GrpcResponse response = grpcClient.execute(message.getLogMessage(), message.getHeaders());
+            if (!response.getSuccess()) {
+                failedEsbMessages.add(message);
+            }
         }
         return failedEsbMessages;
     }
