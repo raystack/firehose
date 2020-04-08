@@ -29,9 +29,10 @@ public class GrpcClient {
 
     private ChannelPool channelPool;
     private final GrpcConfig grpcConfig;
-    private static final Logger LOGGER = LoggerFactory.getLogger(GrpcClient.class.getName());
 
     public GrpcClient(ChannelPool channelPool, GrpcConfig grpcConfig) {
+
+        System.out.println(grpcConfig.getServiceHost() + " " + grpcConfig.getServicePort() + " " + grpcConfig.getGrpcMethodUrl());
         this.channelPool = channelPool;
         this.grpcConfig = grpcConfig;
     }
@@ -68,7 +69,7 @@ public class GrpcClient {
             grpcResponse = GrpcResponse.parseFrom(response);
 
         } catch (Exception e) {
-            LOGGER.error("Failed to send request {} ", e.getMessage());
+            System.out.println("Failed to send request {} "+ e.getMessage());
             grpcResponse = GrpcResponse
                     .newBuilder()
                     .setSuccess(false)

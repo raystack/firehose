@@ -114,7 +114,7 @@ public class FireHoseConsumerFactory {
             case REDIS:
                 return new RedisSinkFactory().create(config, statsDReporter, stencilClient);
             case GRPC:
-                return new GrpcSinkFactory().create(config,statsDReporter,stencilClient);
+                return new GrpcSinkFactory().create(config, statsDReporter, stencilClient);
             default:
                 throw new EglcConfigurationException("Invalid FireHose SINK type");
 
