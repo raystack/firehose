@@ -1,24 +1,16 @@
 package com.gojek.esb.sink.grpc.client;
 
 
+import com.gojek.esb.config.GrpcConfig;
 import com.gojek.esb.grpc.response.GrpcResponse;
 import com.gopay.grpc.ChannelPool;
-import com.gojek.esb.config.GrpcConfig;
 import com.newrelic.api.agent.Trace;
-
-import io.grpc.Channel;
-import io.grpc.ManagedChannel;
-import io.grpc.Metadata;
-import io.grpc.MethodDescriptor;
-import io.grpc.ClientInterceptors;
-import io.grpc.CallOptions;
+import io.grpc.*;
 import io.grpc.stub.ClientCalls;
 import io.grpc.stub.MetadataUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
