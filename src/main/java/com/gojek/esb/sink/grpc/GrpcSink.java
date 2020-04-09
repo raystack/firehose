@@ -6,8 +6,6 @@ import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.grpc.response.GrpcResponse;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.grpc.client.GrpcClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
