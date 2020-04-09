@@ -16,8 +16,6 @@ import com.gopay.grpc.ChannelPoolException;
 import com.gopay.grpc.ConsulChannelPool;
 import io.grpc.netty.NegotiationType;
 import org.aeonbits.owner.ConfigFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -42,7 +40,7 @@ public class GrpcSinkFactory implements SinkFactory {
         try {
             connection = createConnection(grpcConfig);
         } catch (ChannelPoolException e) {
-            System.out.println("Channel Pool Exception:"+ e.getMessage());
+            System.out.println("Channel Pool Exception: "+ e.getMessage());
         }
 
         GrpcClient grpcClient = new GrpcClient(connection, grpcConfig);
