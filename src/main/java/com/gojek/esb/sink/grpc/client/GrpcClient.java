@@ -5,7 +5,13 @@ import com.gojek.esb.config.GrpcConfig;
 import com.gojek.esb.grpc.response.GrpcResponse;
 import com.gopay.grpc.ChannelPool;
 import com.newrelic.api.agent.Trace;
-import io.grpc.*;
+
+import io.grpc.Channel;
+import io.grpc.ManagedChannel;
+import io.grpc.Metadata;
+import io.grpc.ClientInterceptors;
+import io.grpc.CallOptions;
+import io.grpc.MethodDescriptor;
 import io.grpc.stub.ClientCalls;
 import io.grpc.stub.MetadataUtils;
 import org.apache.commons.io.IOUtils;
@@ -61,7 +67,7 @@ public class GrpcClient {
             grpcResponse = GrpcResponse.parseFrom(response);
 
         } catch (Exception e) {
-            System.out.println("Failed to send request {} "+ e.getMessage());
+            System.out.println("Failed to send request {} " + e.getMessage());
             grpcResponse = GrpcResponse
                     .newBuilder()
                     .setSuccess(false)
