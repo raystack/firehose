@@ -40,7 +40,7 @@ public class GrpcSinkFactory implements SinkFactory {
         try {
             connection = createConnection(grpcConfig);
         } catch (ChannelPoolException e) {
-            System.out.println("Channel Pool Exception: "+ e.getMessage());
+            System.out.println("Channel Pool Exception: " + e.getMessage());
         }
 
         GrpcClient grpcClient = new GrpcClient(connection, grpcConfig);
