@@ -10,5 +10,5 @@ import com.gojek.esb.consumer.EsbMessage;
  */
 public interface SupportParameterizedUri {
 
-  URI build(EsbMessage esbMessage) throws URISyntaxException;
+  URI build(EsbMessage esbMessage, UriParser uriParser) throws URISyntaxException;
 }

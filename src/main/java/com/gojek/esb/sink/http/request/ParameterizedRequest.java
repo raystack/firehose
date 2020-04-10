@@ -1,5 +1,6 @@
 package com.gojek.esb.sink.http.request;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +13,7 @@ import com.gojek.esb.sink.http.request.body.JsonBody;
 import com.gojek.esb.sink.http.request.header.SupportParamerizedHeader;
 import com.gojek.esb.sink.http.request.uri.SupportParameterizedUri;
 
+import com.gojek.esb.sink.http.request.uri.UriParser;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -28,14 +30,16 @@ public class ParameterizedRequest implements Request {
   private SupportParamerizedHeader parameterizedHeader;
   private JsonBody body;
   private HttpRequestMethod method;
+  private UriParser uriParser;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ParameterizedRequest.class);
 
-  public ParameterizedRequest(SupportParameterizedUri parameterizedUri, SupportParamerizedHeader parameterizedHeader, JsonBody body, HttpRequestMethod method) {
+  public ParameterizedRequest(SupportParameterizedUri parameterizedUri, SupportParamerizedHeader parameterizedHeader, JsonBody body, HttpRequestMethod method, UriParser uriParser) {
     this.parameterizedUri = parameterizedUri;
     this.parameterizedHeader = parameterizedHeader;
     this.body = body;
     this.method = method;
+    this.uriParser = uriParser;
   }
 
   public List<HttpEntityEnclosingRequestBase> build(List<EsbMessage> esbMessages) throws URISyntaxException, DeserializerException {
@@ -43,12 +47,13 @@ public class ParameterizedRequest implements Request {
     List<String> bodyContents = body.serialize(esbMessages);
     for (int i = 0; i < esbMessages.size(); i++) {
       EsbMessage esbMessage = esbMessages.get(i);
-      HttpEntityEnclosingRequestBase request = HttpRequestMethodFactory.create(parameterizedUri.build(esbMessage), method);
+      URI uri = parameterizedUri.build(esbMessage, uriParser);
+      HttpEntityEnclosingRequestBase request = HttpRequestMethodFactory.create(uri, method);
       parameterizedHeader.build(esbMessage).forEach(request::addHeader);
       request.setEntity(buildHttpEntity(bodyContents.get(i)));
       requests.add(request);
 
-      LOGGER.debug("Request URL: {}", parameterizedUri.build(esbMessage));
+      LOGGER.debug("Request URL: {}", uri);
       LOGGER.debug("Request headers: {}", parameterizedHeader.build(esbMessage));
       LOGGER.debug("Request content: {}", bodyContents.get(i));
       LOGGER.debug("Request method: {}", method);
