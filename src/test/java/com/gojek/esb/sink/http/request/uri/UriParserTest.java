@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -39,6 +39,22 @@ public class UriParserTest {
         StencilClient stencilClient = new ClassLoadStencilClient();
         testMessageProtoParser = new ProtoParser(stencilClient, TestMessage.class.getCanonicalName());
         bookingMessageProtoParser = new ProtoParser(stencilClient, BookingLogMessage.class.getCanonicalName());
+    }
+
+    @Test
+    public void shouldReturnTrueIfServiceUrlConainsComma(){
+        UriParser uriParser = new UriParser(testMessageProtoParser, "message");
+        String serviceUrl = "http://dummyurl.com/%s,6";
+
+        assertTrue(uriParser.isDynamicUrl(serviceUrl));
+    }
+
+    @Test
+    public void shouldReturnFalseIfServiceUrlDoesNotContainComma(){
+        UriParser uriParser = new UriParser(testMessageProtoParser, "message");
+        String serviceUrl = "http://dummyurl.com/";
+
+        assertFalse(uriParser.isDynamicUrl(serviceUrl));
     }
 
     @Test
