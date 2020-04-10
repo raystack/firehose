@@ -1,40 +1,64 @@
 package com.gojek.esb.sink.http.request;
 
-import static org.junit.Assert.assertTrue;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import com.gojek.de.stencil.client.StencilClient;
-
+import com.gojek.esb.sink.http.request.uri.UriParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.assertTrue;
+
 public class RequestFactoryTest {
-  @Mock
-  private StencilClient stencilClient;
+    @Mock
+    private StencilClient stencilClient;
+    @Mock
+    private UriParser uriParser;
 
-  private Map<String, String> configuration;
+    private Map<String, String> configuration;
 
-  @Before
-  public void setup() {
-    configuration = new HashMap<String, String>();
-  }
+    @Before
+    public void setup() {
+        configuration = new HashMap<String, String>();
+    }
 
-  @Test
-  public void shouldReturnBasicRequestWhenPrameterSourceIsDisabled() {
-    Request request = new RequestFactory(configuration, stencilClient).create();
+    @Test
+    public void shouldReturnBatchRequestWhenPrameterSourceIsDisabledAndServiceUrlIsNotParametrised() {
+        configuration.put("SERVICE_URL", "http://dummyurl.com/");
 
-    assertTrue(request instanceof BatchRequest);
-  }
+        Request request = new RequestFactory(configuration, stencilClient, uriParser).create();
 
-  @Test
-  public void shouldReturnParameterizedRequstWhenParameterSourceIsNotDisable() {
-    configuration.put("HTTP_SINK_PARAMETER_SOURCE", "key");
+        assertTrue(request instanceof BatchRequest);
+    }
 
-    Request request = new RequestFactory(configuration, stencilClient).create();
+    @Test
+    public void shouldReturnDynamicUrlRequestWhenPrameterSourceIsDisabledAndServiceUrlIsNotParametrised() {
+        configuration.put("SERVICE_URL", "http://dummyurl.com/%%s,6");
 
-    assertTrue(request instanceof ParameterizedRequest);
-  }
+        Request request = new RequestFactory(configuration, stencilClient, uriParser).create();
+
+        assertTrue(request instanceof DynamicUrlRequest);
+    }
+
+    @Test
+    public void shouldReturnParameterizedRequstWhenParameterSourceIsNotDisableAndPlacementTypeIsHeader() {
+        configuration.put("HTTP_SINK_PARAMETER_SOURCE", "key");
+        configuration.put("HTTP_SINK_PARAMETER_PLACEMENT", "header");
+
+        Request request = new RequestFactory(configuration, stencilClient, uriParser).create();
+
+        assertTrue(request instanceof ParameterizedRequest);
+    }
+
+    @Test
+    public void shouldReturnParameterizedRequstWhenParameterSourceIsNotDisableAndPlacementTypeIsQuery() {
+        configuration.put("HTTP_SINK_PARAMETER_SOURCE", "key");
+        configuration.put("HTTP_SINK_PARAMETER_PLACEMENT", "query");
+
+        Request request = new RequestFactory(configuration, stencilClient, uriParser).create();
+
+        assertTrue(request instanceof ParameterizedRequest);
+    }
 }

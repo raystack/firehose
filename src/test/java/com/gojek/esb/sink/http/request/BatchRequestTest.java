@@ -33,12 +33,11 @@ public class BatchRequestTest {
     @Mock
     private JsonBody body;
 
-    private EsbMessage esbMessage;
     private List<EsbMessage> esbMessages;
 
     @Before
     public void setup() throws URISyntaxException {
-        esbMessage = new EsbMessage(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
+        EsbMessage esbMessage = new EsbMessage(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
         esbMessages = Collections.singletonList(esbMessage);
         when(uri.build()).thenReturn(new URI("http://dummy.com"));
     }

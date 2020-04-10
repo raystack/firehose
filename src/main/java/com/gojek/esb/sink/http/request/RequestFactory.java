@@ -15,6 +15,7 @@ import com.gojek.esb.sink.http.request.header.BasicHeader;
 import com.gojek.esb.sink.http.request.header.ParameterizedHeader;
 import com.gojek.esb.sink.http.request.uri.BasicUri;
 import com.gojek.esb.sink.http.request.uri.ParameterizedUri;
+import com.gojek.esb.sink.http.request.uri.UriParser;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.util.Map;
@@ -25,12 +26,14 @@ public class RequestFactory {
 
     private Map<String, String> configuration;
     private HTTPSinkConfig httpSinkConfig;
+    private UriParser uriParser;
     private StencilClient stencilClient;
 
-    public RequestFactory(Map<String, String> configuration, StencilClient stencilClient) {
+    public RequestFactory(Map<String, String> configuration, StencilClient stencilClient, UriParser uriParser) {
         this.configuration = configuration;
         this.stencilClient = stencilClient;
         httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
+        this.uriParser = uriParser;
     }
 
     public Request create() {
@@ -38,7 +41,11 @@ public class RequestFactory {
         if (httpSinkConfig.getHttpSinkParameterSource() == HttpSinkParameterSourceType.DISABLED) {
             BasicUri basicUri = new BasicUri(httpSinkConfig.getServiceURL());
             BasicHeader basicHeader = new BasicHeader(httpSinkConfig.getHTTPHeaders());
-            return new BatchRequest(basicUri, basicHeader, createBody(), httpRequestMethod);
+            if (uriParser.isDynamicUrl(httpSinkConfig.getServiceURL())) {
+                return new DynamicUrlRequest(basicUri, basicHeader, createBody(), httpRequestMethod, uriParser);
+            } else {
+                return new BatchRequest(basicUri, basicHeader, createBody(), httpRequestMethod);
+            }
         }
 
 
@@ -53,12 +60,12 @@ public class RequestFactory {
         if (placementType == HEADER) {
             BasicUri basicUri = new BasicUri(httpSinkConfig.getServiceURL());
             ParameterizedHeader parameterizedHeader = new ParameterizedHeader(protoToFieldMapper, parameterSource, new BasicHeader(headers));
-            return new ParameterizedRequest(basicUri, parameterizedHeader, createBody(), httpRequestMethod);
+            return new ParameterizedRequest(basicUri, parameterizedHeader, createBody(), httpRequestMethod, uriParser);
 
         } else {
             ParameterizedUri parameterizedUri = new ParameterizedUri(httpSinkConfig.getServiceURL(), protoToFieldMapper, parameterSource);
             BasicHeader basicHeader = new BasicHeader(headers);
-            return new ParameterizedRequest(parameterizedUri, basicHeader, createBody(), httpRequestMethod);
+            return new ParameterizedRequest(parameterizedUri, basicHeader, createBody(), httpRequestMethod, uriParser);
         }
     }
 
