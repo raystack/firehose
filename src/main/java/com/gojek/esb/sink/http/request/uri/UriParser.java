@@ -20,7 +20,7 @@ public class UriParser {
         this.parserMode = parserMode;
     }
 
-    public boolean isDynamicUrl(String serviceUrl){
+    public boolean isDynamicUrl(String serviceUrl) {
         return serviceUrl.contains(",");
     }
 

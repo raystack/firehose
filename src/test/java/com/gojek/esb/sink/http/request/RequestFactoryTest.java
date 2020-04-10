@@ -9,7 +9,12 @@ import org.mockito.Mock;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 public class RequestFactoryTest {
     @Mock
@@ -21,12 +26,13 @@ public class RequestFactoryTest {
 
     @Before
     public void setup() {
+        initMocks(this);
         configuration = new HashMap<String, String>();
     }
 
     @Test
-    public void shouldReturnBatchRequestWhenPrameterSourceIsDisabledAndServiceUrlIsNotParametrised() {
-        configuration.put("SERVICE_URL", "http://dummyurl.com/");
+    public void shouldReturnBatchRequestWhenPrameterSourceIsDisabledAndServiceUrlIsConstant() {
+        when(uriParser.isDynamicUrl(any())).thenReturn(FALSE);
 
         Request request = new RequestFactory(configuration, stencilClient, uriParser).create();
 
@@ -35,7 +41,7 @@ public class RequestFactoryTest {
 
     @Test
     public void shouldReturnDynamicUrlRequestWhenPrameterSourceIsDisabledAndServiceUrlIsNotParametrised() {
-        configuration.put("SERVICE_URL", "http://dummyurl.com/%%s,6");
+        when(uriParser.isDynamicUrl(any())).thenReturn(TRUE);
 
         Request request = new RequestFactory(configuration, stencilClient, uriParser).create();
 
