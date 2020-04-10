@@ -27,12 +27,12 @@ public class ParameterizedUri implements SupportParameterizedUri {
   }
 
   @Override
-  public URI build(EsbMessage esbMessage) throws URISyntaxException {
+  public URI build(EsbMessage esbMessage, UriParser uriParser) throws URISyntaxException {
     Map<String, Object> paramMap = protoToFieldMapper
         .getFields((httpSinkParameterSource == HttpSinkParameterSourceType.KEY) ? esbMessage.getLogKey()
             : esbMessage.getLogMessage());
-
-    URIBuilder uriBuilder = new URIBuilder(baseUrl);
+    String parsedUrl = uriParser.parse(esbMessage, baseUrl);
+    URIBuilder uriBuilder = new URIBuilder(parsedUrl);
     paramMap.forEach((string, object) -> uriBuilder.addParameter(string, object.toString()));
 
     return uriBuilder.build();
