@@ -42,7 +42,7 @@ public class UriParserTest {
     }
 
     @Test
-    public void shouldReturnTrueIfServiceUrlConainsComma(){
+    public void shouldReturnTrueIfServiceUrlConainsComma() {
         UriParser uriParser = new UriParser(testMessageProtoParser, "message");
         String serviceUrl = "http://dummyurl.com/%s,6";
 
@@ -50,7 +50,7 @@ public class UriParserTest {
     }
 
     @Test
-    public void shouldReturnFalseIfServiceUrlDoesNotContainComma(){
+    public void shouldReturnFalseIfServiceUrlDoesNotContainComma() {
         UriParser uriParser = new UriParser(testMessageProtoParser, "message");
         String serviceUrl = "http://dummyurl.com/";
 
