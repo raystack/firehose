@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.gojek.auth.OAuth2Credential;
 import com.gojek.de.stencil.client.StencilClient;
+import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.HTTPSinkConfig;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
@@ -12,6 +13,7 @@ import com.gojek.esb.sink.SinkFactory;
 import com.gojek.esb.sink.http.request.Request;
 import com.gojek.esb.sink.http.request.RequestFactory;
 
+import com.gojek.esb.sink.http.request.uri.UriParser;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -35,7 +37,9 @@ public class HttpSinkFactory implements SinkFactory {
 
     Instrumentation instrumentation = new Instrumentation(statsDReporter, HttpSink.class);
 
-    Request request = new RequestFactory(configuration, stencilClient).create();
+    UriParser uriParser = new UriParser(new ProtoParser(stencilClient, httpSinkConfig.getProtoSchema()), httpSinkConfig.getKafkaRecordParserMode());
+
+    Request request = new RequestFactory(configuration, stencilClient, uriParser).create();
 
     return new HttpSink(instrumentation, request, closeableHttpClient, stencilClient, httpSinkConfig.retryStatusCodeRanges());
   }

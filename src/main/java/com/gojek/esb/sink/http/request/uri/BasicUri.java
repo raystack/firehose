@@ -20,8 +20,8 @@ public class BasicUri implements SupportParameterizedUri {
   }
 
   @Override
-  public URI build(EsbMessage esbMessage) throws URISyntaxException {
-    return build();
+  public URI build(EsbMessage esbMessage, UriParser uriParser) throws URISyntaxException {
+    return new URI(uriParser.parse(esbMessage, baseUrl));
   }
 
 }

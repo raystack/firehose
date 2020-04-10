@@ -11,6 +11,5 @@ import java.util.List;
  * Request interface for building HTTP method. Request will be used by {@link HttpSink} to make actual call.
  */
 public interface Request {
-
-  List<HttpEntityEnclosingRequestBase> build(List<EsbMessage> esbMessages) throws URISyntaxException, DeserializerException;
+    List<HttpEntityEnclosingRequestBase> build(List<EsbMessage> esbMessages) throws URISyntaxException, DeserializerException;
 }
