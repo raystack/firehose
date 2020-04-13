@@ -64,8 +64,8 @@ public class GrpcClientTest {
                 .build()
                 .start();
         Map<String, String> config = new HashMap<>();
-        config.put("SERVICE_HOST", "localhost");
-        config.put("SERVICE_PORT", "5000");
+        config.put("GRPC_SERVICE_HOST", "localhost");
+        config.put("GRPC_SERVICE_PORT", "5000");
         config.put("GRPC_METHOD_URL", "com.gojek.esb.consumer.TestServer/TestRpcMethod");
         grpcConfig = ConfigFactory.create(GrpcConfig.class, config);
         ChannelPool pool = ChannelPool.create("localhost", 5000, 1);
