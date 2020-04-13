@@ -48,8 +48,8 @@ public class GrpcSinkFactoryTest {
 
         Map<String, String> config = new HashMap<>();
         config.put("GRPC_METHOD_URL", "com.gojek.esb.consumer.TestServer/TestRpcMethod");
-        config.put("SERVICE_HOST", "localhost");
-        config.put("SERVICE_PORT", "5000");
+        config.put("GRPC_SERVICE_HOST", "localhost");
+        config.put("GRPC_SERVICE_PORT", "5000");
 
         GrpcSinkFactory grpcSinkFactory = new GrpcSinkFactory();
 
