@@ -2,15 +2,11 @@ package com.gojek.esb.sink.grpc;
 
 
 import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.esb.config.ExponentialBackoffProviderConfiguraton;
 import com.gojek.esb.config.GrpcConfig;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.SinkFactory;
 import com.gojek.esb.sink.grpc.client.GrpcClient;
-import com.gojek.esb.sinkdecorator.BackOff;
-import com.gojek.esb.sinkdecorator.BackOffProvider;
-import com.gojek.esb.sinkdecorator.ExponentialBackOffProvider;
 import com.gopay.grpc.ChannelPool;
 import com.gopay.grpc.ChannelPoolException;
 import com.gopay.grpc.ConsulChannelPool;
@@ -32,9 +28,6 @@ public class GrpcSinkFactory implements SinkFactory {
 
     public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter) {
         GrpcConfig grpcConfig = ConfigFactory.create(GrpcConfig.class, configuration);
-        ExponentialBackoffProviderConfiguraton backoffConfig = ConfigFactory.create(
-                ExponentialBackoffProviderConfiguraton.class, configuration);
-
         ChannelPool connection = null;
 
         try {
@@ -44,12 +37,6 @@ public class GrpcSinkFactory implements SinkFactory {
         }
 
         GrpcClient grpcClient = new GrpcClient(connection, grpcConfig);
-
-        BackOffProvider backOffProvider = new ExponentialBackOffProvider(
-                backoffConfig.exponentialBackoffInitialTimeInMs(),
-                backoffConfig.exponentialBackoffRate(),
-                backoffConfig.exponentialBackoffMaximumBackoffInMs(),
-                statsDReporter, BackOff.withInstrumentationFactory(statsDReporter));
 
         return new GrpcSink(grpcClient);
     }
@@ -68,14 +55,14 @@ public class GrpcSinkFactory implements SinkFactory {
                 NegotiationType.PLAINTEXT);
     }
 
-    private ChannelPool getChannelPoolWithServiceDiscovery(GrpcConfig config) throws ChannelPoolException {
-        return ConsulChannelPool.create(config.getConsulHost(),
-                config.getConsulPort(),
-                config.getConsulServiceName(),
-                config.getConnectionPoolSize(),
-                config.getConnectionPoolMaxIdle(),
-                config.getConnectionPoolMinIdle(),
-                config.getConsulOverloadedThreshold(),
+    private ChannelPool getChannelPoolWithServiceDiscovery(GrpcConfig configuration) throws ChannelPoolException {
+        return ConsulChannelPool.create(configuration.getServiceHost(),
+                configuration.getServicePort(),
+                configuration.getConsulServiceName(),
+                configuration.getConnectionPoolSize(),
+                configuration.getConnectionPoolMaxIdle(),
+                configuration.getConnectionPoolMinIdle(),
+                configuration.getConsulOverloadedThreshold(),
                 "grpc-pool");
     }
 
