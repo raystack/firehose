@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package com.gojek.esb.consumer;
+
+option java_multiple_files = true;
+option java_package = "com.gojek.esb.consumer";
+option java_outer_classname = "SampleGrpcServerProto";
+
+service TestServer {
+  rpc TestRpcMethod (TestGrpcRequest) returns (TestGrpcResponse) {}
+}
+
+message TestGrpcRequest {
+  string field1 = 1;
+  string field2 = 2;
+}
+
+message Error {
+  string code = 1;
+  string entity = 2;
+}
+
+message TestGrpcResponse {
+  bool success = 1;
+  repeated Error error = 2;
+  string field3 = 3;
+  string field4 = 4;
+}
