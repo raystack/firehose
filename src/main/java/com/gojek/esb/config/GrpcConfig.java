@@ -9,10 +9,10 @@ import java.util.Map;
 public interface GrpcConfig extends AppConfig {
 
 
-    @Config.Key("SERVICE_HOST")
+    @Config.Key("GRPC_SERVICE_HOST")
     String getServiceHost();
 
-    @Config.Key("SERVICE_PORT")
+    @Config.Key("GRPC_SERVICE_PORT")
     Integer getServicePort();
 
     @Config.Key("CONNECTION_POOL_SIZE")
@@ -38,13 +38,13 @@ public interface GrpcConfig extends AppConfig {
     @Config.DefaultValue("false")
     Boolean getConsulServiceDiscovery();
 
-    @Config.Key("CONSUL_CLIENT_HOST")
-    @Config.DefaultValue("localhost")
-    String getConsulHost();
-
-    @Config.Key("CONSUL_CLIENT_PORT")
-    @Config.DefaultValue("8500")
-    Integer getConsulPort();
+//    @Config.Key("CONSUL_CLIENT_HOST")
+//    @Config.DefaultValue("localhost")
+//    String getConsulHost();
+//
+//    @Config.Key("CONSUL_CLIENT_PORT")
+//    @Config.DefaultValue("8500")
+//    Integer getConsulPort();
 
     @Config.Key("CONSUL_SERVICE_NAME")
     String getConsulServiceName();
