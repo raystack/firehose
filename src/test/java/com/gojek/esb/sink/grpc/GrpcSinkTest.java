@@ -4,6 +4,7 @@ package com.gojek.esb.sink.grpc;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.grpc.response.GrpcResponse;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.grpc.client.GrpcClient;
 import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.junit.Before;
@@ -17,10 +18,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 
@@ -34,10 +32,13 @@ public class GrpcSinkTest {
     @Mock
     private GrpcClient grpcClient;
 
+    @Mock
+    private Instrumentation instrumentation;
+
     @Before
     public void setUp() {
         initMocks(this);
-        sink = new GrpcSink(grpcClient);
+        sink = new GrpcSink(instrumentation, grpcClient);
     }
 
     @Test
