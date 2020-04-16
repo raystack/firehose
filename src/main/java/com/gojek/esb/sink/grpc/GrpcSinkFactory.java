@@ -3,10 +3,12 @@ package com.gojek.esb.sink.grpc;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.GrpcConfig;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.SinkFactory;
 import com.gojek.esb.sink.grpc.client.GrpcClient;
+import com.gojek.esb.sink.http.HttpSink;
 import com.gopay.grpc.ChannelPool;
 import com.gopay.grpc.ChannelPoolException;
 import com.gopay.grpc.ConsulChannelPool;
@@ -25,8 +27,8 @@ import java.util.Map;
 
 public class GrpcSinkFactory implements SinkFactory {
 
-
-    public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter) {
+    @Override
+    public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         GrpcConfig grpcConfig = ConfigFactory.create(GrpcConfig.class, configuration);
         ChannelPool connection = null;
 
@@ -36,9 +38,11 @@ public class GrpcSinkFactory implements SinkFactory {
             System.out.println("Channel Pool Exception: " + e.getMessage());
         }
 
+        Instrumentation instrumentation = new Instrumentation(statsDReporter, HttpSink.class);
+
         GrpcClient grpcClient = new GrpcClient(connection, grpcConfig);
 
-        return new GrpcSink(grpcClient);
+        return new GrpcSink(instrumentation, grpcClient);
     }
 
     private ChannelPool createConnection(GrpcConfig configuration) throws ChannelPoolException {
@@ -66,8 +70,5 @@ public class GrpcSinkFactory implements SinkFactory {
                 "grpc-pool");
     }
 
-    @Override
-    public Sink create(Map<String, String> configuration, StatsDReporter client, StencilClient stencilClient) {
-        return create(configuration, client);
-    }
+
 }

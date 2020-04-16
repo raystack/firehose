@@ -1,6 +1,7 @@
 package com.gojek.esb.sink.grpc;
 
 
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.TestServerGrpc;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.StatsDReporter;
@@ -26,6 +27,9 @@ public class GrpcSinkFactoryTest {
 
     @Mock
     private TestServerGrpc.TestServerImplBase testGrpcService;
+
+    @Mock
+    private StencilClient stencilClient;
 
 //    private static ConsulClient consulClient;
 
@@ -53,7 +57,7 @@ public class GrpcSinkFactoryTest {
 
         GrpcSinkFactory grpcSinkFactory = new GrpcSinkFactory();
 
-        Sink sink = grpcSinkFactory.create(config, statsDReporter);
+        Sink sink = grpcSinkFactory.create(config, statsDReporter, stencilClient);
 
         Assert.assertNotNull(sink);
         server.shutdownNow();

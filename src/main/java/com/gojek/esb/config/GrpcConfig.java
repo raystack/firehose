@@ -38,14 +38,6 @@ public interface GrpcConfig extends AppConfig {
     @Config.DefaultValue("false")
     Boolean getConsulServiceDiscovery();
 
-//    @Config.Key("CONSUL_CLIENT_HOST")
-//    @Config.DefaultValue("localhost")
-//    String getConsulHost();
-//
-//    @Config.Key("CONSUL_CLIENT_PORT")
-//    @Config.DefaultValue("8500")
-//    Integer getConsulPort();
-
     @Config.Key("CONSUL_SERVICE_NAME")
     String getConsulServiceName();
 
