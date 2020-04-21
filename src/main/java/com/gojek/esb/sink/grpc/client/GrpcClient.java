@@ -29,8 +29,6 @@ public class GrpcClient {
     private final GrpcConfig grpcConfig;
 
     public GrpcClient(ChannelPool channelPool, GrpcConfig grpcConfig) {
-
-        System.out.println(grpcConfig.getServiceHost() + " " + grpcConfig.getServicePort() + " " + grpcConfig.getGrpcMethodUrl());
         this.channelPool = channelPool;
         this.grpcConfig = grpcConfig;
     }
@@ -42,6 +40,7 @@ public class GrpcClient {
         MethodDescriptor.Marshaller<byte[]> marshaller = getMarshaller();
         ManagedChannel managedChannel = null;
         GrpcResponse grpcResponse;
+
         try {
             if (channelPool == null) {
                 throw new IllegalStateException("ConnectionPool was not initiated successfully");
@@ -67,7 +66,7 @@ public class GrpcClient {
             grpcResponse = GrpcResponse.parseFrom(response);
 
         } catch (Exception e) {
-            System.out.println("Failed to send request {} " + e.getMessage());
+//            System.out.println("Failed to send request {} " + e.getMessage());
             grpcResponse = GrpcResponse
                     .newBuilder()
                     .setSuccess(false)
