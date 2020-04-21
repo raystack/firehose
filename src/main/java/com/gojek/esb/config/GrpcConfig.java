@@ -1,10 +1,7 @@
 package com.gojek.esb.config;
 
-
-import com.gojek.esb.config.converter.RangeToHashMapConverter;
 import org.aeonbits.owner.Config;
 
-import java.util.Map;
 
 public interface GrpcConfig extends AppConfig {
 
@@ -45,9 +42,5 @@ public interface GrpcConfig extends AppConfig {
     @Config.DefaultValue("40")
     float getConsulOverloadedThreshold();
 
-    @Config.Key("GRPCSINK_RETRY_STATUS_CODE_RANGES")
-    @Config.DefaultValue("500-500")
-    @Config.ConverterClass(RangeToHashMapConverter.class)
-    Map<Integer, Boolean> retryStatusCodeRanges();
 
 }

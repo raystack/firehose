@@ -1,6 +1,7 @@
 package com.gojek.esb.sink.grpc;
 
 
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.grpc.response.GrpcResponse;
@@ -33,12 +34,15 @@ public class GrpcSinkTest {
     private GrpcClient grpcClient;
 
     @Mock
+    private StencilClient stencilClient;
+
+    @Mock
     private Instrumentation instrumentation;
 
     @Before
     public void setUp() {
         initMocks(this);
-        sink = new GrpcSink(instrumentation, grpcClient);
+        sink = new GrpcSink(instrumentation, grpcClient, stencilClient);
     }
 
     @Test

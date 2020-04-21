@@ -1,6 +1,7 @@
 package com.gojek.esb.sink.grpc;
 
 
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.grpc.response.GrpcResponse;
@@ -22,9 +23,12 @@ public class GrpcSink extends AbstractSink {
 
     private List<EsbMessage> esbMessages;
 
-    public GrpcSink(Instrumentation instrumentation, GrpcClient grpcClient) {
+    private StencilClient stencilClient;
+
+    public GrpcSink(Instrumentation instrumentation, GrpcClient grpcClient, StencilClient stencilClient) {
     super(instrumentation, "grpc");
     this.grpcClient = grpcClient;
+    this.stencilClient = stencilClient;
     }
 
 
@@ -38,6 +42,7 @@ public class GrpcSink extends AbstractSink {
                 failedEsbMessages.add(message);
             }
         }
+
         return failedEsbMessages;
     }
 
@@ -48,6 +53,6 @@ public class GrpcSink extends AbstractSink {
 
     @Override
     public void close() throws IOException {
-
+        stencilClient.close();
     }
 }
