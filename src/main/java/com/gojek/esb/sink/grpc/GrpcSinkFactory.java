@@ -1,14 +1,12 @@
 package com.gojek.esb.sink.grpc;
 
-
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.GrpcConfig;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.sink.Sink;
+import com.gojek.esb.sink.AbstractSink;
 import com.gojek.esb.sink.SinkFactory;
 import com.gojek.esb.sink.grpc.client.GrpcClient;
-import com.gojek.esb.sink.http.HttpSink;
 import com.gopay.grpc.ChannelPool;
 import com.gopay.grpc.ChannelPoolException;
 import com.gopay.grpc.ConsulChannelPool;
@@ -28,21 +26,21 @@ import java.util.Map;
 public class GrpcSinkFactory implements SinkFactory {
 
     @Override
-    public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
+    public AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         GrpcConfig grpcConfig = ConfigFactory.create(GrpcConfig.class, configuration);
         ChannelPool connection = null;
 
         try {
             connection = createConnection(grpcConfig);
         } catch (ChannelPoolException e) {
-            System.out.println("Channel Pool Exception: " + e.getMessage());
+            e.printStackTrace();
         }
 
-        Instrumentation instrumentation = new Instrumentation(statsDReporter, HttpSink.class);
+        Instrumentation instrumentation = new Instrumentation(statsDReporter, GrpcSink.class);
 
         GrpcClient grpcClient = new GrpcClient(connection, grpcConfig);
 
-        return new GrpcSink(instrumentation, grpcClient);
+        return new GrpcSink(instrumentation, grpcClient, stencilClient);
     }
 
     private ChannelPool createConnection(GrpcConfig configuration) throws ChannelPoolException {
@@ -60,15 +58,14 @@ public class GrpcSinkFactory implements SinkFactory {
     }
 
     private ChannelPool getChannelPoolWithServiceDiscovery(GrpcConfig configuration) throws ChannelPoolException {
-        return ConsulChannelPool.create(configuration.getServiceHost(),
-                configuration.getServicePort(),
-                configuration.getConsulServiceName(),
-                configuration.getConnectionPoolSize(),
-                configuration.getConnectionPoolMaxIdle(),
-                configuration.getConnectionPoolMinIdle(),
-                configuration.getConsulOverloadedThreshold(),
-                "grpc-pool");
-    }
-
+            return ConsulChannelPool.create(configuration.getServiceHost(),
+                    configuration.getServicePort(),
+                    configuration.getConsulServiceName(),
+                    configuration.getConnectionPoolSize(),
+                    configuration.getConnectionPoolMaxIdle(),
+                    configuration.getConnectionPoolMinIdle(),
+                    configuration.getConsulOverloadedThreshold(),
+                    "grpc-pool");
+        }
 
 }
