@@ -7,6 +7,7 @@ import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.grpc.response.GrpcResponse;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.grpc.client.GrpcClient;
+import com.google.protobuf.DynamicMessage;
 import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +51,8 @@ public class GrpcSinkTest {
         when(esbMessage.getLogMessage()).thenReturn(new byte[]{});
         RecordHeaders headers = new RecordHeaders();
         when(esbMessage.getHeaders()).thenReturn(headers);
-        when(grpcClient.execute(any(byte[].class), any(RecordHeaders.class))).thenReturn(GrpcResponse.newBuilder().setSuccess(true).build());
+        GrpcResponse build = GrpcResponse.newBuilder().setSuccess(true).build();
+        when(grpcClient.execute(any(byte[].class), any(RecordHeaders.class))).thenReturn(DynamicMessage.parseFrom(build.getDescriptorForType(), build.toByteArray()));
 
         sink.pushMessage(Collections.singletonList(esbMessage));
         verify(grpcClient, times(1)).execute(any(byte[].class), eq(headers));
@@ -60,7 +62,8 @@ public class GrpcSinkTest {
     public void shouldReturnBackListOfFailedMessages() throws IOException, DeserializerException {
         when(esbMessage.getLogMessage()).thenReturn(new byte[]{});
         when(esbMessage.getHeaders()).thenReturn(new RecordHeaders());
-        when(grpcClient.execute(any(), any(RecordHeaders.class))).thenReturn(GrpcResponse.newBuilder().setSuccess(false).build());
+        GrpcResponse build = GrpcResponse.newBuilder().setSuccess(false).build();
+        when(grpcClient.execute(any(), any(RecordHeaders.class))).thenReturn(DynamicMessage.parseFrom(build.getDescriptorForType(), build.toByteArray()));
         List<EsbMessage> failedMessages = sink.pushMessage(Collections.singletonList(esbMessage));
 
         assertFalse(failedMessages.isEmpty());
