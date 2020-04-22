@@ -38,7 +38,7 @@ public class GrpcSinkFactory implements SinkFactory {
 
         Instrumentation instrumentation = new Instrumentation(statsDReporter, GrpcSink.class);
 
-        GrpcClient grpcClient = new GrpcClient(connection, grpcConfig);
+        GrpcClient grpcClient = new GrpcClient(connection, grpcConfig, stencilClient);
 
         return new GrpcSink(instrumentation, grpcClient, stencilClient);
     }

@@ -1,16 +1,18 @@
 package com.gojek.esb.sink.grpc.client;
 
 
+import com.gojek.de.stencil.client.StencilClient;
+import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.GrpcConfig;
 import com.gojek.esb.grpc.response.GrpcResponse;
+import com.google.protobuf.DynamicMessage;
 import com.gopay.grpc.ChannelPool;
 import com.newrelic.api.agent.Trace;
-
+import io.grpc.CallOptions;
+import io.grpc.ClientInterceptors;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
-import io.grpc.ClientInterceptors;
-import io.grpc.CallOptions;
 import io.grpc.MethodDescriptor;
 import io.grpc.stub.ClientCalls;
 import io.grpc.stub.MetadataUtils;
@@ -27,19 +29,21 @@ public class GrpcClient {
 
     private ChannelPool channelPool;
     private final GrpcConfig grpcConfig;
+    private ProtoParser protoParser;
 
-    public GrpcClient(ChannelPool channelPool, GrpcConfig grpcConfig) {
+    public GrpcClient(ChannelPool channelPool, GrpcConfig grpcConfig, StencilClient stencilClient) {
         this.channelPool = channelPool;
         this.grpcConfig = grpcConfig;
+        this.protoParser = new ProtoParser(stencilClient, grpcConfig.getGrpcResponseProtoSchema());
     }
 
 
     @Trace(dispatcher = true)
-    public GrpcResponse execute(byte[] logMessage, Headers headers) {
+    public DynamicMessage execute(byte[] logMessage, Headers headers) {
 
         MethodDescriptor.Marshaller<byte[]> marshaller = getMarshaller();
         ManagedChannel managedChannel = null;
-        GrpcResponse grpcResponse;
+        DynamicMessage dynamicMessage;
 
         try {
             if (channelPool == null) {
@@ -53,30 +57,28 @@ public class GrpcClient {
             }
 
             Channel decoratedChannel = ClientInterceptors.intercept(managedChannel,
-                    MetadataUtils.newAttachHeadersInterceptor(metadata));
+                     MetadataUtils.newAttachHeadersInterceptor(metadata));
             byte[] response = ClientCalls.blockingUnaryCall(
                     decoratedChannel,
-                    MethodDescriptor.create(
-                            MethodDescriptor.MethodType.UNARY,
-                            grpcConfig.getGrpcMethodUrl(),
-                            marshaller,
-                            marshaller),
+                    MethodDescriptor.newBuilder(marshaller, marshaller)
+                            .setType(MethodDescriptor.MethodType.UNARY)
+                            .setFullMethodName(grpcConfig.getGrpcMethodUrl())
+                            .build(),
                     CallOptions.DEFAULT,
                     logMessage);
-            grpcResponse = GrpcResponse.parseFrom(response);
+
+            dynamicMessage = protoParser.parse(response);
 
         } catch (Exception e) {
-//            System.out.println("Failed to send request {} " + e.getMessage());
-            grpcResponse = GrpcResponse
-                    .newBuilder()
-                    .setSuccess(false)
-                    .build();
+
+            dynamicMessage = DynamicMessage.newBuilder(GrpcResponse.getDescriptor()).build();
+
         } finally {
             if (managedChannel != null) {
                 channelPool.returnObject(managedChannel);
             }
         }
-        return grpcResponse;
+        return dynamicMessage;
     }
 
     private MethodDescriptor.Marshaller<byte[]> getMarshaller() {
@@ -96,4 +98,5 @@ public class GrpcClient {
             }
         };
     }
+
 }

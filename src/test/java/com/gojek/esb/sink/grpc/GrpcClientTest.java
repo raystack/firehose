@@ -1,14 +1,16 @@
 package com.gojek.esb.sink.grpc;
 
 
+import com.gojek.de.stencil.StencilClientFactory;
+import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.GrpcConfig;
 import com.gojek.esb.consumer.Error;
 import com.gojek.esb.consumer.TestGrpcRequest;
 import com.gojek.esb.consumer.TestGrpcResponse;
 import com.gojek.esb.consumer.TestServerGrpc;
-import com.gojek.esb.grpc.response.GrpcResponse;
 import com.gojek.esb.sink.grpc.client.GrpcClient;
 import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.DynamicMessage;
 import com.gopay.grpc.ChannelPool;
 import com.gopay.grpc.ChannelPoolException;
 import io.grpc.Metadata;
@@ -50,6 +52,7 @@ public class GrpcClientTest {
     private RecordHeaders headers;
     private static final List<String> HEADER_KEYS = Arrays.asList("test-header-key-1", "test-header-key-2");
     private HeaderTestInterceptor headerTestInterceptor;
+    private StencilClient stencilClient;
 
 
     @Before
@@ -67,12 +70,14 @@ public class GrpcClientTest {
         config.put("GRPC_SERVICE_HOST", "localhost");
         config.put("GRPC_SERVICE_PORT", "5000");
         config.put("GRPC_METHOD_URL", "com.gojek.esb.consumer.TestServer/TestRpcMethod");
+        config.put("GRPC_RESPONSE_PROTO_SCHEMA", "com.gojek.esb.consumer.TestGrpcResponse");
+
         grpcConfig = ConfigFactory.create(GrpcConfig.class, config);
         ChannelPool pool = ChannelPool.create("localhost", 5000, 1);
-        grpcClient = new GrpcClient(pool, grpcConfig);
+        stencilClient = StencilClientFactory.getClient();
+        grpcClient = new GrpcClient(pool, grpcConfig, stencilClient);
         headers = new RecordHeaders();
     }
-
     @After
     public void tearDown() {
         if (server != null) {
@@ -116,8 +121,9 @@ public class GrpcClientTest {
                 .setField1("field1")
                 .setField2("field2")
                 .build();
-        GrpcResponse grpcResponse = grpcClient.execute(request.toByteArray(), headers);
-        assertTrue(grpcResponse.getSuccess());
+        DynamicMessage response = grpcClient.execute(request.toByteArray(), headers);
+        System.out.println(response.toString());
+        assertTrue(Boolean.parseBoolean(String.valueOf(response.getField(TestGrpcResponse.getDescriptor().findFieldByName("success")))));
     }
 
     @Test
@@ -150,14 +156,14 @@ public class GrpcClientTest {
                 .setField1("field1")
                 .setField2("field2")
                 .build();
-        GrpcResponse grpcResponse = grpcClient.execute(request.toByteArray(), headers);
-        assertFalse(grpcResponse.getSuccess());
+        DynamicMessage response = grpcClient.execute(request.toByteArray(), headers);
+        assertFalse(Boolean.parseBoolean(String.valueOf(response.getField(response.getDescriptorForType().findFieldByName("success")))));
     }
 
     @Test
     public void shouldReturnErrorWhenBytesAreNull() {
-        GrpcResponse grpcResponse = grpcClient.execute(null, headers);
-        assertFalse(grpcResponse.getSuccess());
+        DynamicMessage response = grpcClient.execute(null, headers);
+        assertFalse(Boolean.parseBoolean(String.valueOf(response.getField(response.getDescriptorForType().findFieldByName("success")))));
     }
 
     @Test
@@ -167,19 +173,19 @@ public class GrpcClientTest {
                 .setField1("field1")
                 .setField2("field2")
                 .build();
-        GrpcResponse grpcResponse = grpcClient.execute(request.toByteArray(), headers);
-        assertFalse(grpcResponse.getSuccess());
+        DynamicMessage response = grpcClient.execute(request.toByteArray(), headers);
+        assertFalse(Boolean.parseBoolean(String.valueOf(response.getField(response.getDescriptorForType().findFieldByName("success")))));
     }
 
     @Test
     public void shouldReturnErrorWhenChannelPoolIsNull() {
-        GrpcClient client = new GrpcClient(null, grpcConfig);
+        GrpcClient client = new GrpcClient(null, grpcConfig, stencilClient);
         TestGrpcRequest request = TestGrpcRequest.newBuilder()
                 .setField1("field1")
                 .setField2("field2")
                 .build();
-        GrpcResponse grpcResponse = client.execute(request.toByteArray(), headers);
-        assertFalse(grpcResponse.getSuccess());
+        DynamicMessage response = client.execute(request.toByteArray(), headers);
+        assertFalse(Boolean.parseBoolean(String.valueOf(response.getField(response.getDescriptorForType().findFieldByName("success")))));
     }
 
     private <T extends AbstractMessage> Stubber doAnswerProtoReponse(T response) {

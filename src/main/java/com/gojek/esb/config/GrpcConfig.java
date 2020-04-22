@@ -5,7 +5,6 @@ import org.aeonbits.owner.Config;
 
 public interface GrpcConfig extends AppConfig {
 
-
     @Config.Key("GRPC_SERVICE_HOST")
     String getServiceHost();
 
@@ -42,5 +41,7 @@ public interface GrpcConfig extends AppConfig {
     @Config.DefaultValue("40")
     float getConsulOverloadedThreshold();
 
+    @Config.Key("GRPC_RESPONSE_PROTO_SCHEMA")
+    String getGrpcResponseProtoSchema();
 
 }

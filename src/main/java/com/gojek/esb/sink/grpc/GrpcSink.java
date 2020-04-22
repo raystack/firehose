@@ -4,10 +4,10 @@ package com.gojek.esb.sink.grpc;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.grpc.response.GrpcResponse;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.AbstractSink;
 import com.gojek.esb.sink.grpc.client.GrpcClient;
+import com.google.protobuf.DynamicMessage;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,10 +25,12 @@ public class GrpcSink extends AbstractSink {
 
     private StencilClient stencilClient;
 
+
+
     public GrpcSink(Instrumentation instrumentation, GrpcClient grpcClient, StencilClient stencilClient) {
-    super(instrumentation, "grpc");
-    this.grpcClient = grpcClient;
-    this.stencilClient = stencilClient;
+        super(instrumentation, "grpc");
+        this.grpcClient = grpcClient;
+        this.stencilClient = stencilClient;
     }
 
 
@@ -37,8 +39,12 @@ public class GrpcSink extends AbstractSink {
         ArrayList<EsbMessage> failedEsbMessages = new ArrayList<>();
 
         for (EsbMessage message : this.esbMessages) {
-            GrpcResponse response = grpcClient.execute(message.getLogMessage(), message.getHeaders());
-            if (!response.getSuccess()) {
+            DynamicMessage response = grpcClient.execute(message.getLogMessage(), message.getHeaders());
+
+            Object m = response.getField(response.getDescriptorForType().findFieldByName("success"));
+            boolean success = (m != null) ? Boolean.valueOf(String.valueOf(m)) : false;
+
+            if (!success) {
                 failedEsbMessages.add(message);
             }
         }
@@ -53,6 +59,7 @@ public class GrpcSink extends AbstractSink {
 
     @Override
     public void close() throws IOException {
+        this.esbMessages = new ArrayList<>();
         stencilClient.close();
     }
 }
