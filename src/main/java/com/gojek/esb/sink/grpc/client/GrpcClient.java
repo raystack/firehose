@@ -4,7 +4,7 @@ package com.gojek.esb.sink.grpc.client;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.GrpcConfig;
-import com.gojek.esb.grpc.response.GrpcResponse;
+import com.gojek.esb.de.meta.GrpcResponse;
 import com.google.protobuf.DynamicMessage;
 import com.gopay.grpc.ChannelPool;
 import com.newrelic.api.agent.Trace;
