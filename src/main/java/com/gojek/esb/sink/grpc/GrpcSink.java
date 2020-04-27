@@ -8,6 +8,8 @@ import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.AbstractSink;
 import com.gojek.esb.sink.grpc.client.GrpcClient;
 import com.google.protobuf.DynamicMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,6 +21,7 @@ import java.util.List;
  */
 public class GrpcSink extends AbstractSink {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(GrpcSink.class);
     private final GrpcClient grpcClient;
 
     private List<EsbMessage> esbMessages;
@@ -40,11 +43,11 @@ public class GrpcSink extends AbstractSink {
 
         for (EsbMessage message : this.esbMessages) {
             DynamicMessage response = grpcClient.execute(message.getLogMessage(), message.getHeaders());
-
             Object m = response.getField(response.getDescriptorForType().findFieldByName("success"));
             boolean success = (m != null) ? Boolean.valueOf(String.valueOf(m)) : false;
 
             if (!success) {
+                LOGGER.info("Grpc Service returned error");
                 failedEsbMessages.add(message);
             }
         }
