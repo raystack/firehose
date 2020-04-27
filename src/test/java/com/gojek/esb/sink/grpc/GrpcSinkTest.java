@@ -3,8 +3,8 @@ package com.gojek.esb.sink.grpc;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.de.meta.GrpcResponse;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.grpc.response.GrpcResponse;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.grpc.client.GrpcClient;
 import com.google.protobuf.DynamicMessage;
