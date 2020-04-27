@@ -19,6 +19,8 @@ import io.grpc.stub.MetadataUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -26,7 +28,7 @@ import java.io.InputStream;
 
 
 public class GrpcClient {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(GrpcClient.class);
     private ChannelPool channelPool;
     private final GrpcConfig grpcConfig;
     private ProtoParser protoParser;
@@ -71,6 +73,7 @@ public class GrpcClient {
 
         } catch (Exception e) {
 
+            LOGGER.info(e.getMessage());
             dynamicMessage = DynamicMessage.newBuilder(GrpcResponse.getDescriptor()).build();
 
         } finally {
