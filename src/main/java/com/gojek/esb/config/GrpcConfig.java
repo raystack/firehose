@@ -42,6 +42,7 @@ public interface GrpcConfig extends AppConfig {
     float getConsulOverloadedThreshold();
 
     @Config.Key("GRPC_RESPONSE_PROTO_SCHEMA")
+    @Config.DefaultValue("com.gojek.esb.de.meta.GrpcResponse")
     String getGrpcResponseProtoSchema();
 
 }
