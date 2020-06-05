@@ -27,7 +27,7 @@ public class ESRequestHandlerFactoryTest {
     public void shouldReturnInsertRequestHandler() {
         when(esSinkConfig.isUpdateOnlyMode()).thenReturn(false);
         ESRequestHandlerFactory esRequestHandlerFactory = new ESRequestHandlerFactory(esSinkConfig, "id",
-                ESMessageType.JSON, jsonSerializer, "customer_id", "booking");
+                ESMessageType.JSON, jsonSerializer, "customer_id", "booking", "order_number");
         ESRequestHandler requestHandler = esRequestHandlerFactory.getRequestHandler();
 
         assertEquals(ESUpsertRequestHandler.class, requestHandler.getClass());
@@ -37,7 +37,7 @@ public class ESRequestHandlerFactoryTest {
     public void shouldReturnUpdateRequestHandler() {
         when(esSinkConfig.isUpdateOnlyMode()).thenReturn(true);
         ESRequestHandlerFactory esRequestHandlerFactory = new ESRequestHandlerFactory(esSinkConfig, "id",
-                ESMessageType.JSON, jsonSerializer, "customer_id", "booking");
+                ESMessageType.JSON, jsonSerializer, "customer_id", "booking", "order_number");
         ESRequestHandler requestHandler = esRequestHandlerFactory.getRequestHandler();
 
         assertEquals(ESUpdateRequestHandler.class, requestHandler.getClass());
