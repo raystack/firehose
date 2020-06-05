@@ -42,4 +42,7 @@ public interface ESSinkConfig extends AppConfig {
     @Key("ES_PRESERVE_PROTO_FIELD_NAMES")
     @DefaultValue("true")
     Boolean shouldPreserveProtoFieldNames();
+
+    @Key("ES_ROUTING_KEY_NAME")
+    String getEsRoutingKeyName();
 }

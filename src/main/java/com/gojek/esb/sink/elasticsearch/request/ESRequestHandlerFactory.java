@@ -20,12 +20,13 @@ public class ESRequestHandlerFactory {
     private final EsbMessageToJson jsonSerializer;
     private final String esTypeName;
     private final String esIndexName;
+    private final String esRoutingKeyName;
 
     public ESRequestHandler getRequestHandler() {
         ESRequestType esRequestType = esSinkConfig.isUpdateOnlyMode() ? UPDATE_ONLY : INSERT_OR_UPDATE;
         ArrayList<ESRequestHandler> esRequestHandlers = new ArrayList<>();
-        esRequestHandlers.add(new ESUpdateRequestHandler(messageType, jsonSerializer, esTypeName, esIndexName, esRequestType, esIdFieldName));
-        esRequestHandlers.add(new ESUpsertRequestHandler(messageType, jsonSerializer, esTypeName, esIndexName, esRequestType, esIdFieldName));
+        esRequestHandlers.add(new ESUpdateRequestHandler(messageType, jsonSerializer, esTypeName, esIndexName, esRequestType, esIdFieldName, esRoutingKeyName));
+        esRequestHandlers.add(new ESUpsertRequestHandler(messageType, jsonSerializer, esTypeName, esIndexName, esRequestType, esIdFieldName, esRoutingKeyName));
 
         return esRequestHandlers
                 .stream()
