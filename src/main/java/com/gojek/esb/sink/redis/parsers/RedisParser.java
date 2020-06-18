@@ -26,10 +26,10 @@ public abstract class RedisParser {
 
     public List<RedisDataEntry> parse(List<EsbMessage> esbMessages) {
         return esbMessages
-            .stream()
-            .map(this::parse)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
+                .stream()
+                .map(this::parse)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
     DynamicMessage parseEsbMessage(EsbMessage esbMessage) {
