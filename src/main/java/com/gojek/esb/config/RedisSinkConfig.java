@@ -2,8 +2,10 @@ package com.gojek.esb.config;
 
 import com.gojek.esb.config.converter.RedisSinkTypeConverter;
 import com.gojek.esb.config.converter.RedisTTLTypeConverter;
+import com.gojek.esb.config.converter.RedisServerTypeConverter;
 import com.gojek.esb.config.enums.RedisSinkType;
 import com.gojek.esb.config.enums.RedisTTLType;
+import com.gojek.esb.config.enums.RedisServerType;
 
 public interface RedisSinkConfig extends AppConfig {
 
@@ -12,7 +14,7 @@ public interface RedisSinkConfig extends AppConfig {
 
     @Key("REDIS_PORT")
     @DefaultValue("6379")
-    Integer getRedisPort();
+    String getRedisPort();
 
     @Key("REDIS_KEY_TEMPLATE")
     String getRedisKeyTemplate();
@@ -33,4 +35,11 @@ public interface RedisSinkConfig extends AppConfig {
     @Key("REDIS_TTL_VALUE")
     @DefaultValue("0")
     long getRedisTTLValue();
+
+    @Key("REDIS_SERVER_TYPE")
+    @DefaultValue("Standalone")
+    @ConverterClass(RedisServerTypeConverter.class)
+    RedisServerType getRedisServerType();
+
+
 }
