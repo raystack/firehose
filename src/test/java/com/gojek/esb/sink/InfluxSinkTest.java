@@ -12,7 +12,6 @@ import com.gojek.esb.feedback.FeedbackLogMessage;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.influxdb.InfluxSink;
-import com.gojek.esb.util.Clock;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Timestamp;
 import org.aeonbits.owner.ConfigFactory;
@@ -37,16 +36,8 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InfluxSinkTest {
-    private Sink sink;
-    private EsbMessage esbMessage;
-    private Point expectedPoint;
-    private InfluxSinkConfig config;
-    private Properties props = new Properties();
-    private Point.Builder pointBuilder;
-    private StencilClient stencilClient;
-
-    private final String measurementName = "FeedbackMeasure";
     private static final int TIMESTAMP_IN_EPOCH_SECONDS = 1498600;
+    private final String measurementName = "FeedbackMeasure";
     private final String databaseName = "test";
     private final String emptyFieldNameIndex = "{}";
     private final String emptyTagNameIndexMapping = "{}";
@@ -58,6 +49,13 @@ public class InfluxSinkTest {
     private final int feedbackCommentIndex = 6;
     private final int tipAmountIndex = 7;
     private final int driverIdIndex = 3;
+    private Sink sink;
+    private EsbMessage esbMessage;
+    private Point expectedPoint;
+    private InfluxSinkConfig config;
+    private Properties props = new Properties();
+    private Point.Builder pointBuilder;
+    private StencilClient stencilClient;
     private List<EsbMessage> esbMessages;
 
     @Mock
@@ -94,7 +92,6 @@ public class InfluxSinkTest {
         pointBuilder = Point.measurement(measurementName).addField("feedbackOrderNumber", orderNumber)
                 .addField("comment", feedbackComment).addField("tipAmount", tipAmount).time(TIMESTAMP_IN_EPOCH_SECONDS, TimeUnit.SECONDS);
         stencilClient = StencilClientFactory.getClient();
-        when(statsDReporter.getClock()).thenReturn(new Clock());
     }
 
     @Test

@@ -1,4 +1,5 @@
 package com.gojek.esb.sink.redis.exception;
+
 /**
  * NoResponseException
  * <p>
@@ -6,7 +7,7 @@ package com.gojek.esb.sink.redis.exception;
  */
 public class NoResponseException extends RuntimeException {
 
-  public NoResponseException() {
-    super("Redis Pipeline error: no responds received");
-  }
+    public NoResponseException() {
+        super("Redis Pipeline error: no responds received");
+    }
 }
