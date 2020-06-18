@@ -130,7 +130,6 @@ public class HttpSinkTest {
     @Test
     public void shouldCatchIOExceptionInAbstractSinkAndCaptureFailedExecutionTelemetry() throws Exception {
         when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
-        when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
         List<HttpEntityEnclosingRequestBase> httpRequests = Arrays.asList(httpPut, httpPost);
 
         when(request.build(esbMessages)).thenReturn(httpRequests);

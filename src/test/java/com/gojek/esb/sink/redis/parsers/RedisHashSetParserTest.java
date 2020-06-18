@@ -63,7 +63,6 @@ public class RedisHashSetParserTest {
     private void setRedisSinkConfig(String parserMode, String collectionKeyTemplate, RedisSinkType redisSinkType) {
         when(redisSinkConfig.getKafkaRecordParserMode()).thenReturn(parserMode);
         when(redisSinkConfig.getRedisKeyTemplate()).thenReturn(collectionKeyTemplate);
-        when(redisSinkConfig.getRedisSinkType()).thenReturn(redisSinkType);
     }
 
     @Test

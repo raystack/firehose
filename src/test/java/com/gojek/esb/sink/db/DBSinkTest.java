@@ -5,7 +5,6 @@ import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.util.Clock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,7 +52,6 @@ public class DBSinkTest {
     public void setUp() throws SQLException {
         when(dbConnectionPool.get()).thenReturn(connection);
         when(connection.createStatement()).thenReturn(statement);
-        when(statsDReporter.getClock()).thenReturn(new Clock());
         dbSink = new DBSink(instrumentation, "db", dbConnectionPool, queryTemplate, stencilClient);
     }
 
