@@ -33,8 +33,8 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getRedisSinkType()).thenReturn(RedisSinkType.LIST);
         when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
         when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.STANDALONE);
-        when(redisSinkConfig.getRedisHost()).thenReturn("localhost");
-        when(redisSinkConfig.getRedisPort()).thenReturn("6379");
+        when(redisSinkConfig.getRedisHost()).thenReturn("0.0.0.0");
+        when(redisSinkConfig.getRedisPort()).thenReturn("0");
         RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
 
         RedisClient client = redisClientFactory.getClient();
@@ -47,8 +47,8 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getRedisSinkType()).thenReturn(RedisSinkType.LIST);
         when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
         when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.CLUSTER);
-        when(redisSinkConfig.getRedisHost()).thenReturn("localhost");
-        when(redisSinkConfig.getRedisPort()).thenReturn("6379");
+        when(redisSinkConfig.getRedisHost()).thenReturn("0.0.0.0");
+        when(redisSinkConfig.getRedisPort()).thenReturn("0");
         RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
 
         RedisClient client = redisClientFactory.getClient();
