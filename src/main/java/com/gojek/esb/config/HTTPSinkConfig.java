@@ -66,4 +66,8 @@ public interface HTTPSinkConfig extends AppConfig {
     @Key("HTTP_SINK_OAUTH2_SCOPE")
     @DefaultValue("scope")
     String getHttpSinkOAuth2Scope();
+
+    @Key("HTTPSINK_JSONBODY_TEMPLATE")
+    @DefaultValue("")
+    String getHttpSinkJsonBodyTemplate();
 }
