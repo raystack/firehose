@@ -20,18 +20,22 @@ public class ProtoMessage {
     }
 
     public Object get(EsbMessage esbMessage, int protoIndex) throws DeserializerException {
-        GeneratedMessageV3 protoMsg = null;
-        try {
-            protoMsg = (GeneratedMessageV3) esbMessageParser.invoke(null, esbMessage.getLogMessage());
-        } catch (ReflectiveOperationException e) {
-            throw new DeserializerException(DESERIALIZE_ERROR_MESSAGE, e);
-        }
+        GeneratedMessageV3 protoMsg;
+        protoMsg = (GeneratedMessageV3) parseProtobuf(esbMessage);
         Descriptors.FieldDescriptor fieldDescriptor = protoMsg.getDescriptorForType().findFieldByNumber(protoIndex);
         return protoMsg.getField(fieldDescriptor);
     }
 
+    public Object parseProtobuf(EsbMessage esbMessage) throws DeserializerException {
+        try {
+            return esbMessageParser.invoke(null, esbMessage.getLogMessage());
+        } catch (ReflectiveOperationException e) {
+            throw new DeserializerException(DESERIALIZE_ERROR_MESSAGE, e);
+        }
+    }
+
     private Method parserMethod(String protoClassName) {
-        Class<Message> builderClass = null;
+        Class<Message> builderClass;
         try {
             builderClass = (Class<Message>) Class.forName(protoClassName);
         } catch (ClassNotFoundException e) {
