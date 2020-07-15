@@ -30,7 +30,7 @@ public class SerializerFactory {
             if (httpSinkConfig.getHttpSinkJsonBodyTemplate().isEmpty()) {
                 return new EsbMessageToJson(protoParser, false, true);
             } else {
-                return new EsbMessageToTemplatizedJson(httpSinkConfig.getHttpSinkJsonBodyTemplate(), protoParser);
+                return EsbMessageToTemplatizedJson.create(httpSinkConfig.getHttpSinkJsonBodyTemplate(), protoParser);
             }
         }
 
