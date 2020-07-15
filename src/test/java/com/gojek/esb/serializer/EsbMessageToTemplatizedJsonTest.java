@@ -7,8 +7,6 @@ import com.gojek.esb.aggregate.supply.AggregatedSupplyMessage;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.exception.EglcConfigurationException;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -18,17 +16,12 @@ import org.mockito.Mock;
 
 import java.util.Base64;
 
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class EsbMessageToTemplatizedJsonTest {
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
-
-    @Mock
-    private JSONParser jsonParser;
 
     @Mock
     private ProtoParser protoParser;
@@ -48,8 +41,8 @@ public class EsbMessageToTemplatizedJsonTest {
         String template = "{\"test\":\"$.vehicle_type\"}";
         StencilClient stencilClient = StencilClientFactory.getClient();
         protoParser = new ProtoParser(stencilClient, AggregatedSupplyMessage.class.getName());
-        EsbMessageToTemplatizedJson esbMessageToTemplatizedJson = new EsbMessageToTemplatizedJson(template,
-                protoParser);
+        EsbMessageToTemplatizedJson esbMessageToTemplatizedJson = EsbMessageToTemplatizedJson
+                .create(template, protoParser);
         EsbMessage esbMessage = new EsbMessage(Base64.getDecoder().decode(logKey.getBytes()),
                 Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
@@ -63,8 +56,8 @@ public class EsbMessageToTemplatizedJsonTest {
         String template = "\"$._all_\"";
         StencilClient stencilClient = StencilClientFactory.getClient();
         protoParser = new ProtoParser(stencilClient, AggregatedSupplyMessage.class.getName());
-        EsbMessageToTemplatizedJson esbMessageToTemplatizedJson = new EsbMessageToTemplatizedJson(template,
-                protoParser);
+        EsbMessageToTemplatizedJson esbMessageToTemplatizedJson = EsbMessageToTemplatizedJson
+                .create(template, protoParser);
         EsbMessage esbMessage = new EsbMessage(Base64.getDecoder().decode(logKey.getBytes()),
                 Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
@@ -88,20 +81,12 @@ public class EsbMessageToTemplatizedJsonTest {
         String template = "{\"test\":\"$.invalidPath\"}";
         StencilClient stencilClient = StencilClientFactory.getClient();
         protoParser = new ProtoParser(stencilClient, AggregatedSupplyMessage.class.getName());
-        EsbMessageToTemplatizedJson esbMessageToTemplatizedJson = new EsbMessageToTemplatizedJson(template,
-                protoParser);
+        EsbMessageToTemplatizedJson esbMessageToTemplatizedJson = EsbMessageToTemplatizedJson
+                .create(template, protoParser);
         EsbMessage esbMessage = new EsbMessage(Base64.getDecoder().decode(logKey.getBytes()),
                 Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
         esbMessageToTemplatizedJson.serialize(esbMessage);
-    }
-
-    @Test
-    public void shouldValidateTemplateBeforeProcessing() throws ParseException {
-        String template = "{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}";
-        new EsbMessageToTemplatizedJson(template, protoParser, jsonParser);
-
-        verify(jsonParser, times(1)).parse(template);
     }
 
     @Test
@@ -110,7 +95,7 @@ public class EsbMessageToTemplatizedJsonTest {
         expectedException.expectMessage("must be a valid JSON.");
 
         String template = "{\"test:\"$.routes[0]\", \"$.order_number\" : \"xxx\"}";
-        new EsbMessageToTemplatizedJson(template, protoParser);
+        EsbMessageToTemplatizedJson.create(template, protoParser);
     }
 
 
@@ -120,7 +105,7 @@ public class EsbMessageToTemplatizedJsonTest {
         expectedException.expectMessage("must be a valid JSON.");
 
         String template = "{\"test:\"$.routes[0]\", \"$.order_number\" : \"xxx\"}";
-        new EsbMessageToTemplatizedJson(template, protoParser);
+        EsbMessageToTemplatizedJson.create(template, protoParser);
     }
 
     @Test
@@ -129,6 +114,6 @@ public class EsbMessageToTemplatizedJsonTest {
         expectedException.expectMessage("No correct paths found in the template to be replaced from proto");
 
         String template = "{\"test\":\"invalidPath1\", \"invalidPath2\" : \"xxx\"}";
-        new EsbMessageToTemplatizedJson(template, protoParser);
+        EsbMessageToTemplatizedJson.create(template, protoParser);
     }
 }

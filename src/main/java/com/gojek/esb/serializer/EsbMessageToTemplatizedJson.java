@@ -26,33 +26,25 @@ public class EsbMessageToTemplatizedJson implements EsbMessageSerializer {
     private HashSet<String> pathsToReplace;
     private JSONParser jsonParser;
 
+    public static EsbMessageToTemplatizedJson create(String httpSinkJsonBodyTemplate, ProtoParser protoParser) {
+        EsbMessageToTemplatizedJson esbMessageToTemplatizedJson = new EsbMessageToTemplatizedJson(httpSinkJsonBodyTemplate, protoParser);
+        if (esbMessageToTemplatizedJson.isInvalidJson()) {
+            throw new EglcConfigurationException("Given HTTPSink JSON body template :"
+                    + httpSinkJsonBodyTemplate
+                    + ", must be a valid JSON.");
+        }
+        esbMessageToTemplatizedJson.setPathsFromTemplate();
+        return esbMessageToTemplatizedJson;
+    }
+
     public EsbMessageToTemplatizedJson(String httpSinkJsonBodyTemplate, ProtoParser protoParser) {
         this.httpSinkJsonBodyTemplate = httpSinkJsonBodyTemplate;
         this.protoParser = protoParser;
         this.jsonParser = new JSONParser();
-        if (isInvalidJson()) {
-            throw new EglcConfigurationException("Given HTTPSink JSON body template :"
-                    + httpSinkJsonBodyTemplate
-                    + ", must be a valid JSON.");
-        }
-        this.pathsToReplace = getPathsFromTemplate();
         this.gson = new Gson();
     }
 
-    public EsbMessageToTemplatizedJson(String httpSinkJsonBodyTemplate, ProtoParser protoParser, JSONParser jsonParser) {
-        this.httpSinkJsonBodyTemplate = httpSinkJsonBodyTemplate;
-        this.protoParser = protoParser;
-        this.jsonParser = jsonParser;
-        if (isInvalidJson()) {
-            throw new EglcConfigurationException("Given HTTPSink JSON body template :"
-                    + httpSinkJsonBodyTemplate
-                    + ", must be a valid JSON.");
-        }
-        this.pathsToReplace = getPathsFromTemplate();
-        this.gson = new Gson();
-    }
-
-    private HashSet<String> getPathsFromTemplate() {
+    private void setPathsFromTemplate() {
         HashSet<String> paths = new HashSet<>();
         Pattern pattern = Pattern.compile(TEMPLATE_PATH_REGEX);
         Matcher matcher = pattern.matcher(httpSinkJsonBodyTemplate);
@@ -62,7 +54,7 @@ public class EsbMessageToTemplatizedJson implements EsbMessageSerializer {
         if (paths.isEmpty()) {
             throw new EglcConfigurationException("No correct paths found in the template to be replaced from proto");
         }
-        return paths;
+        this.pathsToReplace = paths;
     }
 
     @Override
@@ -72,7 +64,7 @@ public class EsbMessageToTemplatizedJson implements EsbMessageSerializer {
             String jsonString;
             // only supports messages not keys
             DynamicMessage msg = protoParser.parse(esbMessage.getLogMessage());
-            jsonMessage = JsonFormat.printer().preservingProtoFieldNames().print(msg);
+            jsonMessage = JsonFormat.printer().includingDefaultValueFields().preservingProtoFieldNames().print(msg);
             String finalMessage = httpSinkJsonBodyTemplate;
             for (String path : pathsToReplace) {
                 if (path.equals(ALL_FIELDS_FROM_TEMPLATE)) {
