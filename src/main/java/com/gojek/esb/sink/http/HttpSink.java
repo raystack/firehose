@@ -6,7 +6,7 @@ import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.exception.NeedToRetry;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.AbstractSink;
-import com.gojek.esb.sink.http.request.Request;
+import com.gojek.esb.sink.http.request.types.Request;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Trace;
 import org.apache.http.HttpResponse;
