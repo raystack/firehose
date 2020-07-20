@@ -104,8 +104,6 @@ public class FireHoseConsumerFactory {
                 return new InfluxSinkFactory().create(config, statsDReporter, stencilClient);
             case LOG:
                 return new LogSinkFactory().create(config, statsDReporter, stencilClient);
-//            case CLEVERTAP:
-//                return new ClevertapSinkFactory().create(config, statsDReporter, stencilClient);
             case ELASTICSEARCH:
                 return new ESSinkFactory().create(config, statsDReporter, stencilClient);
             case REDIS:
