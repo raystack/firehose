@@ -13,15 +13,11 @@ import com.gojek.esb.sink.http.request.entity.EntityBuilder;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
 import com.gojek.esb.sink.http.request.uri.URIBuilder;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URISyntaxException;
 import java.util.List;
 
 public class BatchRequest implements Request {
-    // TODO : add debug logs
-    private static final Logger LOGGER = LoggerFactory.getLogger(BatchRequest.class);
 
     private HTTPSinkConfig httpSinkConfig;
     private JsonBody body;
