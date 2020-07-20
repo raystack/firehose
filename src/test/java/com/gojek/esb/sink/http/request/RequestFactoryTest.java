@@ -2,7 +2,7 @@ package com.gojek.esb.sink.http.request;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.HTTPSinkConfig;
-import com.gojek.esb.sink.http.request.types.BatchRequest;
+import com.gojek.esb.sink.http.request.types.SimpleRequest;
 import com.gojek.esb.sink.http.request.types.DynamicUrlRequest;
 import com.gojek.esb.sink.http.request.types.ParameterizedHeaderRequest;
 import com.gojek.esb.sink.http.request.types.ParameterizedURIRequest;
@@ -40,7 +40,7 @@ public class RequestFactoryTest {
         httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
         Request request = new RequestFactory(httpSinkConfig, stencilClient, uriParser).createRequest();
 
-        assertTrue(request instanceof BatchRequest);
+        assertTrue(request instanceof SimpleRequest);
     }
 
     @Test

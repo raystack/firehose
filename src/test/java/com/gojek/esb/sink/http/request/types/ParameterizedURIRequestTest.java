@@ -8,7 +8,7 @@ import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.sink.http.request.body.JsonBody;
-import com.gojek.esb.sink.http.request.entity.EntityBuilder;
+import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
 import com.gojek.esb.sink.http.request.uri.URIBuilder;
 import org.junit.Before;
@@ -36,7 +36,7 @@ public class ParameterizedURIRequestTest {
     private HeaderBuilder headerBuilder;
 
     @Mock
-    private EntityBuilder entityBuilder;
+    private RequestEntityBuilder requestEntityBuilder;
 
     @Mock
     private JsonBody jsonBody;
@@ -117,11 +117,11 @@ public class ParameterizedURIRequestTest {
         when(httpSinkConfig.getHttpSinkDataFormat()).thenReturn(HttpSinkDataFormat.JSON);
         when(httpSinkConfig.getHttpSinkJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
         when(jsonBody.serialize(any())).thenReturn(Collections.singletonList("test"));
-        when(entityBuilder.setWrapping(false)).thenReturn(entityBuilder);
+        when(requestEntityBuilder.setWrapping(false)).thenReturn(requestEntityBuilder);
         when(uriBuilder.withParameterizedURI(protoToFieldMapper, HttpSinkParameterSourceType.MESSAGE)).thenReturn(uriBuilder);
 
         parameterizedURIRequest = new ParameterizedURIRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
-        Request request = parameterizedURIRequest.setRequestStrategy(headerBuilder, uriBuilder, entityBuilder);
+        Request request = parameterizedURIRequest.setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
         request.build(Collections.singletonList(esbMessage));
 
         verify(httpSinkConfig, times(1)).getHttpSinkDataFormat();
@@ -136,16 +136,16 @@ public class ParameterizedURIRequestTest {
         when(httpSinkConfig.getHttpSinkParameterSource()).thenReturn(HttpSinkParameterSourceType.MESSAGE);
         when(httpSinkConfig.getHttpSinkJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
         when(jsonBody.serialize(any())).thenReturn(serializedMessages);
-        when(entityBuilder.setWrapping(false)).thenReturn(entityBuilder);
+        when(requestEntityBuilder.setWrapping(false)).thenReturn(requestEntityBuilder);
         when(uriBuilder.withParameterizedURI(protoToFieldMapper, HttpSinkParameterSourceType.MESSAGE)).thenReturn(uriBuilder);
 
         parameterizedURIRequest = new ParameterizedURIRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
         Request request = parameterizedURIRequest
-                .setRequestStrategy(headerBuilder, uriBuilder, entityBuilder);
+                .setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
         request.build(messages);
 
         verify(uriBuilder, times(3)).build(esbMessage);
         verify(headerBuilder, times(3)).build(esbMessage);
-        verify(entityBuilder, times(3)).buildHttpEntity(any(String.class));
+        verify(requestEntityBuilder, times(3)).buildHttpEntity(any(String.class));
     }
 }

@@ -4,16 +4,18 @@ import com.gojek.esb.config.enums.HttpRequestMethod;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.sink.http.request.HttpRequestMethodFactory;
 import com.gojek.esb.sink.http.request.body.JsonBody;
-import com.gojek.esb.sink.http.request.entity.EntityBuilder;
+import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
 import com.gojek.esb.sink.http.request.uri.URIBuilder;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class BatchRequestCreator implements RequestCreator {
     private static final Logger LOGGER = LoggerFactory.getLogger(BatchRequestCreator.class);
@@ -31,16 +33,19 @@ public class BatchRequestCreator implements RequestCreator {
     }
 
     @Override
-    public List<HttpEntityEnclosingRequestBase> create(List<EsbMessage> esbMessages, EntityBuilder entityBuilder) throws URISyntaxException {
+    public List<HttpEntityEnclosingRequestBase> create(List<EsbMessage> esbMessages, RequestEntityBuilder requestEntityBuilder) throws URISyntaxException {
+        URI uri = uriBuilder.build();
         HttpEntityEnclosingRequestBase request = HttpRequestMethodFactory
-                .create(uriBuilder.build(), method);
+                .create(uri, method);
 
-        headerBuilder.build().forEach(request::addHeader);
+        Map<String, String> headerMap = headerBuilder.build();
+        headerMap.forEach(request::addHeader);
         String esbMessagesString = jsonBody.serialize(esbMessages).toString();
-        request.setEntity(entityBuilder.buildHttpEntity(esbMessagesString));
 
-        LOGGER.debug("Request URL: {}", uriBuilder.build());
-        LOGGER.debug("Request headers: {}", headerBuilder.build());
+        request.setEntity(requestEntityBuilder.buildHttpEntity(esbMessagesString));
+
+        LOGGER.debug("Request URL: {}", uri);
+        LOGGER.debug("Request headers: {}", headerMap);
         LOGGER.debug("Request content: {}", jsonBody.serialize(esbMessages));
         LOGGER.debug("Request method: {}", method);
 
