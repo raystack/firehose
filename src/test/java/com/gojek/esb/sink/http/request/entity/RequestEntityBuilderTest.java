@@ -10,7 +10,7 @@ import java.io.IOException;
 
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class EntityBuilderTest {
+public class RequestEntityBuilderTest {
 
     private String bodyContent;
 
@@ -22,27 +22,27 @@ public class EntityBuilderTest {
 
     @Test
     public void shouldCreateStringEntity() throws IOException {
-        EntityBuilder entityBuilder = new EntityBuilder();
+        RequestEntityBuilder requestEntityBuilder = new RequestEntityBuilder();
 
-        StringEntity stringEntity = entityBuilder.buildHttpEntity(bodyContent);
+        StringEntity stringEntity = requestEntityBuilder.buildHttpEntity(bodyContent);
         byte[] bytes = IOUtils.toByteArray(stringEntity.getContent());
         Assert.assertEquals("dummyContent", new String(bytes));
     }
 
     @Test
     public void shouldWrapEntityIfSet() throws IOException {
-        EntityBuilder entityBuilder = new EntityBuilder();
+        RequestEntityBuilder requestEntityBuilder = new RequestEntityBuilder();
 
-        StringEntity stringEntity = entityBuilder.setWrapping(true).buildHttpEntity(bodyContent);
+        StringEntity stringEntity = requestEntityBuilder.setWrapping(true).buildHttpEntity(bodyContent);
         byte[] bytes = IOUtils.toByteArray(stringEntity.getContent());
         Assert.assertEquals("[dummyContent]", new String(bytes));
     }
 
     @Test
     public void shouldNotWrapEntityIfNotSet() throws IOException {
-        EntityBuilder entityBuilder = new EntityBuilder();
+        RequestEntityBuilder requestEntityBuilder = new RequestEntityBuilder();
 
-        StringEntity stringEntity = entityBuilder.setWrapping(false).buildHttpEntity(bodyContent);
+        StringEntity stringEntity = requestEntityBuilder.setWrapping(false).buildHttpEntity(bodyContent);
         byte[] bytes = IOUtils.toByteArray(stringEntity.getContent());
         Assert.assertEquals("dummyContent", new String(bytes));
     }

@@ -4,7 +4,7 @@ import com.gojek.esb.config.enums.HttpRequestMethod;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.sink.http.request.body.JsonBody;
-import com.gojek.esb.sink.http.request.entity.EntityBuilder;
+import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
 import com.gojek.esb.sink.http.request.uri.URIBuilder;
 import org.apache.commons.io.IOUtils;
@@ -34,7 +34,7 @@ public class IndividualRequestCreatorTest {
     private HeaderBuilder headerBuilder;
 
     @Mock
-    private EntityBuilder entityBuilder;
+    private RequestEntityBuilder requestEntityBuilder;
 
     @Mock
     private JsonBody jsonBody;
@@ -59,7 +59,7 @@ public class IndividualRequestCreatorTest {
         when(jsonBody.serialize(esbMessages)).thenReturn(serializedMessages);
 
         IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
-        List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(esbMessages, entityBuilder);
+        List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(esbMessages, requestEntityBuilder);
 
         assertEquals(2, requests.size());
     }
@@ -78,11 +78,11 @@ public class IndividualRequestCreatorTest {
         when(jsonBody.serialize(esbMessages)).thenReturn(serializedMessages);
 
         IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
-        individualRequestCreator.create(esbMessages, entityBuilder);
+        individualRequestCreator.create(esbMessages, requestEntityBuilder);
 
         verify(uriBuilder, times(2)).build(any(EsbMessage.class));
         verify(headerBuilder, times(2)).build(any(EsbMessage.class));
-        verify(entityBuilder, times(2)).buildHttpEntity(any(String.class));
+        verify(requestEntityBuilder, times(2)).buildHttpEntity(any(String.class));
     }
 
     @Test
@@ -99,7 +99,7 @@ public class IndividualRequestCreatorTest {
         when(jsonBody.serialize(esbMessages)).thenReturn(serializedMessages);
 
         IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
-        List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(esbMessages, entityBuilder);
+        List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(esbMessages, requestEntityBuilder);
 
         assertEquals(2, requests.size());
     }
@@ -117,10 +117,10 @@ public class IndividualRequestCreatorTest {
         serializedMessages.add("dummyMessage2");
         when(jsonBody.serialize(esbMessages)).thenReturn(serializedMessages);
 
-        entityBuilder = new EntityBuilder().setWrapping(true);
+        requestEntityBuilder = new RequestEntityBuilder().setWrapping(true);
 
         IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
-        List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(esbMessages, entityBuilder);
+        List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(esbMessages, requestEntityBuilder);
 
         byte[] bytes1 = IOUtils.toByteArray(requests.get(0).getEntity().getContent());
         byte[] bytes2 = IOUtils.toByteArray(requests.get(1).getEntity().getContent());
@@ -141,10 +141,10 @@ public class IndividualRequestCreatorTest {
         serializedMessages.add("dummyMessage2");
         when(jsonBody.serialize(esbMessages)).thenReturn(serializedMessages);
 
-        entityBuilder = new EntityBuilder().setWrapping(false);
+        requestEntityBuilder = new RequestEntityBuilder().setWrapping(false);
 
         IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
-        List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(esbMessages, entityBuilder);
+        List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(esbMessages, requestEntityBuilder);
 
         byte[] bytes1 = IOUtils.toByteArray(requests.get(0).getEntity().getContent());
         byte[] bytes2 = IOUtils.toByteArray(requests.get(1).getEntity().getContent());

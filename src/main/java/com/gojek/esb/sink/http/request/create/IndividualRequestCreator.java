@@ -4,7 +4,7 @@ import com.gojek.esb.config.enums.HttpRequestMethod;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.sink.http.request.HttpRequestMethodFactory;
 import com.gojek.esb.sink.http.request.body.JsonBody;
-import com.gojek.esb.sink.http.request.entity.EntityBuilder;
+import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
 import com.gojek.esb.sink.http.request.uri.URIBuilder;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -15,6 +15,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class IndividualRequestCreator implements RequestCreator {
     private static final Logger LOGGER = LoggerFactory.getLogger(IndividualRequestCreator.class);
@@ -32,7 +33,7 @@ public class IndividualRequestCreator implements RequestCreator {
     }
 
     @Override
-    public List<HttpEntityEnclosingRequestBase> create(List<EsbMessage> esbMessages, EntityBuilder entity) throws URISyntaxException {
+    public List<HttpEntityEnclosingRequestBase> create(List<EsbMessage> esbMessages, RequestEntityBuilder entity) throws URISyntaxException {
         List<HttpEntityEnclosingRequestBase> requests = new ArrayList<>();
         List<String> bodyContents = jsonBody.serialize(esbMessages);
         for (int i = 0; i < esbMessages.size(); i++) {
@@ -40,11 +41,12 @@ public class IndividualRequestCreator implements RequestCreator {
             URI requestUrl = uriBuilder.build(esbMessage);
             HttpEntityEnclosingRequestBase request = HttpRequestMethodFactory.create(requestUrl, method);
 
-            headerBuilder.build(esbMessage).forEach(request::addHeader);
+            Map<String, String> headerMap = headerBuilder.build(esbMessage);
+            headerMap.forEach(request::addHeader);
             request.setEntity(entity.buildHttpEntity(bodyContents.get(i)));
 
             LOGGER.debug("Request URL: {}", requestUrl);
-            LOGGER.debug("Request headers: {}", headerBuilder.build());
+            LOGGER.debug("Request headers: {}", headerMap);
             LOGGER.debug("Request content: {}", bodyContents.get(i));
             LOGGER.debug("Request method: {}", method);
 
