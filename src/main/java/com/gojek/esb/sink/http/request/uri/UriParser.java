@@ -20,10 +20,6 @@ public class UriParser {
         this.parserMode = parserMode;
     }
 
-    public boolean isDynamicUrl(String serviceUrl) {
-        return serviceUrl.contains(",");
-    }
-
     public String parse(EsbMessage esbMessage, String serviceUrl) {
         DynamicMessage parsedMessage = parseEsbMessage(esbMessage);
         return parseServiceUrl(parsedMessage, serviceUrl);

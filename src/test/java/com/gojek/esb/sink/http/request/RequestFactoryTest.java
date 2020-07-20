@@ -1,7 +1,14 @@
 package com.gojek.esb.sink.http.request;
 
 import com.gojek.de.stencil.client.StencilClient;
+import com.gojek.esb.config.HTTPSinkConfig;
+import com.gojek.esb.sink.http.request.types.BatchRequest;
+import com.gojek.esb.sink.http.request.types.DynamicUrlRequest;
+import com.gojek.esb.sink.http.request.types.ParameterizedHeaderRequest;
+import com.gojek.esb.sink.http.request.types.ParameterizedURIRequest;
+import com.gojek.esb.sink.http.request.types.Request;
 import com.gojek.esb.sink.http.request.uri.UriParser;
+import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -9,11 +16,7 @@ import org.mockito.Mock;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class RequestFactoryTest {
@@ -21,8 +24,9 @@ public class RequestFactoryTest {
     private StencilClient stencilClient;
     @Mock
     private UriParser uriParser;
+    private HTTPSinkConfig httpSinkConfig;
 
-    private Map<String, String> configuration;
+    private Map<String, String> configuration = new HashMap<>();
 
     @Before
     public void setup() {
@@ -32,18 +36,19 @@ public class RequestFactoryTest {
 
     @Test
     public void shouldReturnBatchRequestWhenPrameterSourceIsDisabledAndServiceUrlIsConstant() {
-        when(uriParser.isDynamicUrl(any())).thenReturn(FALSE);
-
-        Request request = new RequestFactory(configuration, stencilClient, uriParser).create();
+        configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api");
+        httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
+        Request request = new RequestFactory(httpSinkConfig, stencilClient, uriParser).createRequest();
 
         assertTrue(request instanceof BatchRequest);
     }
 
     @Test
     public void shouldReturnDynamicUrlRequestWhenPrameterSourceIsDisabledAndServiceUrlIsNotParametrised() {
-        when(uriParser.isDynamicUrl(any())).thenReturn(TRUE);
+        configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api,%s");
+        httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
 
-        Request request = new RequestFactory(configuration, stencilClient, uriParser).create();
+        Request request = new RequestFactory(httpSinkConfig, stencilClient, uriParser).createRequest();
 
         assertTrue(request instanceof DynamicUrlRequest);
     }
@@ -52,19 +57,24 @@ public class RequestFactoryTest {
     public void shouldReturnParameterizedRequstWhenParameterSourceIsNotDisableAndPlacementTypeIsHeader() {
         configuration.put("HTTP_SINK_PARAMETER_SOURCE", "key");
         configuration.put("HTTP_SINK_PARAMETER_PLACEMENT", "header");
+        configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api,%s");
+        httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
 
-        Request request = new RequestFactory(configuration, stencilClient, uriParser).create();
+        Request request = new RequestFactory(httpSinkConfig, stencilClient, uriParser).createRequest();
 
-        assertTrue(request instanceof ParameterizedRequest);
+        assertTrue(request instanceof ParameterizedHeaderRequest);
     }
 
     @Test
     public void shouldReturnParameterizedRequstWhenParameterSourceIsNotDisableAndPlacementTypeIsQuery() {
         configuration.put("HTTP_SINK_PARAMETER_SOURCE", "key");
         configuration.put("HTTP_SINK_PARAMETER_PLACEMENT", "query");
+        configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api,%s");
+        httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
 
-        Request request = new RequestFactory(configuration, stencilClient, uriParser).create();
 
-        assertTrue(request instanceof ParameterizedRequest);
+        Request request = new RequestFactory(httpSinkConfig, stencilClient, uriParser).createRequest();
+
+        assertTrue(request instanceof ParameterizedURIRequest);
     }
 }
