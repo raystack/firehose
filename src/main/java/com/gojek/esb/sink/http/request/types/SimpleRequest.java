@@ -25,7 +25,6 @@ public class SimpleRequest implements Request {
     private RequestEntityBuilder requestEntityBuilder;
     private RequestCreator requestCreator;
 
-    // TODO : rename to simpleRequest
     public SimpleRequest(HTTPSinkConfig config, JsonBody body, HttpRequestMethod method) {
         this.httpSinkConfig = config;
         this.body = body;
