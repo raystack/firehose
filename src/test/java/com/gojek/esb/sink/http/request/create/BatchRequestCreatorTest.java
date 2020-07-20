@@ -4,7 +4,7 @@ import com.gojek.esb.config.enums.HttpRequestMethod;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.sink.http.request.body.JsonBody;
-import com.gojek.esb.sink.http.request.entity.EntityBuilder;
+import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
 import com.gojek.esb.sink.http.request.uri.URIBuilder;
 import org.apache.http.Header;
@@ -41,7 +41,7 @@ public class BatchRequestCreatorTest {
     private HeaderBuilder headerBuilder;
 
     @Mock
-    private EntityBuilder entityBuilder;
+    private RequestEntityBuilder requestEntityBuilder;
 
     @Mock
     private JsonBody jsonBody;
@@ -58,7 +58,7 @@ public class BatchRequestCreatorTest {
     @Test
     public void shouldWrapMessageToASingleRequest() throws DeserializerException, URISyntaxException {
         BatchRequestCreator batchRequestCreator = new BatchRequestCreator(uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
-        List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(esbMessages, entityBuilder);
+        List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(esbMessages, requestEntityBuilder);
 
         assertEquals(1, requests.size());
     }
@@ -66,7 +66,7 @@ public class BatchRequestCreatorTest {
     @Test
     public void shouldWrapMessageToASingleRequestWhenPostRequest() throws DeserializerException, URISyntaxException {
         BatchRequestCreator batchRequestCreator = new BatchRequestCreator(uriBuilder, headerBuilder, HttpRequestMethod.POST, jsonBody);
-        List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(esbMessages, entityBuilder);
+        List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(esbMessages, requestEntityBuilder);
 
         assertEquals(1, requests.size());
     }
@@ -80,7 +80,7 @@ public class BatchRequestCreatorTest {
         esbMessages.add(esbMessage2);
 
         BatchRequestCreator batchRequestCreator = new BatchRequestCreator(uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
-        List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(esbMessages, entityBuilder);
+        List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(esbMessages, requestEntityBuilder);
 
         assertEquals(1, requests.size());
     }
@@ -94,11 +94,11 @@ public class BatchRequestCreatorTest {
         esbMessages.add(esbMessage2);
 
         BatchRequestCreator batchRequestCreator = new BatchRequestCreator(uriBuilder, headerBuilder, HttpRequestMethod.POST, jsonBody);
-        batchRequestCreator.create(esbMessages, entityBuilder);
+        batchRequestCreator.create(esbMessages, requestEntityBuilder);
 
         verify(uriBuilder, times(1)).build();
         verify(headerBuilder, times(1)).build();
-        verify(entityBuilder, times(1)).buildHttpEntity(any(String.class));
+        verify(requestEntityBuilder, times(1)).buildHttpEntity(any(String.class));
     }
 
     @Test
@@ -120,10 +120,10 @@ public class BatchRequestCreatorTest {
         when(uriBuilder.build()).thenReturn(new URI("dummyEndpoint"));
         when(headerBuilder.build()).thenReturn(headerMap);
         when(jsonBody.serialize(esbMessages)).thenReturn(serializedMessages);
-        when(entityBuilder.buildHttpEntity(any())).thenReturn(new StringEntity("[\"dummyMessage1\", \"dummyMessage2\"]", ContentType.APPLICATION_JSON));
+        when(requestEntityBuilder.buildHttpEntity(any())).thenReturn(new StringEntity("[\"dummyMessage1\", \"dummyMessage2\"]", ContentType.APPLICATION_JSON));
 
         BatchRequestCreator batchRequestCreator = new BatchRequestCreator(uriBuilder, headerBuilder, HttpRequestMethod.POST, jsonBody);
-        List<HttpEntityEnclosingRequestBase> httpEntityEnclosingRequestBases = batchRequestCreator.create(esbMessages, entityBuilder);
+        List<HttpEntityEnclosingRequestBase> httpEntityEnclosingRequestBases = batchRequestCreator.create(esbMessages, requestEntityBuilder);
 
         BasicHeader header1 = new BasicHeader("Authorization", "auth_token");
         BasicHeader header2 = new BasicHeader("Accept", "text/plain");

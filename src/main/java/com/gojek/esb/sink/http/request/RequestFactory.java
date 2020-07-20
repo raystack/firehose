@@ -8,9 +8,9 @@ import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.serializer.EsbMessageSerializer;
 import com.gojek.esb.sink.http.factory.SerializerFactory;
 import com.gojek.esb.sink.http.request.body.JsonBody;
-import com.gojek.esb.sink.http.request.entity.EntityBuilder;
+import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
-import com.gojek.esb.sink.http.request.types.BatchRequest;
+import com.gojek.esb.sink.http.request.types.SimpleRequest;
 import com.gojek.esb.sink.http.request.types.DynamicUrlRequest;
 import com.gojek.esb.sink.http.request.types.ParameterizedHeaderRequest;
 import com.gojek.esb.sink.http.request.types.ParameterizedURIRequest;
@@ -38,10 +38,10 @@ public class RequestFactory {
         HttpRequestMethod httpRequestMethod = httpSinkConfig.getHttpSinkRequestMethod();
         HeaderBuilder headerBuilder = new HeaderBuilder(httpSinkConfig.getHTTPHeaders());
         URIBuilder uriBuilder = new URIBuilder(httpSinkConfig.getServiceURL(), uriParser);
-        EntityBuilder entityBuilder = new EntityBuilder();
+        RequestEntityBuilder requestEntityBuilder = new RequestEntityBuilder();
 
         List<Request> requests = Arrays.asList(
-                new BatchRequest(httpSinkConfig, body, httpRequestMethod),
+                new SimpleRequest(httpSinkConfig, body, httpRequestMethod),
                 new DynamicUrlRequest(httpSinkConfig, body, httpRequestMethod),
                 new ParameterizedHeaderRequest(httpSinkConfig, body, httpRequestMethod, getProtoToFieldMapper()),
                 new ParameterizedURIRequest(httpSinkConfig, body, httpRequestMethod, getProtoToFieldMapper()));
@@ -49,8 +49,8 @@ public class RequestFactory {
         return requests.stream()
                 .filter(Request::canProcess)
                 .findFirst()
-                .orElse(new BatchRequest(httpSinkConfig, body, httpRequestMethod))
-                .setRequestStrategy(headerBuilder, uriBuilder, entityBuilder);
+                .orElse(new SimpleRequest(httpSinkConfig, body, httpRequestMethod))
+                .setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
     }
 
     private ProtoToFieldMapper getProtoToFieldMapper() {

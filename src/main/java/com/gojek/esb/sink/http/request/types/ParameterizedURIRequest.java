@@ -9,7 +9,7 @@ import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.sink.http.request.body.JsonBody;
 import com.gojek.esb.sink.http.request.create.IndividualRequestCreator;
 import com.gojek.esb.sink.http.request.create.RequestCreator;
-import com.gojek.esb.sink.http.request.entity.EntityBuilder;
+import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
 import com.gojek.esb.sink.http.request.uri.URIBuilder;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -24,7 +24,7 @@ public class ParameterizedURIRequest implements Request {
     private HTTPSinkConfig httpSinkConfig;
     private JsonBody body;
     private HttpRequestMethod method;
-    private EntityBuilder entityBuilder;
+    private RequestEntityBuilder requestEntityBuilder;
     private RequestCreator requestCreator;
     private ProtoToFieldMapper protoToFieldMapper;
 
@@ -40,14 +40,14 @@ public class ParameterizedURIRequest implements Request {
 
     @Override
     public List<HttpEntityEnclosingRequestBase> build(List<EsbMessage> esbMessages) throws URISyntaxException, DeserializerException {
-        return requestCreator.create(esbMessages, entityBuilder.setWrapping(!isTemplateBody(httpSinkConfig)));
+        return requestCreator.create(esbMessages, requestEntityBuilder.setWrapping(!isTemplateBody(httpSinkConfig)));
     }
 
     @Override
-    public Request setRequestStrategy(HeaderBuilder headerBuilder, URIBuilder uriBuilder, EntityBuilder entitybuilder) {
+    public Request setRequestStrategy(HeaderBuilder headerBuilder, URIBuilder uriBuilder, RequestEntityBuilder requestEntitybuilder) {
         this.requestCreator = new IndividualRequestCreator(uriBuilder.withParameterizedURI(protoToFieldMapper, httpSinkConfig.getHttpSinkParameterSource()),
                 headerBuilder, method, body);
-        this.entityBuilder = entitybuilder;
+        this.requestEntityBuilder = requestEntitybuilder;
         return this;
     }
 

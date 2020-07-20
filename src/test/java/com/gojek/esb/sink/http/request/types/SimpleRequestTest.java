@@ -6,7 +6,7 @@ import com.gojek.esb.config.enums.HttpSinkDataFormat;
 import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.sink.http.request.body.JsonBody;
-import com.gojek.esb.sink.http.request.entity.EntityBuilder;
+import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
 import com.gojek.esb.sink.http.request.uri.URIBuilder;
 import org.junit.Before;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class BatchRequestTest {
+public class SimpleRequestTest {
 
     @Mock
     private URIBuilder uriBuilder;
@@ -34,7 +34,7 @@ public class BatchRequestTest {
     private HeaderBuilder headerBuilder;
 
     @Mock
-    private EntityBuilder entityBuilder;
+    private RequestEntityBuilder requestEntityBuilder;
 
     @Mock
     private JsonBody jsonBody;
@@ -45,7 +45,7 @@ public class BatchRequestTest {
     @Mock
     private EsbMessage esbMessage;
 
-    private BatchRequest batchRequest;
+    private SimpleRequest simpleRequest;
     private HttpRequestMethod httpRequestMethod;
 
     @Before
@@ -59,8 +59,8 @@ public class BatchRequestTest {
     public void shouldProcessBaseCase() {
         when(httpSinkConfig.getHttpSinkParameterSource()).thenReturn(HttpSinkParameterSourceType.DISABLED);
 
-        batchRequest = new BatchRequest(httpSinkConfig, jsonBody, httpRequestMethod);
-        boolean canProcess = batchRequest.canProcess();
+        simpleRequest = new SimpleRequest(httpSinkConfig, jsonBody, httpRequestMethod);
+        boolean canProcess = simpleRequest.canProcess();
         assertTrue(canProcess);
     }
 
@@ -68,8 +68,8 @@ public class BatchRequestTest {
     public void shouldNotProcessForDyanamicURL() {
         when(httpSinkConfig.getServiceURL()).thenReturn("http://127.0.0.1:1080/api,%s");
 
-        batchRequest = new BatchRequest(httpSinkConfig, jsonBody, httpRequestMethod);
-        boolean canProcess = batchRequest.canProcess();
+        simpleRequest = new SimpleRequest(httpSinkConfig, jsonBody, httpRequestMethod);
+        boolean canProcess = simpleRequest.canProcess();
 
         assertFalse(canProcess);
     }
@@ -78,16 +78,16 @@ public class BatchRequestTest {
     public void shouldNotProcessIfParameterIsEnabled() {
         when(httpSinkConfig.getHttpSinkParameterSource()).thenReturn(HttpSinkParameterSourceType.MESSAGE);
 
-        batchRequest = new BatchRequest(httpSinkConfig, jsonBody, httpRequestMethod);
-        boolean canProcess = batchRequest.canProcess();
+        simpleRequest = new SimpleRequest(httpSinkConfig, jsonBody, httpRequestMethod);
+        boolean canProcess = simpleRequest.canProcess();
 
         assertFalse(canProcess);
     }
 
     @Test
     public void shouldNotProcessTemplatesIfAbsent() {
-        batchRequest = new BatchRequest(httpSinkConfig, jsonBody, httpRequestMethod);
-        boolean isTemplate = batchRequest.isTemplateBody(httpSinkConfig);
+        simpleRequest = new SimpleRequest(httpSinkConfig, jsonBody, httpRequestMethod);
+        boolean isTemplate = simpleRequest.isTemplateBody(httpSinkConfig);
 
         assertFalse(isTemplate);
     }
@@ -97,8 +97,8 @@ public class BatchRequestTest {
         when(httpSinkConfig.getHttpSinkDataFormat()).thenReturn(HttpSinkDataFormat.JSON);
         when(httpSinkConfig.getHttpSinkJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
 
-        batchRequest = new BatchRequest(httpSinkConfig, jsonBody, httpRequestMethod);
-        boolean isTemplate = batchRequest.isTemplateBody(httpSinkConfig);
+        simpleRequest = new SimpleRequest(httpSinkConfig, jsonBody, httpRequestMethod);
+        boolean isTemplate = simpleRequest.isTemplateBody(httpSinkConfig);
 
         assertTrue(isTemplate);
     }
@@ -108,8 +108,8 @@ public class BatchRequestTest {
         when(httpSinkConfig.getHttpSinkDataFormat()).thenReturn(HttpSinkDataFormat.JSON);
         when(httpSinkConfig.getHttpSinkJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
 
-        batchRequest = new BatchRequest(httpSinkConfig, jsonBody, httpRequestMethod);
-        batchRequest.setRequestStrategy(headerBuilder, uriBuilder, entityBuilder);
+        simpleRequest = new SimpleRequest(httpSinkConfig, jsonBody, httpRequestMethod);
+        simpleRequest.setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
 
         verify(httpSinkConfig, times(1)).getHttpSinkDataFormat();
         verify(httpSinkConfig, times(1)).getHttpSinkJsonBodyTemplate();
@@ -121,15 +121,15 @@ public class BatchRequestTest {
         List<EsbMessage> messages = Arrays.asList(esbMessage, esbMessage, esbMessage);
         when(httpSinkConfig.getHttpSinkDataFormat()).thenReturn(HttpSinkDataFormat.PROTO);
         when(jsonBody.serialize(any())).thenReturn(serializedMessages);
-        when(entityBuilder.setWrapping(true)).thenReturn(entityBuilder);
+        when(requestEntityBuilder.setWrapping(true)).thenReturn(requestEntityBuilder);
 
-        batchRequest = new BatchRequest(httpSinkConfig, jsonBody, httpRequestMethod);
-        Request request = batchRequest.setRequestStrategy(headerBuilder, uriBuilder, entityBuilder);
+        simpleRequest = new SimpleRequest(httpSinkConfig, jsonBody, httpRequestMethod);
+        Request request = simpleRequest.setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
         request.build(messages);
 
         verify(uriBuilder, times(1)).build();
         verify(headerBuilder, times(1)).build();
-        verify(entityBuilder, times(1)).buildHttpEntity(any(String.class));
+        verify(requestEntityBuilder, times(1)).buildHttpEntity(any(String.class));
     }
 
     @Test
@@ -139,14 +139,14 @@ public class BatchRequestTest {
         when(httpSinkConfig.getHttpSinkDataFormat()).thenReturn(HttpSinkDataFormat.JSON);
         when(httpSinkConfig.getHttpSinkJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
         when(jsonBody.serialize(any())).thenReturn(serializedMessages);
-        when(entityBuilder.setWrapping(false)).thenReturn(entityBuilder);
+        when(requestEntityBuilder.setWrapping(false)).thenReturn(requestEntityBuilder);
 
-        batchRequest = new BatchRequest(httpSinkConfig, jsonBody, httpRequestMethod);
-        Request request = batchRequest.setRequestStrategy(headerBuilder, uriBuilder, entityBuilder);
+        simpleRequest = new SimpleRequest(httpSinkConfig, jsonBody, httpRequestMethod);
+        Request request = simpleRequest.setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
         request.build(messages);
 
         verify(uriBuilder, times(3)).build(esbMessage);
         verify(headerBuilder, times(3)).build(esbMessage);
-        verify(entityBuilder, times(3)).buildHttpEntity(any(String.class));
+        verify(requestEntityBuilder, times(3)).buildHttpEntity(any(String.class));
     }
 }

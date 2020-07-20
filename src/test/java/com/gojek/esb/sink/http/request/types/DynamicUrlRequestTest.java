@@ -6,7 +6,7 @@ import com.gojek.esb.config.enums.HttpSinkDataFormat;
 import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.sink.http.request.body.JsonBody;
-import com.gojek.esb.sink.http.request.entity.EntityBuilder;
+import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
 import com.gojek.esb.sink.http.request.uri.URIBuilder;
 import org.gradle.internal.impldep.org.junit.Assert;
@@ -33,7 +33,7 @@ public class DynamicUrlRequestTest {
     private HeaderBuilder headerBuilder;
 
     @Mock
-    private EntityBuilder entityBuilder;
+    private RequestEntityBuilder requestEntityBuilder;
 
     @Mock
     private JsonBody jsonBody;
@@ -106,10 +106,10 @@ public class DynamicUrlRequestTest {
         when(httpSinkConfig.getHttpSinkDataFormat()).thenReturn(HttpSinkDataFormat.JSON);
         when(httpSinkConfig.getHttpSinkJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
         when(jsonBody.serialize(any())).thenReturn(Collections.singletonList("test"));
-        when(entityBuilder.setWrapping(false)).thenReturn(entityBuilder);
+        when(requestEntityBuilder.setWrapping(false)).thenReturn(requestEntityBuilder);
 
         dynamicUrlRequest = new DynamicUrlRequest(httpSinkConfig, jsonBody, httpRequestMethod);
-        Request request = dynamicUrlRequest.setRequestStrategy(headerBuilder, uriBuilder, entityBuilder);
+        Request request = dynamicUrlRequest.setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
         request.build(Collections.singletonList(esbMessage));
 
         verify(httpSinkConfig, times(1)).getHttpSinkDataFormat();
@@ -123,14 +123,14 @@ public class DynamicUrlRequestTest {
         when(httpSinkConfig.getHttpSinkDataFormat()).thenReturn(HttpSinkDataFormat.JSON);
         when(httpSinkConfig.getHttpSinkJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
         when(jsonBody.serialize(any())).thenReturn(serializedMessages);
-        when(entityBuilder.setWrapping(false)).thenReturn(entityBuilder);
+        when(requestEntityBuilder.setWrapping(false)).thenReturn(requestEntityBuilder);
 
         dynamicUrlRequest = new DynamicUrlRequest(httpSinkConfig, jsonBody, httpRequestMethod);
-        Request request = dynamicUrlRequest.setRequestStrategy(headerBuilder, uriBuilder, entityBuilder);
+        Request request = dynamicUrlRequest.setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
         request.build(messages);
 
         verify(uriBuilder, times(3)).build(esbMessage);
         verify(headerBuilder, times(3)).build(esbMessage);
-        verify(entityBuilder, times(3)).buildHttpEntity(any(String.class));
+        verify(requestEntityBuilder, times(3)).buildHttpEntity(any(String.class));
     }
 }
