@@ -6,14 +6,15 @@ import org.apache.http.entity.StringEntity;
 
 import java.util.Collections;
 
-public class EntityBuilder {
+public class RequestEntityBuilder {
+    // TODO : rename to requestPayloadbuilder
     private boolean wrapArray;
 
-    public EntityBuilder() {
+    public RequestEntityBuilder() {
         this.wrapArray = false;
     }
 
-    public EntityBuilder setWrapping(boolean isArrayWrap) {
+    public RequestEntityBuilder setWrapping(boolean isArrayWrap) {
         this.wrapArray = isArrayWrap;
         return this;
     }
