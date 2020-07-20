@@ -38,6 +38,12 @@ public class BatchRequestCreator implements RequestCreator {
         headerBuilder.build().forEach(request::addHeader);
         String esbMessagesString = jsonBody.serialize(esbMessages).toString();
         request.setEntity(entityBuilder.buildHttpEntity(esbMessagesString));
+
+        LOGGER.debug("Request URL: {}", uriBuilder.build());
+        LOGGER.debug("Request headers: {}", headerBuilder.build());
+        LOGGER.debug("Request content: {}", jsonBody.serialize(esbMessages));
+        LOGGER.debug("Request method: {}", method);
+
         return Collections.singletonList(request);
     }
 }

@@ -17,24 +17,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class IndividualRequestCreator implements RequestCreator {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BatchRequestCreator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IndividualRequestCreator.class);
 
     private HeaderBuilder headerBuilder;
-    private JsonBody body;
+    private JsonBody jsonBody;
     private HttpRequestMethod method;
     private URIBuilder uriBuilder;
 
     public IndividualRequestCreator(URIBuilder uriBuilder, HeaderBuilder headerBuilder, HttpRequestMethod method, JsonBody body) {
         this.uriBuilder = uriBuilder;
         this.headerBuilder = headerBuilder;
-        this.body = body;
+        this.jsonBody = body;
         this.method = method;
     }
 
     @Override
     public List<HttpEntityEnclosingRequestBase> create(List<EsbMessage> esbMessages, EntityBuilder entity) throws URISyntaxException {
         List<HttpEntityEnclosingRequestBase> requests = new ArrayList<>();
-        List<String> bodyContents = body.serialize(esbMessages);
+        List<String> bodyContents = jsonBody.serialize(esbMessages);
         for (int i = 0; i < esbMessages.size(); i++) {
             EsbMessage esbMessage = esbMessages.get(i);
             URI requestUrl = uriBuilder.build(esbMessage);
@@ -42,6 +42,12 @@ public class IndividualRequestCreator implements RequestCreator {
 
             headerBuilder.build(esbMessage).forEach(request::addHeader);
             request.setEntity(entity.buildHttpEntity(bodyContents.get(i)));
+
+            LOGGER.debug("Request URL: {}", requestUrl);
+            LOGGER.debug("Request headers: {}", headerBuilder.build());
+            LOGGER.debug("Request content: {}", bodyContents.get(i));
+            LOGGER.debug("Request method: {}", method);
+
             requests.add(request);
         }
         return requests;
