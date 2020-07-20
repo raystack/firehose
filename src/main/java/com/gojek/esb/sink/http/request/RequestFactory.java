@@ -3,70 +3,59 @@ package com.gojek.esb.sink.http.request;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.HTTPSinkConfig;
-import com.gojek.esb.config.ParameterizedHTTPSinkConfig;
 import com.gojek.esb.config.enums.HttpRequestMethod;
-import com.gojek.esb.config.enums.HttpSinkParameterPlacementType;
-import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.serializer.EsbMessageSerializer;
 import com.gojek.esb.sink.http.factory.SerializerFactory;
 import com.gojek.esb.sink.http.request.body.JsonBody;
-import com.gojek.esb.sink.http.request.header.BasicHeader;
-import com.gojek.esb.sink.http.request.header.ParameterizedHeader;
-import com.gojek.esb.sink.http.request.uri.BasicUri;
-import com.gojek.esb.sink.http.request.uri.ParameterizedUri;
+import com.gojek.esb.sink.http.request.entity.EntityBuilder;
+import com.gojek.esb.sink.http.request.header.HeaderBuilder;
+import com.gojek.esb.sink.http.request.types.BatchRequest;
+import com.gojek.esb.sink.http.request.types.DynamicUrlRequest;
+import com.gojek.esb.sink.http.request.types.ParameterizedHeaderRequest;
+import com.gojek.esb.sink.http.request.types.ParameterizedURIRequest;
+import com.gojek.esb.sink.http.request.types.Request;
+import com.gojek.esb.sink.http.request.uri.URIBuilder;
 import com.gojek.esb.sink.http.request.uri.UriParser;
-import org.aeonbits.owner.ConfigFactory;
 
-import java.util.Map;
-
-import static com.gojek.esb.config.enums.HttpSinkParameterPlacementType.HEADER;
+import java.util.Arrays;
+import java.util.List;
 
 public class RequestFactory {
 
-    private Map<String, String> configuration;
     private HTTPSinkConfig httpSinkConfig;
     private UriParser uriParser;
     private StencilClient stencilClient;
 
-    public RequestFactory(Map<String, String> configuration, StencilClient stencilClient, UriParser uriParser) {
-        this.configuration = configuration;
+    public RequestFactory(HTTPSinkConfig httpSinkConfig, StencilClient stencilClient, UriParser uriParser) {
         this.stencilClient = stencilClient;
-        httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
+        this.httpSinkConfig = httpSinkConfig;
         this.uriParser = uriParser;
     }
 
-    public Request create() {
+    public Request createRequest() {
+        JsonBody body = createBody();
         HttpRequestMethod httpRequestMethod = httpSinkConfig.getHttpSinkRequestMethod();
-        if (httpSinkConfig.getHttpSinkParameterSource() == HttpSinkParameterSourceType.DISABLED) {
-            BasicUri basicUri = new BasicUri(httpSinkConfig.getServiceURL());
-            BasicHeader basicHeader = new BasicHeader(httpSinkConfig.getHTTPHeaders());
-            if (uriParser.isDynamicUrl(httpSinkConfig.getServiceURL())) {
-                return new DynamicUrlRequest(basicUri, basicHeader, createBody(), httpRequestMethod, uriParser);
-            } else {
-                return new BatchRequest(basicUri, basicHeader, createBody(), httpRequestMethod);
-            }
-        }
+        HeaderBuilder headerBuilder = new HeaderBuilder(httpSinkConfig.getHTTPHeaders());
+        URIBuilder uriBuilder = new URIBuilder(httpSinkConfig.getServiceURL(), uriParser);
+        EntityBuilder entityBuilder = new EntityBuilder();
 
+        List<Request> requests = Arrays.asList(
+                new BatchRequest(httpSinkConfig, body, httpRequestMethod),
+                new DynamicUrlRequest(httpSinkConfig, body, httpRequestMethod),
+                new ParameterizedHeaderRequest(httpSinkConfig, body, httpRequestMethod, getProtoToFieldMapper()),
+                new ParameterizedURIRequest(httpSinkConfig, body, httpRequestMethod, getProtoToFieldMapper()));
 
-        ParameterizedHTTPSinkConfig parameterizedHttpSinkConfig = ConfigFactory.create(ParameterizedHTTPSinkConfig.class, configuration);
+        return requests.stream()
+                .filter(Request::canProcess)
+                .findFirst()
+                .orElse(new BatchRequest(httpSinkConfig, body, httpRequestMethod))
+                .setRequestStrategy(headerBuilder, uriBuilder, entityBuilder);
+    }
 
-        ProtoParser protoParser = new ProtoParser(stencilClient, parameterizedHttpSinkConfig.getParameterProtoSchema());
-        ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, parameterizedHttpSinkConfig.getProtoToFieldMapping());
-
-        HttpSinkParameterPlacementType placementType = parameterizedHttpSinkConfig.getHttpSinkParameterPlacement();
-        HttpSinkParameterSourceType parameterSource = parameterizedHttpSinkConfig.getHttpSinkParameterSource();
-        String headers = parameterizedHttpSinkConfig.getHTTPHeaders();
-        if (placementType == HEADER) {
-            BasicUri basicUri = new BasicUri(httpSinkConfig.getServiceURL());
-            ParameterizedHeader parameterizedHeader = new ParameterizedHeader(protoToFieldMapper, parameterSource, new BasicHeader(headers));
-            return new ParameterizedRequest(basicUri, parameterizedHeader, createBody(), httpRequestMethod, uriParser);
-
-        } else {
-            ParameterizedUri parameterizedUri = new ParameterizedUri(httpSinkConfig.getServiceURL(), protoToFieldMapper, parameterSource);
-            BasicHeader basicHeader = new BasicHeader(headers);
-            return new ParameterizedRequest(parameterizedUri, basicHeader, createBody(), httpRequestMethod, uriParser);
-        }
+    private ProtoToFieldMapper getProtoToFieldMapper() {
+        ProtoParser protoParser = new ProtoParser(stencilClient, httpSinkConfig.getParameterProtoSchema());
+        return new ProtoToFieldMapper(protoParser, httpSinkConfig.getProtoToFieldMapping());
     }
 
     private JsonBody createBody() {
@@ -75,5 +64,4 @@ public class RequestFactory {
                 stencilClient).build();
         return new JsonBody(esbMessageSerializer);
     }
-
 }

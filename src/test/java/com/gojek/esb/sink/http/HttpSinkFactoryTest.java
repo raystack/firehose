@@ -17,7 +17,6 @@ import org.mockserver.integration.ClientAndServer;
 import org.mockserver.verify.VerificationTimes;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +41,7 @@ public class HttpSinkFactoryTest {
     private static ClientAndServer mockServer;
 
     @Before
-    public void setup() throws URISyntaxException {
+    public void setup() {
         initMocks(this);
     }
 

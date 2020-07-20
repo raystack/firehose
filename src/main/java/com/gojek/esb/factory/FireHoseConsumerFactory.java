@@ -1,7 +1,5 @@
 package com.gojek.esb.factory;
 
-import java.util.Map;
-
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.ExponentialBackOffProviderConfig;
@@ -15,7 +13,6 @@ import com.gojek.esb.filter.Filter;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.metrics.StatsDReporterFactory;
 import com.gojek.esb.sink.Sink;
-import com.gojek.esb.sink.clevertap.ClevertapSinkFactory;
 import com.gojek.esb.sink.db.DBSinkFactory;
 import com.gojek.esb.sink.elasticsearch.ESSinkFactory;
 import com.gojek.esb.sink.grpc.GrpcSinkFactory;
@@ -30,16 +27,16 @@ import com.gojek.esb.sinkdecorator.SinkWithRetry;
 import com.gojek.esb.sinkdecorator.SinkWithRetryQueue;
 import com.gojek.esb.tracer.SinkTracer;
 import com.gojek.esb.util.Clock;
-
+import io.jaegertracing.Configuration;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.kafka.TracingKafkaProducer;
+import io.opentracing.noop.NoopTracerFactory;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.jaegertracing.Configuration;
-import io.opentracing.Tracer;
-import io.opentracing.contrib.kafka.TracingKafkaProducer;
-import io.opentracing.noop.NoopTracerFactory;
+import java.util.Map;
 
 public class FireHoseConsumerFactory {
 
@@ -72,7 +69,7 @@ public class FireHoseConsumerFactory {
     }
 
     /**
-     * Helps to build consumer based on the config.
+     * Helps to create consumer based on the config.
      *
      * @return FireHoseConsumer
      */
@@ -107,8 +104,8 @@ public class FireHoseConsumerFactory {
                 return new InfluxSinkFactory().create(config, statsDReporter, stencilClient);
             case LOG:
                 return new LogSinkFactory().create(config, statsDReporter, stencilClient);
-            case CLEVERTAP:
-                return new ClevertapSinkFactory().create(config, statsDReporter, stencilClient);
+//            case CLEVERTAP:
+//                return new ClevertapSinkFactory().create(config, statsDReporter, stencilClient);
             case ELASTICSEARCH:
                 return new ESSinkFactory().create(config, statsDReporter, stencilClient);
             case REDIS:

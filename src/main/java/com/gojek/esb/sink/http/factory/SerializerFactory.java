@@ -11,7 +11,7 @@ import com.gojek.esb.serializer.JsonWrappedProtoByte;
 import lombok.AllArgsConstructor;
 
 /**
- * SerializerFactory build json serializer for proto using http sink config.
+ * SerializerFactory create json serializer for proto using http sink config.
  */
 @AllArgsConstructor
 public class SerializerFactory {
