@@ -6,7 +6,7 @@ import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.exception.NeedToRetry;
 import com.gojek.esb.metrics.Instrumentation;
-import com.gojek.esb.sink.http.request.Request;
+import com.gojek.esb.sink.http.request.types.Request;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
@@ -27,7 +27,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(MockitoJUnitRunner.class)

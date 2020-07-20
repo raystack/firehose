@@ -2,10 +2,12 @@ package com.gojek.esb.config;
 
 import com.gojek.esb.config.converter.HttpRequestMethodConverter;
 import com.gojek.esb.config.converter.HttpSinkParameterDataFormatConverter;
+import com.gojek.esb.config.converter.HttpSinkParameterPlacementTypeConverter;
 import com.gojek.esb.config.converter.HttpSinkParameterSourceTypeConverter;
 import com.gojek.esb.config.converter.RangeToHashMapConverter;
 import com.gojek.esb.config.enums.HttpRequestMethod;
 import com.gojek.esb.config.enums.HttpSinkDataFormat;
+import com.gojek.esb.config.enums.HttpSinkParameterPlacementType;
 import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
 
 import java.util.Map;
@@ -67,7 +69,16 @@ public interface HTTPSinkConfig extends AppConfig {
     @DefaultValue("scope")
     String getHttpSinkOAuth2Scope();
 
-    @Key("HTTPSINK_JSONBODY_TEMPLATE")
+    @Key("HTTP_SINK_JSON_BODY_TEMPLATE")
     @DefaultValue("")
     String getHttpSinkJsonBodyTemplate();
+
+    @Key("HTTP_SINK_PARAMETER_PLACEMENT")
+    @DefaultValue("header")
+    @ConverterClass(HttpSinkParameterPlacementTypeConverter.class)
+    HttpSinkParameterPlacementType getHttpSinkParameterPlacement();
+
+    @Key("HTTP_SINK_PARAMETER_PROTO_SCHEMA")
+    String getParameterProtoSchema();
+
 }
