@@ -8,7 +8,8 @@ import org.junit.rules.ExpectedException;
 import java.util.Properties;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 
 public class ProtoIndexToFieldMapConverterTest {
 
@@ -81,5 +82,14 @@ public class ProtoIndexToFieldMapConverterTest {
         expectedProperties.put("3", "number_field");
 
         assertThat(actualProperties, equalTo(expectedProperties));
+    }
+
+    @Test
+    public void shouldNotProcessEmptyStringAsProperties() {
+        String json = "";
+
+        Properties actualProperties = new ProtoIndexToFieldMapConverter().convert(null, json);
+
+        assertNull(actualProperties);
     }
 }
