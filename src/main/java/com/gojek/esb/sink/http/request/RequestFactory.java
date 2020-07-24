@@ -10,11 +10,11 @@ import com.gojek.esb.sink.http.factory.SerializerFactory;
 import com.gojek.esb.sink.http.request.body.JsonBody;
 import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
-import com.gojek.esb.sink.http.request.types.SimpleRequest;
 import com.gojek.esb.sink.http.request.types.DynamicUrlRequest;
 import com.gojek.esb.sink.http.request.types.ParameterizedHeaderRequest;
 import com.gojek.esb.sink.http.request.types.ParameterizedURIRequest;
 import com.gojek.esb.sink.http.request.types.Request;
+import com.gojek.esb.sink.http.request.types.SimpleRequest;
 import com.gojek.esb.sink.http.request.uri.URIBuilder;
 import com.gojek.esb.sink.http.request.uri.UriParser;
 

@@ -17,6 +17,9 @@ import java.util.stream.Stream;
 public class ProtoIndexToFieldMapConverter implements org.aeonbits.owner.Converter<Properties> {
     @Override
     public Properties convert(Method method, String input) {
+        if (input.equals("")) {
+            return null;
+        }
         Type type = new TypeToken<Map<String, Object>>() {
         }.getType();
         Map<String, Object> m = new Gson().fromJson(input, type);
