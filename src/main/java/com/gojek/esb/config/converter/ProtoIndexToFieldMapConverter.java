@@ -1,5 +1,6 @@
 package com.gojek.esb.config.converter;
 
+import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -17,7 +18,7 @@ import java.util.stream.Stream;
 public class ProtoIndexToFieldMapConverter implements org.aeonbits.owner.Converter<Properties> {
     @Override
     public Properties convert(Method method, String input) {
-        if (input.equals("")) {
+        if (Strings.isNullOrEmpty(input)) {
             return null;
         }
         Type type = new TypeToken<Map<String, Object>>() {

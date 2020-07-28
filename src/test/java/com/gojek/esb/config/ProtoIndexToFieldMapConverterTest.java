@@ -92,4 +92,11 @@ public class ProtoIndexToFieldMapConverterTest {
 
         assertNull(actualProperties);
     }
+
+    @Test
+    public void shouldNotProcessNullStringAsProperties() {
+        Properties actualProperties = new ProtoIndexToFieldMapConverter().convert(null, null);
+
+        assertNull(actualProperties);
+    }
 }
