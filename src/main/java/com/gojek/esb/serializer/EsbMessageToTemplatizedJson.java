@@ -51,9 +51,6 @@ public class EsbMessageToTemplatizedJson implements EsbMessageSerializer {
         while (matcher.find()) {
             paths.add(matcher.group(0));
         }
-        if (paths.isEmpty()) {
-            throw new EglcConfigurationException("No correct paths found in the template to be replaced from proto");
-        }
         this.pathsToReplace = paths;
     }
 
