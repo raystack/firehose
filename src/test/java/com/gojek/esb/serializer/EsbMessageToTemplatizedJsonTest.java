@@ -107,13 +107,4 @@ public class EsbMessageToTemplatizedJsonTest {
         String template = "{\"test:\"$.routes[0]\", \"$.order_number\" : \"xxx\"}";
         EsbMessageToTemplatizedJson.create(template, protoParser);
     }
-
-    @Test
-    public void shouldFailIfNoPathsFoundToReplace() {
-        expectedException.expect(EglcConfigurationException.class);
-        expectedException.expectMessage("No correct paths found in the template to be replaced from proto");
-
-        String template = "{\"test\":\"invalidPath1\", \"invalidPath2\" : \"xxx\"}";
-        EsbMessageToTemplatizedJson.create(template, protoParser);
-    }
 }
