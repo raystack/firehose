@@ -19,6 +19,11 @@ public interface HTTPSinkConfig extends AppConfig {
     @ConverterClass(RangeToHashMapConverter.class)
     Map<Integer, Boolean> retryStatusCodeRanges();
 
+    @Key("HTTPSINK_REQUEST_LOG_STATUS_CODE_RANGES")
+    @DefaultValue("400-499")
+    @ConverterClass(RangeToHashMapConverter.class)
+    Map<Integer, Boolean> requestLogStatusCodeRanges();
+
     @Key("HTTPSINK_REQUEST_TIMEOUT_IN_MS")
     @DefaultValue("10000")
     Integer getRequestTimeoutInMs();
