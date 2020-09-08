@@ -14,11 +14,16 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.util.EntityUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.gojek.esb.metrics.Metrics.HTTP_RESPONSE_CODE;
 
@@ -32,13 +37,15 @@ public class HttpSink extends AbstractSink {
     private HttpClient httpClient;
     private StencilClient stencilClient;
     private Map<Integer, Boolean> retryStatusCodeRanges;
+    private Map<Integer, Boolean> requestLogStatusCodeRanges;
 
-    public HttpSink(Instrumentation instrumentation, Request request, HttpClient httpClient, StencilClient stencilClient, Map<Integer, Boolean> retryStatusCodeRanges) {
+    public HttpSink(Instrumentation instrumentation, Request request, HttpClient httpClient, StencilClient stencilClient, Map<Integer, Boolean> retryStatusCodeRanges, Map<Integer, Boolean> requestLogStatusCodeRanges) {
         super(instrumentation, "http");
         this.request = request;
         this.httpClient = httpClient;
         this.stencilClient = stencilClient;
         this.retryStatusCodeRanges = retryStatusCodeRanges;
+        this.requestLogStatusCodeRanges = requestLogStatusCodeRanges;
     }
 
     @Override
@@ -58,6 +65,9 @@ public class HttpSink extends AbstractSink {
             try {
                 response = httpClient.execute(httpRequest);
                 getInstrumentation().logInfo("Response Status: {}", statusCode(response));
+                if (shouldLogRequest(response)) {
+                    printRequest(httpRequest);
+                }
                 if (shouldRetry(response)) {
                     throw new NeedToRetry(statusCode(response));
                 }
@@ -73,7 +83,6 @@ public class HttpSink extends AbstractSink {
         return new ArrayList<>();
     }
 
-
     @Override
     public void close() throws IOException {
         this.httpRequests = new ArrayList<>();
@@ -84,6 +93,10 @@ public class HttpSink extends AbstractSink {
         if (response != null) {
             EntityUtils.consumeQuietly(response.getEntity());
         }
+    }
+
+    private boolean shouldLogRequest(HttpResponse response) {
+        return response == null || requestLogStatusCodeRanges.containsKey(response.getStatusLine().getStatusCode());
     }
 
     private boolean shouldRetry(HttpResponse response) {
@@ -102,8 +115,18 @@ public class HttpSink extends AbstractSink {
         String urlTag = "url=" + httpRequestMethod.getURI().getPath();
         String httpCodeTag = "status_code=";
         if (response != null) {
-            httpCodeTag = "status_code=" + Integer.toString(response.getStatusLine().getStatusCode());
+            httpCodeTag = "status_code=" + response.getStatusLine().getStatusCode();
         }
         getInstrumentation().captureCountWithTags(HTTP_RESPONSE_CODE, 1, httpCodeTag, urlTag);
+    }
+
+    private void printRequest(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
+        String entireRequest = String.format("\nRequest Method: %s\nRequest Url: %s\nRequest Headers: %s\nRequest Body: %s",
+                httpRequest.getMethod(),
+                httpRequest.getURI(),
+                Arrays.asList(httpRequest.getAllHeaders()),
+                new BufferedReader(new InputStreamReader(httpRequest.getEntity().getContent(),
+                        StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")));
+        getInstrumentation().logInfo(entireRequest);
     }
 }
