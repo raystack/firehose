@@ -7,12 +7,16 @@ import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.exception.NeedToRetry;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.http.request.types.Request;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.message.BasicHeader;
+import org.apache.tools.ant.filters.StringInputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,16 +26,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -51,9 +48,13 @@ public class HttpSinkTest {
     @Mock
     private HttpResponse response;
     @Mock
+    private HttpEntity httpEntity;
+    @Mock
     private StatusLine statusLine;
     @Mock
     private Map<Integer, Boolean> retryStatusCodeRange;
+    @Mock
+    private Map<Integer, Boolean> requestLogStatusCodeRanges;
 
     private List<EsbMessage> esbMessages;
 
@@ -82,7 +83,7 @@ public class HttpSinkTest {
         when(httpClient.execute(httpPut)).thenReturn(response, response);
         when(httpClient.execute(httpPost)).thenReturn(response, response);
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange);
+        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.prepare(esbMessages);
         httpSink.execute();
 
@@ -104,7 +105,7 @@ public class HttpSinkTest {
         when(httpClient.execute(httpPut)).thenReturn(response);
 
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
-                new RangeToHashMapConverter().convert(null, "400-505"));
+                new RangeToHashMapConverter().convert(null, "400-505"), requestLogStatusCodeRanges);
         httpSink.prepare(esbMessages);
         httpSink.execute();
     }
@@ -115,10 +116,13 @@ public class HttpSinkTest {
         List<HttpEntityEnclosingRequestBase> httpRequests = Arrays.asList(httpPut);
 
         when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
+        when(httpPut.getAllHeaders()).thenReturn(new Header[]{});
+        when(httpPut.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new StringInputStream(""));
         when(request.build(esbMessages)).thenReturn(httpRequests);
         when(httpClient.execute(httpPut)).thenReturn(null);
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange);
+        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.prepare(esbMessages);
         httpSink.execute();
     }
@@ -127,7 +131,7 @@ public class HttpSinkTest {
     public void shouldCatchURISyntaxExceptionAndThrowIOException() throws URISyntaxException, DeserializerException, IOException {
         when(request.build(esbMessages)).thenThrow(new URISyntaxException("", ""));
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange);
+        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.prepare(esbMessages);
     }
 
@@ -139,7 +143,7 @@ public class HttpSinkTest {
         when(request.build(esbMessages)).thenReturn(httpRequests);
         when(httpClient.execute(any(HttpPut.class))).thenThrow(IOException.class);
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange);
+        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.pushMessage(esbMessages);
 
         verify(instrumentation, times(1)).captureFailedExecutionTelemetry(any(IOException.class), anyInt());
@@ -147,10 +151,50 @@ public class HttpSinkTest {
 
     @Test
     public void shouldCloseStencilClient() throws IOException {
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange);
+        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
 
         httpSink.close();
         verify(stencilClient, times(1)).close();
+    }
+
+    @Test
+    public void shouldLogEntireRequestIfInStatusCodeRange() throws Exception {
+        when(response.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(500);
+
+        List<HttpEntityEnclosingRequestBase> httpRequests = Collections.singletonList(httpPut);
+
+        when(httpPut.getMethod()).thenReturn("PUT");
+        when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
+        when(httpPut.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
+        when(httpPut.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new StringInputStream("{\"key\":\"value\"}"));
+        when(request.build(esbMessages)).thenReturn(httpRequests);
+        when(httpClient.execute(httpPut)).thenReturn(response);
+
+        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+                retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-505"));
+        httpSink.prepare(esbMessages);
+        httpSink.execute();
+        verify(instrumentation, times(1)).logInfo("\nRequest Method: PUT\nRequest Url: http://dummy.com\nRequest Headers: [Accept: text/plain]\nRequest Body: {\"key\":\"value\"}");
+    }
+
+    @Test
+    public void shouldNotLogEntireRequestIfNotInStatusCodeRange() throws Exception {
+        when(response.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(500);
+
+        List<HttpEntityEnclosingRequestBase> httpRequests = Collections.singletonList(httpPut);
+
+        when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
+        when(request.build(esbMessages)).thenReturn(httpRequests);
+        when(httpClient.execute(httpPut)).thenReturn(response);
+
+        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+                retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-499"));
+        httpSink.prepare(esbMessages);
+        httpSink.execute();
+        verify(instrumentation, times(0)).logInfo(any(String.class));
     }
 
 }
