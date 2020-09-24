@@ -33,8 +33,7 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getRedisSinkType()).thenReturn(RedisSinkType.LIST);
         when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
         when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.STANDALONE);
-        when(redisSinkConfig.getRedisHost()).thenReturn("0.0.0.0");
-        when(redisSinkConfig.getRedisPort()).thenReturn("0");
+        when(redisSinkConfig.getRedisUrls()).thenReturn("0.0.0.0:0");
         RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
 
         RedisClient client = redisClientFactory.getClient();
@@ -47,8 +46,7 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getRedisSinkType()).thenReturn(RedisSinkType.LIST);
         when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
         when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.CLUSTER);
-        when(redisSinkConfig.getRedisHost()).thenReturn("0.0.0.0");
-        when(redisSinkConfig.getRedisPort()).thenReturn("0");
+        when(redisSinkConfig.getRedisUrls()).thenReturn("0.0.0.0:0, 1.1.1.1:1");
         RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
 
         RedisClient client = redisClientFactory.getClient();
@@ -57,15 +55,30 @@ public class RedisClientFactoryTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenNumberOfHostAndPortDoNotMatchForCluster() {
+    public void shouldThrowExceptionWhenUrlIsInvalidForCluster() {
         expectedException.expect(EglcConfigurationException.class);
-        expectedException.expectMessage("Number of hosts and ports do not match");
+        expectedException.expectMessage("Invalid url(s) for redis cluster: localhost:6379,localhost:6378,localhost");
 
         when(redisSinkConfig.getRedisSinkType()).thenReturn(RedisSinkType.LIST);
         when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
         when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.CLUSTER);
-        when(redisSinkConfig.getRedisHost()).thenReturn("localhost,localhost,localhost");
-        when(redisSinkConfig.getRedisPort()).thenReturn("6379,6378");
+        when(redisSinkConfig.getRedisUrls()).thenReturn("localhost:6379,localhost:6378,localhost");
+
+        RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
+
+        redisClientFactory.getClient();
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenUrlIsInvalidForStandalone() {
+        expectedException.expect(EglcConfigurationException.class);
+        expectedException.expectMessage("Invalid url for redis standalone: localhost");
+
+        when(redisSinkConfig.getRedisSinkType()).thenReturn(RedisSinkType.LIST);
+        when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
+        when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.STANDALONE);
+        when(redisSinkConfig.getRedisUrls()).thenReturn("localhost");
+
         RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
 
         redisClientFactory.getClient();
