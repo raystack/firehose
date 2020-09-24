@@ -34,6 +34,20 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
         when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.STANDALONE);
         when(redisSinkConfig.getRedisUrls()).thenReturn("0.0.0.0:0");
+
+        RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
+
+        RedisClient client = redisClientFactory.getClient();
+
+        Assert.assertEquals(RedisStandaloneClient.class, client.getClass());
+    }
+
+    @Test
+    public void shouldGetStandaloneClientWhenURLHasSpaces() {
+        when(redisSinkConfig.getRedisSinkType()).thenReturn(RedisSinkType.LIST);
+        when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
+        when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.STANDALONE);
+        when(redisSinkConfig.getRedisUrls()).thenReturn(" 0.0.0.0:0 ");
         RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
 
         RedisClient client = redisClientFactory.getClient();
@@ -47,6 +61,19 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
         when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.CLUSTER);
         when(redisSinkConfig.getRedisUrls()).thenReturn("0.0.0.0:0, 1.1.1.1:1");
+        RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
+
+        RedisClient client = redisClientFactory.getClient();
+
+        Assert.assertEquals(RedisClusterClient.class, client.getClass());
+    }
+
+    @Test
+    public void shouldGetClusterClientWhenURLHasSpaces() {
+        when(redisSinkConfig.getRedisSinkType()).thenReturn(RedisSinkType.LIST);
+        when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
+        when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.CLUSTER);
+        when(redisSinkConfig.getRedisUrls()).thenReturn(" 0.0.0.0:0, 1.1.1.1:1 ");
         RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
 
         RedisClient client = redisClientFactory.getClient();
