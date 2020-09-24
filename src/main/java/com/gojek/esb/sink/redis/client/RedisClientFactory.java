@@ -10,6 +10,7 @@ import com.gojek.esb.sink.redis.parsers.RedisParser;
 import com.gojek.esb.sink.redis.parsers.RedisParserFactory;
 import com.gojek.esb.sink.redis.ttl.RedisTTL;
 import com.gojek.esb.sink.redis.ttl.RedisTTLFactory;
+import org.apache.commons.lang.StringUtils;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
@@ -41,7 +42,7 @@ public class RedisClientFactory {
     private RedisStandaloneClient getRedisStandaloneClient(RedisParser redisParser, RedisTTL redisTTL) {
         Jedis jedis = null;
         try {
-            jedis = new Jedis(HostAndPort.parseString(redisSinkConfig.getRedisUrls()));
+            jedis = new Jedis(HostAndPort.parseString(StringUtils.trim(redisSinkConfig.getRedisUrls())));
         } catch (IllegalArgumentException e) {
             throw new EglcConfigurationException(String.format("Invalid url for redis standalone: %s", redisSinkConfig.getRedisUrls()));
         }
@@ -53,7 +54,7 @@ public class RedisClientFactory {
         HashSet<HostAndPort> nodes = new HashSet<>();
         try {
             for (String redisUrl : redisUrls) {
-                nodes.add(HostAndPort.parseString(redisUrl));
+                nodes.add(HostAndPort.parseString(StringUtils.trim(redisUrl)));
             }
         } catch (IllegalArgumentException e) {
             throw new EglcConfigurationException(String.format("Invalid url(s) for redis cluster: %s", redisSinkConfig.getRedisUrls()));
