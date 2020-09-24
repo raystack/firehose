@@ -8,13 +8,8 @@ import com.gojek.esb.config.enums.RedisTTLType;
 import com.gojek.esb.config.enums.RedisServerType;
 
 public interface RedisSinkConfig extends AppConfig {
-
-    @Key("REDIS_HOST")
-    String getRedisHost();
-
-    @Key("REDIS_PORT")
-    @DefaultValue("6379")
-    String getRedisPort();
+    @Key("REDIS_URLS")
+    String getRedisUrls();
 
     @Key("REDIS_KEY_TEMPLATE")
     String getRedisKeyTemplate();

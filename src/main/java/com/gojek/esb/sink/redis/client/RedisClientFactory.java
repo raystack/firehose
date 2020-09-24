@@ -39,19 +39,24 @@ public class RedisClientFactory {
     }
 
     private RedisStandaloneClient getRedisStandaloneClient(RedisParser redisParser, RedisTTL redisTTL) {
-        Jedis jedis = new Jedis(redisSinkConfig.getRedisHost(), Integer.valueOf(redisSinkConfig.getRedisPort()));
+        Jedis jedis = null;
+        try {
+            jedis = new Jedis(HostAndPort.parseString(redisSinkConfig.getRedisUrls()));
+        } catch (IllegalArgumentException e) {
+            throw new EglcConfigurationException(String.format("Invalid url for redis standalone: %s", redisSinkConfig.getRedisUrls()));
+        }
         return new RedisStandaloneClient(redisParser, redisTTL, jedis);
     }
 
     private RedisClusterClient getRedisClusterClient(RedisParser redisParser, RedisTTL redisTTL) {
-        String[] redisHosts = redisSinkConfig.getRedisHost().split(DELIMITER);
-        String[] redisPorts = redisSinkConfig.getRedisPort().split(DELIMITER);
-        if (redisHosts.length != redisPorts.length) {
-            throw new EglcConfigurationException("Number of hosts and ports do not match");
-        }
+        String[] redisUrls = redisSinkConfig.getRedisUrls().split(DELIMITER);
         HashSet<HostAndPort> nodes = new HashSet<>();
-        for (int index = 0; index < redisHosts.length; index++) {
-            nodes.add(new HostAndPort(redisHosts[index], Integer.valueOf(redisPorts[index])));
+        try {
+            for (String redisUrl : redisUrls) {
+                nodes.add(HostAndPort.parseString(redisUrl));
+            }
+        } catch (IllegalArgumentException e) {
+            throw new EglcConfigurationException(String.format("Invalid url(s) for redis cluster: %s", redisSinkConfig.getRedisUrls()));
         }
         JedisCluster jedisCluster = new JedisCluster(nodes);
         return new RedisClusterClient(redisParser, redisTTL, jedisCluster);
