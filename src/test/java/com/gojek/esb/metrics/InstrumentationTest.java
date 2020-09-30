@@ -68,6 +68,12 @@ public class InstrumentationTest {
     }
 
     @Test
+    public void shouldCapturePulledMessageHistogram() {
+        instrumentation.capturePulledMessageHistogram(1);
+        verify(statsDReporter, times(1)).captureHistogram(PULLED_BATCH_SIZE, 1);
+    }
+
+    @Test
     public void shouldCaptureFilteredMessageCount() {
         String filterExpression = testMessage;
         instrumentation.captureFilteredMessageCount(1, filterExpression);
@@ -125,6 +131,8 @@ public class InstrumentationTest {
         verify(logger, times(1)).info("Pushed {} messages to {}.", esbMessages.size(), "test");
         verify(statsDReporter, times(1)).captureDurationSince("sink.response.time", instrumentation.getStartExecutionTime());
         verify(statsDReporter, times(1)).captureCount("messages.count", esbMessages.size(), SUCCESS_TAG);
+        verify(statsDReporter, times(1)).captureHistogramWithTags(PUSHED_BATCH_SIZE, esbMessages.size(), SUCCESS_TAG);
+
     }
 
     @Test
@@ -132,6 +140,7 @@ public class InstrumentationTest {
         List<EsbMessage> esbMessages = Collections.singletonList(esbMessage);
         instrumentation.captureFailedExecutionTelemetry(e, esbMessages.size());
         verify(statsDReporter, times(1)).captureCount("messages.count", esbMessages.size(), FAILURE_TAG);
+        verify(statsDReporter, times(1)).captureHistogramWithTags(PUSHED_BATCH_SIZE, esbMessages.size(), FAILURE_TAG);
     }
 
     @Test

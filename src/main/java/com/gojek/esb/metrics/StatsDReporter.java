@@ -37,6 +37,14 @@ public class StatsDReporter implements Closeable {
         client.count(withGlobalTags(metric), delta);
     }
 
+    public void captureHistogramWithTags(String metric, long delta, String... tags) {
+        client.time(withTags(metric, tags), delta);
+    }
+
+    public void captureHistogram(String metric, long delta) {
+        client.time(withGlobalTags(metric), delta);
+    }
+
     public void captureDurationSince(String metric, Instant startTime, String... tags) {
         client.recordExecutionTime(withTags(metric, tags), Duration.between(startTime, clock.now()).toMillis());
     }
