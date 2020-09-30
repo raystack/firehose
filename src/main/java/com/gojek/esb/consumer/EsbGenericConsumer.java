@@ -56,6 +56,7 @@ public class EsbGenericConsumer {
     public List<EsbMessage> readMessages() throws EsbFilterException {
         this.records = kafkaConsumer.poll(Duration.ofMillis(consumerConfig.getPollTimeOut()));
         instrumentation.logInfo("Pulled {} messages", records.count());
+        instrumentation.capturePulledMessageHistogram(records.count());
         List<EsbMessage> messages = new ArrayList<>();
 
         for (ConsumerRecord<byte[], byte[]> record : records) {
