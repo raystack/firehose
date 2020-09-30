@@ -15,6 +15,8 @@ public class Metrics {
     public static final String MESSAGES_DROPPED_COUNT = "messages.dropped.count";
     public static final String LATENCY_ACROSS_FIREHOSE = "latency";
     public static final String HTTP_RESPONSE_CODE = "http.response.code";
+    public static final String PULLED_BATCH_SIZE = "pulled.batch.size";
+    public static final String PUSHED_BATCH_SIZE = "pushed.batch.size";
 
     //RETRY
     public static final String RETRY_QUEUE_PREFIX = "retry.queue.";
