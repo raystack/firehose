@@ -55,7 +55,7 @@ public class Instrumentation {
 
     // ============== FILTER MESSAGES ==============
 
-    public void capturePulledMessageHistogram(long pulledMessageCount ) {
+    public void capturePulledMessageHistogram(long pulledMessageCount) {
         statsDReporter.captureHistogram(PULLED_BATCH_SIZE, pulledMessageCount);
     }
 
