@@ -13,24 +13,29 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.util.EntityUtils;
+import org.json.simple.parser.ParseException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.gojek.esb.metrics.Metrics.HTTP_RESPONSE_CODE;
+import static com.gojek.esb.metrics.Metrics.*;
 
 /**
  * HttpSink implement {@link AbstractSink} lifecycle for HTTP.
  */
 public class HttpSink extends AbstractSink {
+
+    private static final int SUCCESS_CODE = 200;
 
     private Request request;
     private List<HttpEntityEnclosingRequestBase> httpRequests;
@@ -70,6 +75,8 @@ public class HttpSink extends AbstractSink {
                 }
                 if (shouldRetry(response)) {
                     throw new NeedToRetry(statusCode(response));
+                } else if (response.getStatusLine().getStatusCode() != SUCCESS_CODE) {
+                    captureMessageDropCount(response, httpRequest);
                 }
             } catch (IOException e) {
                 NewRelic.noticeError(e);
@@ -121,12 +128,27 @@ public class HttpSink extends AbstractSink {
     }
 
     private void printRequest(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
+        InputStream inputStream = getContent(httpRequest);
         String entireRequest = String.format("\nRequest Method: %s\nRequest Url: %s\nRequest Headers: %s\nRequest Body: %s",
                 httpRequest.getMethod(),
                 httpRequest.getURI(),
                 Arrays.asList(httpRequest.getAllHeaders()),
-                new BufferedReader(new InputStreamReader(httpRequest.getEntity().getContent(),
-                        StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")));
+                new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")));
         getInstrumentation().logInfo(entireRequest);
+        inputStream.reset();
+    }
+
+    private InputStream getContent(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
+        return httpRequest.getEntity().getContent();
+    }
+
+    private void captureMessageDropCount(HttpResponse response, HttpEntityEnclosingRequestBase httpRequest) throws IOException, ParseException {
+        InputStream inputStream = getContent(httpRequest);
+        String requestBody = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
+
+        List<String> result = Arrays.asList(requestBody.substring(1, requestBody.length() - 1).split(","));
+
+        getInstrumentation().captureCountWithTags(MESSAGES_DROPPED_COUNT, result.size(), "cause= " + statusCode(response));
+        getInstrumentation().logInfo("Message dropped because of status code: " + statusCode(response));
     }
 }
