@@ -13,7 +13,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.util.EntityUtils;
-import org.json.simple.parser.ParseException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,7 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.gojek.esb.metrics.Metrics.*;
+import static com.gojek.esb.metrics.Metrics.HTTP_RESPONSE_CODE;
+import static com.gojek.esb.metrics.Metrics.MESSAGES_DROPPED_COUNT;
+
 
 /**
  * HttpSink implement {@link AbstractSink} lifecycle for HTTP.
@@ -142,11 +143,11 @@ public class HttpSink extends AbstractSink {
         return httpRequest.getEntity().getContent();
     }
 
-    private void captureMessageDropCount(HttpResponse response, HttpEntityEnclosingRequestBase httpRequest) throws IOException, ParseException {
+    private void captureMessageDropCount(HttpResponse response, HttpEntityEnclosingRequestBase httpRequest) throws IOException {
         InputStream inputStream = getContent(httpRequest);
         String requestBody = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
 
-        List<String> result = Arrays.asList(requestBody.substring(1, requestBody.length() - 1).split(","));
+        List<String> result = Arrays.asList(requestBody.replaceAll("^\\[|]$", "").split("},\\s*\\{"));
 
         getInstrumentation().captureCountWithTags(MESSAGES_DROPPED_COUNT, result.size(), "cause= " + statusCode(response));
         getInstrumentation().logInfo("Message dropped because of status code: " + statusCode(response));
