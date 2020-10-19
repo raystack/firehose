@@ -158,7 +158,7 @@ public class HttpSinkTest {
     }
 
     @Test
-    public void shouldLogEntireRequestIfInStatusCodeRange() throws Exception {
+    public void shouldLogEntireRequestIfInStatusCodeRangeWithBatchRequestAndCaptureDroppedMessages() throws Exception {
         when(response.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(500);
 
@@ -179,6 +179,54 @@ public class HttpSinkTest {
         verify(instrumentation, times(1)).logInfo("\nRequest Method: PUT\nRequest Url: http://dummy.com\nRequest Headers: [Accept: text/plain]\nRequest Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]");
         verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
         verify(instrumentation, times(1)).captureCountWithTags("messages.dropped.count", 2, "cause= 500");
+    }
+
+    @Test
+    public void shouldLogEntireRequestIfInStatusCodeRangeWithIndividualRequestAndCaptureDroppedMessages() throws Exception {
+        when(response.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(500);
+
+        List<HttpEntityEnclosingRequestBase> httpRequests = Collections.singletonList(httpPut);
+
+        when(httpPut.getMethod()).thenReturn("PUT");
+        when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
+        when(httpPut.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
+        when(httpPut.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new StringInputStream("{\"key\":\"value\"}"));
+        when(request.build(esbMessages)).thenReturn(httpRequests);
+        when(httpClient.execute(httpPut)).thenReturn(response);
+
+        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+                retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-505"));
+        httpSink.prepare(esbMessages);
+        httpSink.execute();
+        verify(instrumentation, times(1)).logInfo("\nRequest Method: PUT\nRequest Url: http://dummy.com\nRequest Headers: [Accept: text/plain]\nRequest Body: {\"key\":\"value\"}");
+        verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
+        verify(instrumentation, times(1)).captureCountWithTags("messages.dropped.count", 1, "cause= 500");
+    }
+
+    @Test
+    public void shouldLogEntireRequestIfInStatusCodeRangeWithSingleListRequestBodyAndCaptureDroppedMessages() throws Exception {
+        when(response.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(500);
+
+        List<HttpEntityEnclosingRequestBase> httpRequests = Collections.singletonList(httpPut);
+
+        when(httpPut.getMethod()).thenReturn("PUT");
+        when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
+        when(httpPut.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
+        when(httpPut.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value\"}]"));
+        when(request.build(esbMessages)).thenReturn(httpRequests);
+        when(httpClient.execute(httpPut)).thenReturn(response);
+
+        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+                retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-505"));
+        httpSink.prepare(esbMessages);
+        httpSink.execute();
+        verify(instrumentation, times(1)).logInfo("\nRequest Method: PUT\nRequest Url: http://dummy.com\nRequest Headers: [Accept: text/plain]\nRequest Body: [{\"key\":\"value\"}]");
+        verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
+        verify(instrumentation, times(1)).captureCountWithTags("messages.dropped.count", 1, "cause= 500");
     }
 
     @Test
