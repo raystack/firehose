@@ -1,12 +1,14 @@
 package com.gojek.esb.sink.elasticsearch;
 
 import com.gojek.de.stencil.client.StencilClient;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.Sink;
 import org.apache.http.HttpHost;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,11 +24,15 @@ public class ESSinkFactoryTest {
     private StatsDReporter statsDReporter;
 
     @Mock
+    private Instrumentation instrumentation;
+
+    @Mock
     private StencilClient stencilClient;
 
     @Before
     public void setUp() {
         configuration = new HashMap<>();
+        MockitoAnnotations.initMocks(this);
     }
 
     @Test
@@ -41,7 +47,7 @@ public class ESSinkFactoryTest {
     public void shouldThrowIllegalArgumentExceptionForEmptyESConnectionURLs() {
         ESSinkFactory esSinkFactory = new ESSinkFactory();
         try {
-            esSinkFactory.getHttpHosts("");
+            esSinkFactory.getHttpHosts("", instrumentation);
         } catch (Exception e) {
             assertEquals(IllegalArgumentException.class, e.getClass());
             assertEquals("ES_CONNECTION_URLS is empty or null", e.getMessage());
@@ -52,7 +58,7 @@ public class ESSinkFactoryTest {
     public void shouldThrowIllegalArgumentExceptionForNullESConnectionURLs() {
         ESSinkFactory esSinkFactory = new ESSinkFactory();
         try {
-            esSinkFactory.getHttpHosts(null);
+            esSinkFactory.getHttpHosts(null, instrumentation);
         } catch (Exception e) {
             assertEquals(IllegalArgumentException.class, e.getClass());
             assertEquals("ES_CONNECTION_URLS is empty or null", e.getMessage());
@@ -64,7 +70,7 @@ public class ESSinkFactoryTest {
         ESSinkFactory esSinkFactory = new ESSinkFactory();
         String esConnectionURLs = ":1000";
         try {
-            esSinkFactory.getHttpHosts(esConnectionURLs);
+            esSinkFactory.getHttpHosts(esConnectionURLs, instrumentation);
         } catch (Exception e) {
             assertEquals(IllegalArgumentException.class, e.getClass());
         }
@@ -75,7 +81,7 @@ public class ESSinkFactoryTest {
         ESSinkFactory esSinkFactory = new ESSinkFactory();
         String esConnectionURLs = "localhost:";
         try {
-            esSinkFactory.getHttpHosts(esConnectionURLs);
+            esSinkFactory.getHttpHosts(esConnectionURLs, instrumentation);
         } catch (Exception e) {
             assertEquals(IllegalArgumentException.class, e.getClass());
         }
@@ -85,7 +91,7 @@ public class ESSinkFactoryTest {
     public void shouldGetHttpHostsForValidESConnectionURLs() {
         ESSinkFactory esSinkFactory = new ESSinkFactory();
         String esConnectionURLs = "localhost_1:1000,localhost_2:1000";
-        HttpHost[] httpHosts = esSinkFactory.getHttpHosts(esConnectionURLs);
+        HttpHost[] httpHosts = esSinkFactory.getHttpHosts(esConnectionURLs, instrumentation);
 
         assertEquals("localhost_1", httpHosts[0].getHostName());
         assertEquals(1000, httpHosts[0].getPort());
@@ -97,7 +103,7 @@ public class ESSinkFactoryTest {
     public void shouldGetHttpHostsForValidESConnectionURLsWithSpacesInBetween() {
         ESSinkFactory esSinkFactory = new ESSinkFactory();
         String esConnectionURLs = " localhost_1: 1000,  localhost_2:1000";
-        HttpHost[] httpHosts = esSinkFactory.getHttpHosts(esConnectionURLs);
+        HttpHost[] httpHosts = esSinkFactory.getHttpHosts(esConnectionURLs, instrumentation);
 
         assertEquals("localhost_1", httpHosts[0].getHostName());
         assertEquals(1000, httpHosts[0].getPort());
@@ -109,7 +115,7 @@ public class ESSinkFactoryTest {
     public void shouldGetHttpHostsForIPInESConnectionURLs() {
         ESSinkFactory esSinkFactory = new ESSinkFactory();
         String esConnectionURLs = "172.28.32.156:1000";
-        HttpHost[] httpHosts = esSinkFactory.getHttpHosts(esConnectionURLs);
+        HttpHost[] httpHosts = esSinkFactory.getHttpHosts(esConnectionURLs, instrumentation);
 
         assertEquals("172.28.32.156", httpHosts[0].getHostName());
         assertEquals(1000, httpHosts[0].getPort());
@@ -120,7 +126,7 @@ public class ESSinkFactoryTest {
         ESSinkFactory esSinkFactory = new ESSinkFactory();
         String esConnectionURLs = "test";
         try {
-            esSinkFactory.getHttpHosts(esConnectionURLs);
+            esSinkFactory.getHttpHosts(esConnectionURLs, instrumentation);
         } catch (Exception e) {
             assertEquals(IllegalArgumentException.class, e.getClass());
             assertEquals("ES_CONNECTION_URLS should contain host and port both", e.getMessage());
@@ -143,5 +149,4 @@ public class ESSinkFactoryTest {
         List<String> statusCodesAsList = esSinkFactory.getStatusCodesAsList(inputRetryStatusCodeBlacklist);
         assertEquals(0, statusCodesAsList.size());
     }
-
 }

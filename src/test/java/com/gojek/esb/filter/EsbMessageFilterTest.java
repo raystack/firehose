@@ -3,12 +3,17 @@ package com.gojek.esb.filter;
 import com.gojek.esb.booking.BookingLogKey;
 import com.gojek.esb.booking.BookingLogMessage;
 import com.gojek.esb.config.KafkaConsumerConfig;
+import com.gojek.esb.config.enums.EsbFilterType;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.consumer.TestKey;
 import com.gojek.esb.consumer.TestMessage;
+import com.gojek.esb.metrics.Instrumentation;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,15 +31,18 @@ public class EsbMessageFilterTest {
     private TestMessage message;
     private TestKey key;
 
+    @Mock
+    private Instrumentation instrumentation;
+
     @Before
     public void setup() {
+        MockitoAnnotations.initMocks(this);
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_TYPE", "message");
         filterConfigs.put("FILTER_EXPRESSION", "testMessage.getOrderNumber() == 123");
         filterConfigs.put("FILTER_PROTO_SCHEMA", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
-        filter = new EsbMessageFilter(kafkaConsumerConfig);
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
         message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
     }
@@ -42,6 +50,7 @@ public class EsbMessageFilterTest {
     @Test
     public void shouldFilterEsbMessages() throws EsbFilterException {
         EsbMessage esbMessage = new EsbMessage(key.toByteArray(), this.message.toByteArray(), "topic1", 0, 100);
+        filter = new EsbMessageFilter(kafkaConsumerConfig, instrumentation);
         List<EsbMessage> filteredMessages = filter.filter(Arrays.asList(esbMessage));
         assertEquals(filteredMessages.get(0), esbMessage);
     }
@@ -56,7 +65,7 @@ public class EsbMessageFilterTest {
         bookingFilterConfigs.put("FILTER_EXPRESSION", "bookingLogMessage.getCustomerDynamicSurgeEnabled() == false");
         bookingFilterConfigs.put("FILTER_PROTO_SCHEMA", BookingLogMessage.class.getName());
         KafkaConsumerConfig bookingConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, bookingFilterConfigs);
-        EsbMessageFilter bookingFilter = new EsbMessageFilter(bookingConsumerConfig);
+        EsbMessageFilter bookingFilter = new EsbMessageFilter(bookingConsumerConfig, instrumentation);
         List<EsbMessage> filteredMessages = bookingFilter.filter(Arrays.asList(esbMessage));
         assertEquals(filteredMessages.get(0), esbMessage);
     }
@@ -69,7 +78,7 @@ public class EsbMessageFilterTest {
         filterConfigs.put("FILTER_PROTO_SCHEMA", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
-        filter = new EsbMessageFilter(kafkaConsumerConfig);
+        filter = new EsbMessageFilter(kafkaConsumerConfig, instrumentation);
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
         message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
 
@@ -84,12 +93,36 @@ public class EsbMessageFilterTest {
         filterConfigs.put("FILTER_PROTO_SCHEMA", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
-        filter = new EsbMessageFilter(kafkaConsumerConfig);
+        filter = new EsbMessageFilter(kafkaConsumerConfig, instrumentation);
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
         message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
 
         EsbMessage esbMessage = new EsbMessage(key.toByteArray(), this.message.toByteArray(), "topic1", 0, 100);
         List<EsbMessage> filteredMessages = this.filter.filter(Arrays.asList(esbMessage));
         assertEquals(filteredMessages.get(0), esbMessage);
+    }
+
+    @Test
+    public void shouldLogFilterTypeIfFilterTypeIsNotNone() {
+        Map<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_TYPE", "message");
+        filterConfigs.put("FILTER_EXPRESSION", "testMessage.getOrderNumber() == 123");
+        filterConfigs.put("FILTER_PROTO_SCHEMA", TestMessage.class.getName());
+        kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
+
+        new EsbMessageFilter(kafkaConsumerConfig, instrumentation);
+        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter type: {}", EsbFilterType.MESSAGE);
+        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter schema: {}", TestMessage.class.getName());
+        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter expression: {}", "testMessage.getOrderNumber() == 123");
+    }
+
+    @Test
+    public void shouldLogFilterTypeIfFilterTypeIsNone() {
+        Map<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_TYPE", "none");
+        kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
+
+        new EsbMessageFilter(kafkaConsumerConfig, instrumentation);
+        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("No filter is selected");
     }
 }

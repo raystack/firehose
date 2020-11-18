@@ -63,10 +63,8 @@ public class EsbGenericConsumer {
             messages.add(new EsbMessage(record.key(), record.value(), record.topic(), record.partition(), record.offset(), record.headers(), record.timestamp(), System.currentTimeMillis()));
             instrumentation.logDebug("Pulled record: {}", record);
         }
-
         return filter(messages);
     }
-
 
     private List<EsbMessage> filter(List<EsbMessage> messages) throws EsbFilterException {
         List<EsbMessage> filteredMessage = filter.filter(messages);
@@ -84,9 +82,10 @@ public class EsbGenericConsumer {
 
     public void close() {
         try {
+            instrumentation.logInfo("Consumer is closing");
             this.kafkaConsumer.close();
         } catch (Exception e) {
-            instrumentation.captureNonFatalError(e, "Exception while closing ");
+            instrumentation.captureNonFatalError(e, "Exception while closing consumer");
         }
     }
 }

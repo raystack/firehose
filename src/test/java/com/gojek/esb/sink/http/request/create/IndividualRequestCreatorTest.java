@@ -3,6 +3,7 @@ package com.gojek.esb.sink.http.request.create;
 import com.gojek.esb.config.enums.HttpRequestMethod;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.http.request.body.JsonBody;
 import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
@@ -39,6 +40,9 @@ public class IndividualRequestCreatorTest {
     @Mock
     private JsonBody jsonBody;
 
+    @Mock
+    private Instrumentation instrumentation;
+
     @Before
     public void setup() {
         initMocks(this);
@@ -58,10 +62,14 @@ public class IndividualRequestCreatorTest {
         serializedMessages.add("dummyMessage2");
         when(jsonBody.serialize(esbMessages)).thenReturn(serializedMessages);
 
-        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
+        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
         List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(esbMessages, requestEntityBuilder);
 
         assertEquals(2, requests.size());
+        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(esbMessages).get(0), HttpRequestMethod.PUT);
+        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(esbMessages).get(1), HttpRequestMethod.PUT);
     }
 
     @Test
@@ -77,12 +85,16 @@ public class IndividualRequestCreatorTest {
         serializedMessages.add("dummyMessage2");
         when(jsonBody.serialize(esbMessages)).thenReturn(serializedMessages);
 
-        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
+        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
         individualRequestCreator.create(esbMessages, requestEntityBuilder);
 
         verify(uriBuilder, times(2)).build(any(EsbMessage.class));
         verify(headerBuilder, times(2)).build(any(EsbMessage.class));
         verify(requestEntityBuilder, times(2)).buildHttpEntity(any(String.class));
+        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(esbMessages).get(0), HttpRequestMethod.PUT);
+        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(esbMessages).get(1), HttpRequestMethod.PUT);
     }
 
     @Test
@@ -98,10 +110,14 @@ public class IndividualRequestCreatorTest {
         serializedMessages.add("dummyMessage2");
         when(jsonBody.serialize(esbMessages)).thenReturn(serializedMessages);
 
-        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
+        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
         List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(esbMessages, requestEntityBuilder);
 
         assertEquals(2, requests.size());
+        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(esbMessages).get(0), HttpRequestMethod.PUT);
+        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(esbMessages).get(1), HttpRequestMethod.PUT);
     }
 
     @Test
@@ -119,13 +135,18 @@ public class IndividualRequestCreatorTest {
 
         requestEntityBuilder = new RequestEntityBuilder().setWrapping(true);
 
-        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
+        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
         List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(esbMessages, requestEntityBuilder);
 
         byte[] bytes1 = IOUtils.toByteArray(requests.get(0).getEntity().getContent());
         byte[] bytes2 = IOUtils.toByteArray(requests.get(1).getEntity().getContent());
         Assert.assertEquals("[dummyMessage1]", new String(bytes1));
         Assert.assertEquals("[dummyMessage2]", new String(bytes2));
+
+        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(esbMessages).get(0), HttpRequestMethod.PUT);
+        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(esbMessages).get(1), HttpRequestMethod.PUT);
     }
 
     @Test
@@ -143,12 +164,17 @@ public class IndividualRequestCreatorTest {
 
         requestEntityBuilder = new RequestEntityBuilder().setWrapping(false);
 
-        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
+        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
         List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(esbMessages, requestEntityBuilder);
 
         byte[] bytes1 = IOUtils.toByteArray(requests.get(0).getEntity().getContent());
         byte[] bytes2 = IOUtils.toByteArray(requests.get(1).getEntity().getContent());
         Assert.assertEquals("dummyMessage1", new String(bytes1));
         Assert.assertEquals("dummyMessage2", new String(bytes2));
+
+        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(esbMessages).get(0), HttpRequestMethod.PUT);
+        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(esbMessages).get(1), HttpRequestMethod.PUT);
     }
 }

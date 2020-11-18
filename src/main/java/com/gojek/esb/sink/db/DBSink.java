@@ -11,8 +11,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * DBSink allows messages consumed from kafka to be persisted to a database.
@@ -23,8 +23,6 @@ public class DBSink extends AbstractSink {
     private DBConnectionPool pool;
     private QueryTemplate queryTemplate;
     private StencilClient stencilClient;
-
-    private List<String> queries;
     private Statement statement;
     private Connection connection = null;
 
@@ -44,13 +42,15 @@ public class DBSink extends AbstractSink {
         for (String query : queriesList) {
             statement.addBatch(query);
         }
-
     }
 
     protected List<String> createQueries(List<EsbMessage> messages) {
-        queries = messages.stream()
-                .map(esbMessage -> queryTemplate.toQueryString(esbMessage))
-                .collect(Collectors.toList());
+        List<String> queries = new ArrayList<>();
+        for (EsbMessage esbMessage : messages) {
+            String queryString = queryTemplate.toQueryString(esbMessage);
+            getInstrumentation().logDebug(queryString);
+            queries.add(queryString);
+        }
         return queries;
     }
 
@@ -58,7 +58,8 @@ public class DBSink extends AbstractSink {
     @Trace(dispatcher = true)
     protected List<EsbMessage> execute() throws Exception {
         try {
-            statement.executeBatch();
+            int[] updateCounts = statement.executeBatch();
+            getInstrumentation().logDebug("DB response: {}", Arrays.toString(updateCounts));
         } finally {
             if (connection != null) {
                 pool.release(connection);
@@ -70,6 +71,7 @@ public class DBSink extends AbstractSink {
     @Override
     public void close() throws IOException {
         try {
+            getInstrumentation().logInfo("Database connection closing");
             pool.shutdown();
             stencilClient.close();
         } catch (InterruptedException e) {

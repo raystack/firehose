@@ -2,6 +2,7 @@ package com.gojek.esb.sink.http.request;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.HTTPSinkConfig;
+import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.http.request.types.SimpleRequest;
 import com.gojek.esb.sink.http.request.types.DynamicUrlRequest;
 import com.gojek.esb.sink.http.request.types.ParameterizedHeaderRequest;
@@ -23,6 +24,8 @@ public class RequestFactoryTest {
     @Mock
     private StencilClient stencilClient;
     @Mock
+    private StatsDReporter statsDReporter;
+    @Mock
     private UriParser uriParser;
     private HTTPSinkConfig httpSinkConfig;
 
@@ -38,7 +41,8 @@ public class RequestFactoryTest {
     public void shouldReturnBatchRequestWhenPrameterSourceIsDisabledAndServiceUrlIsConstant() {
         configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api");
         httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
-        Request request = new RequestFactory(httpSinkConfig, stencilClient, uriParser).createRequest();
+
+        Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();
 
         assertTrue(request instanceof SimpleRequest);
     }
@@ -48,7 +52,7 @@ public class RequestFactoryTest {
         configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api,%s");
         httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
 
-        Request request = new RequestFactory(httpSinkConfig, stencilClient, uriParser).createRequest();
+        Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();
 
         assertTrue(request instanceof DynamicUrlRequest);
     }
@@ -60,7 +64,7 @@ public class RequestFactoryTest {
         configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api,%s");
         httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
 
-        Request request = new RequestFactory(httpSinkConfig, stencilClient, uriParser).createRequest();
+        Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();
 
         assertTrue(request instanceof ParameterizedHeaderRequest);
     }
@@ -72,8 +76,7 @@ public class RequestFactoryTest {
         configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api,%s");
         httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
 
-
-        Request request = new RequestFactory(httpSinkConfig, stencilClient, uriParser).createRequest();
+        Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();
 
         assertTrue(request instanceof ParameterizedURIRequest);
     }

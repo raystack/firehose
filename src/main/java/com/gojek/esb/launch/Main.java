@@ -23,6 +23,9 @@ public class Main {
                 .fromKafkaConsumerConfig(kafkaConsumerConfig)
                 .buildReporter();
         Instrumentation instrumentation = new Instrumentation(statsDReporter, Main.class);
+        instrumentation.logInfo("Number of consumer threads: " + kafkaConsumerConfig.noOfConsumerThreads());
+        instrumentation.logInfo("Delay to clean up consumer threads in ms: " + kafkaConsumerConfig.threadCleanupDelay());
+
         Task consumerTask = new Task(
                 kafkaConsumerConfig.noOfConsumerThreads(),
                 kafkaConsumerConfig.threadCleanupDelay(),
@@ -31,14 +34,16 @@ public class Main {
 
                     FireHoseConsumer fireHoseConsumer = null;
                     try {
-                        fireHoseConsumer = new FireHoseConsumerFactory(kafkaConsumerConfig).buildConsumer();
+                        fireHoseConsumer = new FireHoseConsumerFactory(
+                                kafkaConsumerConfig,
+                                statsDReporter)
+                                .buildConsumer();
                         while (true) {
                             if (Thread.interrupted()) {
-                                instrumentation.logInfo("Consumer Thread interrupted, leaving the loop!");
+                                instrumentation.logWarn("Consumer Thread interrupted, leaving the loop!");
                                 break;
                             }
                             fireHoseConsumer.processPartitions();
-
                         }
                     } catch (Exception e) {
                         instrumentation.captureFatalError(e, "Exception on creating the consumer, exiting the application");
@@ -48,15 +53,14 @@ public class Main {
                         taskFinished.run();
                     }
                 });
-
+        instrumentation.logInfo("Consumer Task Created");
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            instrumentation.logInfo("Executing the shutdown hook");
+            instrumentation.logInfo("Program is going to exit. Have started execution of shutdownHook before this");
             consumerTask.stop();
         }));
 
         consumerTask.run().waitForCompletion();
-
         instrumentation.logInfo("Exiting main thread");
     }
 

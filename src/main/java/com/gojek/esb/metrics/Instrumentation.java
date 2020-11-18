@@ -4,6 +4,7 @@ import com.gojek.esb.consumer.EsbMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
@@ -51,6 +52,10 @@ public class Instrumentation {
 
     public void logDebug(String template, Object... t) {
         logger.debug(template, t);
+    }
+
+    public void logError(String template, Object... t) {
+        logger.error(template, t);
     }
 
     // ============== FILTER MESSAGES ==============
@@ -113,6 +118,7 @@ public class Instrumentation {
     }
 
     public void captureFailedExecutionTelemetry(Exception e, Integer messageListSize) {
+
         captureNonFatalError(e, "caught {} {}", e.getClass(), e.getMessage());
         statsDReporter.captureCount(MESSAGE_COUNT, messageListSize, FAILURE_TAG);
         statsDReporter.captureHistogramWithTags(PUSHED_BATCH_SIZE, messageListSize, FAILURE_TAG);
@@ -142,6 +148,13 @@ public class Instrumentation {
         });
     }
 
+    public void captureDurationSince(String metric, Instant instant) {
+        statsDReporter.captureDurationSince(metric, instant);
+    }
+
+    public void captureSleepTime(String metric, int sleepTime) {
+        statsDReporter.gauge(metric, sleepTime);
+    }
 
     // ===================== CountTelemetry =================
 
@@ -151,5 +164,15 @@ public class Instrumentation {
 
     public void incrementCounterWithTags(String metric, String... tags) {
         statsDReporter.increment(metric, tags);
+    }
+
+    public void incrementCounter(String metric) {
+        statsDReporter.increment(metric);
+    }
+
+    // ===================== closing =================
+
+    public void close() throws IOException {
+        statsDReporter.close();
     }
 }

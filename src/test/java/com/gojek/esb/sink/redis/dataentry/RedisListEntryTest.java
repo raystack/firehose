@@ -1,5 +1,6 @@
 package com.gojek.esb.sink.redis.dataentry;
 
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.redis.ttl.DurationTTL;
 import com.gojek.esb.sink.redis.ttl.ExactTimeTTL;
 import com.gojek.esb.sink.redis.ttl.NoRedisTTL;
@@ -20,6 +21,9 @@ import static org.mockito.Mockito.verify;
 public class RedisListEntryTest {
 
     @Mock
+    private Instrumentation instrumentation;
+
+    @Mock
     private Pipeline pipeline;
 
     @Mock
@@ -31,7 +35,7 @@ public class RedisListEntryTest {
     @Before
     public void setup() {
         redisTTL = new NoRedisTTL();
-        redisListEntry = new RedisListEntry("test-key", "test-value");
+        redisListEntry = new RedisListEntry("test-key", "test-value", instrumentation);
     }
 
     @Test
@@ -41,6 +45,7 @@ public class RedisListEntryTest {
         verify(pipeline, times(1)).lpush("test-key", "test-value");
         verify(pipeline, times(0)).expireAt(any(String.class), any(Long.class));
         verify(pipeline, times(0)).expireAt(any(String.class), any(Long.class));
+        verify(instrumentation, times(1)).logDebug("key: {}, value: {}", "test-key", "test-value");
     }
 
     @Test
@@ -49,6 +54,7 @@ public class RedisListEntryTest {
         redisListEntry.pushMessage(pipeline, redisTTL);
 
         verify(pipeline, times(1)).expireAt("test-key", 1000L);
+        verify(instrumentation, times(1)).logDebug("key: {}, value: {}", "test-key", "test-value");
     }
 
     @Test
@@ -57,6 +63,7 @@ public class RedisListEntryTest {
         redisListEntry.pushMessage(pipeline, redisTTL);
 
         verify(pipeline, times(1)).expire("test-key", 1000);
+        verify(instrumentation, times(1)).logDebug("key: {}, value: {}", "test-key", "test-value");
     }
 
     @Test
@@ -66,6 +73,7 @@ public class RedisListEntryTest {
         verify(jedisCluster, times(1)).lpush("test-key", "test-value");
         verify(jedisCluster, times(0)).expireAt(any(String.class), any(Long.class));
         verify(jedisCluster, times(0)).expireAt(any(String.class), any(Long.class));
+        verify(instrumentation, times(1)).logDebug("key: {}, value: {}", "test-key", "test-value");
     }
 
     @Test
@@ -74,6 +82,7 @@ public class RedisListEntryTest {
         redisListEntry.pushMessage(jedisCluster, redisTTL);
 
         verify(jedisCluster, times(1)).expireAt("test-key", 1000L);
+        verify(instrumentation, times(1)).logDebug("key: {}, value: {}", "test-key", "test-value");
     }
 
     @Test
@@ -82,5 +91,6 @@ public class RedisListEntryTest {
         redisListEntry.pushMessage(jedisCluster, redisTTL);
 
         verify(jedisCluster, times(1)).expire("test-key", 1000);
+        verify(instrumentation, times(1)).logDebug("key: {}, value: {}", "test-key", "test-value");
     }
 }

@@ -1,6 +1,8 @@
 package com.gojek.esb.sink.redis.client;
 
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.Instrumentation;
+import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import com.gojek.esb.sink.redis.dataentry.RedisHashSetFieldEntry;
 import com.gojek.esb.sink.redis.dataentry.RedisListEntry;
@@ -11,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 import redis.clients.jedis.JedisCluster;
 
@@ -18,15 +21,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedisClusterClientTest {
-    private final RedisHashSetFieldEntry firstRedisSetEntry = new RedisHashSetFieldEntry("key1", "field1", "value1");
-    private final RedisHashSetFieldEntry secondRedisSetEntry = new RedisHashSetFieldEntry("key2", "field2", "value2");
-    private final RedisListEntry firstRedisListEntry = new RedisListEntry("key1", "value1");
-    private final RedisListEntry secondRedisListEntry = new RedisListEntry("key2", "value2");
+    @Mock
+    private StatsDReporter statsDReporter;
+
+    @Mock
+    private Instrumentation instrumentation;
+
+    private final RedisHashSetFieldEntry firstRedisSetEntry = new RedisHashSetFieldEntry("key1", "field1", "value1", new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class));
+    private final RedisHashSetFieldEntry secondRedisSetEntry = new RedisHashSetFieldEntry("key2", "field2", "value2", new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class));
+    private final RedisListEntry firstRedisListEntry = new RedisListEntry("key1", "value1", new Instrumentation(statsDReporter, RedisListEntry.class));
+    private final RedisListEntry secondRedisListEntry = new RedisListEntry("key2", "value2", new Instrumentation(statsDReporter, RedisListEntry.class));
     @Mock
     private JedisCluster jedisCluster;
 
@@ -41,10 +49,11 @@ public class RedisClusterClientTest {
 
     @Before
     public void setup() {
+        MockitoAnnotations.initMocks(this);
         esbMessages = Arrays.asList(new EsbMessage(new byte[0], new byte[0], "topic", 0, 100),
                 new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
 
-        redisClusterClient = new RedisClusterClient(redisParser, redisTTL, jedisCluster);
+        redisClusterClient = new RedisClusterClient(instrumentation, redisParser, redisTTL, jedisCluster);
 
         redisDataEntries = new ArrayList<>();
 
@@ -94,6 +103,7 @@ public class RedisClusterClientTest {
     public void shouldCloseTheJedisClient() {
         redisClusterClient.close();
 
+        verify(instrumentation, times(1)).logInfo("Closing Jedis client");
         verify(jedisCluster).close();
     }
 

@@ -25,6 +25,7 @@ public class StatsDReporterFactory {
     this.statsDHost = statsDHost;
     this.statsDPort = statsDPort;
     this.globalTags = globalTags;
+    LOGGER.debug("\n\tStatsd Host: {}\n\tStatsd Port: {}\n\tStatsd Tags: {}", this.statsDHost, this.statsDPort, this.globalTags);
   }
 
   public static StatsDReporterFactory fromKafkaConsumerConfig(KafkaConsumerConfig kafkaConsumerConfig) {
@@ -40,17 +41,14 @@ public class StatsDReporterFactory {
     return new StatsDReporter(statsDClient, clockInstance, globalTags);
   }
 
-  public StatsDClient getStatsDClient() {
-    return buildStatsDClient();
-  }
-
   private StatsDClient buildStatsDClient() {
     StatsDClient statsDClient;
     try {
       statsDClient = new NonBlockingStatsDClient("firehose", statsDHost, statsDPort);
+      LOGGER.info("NonBlocking StatsD client connection established");
     } catch (Exception e) {
-      LOGGER.error("Exception on creating StatsD client, disabling StatsD and Audit client", e);
-      LOGGER.error("FireHose is running without collecting any metrics!!!!!!!!");
+      LOGGER.warn("Exception on creating StatsD client, disabling StatsD and Audit client", e);
+      LOGGER.warn("FireHose is running without collecting any metrics!!!!!!!!");
       statsDClient = new NoOpStatsDClient();
     }
     return statsDClient;

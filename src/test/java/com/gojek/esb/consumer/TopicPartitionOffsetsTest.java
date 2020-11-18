@@ -1,7 +1,7 @@
 package com.gojek.esb.consumer;
 
 import com.gojek.esb.config.KafkaConsumerConfig;
-import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.metrics.Instrumentation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -34,7 +34,7 @@ public class TopicPartitionOffsetsTest {
     private KafkaConsumerConfig consumerConfig;
 
     @Mock
-    private StatsDReporter statsDReporter;
+    private Instrumentation instrumentation;
 
     private TestMessage message;
     private TestKey key;
@@ -49,7 +49,7 @@ public class TopicPartitionOffsetsTest {
     public void setup() {
         initMocks(this);
 
-        offsets = new TopicPartitionOffsets(kafkaConsumer, consumerConfig, statsDReporter);
+        offsets = new TopicPartitionOffsets(kafkaConsumer, consumerConfig, instrumentation);
 
         message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
