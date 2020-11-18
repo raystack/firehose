@@ -6,6 +6,7 @@ import com.gojek.esb.config.enums.RedisServerType;
 import com.gojek.esb.config.enums.RedisSinkType;
 import com.gojek.esb.config.enums.RedisTTLType;
 import com.gojek.esb.exception.EglcConfigurationException;
+import com.gojek.esb.metrics.StatsDReporter;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,6 +29,9 @@ public class RedisClientFactoryTest {
     @Mock
     private StencilClient stencilClient;
 
+    @Mock
+    private StatsDReporter statsDReporter;
+
     @Test
     public void shouldGetStandaloneClient() {
         when(redisSinkConfig.getRedisSinkType()).thenReturn(RedisSinkType.LIST);
@@ -35,7 +39,7 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.STANDALONE);
         when(redisSinkConfig.getRedisUrls()).thenReturn("0.0.0.0:0");
 
-        RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
+        RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
 
         RedisClient client = redisClientFactory.getClient();
 
@@ -48,7 +52,7 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
         when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.STANDALONE);
         when(redisSinkConfig.getRedisUrls()).thenReturn(" 0.0.0.0:0 ");
-        RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
+        RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
 
         RedisClient client = redisClientFactory.getClient();
 
@@ -61,7 +65,7 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
         when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.CLUSTER);
         when(redisSinkConfig.getRedisUrls()).thenReturn("0.0.0.0:0, 1.1.1.1:1");
-        RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
+        RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
 
         RedisClient client = redisClientFactory.getClient();
 
@@ -74,7 +78,7 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
         when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.CLUSTER);
         when(redisSinkConfig.getRedisUrls()).thenReturn(" 0.0.0.0:0, 1.1.1.1:1 ");
-        RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
+        RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
 
         RedisClient client = redisClientFactory.getClient();
 
@@ -91,7 +95,7 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.CLUSTER);
         when(redisSinkConfig.getRedisUrls()).thenReturn("localhost:6379,localhost:6378,localhost");
 
-        RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
+        RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
 
         redisClientFactory.getClient();
     }
@@ -106,7 +110,7 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.STANDALONE);
         when(redisSinkConfig.getRedisUrls()).thenReturn("localhost");
 
-        RedisClientFactory redisClientFactory = new RedisClientFactory(redisSinkConfig, stencilClient);
+        RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
 
         redisClientFactory.getClient();
     }

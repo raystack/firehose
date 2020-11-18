@@ -6,6 +6,7 @@ import com.gojek.esb.config.enums.HttpSinkDataFormat;
 import com.gojek.esb.config.enums.HttpSinkParameterPlacementType;
 import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.sink.http.request.body.JsonBody;
 import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
@@ -50,6 +51,9 @@ public class ParameterizedURIRequestTest {
     @Mock
     private ProtoToFieldMapper protoToFieldMapper;
 
+    @Mock
+    private StatsDReporter statsDReporter;
+
     private ParameterizedURIRequest parameterizedURIRequest;
     private HttpRequestMethod httpRequestMethod;
 
@@ -65,7 +69,7 @@ public class ParameterizedURIRequestTest {
         when(httpSinkConfig.getHttpSinkParameterSource()).thenReturn(HttpSinkParameterSourceType.MESSAGE);
         when(httpSinkConfig.getHttpSinkParameterPlacement()).thenReturn(HttpSinkParameterPlacementType.QUERY);
 
-        parameterizedURIRequest = new ParameterizedURIRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
+        parameterizedURIRequest = new ParameterizedURIRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
         boolean canProcess = parameterizedURIRequest.canProcess();
         assertTrue(canProcess);
     }
@@ -74,7 +78,7 @@ public class ParameterizedURIRequestTest {
     public void shouldNotProcessIfParameterPlacementDisabled() {
         when(httpSinkConfig.getHttpSinkParameterSource()).thenReturn(HttpSinkParameterSourceType.DISABLED);
 
-        parameterizedURIRequest = new ParameterizedURIRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
+        parameterizedURIRequest = new ParameterizedURIRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
         boolean canProcess = parameterizedURIRequest.canProcess();
 
         assertFalse(canProcess);
@@ -85,7 +89,7 @@ public class ParameterizedURIRequestTest {
         when(httpSinkConfig.getHttpSinkParameterSource()).thenReturn(HttpSinkParameterSourceType.MESSAGE);
         when(httpSinkConfig.getHttpSinkParameterPlacement()).thenReturn(HttpSinkParameterPlacementType.HEADER);
 
-        parameterizedURIRequest = new ParameterizedURIRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
+        parameterizedURIRequest = new ParameterizedURIRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
         boolean canProcess = parameterizedURIRequest.canProcess();
 
         assertFalse(canProcess);
@@ -93,7 +97,7 @@ public class ParameterizedURIRequestTest {
 
     @Test
     public void shouldNotProcessTemplatesIfAbsent() {
-        parameterizedURIRequest = new ParameterizedURIRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
+        parameterizedURIRequest = new ParameterizedURIRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
         boolean isTemplate = parameterizedURIRequest.isTemplateBody(httpSinkConfig);
 
         assertFalse(isTemplate);
@@ -104,7 +108,7 @@ public class ParameterizedURIRequestTest {
         when(httpSinkConfig.getHttpSinkDataFormat()).thenReturn(HttpSinkDataFormat.JSON);
         when(httpSinkConfig.getHttpSinkJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
 
-        parameterizedURIRequest = new ParameterizedURIRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
+        parameterizedURIRequest = new ParameterizedURIRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
         boolean isTemplate = parameterizedURIRequest.isTemplateBody(httpSinkConfig);
 
         assertTrue(isTemplate);
@@ -120,7 +124,7 @@ public class ParameterizedURIRequestTest {
         when(requestEntityBuilder.setWrapping(false)).thenReturn(requestEntityBuilder);
         when(uriBuilder.withParameterizedURI(protoToFieldMapper, HttpSinkParameterSourceType.MESSAGE)).thenReturn(uriBuilder);
 
-        parameterizedURIRequest = new ParameterizedURIRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
+        parameterizedURIRequest = new ParameterizedURIRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
         Request request = parameterizedURIRequest.setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
         request.build(Collections.singletonList(esbMessage));
 
@@ -139,7 +143,7 @@ public class ParameterizedURIRequestTest {
         when(requestEntityBuilder.setWrapping(false)).thenReturn(requestEntityBuilder);
         when(uriBuilder.withParameterizedURI(protoToFieldMapper, HttpSinkParameterSourceType.MESSAGE)).thenReturn(uriBuilder);
 
-        parameterizedURIRequest = new ParameterizedURIRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
+        parameterizedURIRequest = new ParameterizedURIRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
         Request request = parameterizedURIRequest
                 .setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
         request.build(messages);

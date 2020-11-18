@@ -1,10 +1,10 @@
 package com.gojek.esb.sink.grpc.client;
 
-
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.GrpcConfig;
 import com.gojek.esb.de.meta.GrpcResponse;
+import com.gojek.esb.metrics.Instrumentation;
 import com.google.protobuf.DynamicMessage;
 import com.gopay.grpc.ChannelPool;
 import com.newrelic.api.agent.Trace;
@@ -19,8 +19,6 @@ import io.grpc.stub.MetadataUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -28,17 +26,18 @@ import java.io.InputStream;
 
 
 public class GrpcClient {
-    private static final Logger LOGGER = LoggerFactory.getLogger(GrpcClient.class);
+
+    private Instrumentation instrumentation;
     private ChannelPool channelPool;
     private final GrpcConfig grpcConfig;
     private ProtoParser protoParser;
 
-    public GrpcClient(ChannelPool channelPool, GrpcConfig grpcConfig, StencilClient stencilClient) {
+    public GrpcClient(Instrumentation instrumentation, ChannelPool channelPool, GrpcConfig grpcConfig, StencilClient stencilClient) {
+        this.instrumentation = instrumentation;
         this.channelPool = channelPool;
         this.grpcConfig = grpcConfig;
         this.protoParser = new ProtoParser(stencilClient, grpcConfig.getGrpcResponseProtoSchema());
     }
-
 
     @Trace(dispatcher = true)
     public DynamicMessage execute(byte[] logMessage, Headers headers) {
@@ -72,8 +71,7 @@ public class GrpcClient {
             dynamicMessage = protoParser.parse(response);
 
         } catch (Exception e) {
-
-            LOGGER.info(e.getMessage());
+            instrumentation.logWarn(e.getMessage());
             dynamicMessage = DynamicMessage.newBuilder(GrpcResponse.getDescriptor()).build();
 
         } finally {

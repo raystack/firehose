@@ -82,6 +82,11 @@ public class HttpSinkTest {
         when(request.build(esbMessages)).thenReturn(httpRequests);
         when(httpClient.execute(httpPut)).thenReturn(response, response);
         when(httpClient.execute(httpPost)).thenReturn(response, response);
+        when(response.getAllHeaders()).thenReturn(
+                new Header[]{new BasicHeader("Accept", "text/plain")},
+                new Header[]{new BasicHeader("Accept", "text/plain")});
+        when(response.getEntity()).thenReturn(httpEntity, httpEntity);
+        when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value1\"}, {\"key\":\"value2\"}]"));
 
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.prepare(esbMessages);
@@ -90,7 +95,6 @@ public class HttpSinkTest {
         verify(request, times(1)).build(esbMessages);
         verify(httpClient, times(1)).execute(httpPut);
         verify(httpClient, times(1)).execute(httpPost);
-
     }
 
     @Test(expected = NeedToRetry.class)
@@ -103,6 +107,9 @@ public class HttpSinkTest {
         when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
         when(request.build(esbMessages)).thenReturn(httpRequests);
         when(httpClient.execute(httpPut)).thenReturn(response);
+        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
+        when(response.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new StringInputStream("{\"key\":\"value\"}"));
 
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-505"), requestLogStatusCodeRanges);
@@ -158,6 +165,14 @@ public class HttpSinkTest {
     }
 
     @Test
+    public void shouldLogConnectionClosing() throws IOException {
+        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
+
+        httpSink.close();
+        verify(instrumentation, times(1)).logInfo("HTTP connection closing");
+    }
+
+    @Test
     public void shouldLogEntireRequestIfInStatusCodeRangeWithBatchRequestAndCaptureDroppedMessages() throws Exception {
         when(response.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(500);
@@ -171,12 +186,19 @@ public class HttpSinkTest {
         when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value1\"},{\"key\":\"value2\"}]"));
         when(request.build(esbMessages)).thenReturn(httpRequests);
         when(httpClient.execute(httpPut)).thenReturn(response);
+        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
+        when(response.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value1\"},{\"key\":\"value2\"}]"));
 
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-505"));
         httpSink.prepare(esbMessages);
         httpSink.execute();
-        verify(instrumentation, times(1)).logInfo("\nRequest Method: PUT\nRequest Url: http://dummy.com\nRequest Headers: [Accept: text/plain]\nRequest Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]");
+        verify(instrumentation, times(1)).logInfo(
+                    "\nRequest Method: PUT"
+                    + "\nRequest Url: http://dummy.com"
+                    + "\nRequest Headers: [Accept: text/plain]"
+                    + "\nRequest Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]");
         verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
         verify(instrumentation, times(1)).captureCountWithTags("messages.dropped.count", 2, "cause= 500");
     }
@@ -195,12 +217,19 @@ public class HttpSinkTest {
         when(httpEntity.getContent()).thenReturn(new StringInputStream("{\"key\":\"value\"}"));
         when(request.build(esbMessages)).thenReturn(httpRequests);
         when(httpClient.execute(httpPut)).thenReturn(response);
+        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
+        when(response.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value\"}]"));
 
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-505"));
         httpSink.prepare(esbMessages);
         httpSink.execute();
-        verify(instrumentation, times(1)).logInfo("\nRequest Method: PUT\nRequest Url: http://dummy.com\nRequest Headers: [Accept: text/plain]\nRequest Body: {\"key\":\"value\"}");
+        verify(instrumentation, times(1)).logInfo(
+                        "\nRequest Method: PUT"
+                        + "\nRequest Url: http://dummy.com"
+                        + "\nRequest Headers: [Accept: text/plain]"
+                        + "\nRequest Body: [{\"key\":\"value\"}]");
         verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
         verify(instrumentation, times(1)).captureCountWithTags("messages.dropped.count", 1, "cause= 500");
     }
@@ -219,12 +248,19 @@ public class HttpSinkTest {
         when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value\"}]"));
         when(request.build(esbMessages)).thenReturn(httpRequests);
         when(httpClient.execute(httpPut)).thenReturn(response);
+        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
+        when(response.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value\"}]"));
 
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-505"));
         httpSink.prepare(esbMessages);
         httpSink.execute();
-        verify(instrumentation, times(1)).logInfo("\nRequest Method: PUT\nRequest Url: http://dummy.com\nRequest Headers: [Accept: text/plain]\nRequest Body: [{\"key\":\"value\"}]");
+        verify(instrumentation, times(1)).logInfo(
+                        "\nRequest Method: PUT"
+                        + "\nRequest Url: http://dummy.com"
+                        + "\nRequest Headers: [Accept: text/plain]"
+                        + "\nRequest Body: [{\"key\":\"value\"}]");
         verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
         verify(instrumentation, times(1)).captureCountWithTags("messages.dropped.count", 1, "cause= 500");
     }
@@ -241,12 +277,19 @@ public class HttpSinkTest {
         when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value1\"},{\"key\":\"value2\"}]"));
         when(request.build(esbMessages)).thenReturn(httpRequests);
         when(httpClient.execute(httpPut)).thenReturn(response);
+        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
+        when(response.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value1\"},{\"key\":\"value2\"}]"));
 
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-499"));
         httpSink.prepare(esbMessages);
         httpSink.execute();
-        verify(instrumentation, times(0)).logInfo("\nRequest Method: PUT\nRequest Url: http://dummy.com\nRequest Headers: [Accept: text/plain]\nRequest Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]");
+        verify(instrumentation, times(0)).logInfo(
+                        "\nRequest Method: PUT"
+                        + "\nRequest Url: http://dummy.com"
+                        + "\nRequest Headers: [Accept: text/plain]"
+                        + "\nRequest Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]");
     }
 
     @Test
@@ -261,6 +304,9 @@ public class HttpSinkTest {
         when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value1\"},{\"key\":\"value2\"}]"));
         when(request.build(esbMessages)).thenReturn(httpRequests);
         when(httpClient.execute(httpPut)).thenReturn(response);
+        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
+        when(response.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value1\"},{\"key\":\"value2\"}]"));
 
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-499"), requestLogStatusCodeRanges);
@@ -280,6 +326,9 @@ public class HttpSinkTest {
         when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
         when(request.build(esbMessages)).thenReturn(httpRequests);
         when(httpClient.execute(httpPut)).thenReturn(response);
+        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
+        when(response.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new StringInputStream("{\"key\":\"value\"}"));
 
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-600"), requestLogStatusCodeRanges);
@@ -288,7 +337,7 @@ public class HttpSinkTest {
             httpSink.execute();
         } finally {
             verify(instrumentation, times(0)).logInfo("Message dropped because of status code: 500");
-            verify(instrumentation, times(0)).captureCountWithTags(any(String.class), any(Integer.class), any(String.class));
+            verify(instrumentation, times(0)).captureCountWithTags("messages.dropped.count", 1, "500");
         }
     }
 
@@ -302,12 +351,68 @@ public class HttpSinkTest {
         when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
         when(request.build(esbMessages)).thenReturn(httpRequests);
         when(httpClient.execute(httpPut)).thenReturn(response);
+        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
+        when(response.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new StringInputStream("{\"key\":\"value\"}"));
 
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.prepare(esbMessages);
         httpSink.execute();
-        verify(instrumentation, times(0)).logInfo(any(String.class));
-        verify(instrumentation, times(0)).captureCountWithTags(any(String.class), any(Integer.class), any(String.class));
+        verify(instrumentation, times(0)).logInfo("Message dropped because of status code: 500");
+        verify(instrumentation, times(0)).captureCountWithTags("messages.dropped.count", 1, "200");
+    }
+
+    @Test
+    public void shouldLogResponseAfterExecution() throws Exception {
+        when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
+        when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
+        when(response.getStatusLine()).thenReturn(statusLine, statusLine);
+        when(statusLine.getStatusCode()).thenReturn(200, 200);
+
+        List<HttpEntityEnclosingRequestBase> httpRequests = Arrays.asList(httpPut, httpPost);
+        when(request.build(esbMessages)).thenReturn(httpRequests);
+        when(httpClient.execute(httpPut)).thenReturn(response, response);
+        when(httpClient.execute(httpPost)).thenReturn(response, response);
+        when(response.getAllHeaders()).thenReturn(
+                new Header[]{new BasicHeader("Accept", "text/plain")},
+                new Header[]{new BasicHeader("Accept", "text/plain")});
+        when(response.getEntity()).thenReturn(httpEntity, httpEntity);
+        when(httpEntity.getContent()).thenReturn(
+                new StringInputStream("[{\"key\":\"value1\"}, {\"key\":\"value2\"}]"),
+                new StringInputStream("[{\"key\":\"value1\"}, {\"key\":\"value2\"}]"));
+
+        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
+        httpSink.prepare(esbMessages);
+        httpSink.execute();
+
+        verify(instrumentation, times(2)).logInfo("Response Status: {}", "200");
+        verify(instrumentation, times(2)).logDebug(
+                "\nResponse Code: 200"
+                        + "\nResponse Headers: [Accept: text/plain]"
+                        + "\nResponse Body: [{\"key\":\"value1\"}, {\"key\":\"value2\"}]");
+    }
+
+    @Test
+    public void shouldCaptureResponseStatusCount() throws Exception {
+        when(response.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(200);
+
+        List<HttpEntityEnclosingRequestBase> httpRequests = Collections.singletonList(httpPut);
+
+        URI uri = new URI("http://dummy.com");
+        when(httpPut.getURI()).thenReturn(uri);
+        when(request.build(esbMessages)).thenReturn(httpRequests);
+        when(httpClient.execute(httpPut)).thenReturn(response);
+        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
+        when(response.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new StringInputStream("{\"key\":\"value\"}"));
+
+        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+                retryStatusCodeRange, requestLogStatusCodeRanges);
+        httpSink.prepare(esbMessages);
+        httpSink.execute();
+
+        verify(instrumentation, times(1)).captureCountWithTags("http.response.code", 1, "status_code=" + statusLine.getStatusCode(), "url=" + uri.getPath());
     }
 }

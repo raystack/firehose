@@ -29,5 +29,4 @@ public class KeyOrMessageParser {
             throw new IOException(e);
         }
     }
-
 }

@@ -5,6 +5,7 @@ import com.gojek.esb.config.enums.HttpRequestMethod;
 import com.gojek.esb.config.enums.HttpSinkDataFormat;
 import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.http.request.body.JsonBody;
 import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
@@ -44,6 +45,9 @@ public class DynamicUrlRequestTest {
     @Mock
     private EsbMessage esbMessage;
 
+    @Mock
+    private StatsDReporter statsDReporter;
+
     private DynamicUrlRequest dynamicUrlRequest;
     private HttpRequestMethod httpRequestMethod;
 
@@ -59,14 +63,14 @@ public class DynamicUrlRequestTest {
     public void shouldProcessForDynamicURI() {
         when(httpSinkConfig.getHttpSinkParameterSource()).thenReturn(HttpSinkParameterSourceType.DISABLED);
 
-        dynamicUrlRequest = new DynamicUrlRequest(httpSinkConfig, jsonBody, httpRequestMethod);
+        dynamicUrlRequest = new DynamicUrlRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod);
         boolean canProcess = dynamicUrlRequest.canProcess();
         Assert.assertTrue(canProcess);
     }
 
     @org.junit.Test
     public void shouldNotProcessForBaseCase() {
-        dynamicUrlRequest = new DynamicUrlRequest(httpSinkConfig, jsonBody, httpRequestMethod);
+        dynamicUrlRequest = new DynamicUrlRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod);
         boolean canProcess = dynamicUrlRequest.canProcess();
 
         assertFalse(canProcess);
@@ -76,7 +80,7 @@ public class DynamicUrlRequestTest {
     public void shouldNotProcessIfParameterIsEnabled() {
         when(httpSinkConfig.getHttpSinkParameterSource()).thenReturn(HttpSinkParameterSourceType.MESSAGE);
 
-        dynamicUrlRequest = new DynamicUrlRequest(httpSinkConfig, jsonBody, httpRequestMethod);
+        dynamicUrlRequest = new DynamicUrlRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod);
         boolean canProcess = dynamicUrlRequest.canProcess();
 
         assertFalse(canProcess);
@@ -84,7 +88,7 @@ public class DynamicUrlRequestTest {
 
     @org.junit.Test
     public void shouldNotProcessTemplatesIfAbsent() {
-        dynamicUrlRequest = new DynamicUrlRequest(httpSinkConfig, jsonBody, httpRequestMethod);
+        dynamicUrlRequest = new DynamicUrlRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod);
         boolean isTemplate = dynamicUrlRequest.isTemplateBody(httpSinkConfig);
 
         assertFalse(isTemplate);
@@ -95,7 +99,7 @@ public class DynamicUrlRequestTest {
         when(httpSinkConfig.getHttpSinkDataFormat()).thenReturn(HttpSinkDataFormat.JSON);
         when(httpSinkConfig.getHttpSinkJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
 
-        dynamicUrlRequest = new DynamicUrlRequest(httpSinkConfig, jsonBody, httpRequestMethod);
+        dynamicUrlRequest = new DynamicUrlRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod);
         boolean isTemplate = dynamicUrlRequest.isTemplateBody(httpSinkConfig);
 
         Assert.assertTrue(isTemplate);
@@ -108,7 +112,7 @@ public class DynamicUrlRequestTest {
         when(jsonBody.serialize(any())).thenReturn(Collections.singletonList("test"));
         when(requestEntityBuilder.setWrapping(false)).thenReturn(requestEntityBuilder);
 
-        dynamicUrlRequest = new DynamicUrlRequest(httpSinkConfig, jsonBody, httpRequestMethod);
+        dynamicUrlRequest = new DynamicUrlRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod);
         Request request = dynamicUrlRequest.setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
         request.build(Collections.singletonList(esbMessage));
 
@@ -125,7 +129,7 @@ public class DynamicUrlRequestTest {
         when(jsonBody.serialize(any())).thenReturn(serializedMessages);
         when(requestEntityBuilder.setWrapping(false)).thenReturn(requestEntityBuilder);
 
-        dynamicUrlRequest = new DynamicUrlRequest(httpSinkConfig, jsonBody, httpRequestMethod);
+        dynamicUrlRequest = new DynamicUrlRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod);
         Request request = dynamicUrlRequest.setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
         request.build(messages);
 

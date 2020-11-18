@@ -1,5 +1,6 @@
 package com.gojek.esb.sink.redis.dataentry;
 
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.redis.ttl.DurationTTL;
 import com.gojek.esb.sink.redis.ttl.ExactTimeTTL;
 import com.gojek.esb.sink.redis.ttl.NoRedisTTL;
@@ -8,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
@@ -18,6 +20,8 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedisHashSetFieldEntryTest {
+    @Mock
+    private Instrumentation instrumentation;
 
     @Mock
     private Pipeline pipeline;
@@ -30,8 +34,9 @@ public class RedisHashSetFieldEntryTest {
 
     @Before
     public void setup() {
+        MockitoAnnotations.initMocks(this);
         redisTTL = new NoRedisTTL();
-        redisHashSetFieldEntry = new RedisHashSetFieldEntry("test-key", "test-field", "test-value");
+        redisHashSetFieldEntry = new RedisHashSetFieldEntry("test-key", "test-field", "test-value", instrumentation);
     }
 
     @Test
@@ -41,6 +46,7 @@ public class RedisHashSetFieldEntryTest {
         verify(pipeline, times(1)).hset("test-key", "test-field", "test-value");
         verify(pipeline, times(0)).expireAt(any(String.class), any(Long.class));
         verify(pipeline, times(0)).expireAt(any(String.class), any(Long.class));
+        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 
     @Test
@@ -49,6 +55,7 @@ public class RedisHashSetFieldEntryTest {
         redisHashSetFieldEntry.pushMessage(pipeline, redisTTL);
 
         verify(pipeline, times(1)).expireAt("test-key", 1000L);
+        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 
     @Test
@@ -57,6 +64,7 @@ public class RedisHashSetFieldEntryTest {
         redisHashSetFieldEntry.pushMessage(pipeline, redisTTL);
 
         verify(pipeline, times(1)).expire("test-key", 1000);
+        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 
     @Test
@@ -66,6 +74,7 @@ public class RedisHashSetFieldEntryTest {
         verify(jedisCluster, times(1)).hset("test-key", "test-field", "test-value");
         verify(jedisCluster, times(0)).expireAt(any(String.class), any(Long.class));
         verify(jedisCluster, times(0)).expireAt(any(String.class), any(Long.class));
+        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 
     @Test
@@ -74,6 +83,7 @@ public class RedisHashSetFieldEntryTest {
         redisHashSetFieldEntry.pushMessage(jedisCluster, redisTTL);
 
         verify(jedisCluster, times(1)).expireAt("test-key", 1000L);
+        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 
     @Test
@@ -82,5 +92,6 @@ public class RedisHashSetFieldEntryTest {
         redisHashSetFieldEntry.pushMessage(jedisCluster, redisTTL);
 
         verify(jedisCluster, times(1)).expire("test-key", 1000);
+        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 }

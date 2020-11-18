@@ -1,6 +1,7 @@
 package com.gojek.esb.sink.redis.client;
 
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import com.gojek.esb.sink.redis.parsers.RedisParser;
 import com.gojek.esb.sink.redis.ttl.RedisTTL;
@@ -11,12 +12,14 @@ import java.util.List;
 
 public class RedisClusterClient implements RedisClient {
 
+    private Instrumentation instrumentation;
     private RedisParser redisParser;
     private RedisTTL redisTTL;
     private JedisCluster jedisCluster;
     private List<RedisDataEntry> redisDataEntries;
 
-    public RedisClusterClient(RedisParser redisParser, RedisTTL redisTTL, JedisCluster jedisCluster) {
+    public RedisClusterClient(Instrumentation instrumentation, RedisParser redisParser, RedisTTL redisTTL, JedisCluster jedisCluster) {
+        this.instrumentation = instrumentation;
         this.redisParser = redisParser;
         this.redisTTL = redisTTL;
         this.jedisCluster = jedisCluster;
@@ -35,6 +38,7 @@ public class RedisClusterClient implements RedisClient {
 
     @Override
     public void close() {
+        instrumentation.logInfo("Closing Jedis client");
         jedisCluster.close();
     }
 }

@@ -12,11 +12,11 @@ public class KafkaEnvironmentVariables {
         if (envVars == null || envVars.isEmpty()) {
             return Collections.emptyMap();
         }
-
-        return envVars.entrySet()
+        Map<String, String> kafkaEnvVars = envVars.entrySet()
                 .stream()
                 .filter(a -> a.getKey().toLowerCase().startsWith(KAFKA_PREFIX))
                 .collect(Collectors.toMap(e -> parseVarName(e.getKey()), e -> e.getValue()));
+        return kafkaEnvVars;
     }
 
     private static String parseVarName(String varName) {

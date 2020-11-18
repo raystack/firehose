@@ -1,6 +1,7 @@
 package com.gojek.esb.sink.log;
 
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.Sink;
 import lombok.AllArgsConstructor;
 
@@ -16,12 +17,12 @@ import java.util.List;
 public class LogSink implements Sink {
 
     private KeyOrMessageParser parser;
-    private ProtoLogger protoLogger;
+    private Instrumentation instrumentation;
 
     @Override
     public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) throws IOException {
         for (EsbMessage message : esbMessages) {
-            protoLogger.log(parser.parse(message));
+            instrumentation.logInfo("\n================= DATA =======================\n{}", parser.parse(message));
         }
         return new ArrayList<>();
     }

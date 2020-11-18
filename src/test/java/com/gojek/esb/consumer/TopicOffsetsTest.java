@@ -1,7 +1,7 @@
 package com.gojek.esb.consumer;
 
 import com.gojek.esb.config.KafkaConsumerConfig;
-import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.metrics.Instrumentation;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.junit.Before;
@@ -25,7 +25,7 @@ public class TopicOffsetsTest {
     private KafkaConsumerConfig consumerConfig;
 
     @Mock
-    private StatsDReporter statsDReporter;
+    private Instrumentation instrumentation;
 
     @Mock
     private ConsumerRecords<byte[], byte[]> consumerRecords;
@@ -34,7 +34,7 @@ public class TopicOffsetsTest {
     public void setup() {
         initMocks(this);
 
-        topicOffsets = new TopicOffsets(kafkaConsumer, consumerConfig, statsDReporter);
+        topicOffsets = new TopicOffsets(kafkaConsumer, consumerConfig, instrumentation);
     }
 
     @Test

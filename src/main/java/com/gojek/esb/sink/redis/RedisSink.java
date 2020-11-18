@@ -34,6 +34,7 @@ public class RedisSink extends AbstractSink {
 
     @Override
     public void close() {
+        getInstrumentation().logInfo("Redis connection closing");
         redisClient.close();
     }
 }

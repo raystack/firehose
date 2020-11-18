@@ -1,6 +1,7 @@
 package com.gojek.esb.sink.redis.client;
 
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import com.gojek.esb.sink.redis.exception.NoResponseException;
 import com.gojek.esb.sink.redis.parsers.RedisParser;
@@ -14,12 +15,14 @@ import java.util.List;
 
 public class RedisStandaloneClient implements RedisClient {
 
+    private Instrumentation instrumentation;
     private RedisParser redisParser;
     private RedisTTL redisTTL;
     private Jedis jedis;
     private Pipeline jedisPipelined;
 
-    public RedisStandaloneClient(RedisParser redisParser, RedisTTL redisTTL, Jedis jedis) {
+    public RedisStandaloneClient(Instrumentation instrumentation, RedisParser redisParser, RedisTTL redisTTL, Jedis jedis) {
+        this.instrumentation = instrumentation;
         this.redisParser = redisParser;
         this.redisTTL = redisTTL;
         this.jedis = jedis;
@@ -37,16 +40,17 @@ public class RedisStandaloneClient implements RedisClient {
     @Override
     public List<EsbMessage> execute() {
         Response<List<Object>> responses = jedisPipelined.exec();
+        instrumentation.logDebug("jedis responses: {}", responses);
         jedisPipelined.sync();
         if (responses.get() == null || responses.get().isEmpty()) {
             throw new NoResponseException();
         }
         return new ArrayList<>();
-
     }
 
     @Override
     public void close() {
+        instrumentation.logInfo("Closing Jedis client");
         jedis.close();
     }
 }

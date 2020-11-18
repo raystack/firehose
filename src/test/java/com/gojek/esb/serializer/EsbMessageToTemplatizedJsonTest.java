@@ -7,14 +7,21 @@ import com.gojek.esb.aggregate.supply.AggregatedSupplyMessage;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.exception.EglcConfigurationException;
+import com.gojek.esb.metrics.Instrumentation;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashSet;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -22,6 +29,9 @@ public class EsbMessageToTemplatizedJsonTest {
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
+
+    @Mock
+    private Instrumentation instrumentation;
 
     @Mock
     private ProtoParser protoParser;
@@ -42,7 +52,7 @@ public class EsbMessageToTemplatizedJsonTest {
         StencilClient stencilClient = StencilClientFactory.getClient();
         protoParser = new ProtoParser(stencilClient, AggregatedSupplyMessage.class.getName());
         EsbMessageToTemplatizedJson esbMessageToTemplatizedJson = EsbMessageToTemplatizedJson
-                .create(template, protoParser);
+                .create(instrumentation, template, protoParser);
         EsbMessage esbMessage = new EsbMessage(Base64.getDecoder().decode(logKey.getBytes()),
                 Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
@@ -57,7 +67,7 @@ public class EsbMessageToTemplatizedJsonTest {
         StencilClient stencilClient = StencilClientFactory.getClient();
         protoParser = new ProtoParser(stencilClient, AggregatedSupplyMessage.class.getName());
         EsbMessageToTemplatizedJson esbMessageToTemplatizedJson = EsbMessageToTemplatizedJson
-                .create(template, protoParser);
+                .create(instrumentation, template, protoParser);
         EsbMessage esbMessage = new EsbMessage(Base64.getDecoder().decode(logKey.getBytes()),
                 Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
@@ -82,7 +92,7 @@ public class EsbMessageToTemplatizedJsonTest {
         StencilClient stencilClient = StencilClientFactory.getClient();
         protoParser = new ProtoParser(stencilClient, AggregatedSupplyMessage.class.getName());
         EsbMessageToTemplatizedJson esbMessageToTemplatizedJson = EsbMessageToTemplatizedJson
-                .create(template, protoParser);
+                .create(instrumentation, template, protoParser);
         EsbMessage esbMessage = new EsbMessage(Base64.getDecoder().decode(logKey.getBytes()),
                 Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
@@ -95,7 +105,7 @@ public class EsbMessageToTemplatizedJsonTest {
         expectedException.expectMessage("must be a valid JSON.");
 
         String template = "{\"test:\"$.routes[0]\", \"$.order_number\" : \"xxx\"}";
-        EsbMessageToTemplatizedJson.create(template, protoParser);
+        EsbMessageToTemplatizedJson.create(instrumentation, template, protoParser);
     }
 
 
@@ -105,6 +115,26 @@ public class EsbMessageToTemplatizedJsonTest {
         expectedException.expectMessage("must be a valid JSON.");
 
         String template = "{\"test:\"$.routes[0]\", \"$.order_number\" : \"xxx\"}";
-        EsbMessageToTemplatizedJson.create(template, protoParser);
+        EsbMessageToTemplatizedJson.create(instrumentation, template, protoParser);
+    }
+
+    @Test
+    public void shouldLogPaths() {
+        HashSet<String> paths = new HashSet<>();
+        String template = "\"$._all_\"";
+        String templatePathRegex = "\"\\$\\.[^\\s\\\\]*?\"";
+
+        Pattern pattern = Pattern.compile(templatePathRegex);
+        Matcher matcher = pattern.matcher(template);
+        while (matcher.find()) {
+            paths.add(matcher.group(0));
+        }
+        List<String> pathList = new ArrayList<>(paths);
+
+        StencilClient stencilClient = StencilClientFactory.getClient();
+        protoParser = new ProtoParser(stencilClient, AggregatedSupplyMessage.class.getName());
+        EsbMessageToTemplatizedJson.create(instrumentation, template, protoParser);
+
+        Mockito.verify(instrumentation, Mockito.times(1)).logDebug("\nPaths: {}", pathList);
     }
 }

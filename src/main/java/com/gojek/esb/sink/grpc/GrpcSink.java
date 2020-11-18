@@ -8,8 +8,6 @@ import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.AbstractSink;
 import com.gojek.esb.sink.grpc.client.GrpcClient;
 import com.google.protobuf.DynamicMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,14 +19,9 @@ import java.util.List;
  */
 public class GrpcSink extends AbstractSink {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GrpcSink.class);
     private final GrpcClient grpcClient;
-
     private List<EsbMessage> esbMessages;
-
     private StencilClient stencilClient;
-
-
 
     public GrpcSink(Instrumentation instrumentation, GrpcClient grpcClient, StencilClient stencilClient) {
         super(instrumentation, "grpc");
@@ -36,22 +29,22 @@ public class GrpcSink extends AbstractSink {
         this.stencilClient = stencilClient;
     }
 
-
     @Override
     protected List<EsbMessage> execute() throws Exception {
         ArrayList<EsbMessage> failedEsbMessages = new ArrayList<>();
 
         for (EsbMessage message : this.esbMessages) {
             DynamicMessage response = grpcClient.execute(message.getLogMessage(), message.getHeaders());
+            getInstrumentation().logDebug("Response: {}", response);
             Object m = response.getField(response.getDescriptorForType().findFieldByName("success"));
             boolean success = (m != null) ? Boolean.valueOf(String.valueOf(m)) : false;
 
             if (!success) {
-                LOGGER.info("Grpc Service returned error");
+                getInstrumentation().logWarn("Grpc Service returned error");
                 failedEsbMessages.add(message);
             }
         }
-
+        getInstrumentation().logDebug("Failed messages count: {}", failedEsbMessages.size());
         return failedEsbMessages;
     }
 
@@ -62,6 +55,7 @@ public class GrpcSink extends AbstractSink {
 
     @Override
     public void close() throws IOException {
+        getInstrumentation().logInfo("GRPC connection closing");
         this.esbMessages = new ArrayList<>();
         stencilClient.close();
     }

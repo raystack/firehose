@@ -3,6 +3,7 @@ package com.gojek.esb.sink.elasticsearch.request;
 import com.gojek.esb.config.ESSinkConfig;
 import com.gojek.esb.config.enums.ESMessageType;
 import com.gojek.esb.config.enums.ESRequestType;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.serializer.EsbMessageToJson;
 import lombok.AllArgsConstructor;
 
@@ -15,6 +16,7 @@ import static com.gojek.esb.config.enums.ESRequestType.UPDATE_ONLY;
 public class ESRequestHandlerFactory {
 
     private ESSinkConfig esSinkConfig;
+    private Instrumentation instrumentation;
     private final String esIdFieldName;
     private final ESMessageType messageType;
     private final EsbMessageToJson jsonSerializer;
@@ -24,6 +26,8 @@ public class ESRequestHandlerFactory {
 
     public ESRequestHandler getRequestHandler() {
         ESRequestType esRequestType = esSinkConfig.isUpdateOnlyMode() ? UPDATE_ONLY : INSERT_OR_UPDATE;
+        instrumentation.logInfo("ES request mode: {}", esRequestType);
+
         ArrayList<ESRequestHandler> esRequestHandlers = new ArrayList<>();
         esRequestHandlers.add(new ESUpdateRequestHandler(messageType, jsonSerializer, esTypeName, esIndexName, esRequestType, esIdFieldName, esRoutingKeyName));
         esRequestHandlers.add(new ESUpsertRequestHandler(messageType, jsonSerializer, esTypeName, esIndexName, esRequestType, esIdFieldName, esRoutingKeyName));

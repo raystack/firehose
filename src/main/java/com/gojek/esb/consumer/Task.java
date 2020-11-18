@@ -48,7 +48,9 @@ public class Task {
 
     public Task stop() {
         try {
+            instrumentation.logInfo("Stopping task thread");
             fnFutures.forEach(consumerThread -> consumerThread.cancel(true));
+            instrumentation.logInfo("Sleeping thread during clean up for {} duration", threadCleanupDelay);
             Thread.sleep(threadCleanupDelay);
         } catch (InterruptedException e) {
             instrumentation.captureNonFatalError(e, "error stopping tasks");

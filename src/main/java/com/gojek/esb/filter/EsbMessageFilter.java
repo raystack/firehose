@@ -3,6 +3,7 @@ package com.gojek.esb.filter;
 import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.config.enums.EsbFilterType;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.Instrumentation;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
 import org.apache.commons.jexl2.JexlEngine;
@@ -28,17 +29,25 @@ public class EsbMessageFilter implements Filter {
     private Expression expression;
     private EsbFilterType filterType;
     private String protoSchema;
+    private Instrumentation instrumentation;
 
-    public EsbMessageFilter(KafkaConsumerConfig consumerConfig) {
+    public EsbMessageFilter(KafkaConsumerConfig consumerConfig, Instrumentation instrumentation) {
         this.engine = new JexlEngine();
         this.engine.setSilent(false);
         this.engine.setStrict(true);
 
+        this.instrumentation = instrumentation;
         this.filterType = consumerConfig.getFilterType();
         this.protoSchema = consumerConfig.getFilterProtoSchema();
 
+        this.instrumentation.logInfo("\n\tFilter type: {}", this.filterType);
         if (isNotNone(consumerConfig.getFilterType())) {
             this.expression = this.engine.createExpression(consumerConfig.getFilterExpression());
+            this.instrumentation.logInfo("\n\tFilter schema: {}", this.protoSchema);
+            this.instrumentation.logInfo("\n\tFilter expression: {}", consumerConfig.getFilterExpression());
+
+        } else {
+            this.instrumentation.logInfo("No filter is selected");
         }
     }
 

@@ -32,8 +32,7 @@ public class SinkWithRetryQueue extends SinkDecorator {
 
     public static SinkWithRetryQueue withInstrumentationFactory(Sink sink, Producer<byte[], byte[]> kafkaProducer, String topic,
                                                                 StatsDReporter statsDReporter, BackOffProvider backOffProvider) {
-        Instrumentation instrumentation = new Instrumentation(statsDReporter, SinkWithRetryQueue.class);
-        return new SinkWithRetryQueue(sink, kafkaProducer, topic, instrumentation, backOffProvider);
+        return new SinkWithRetryQueue(sink, kafkaProducer, topic, new Instrumentation(statsDReporter, SinkWithRetryQueue.class), backOffProvider);
     }
 
     @Override
@@ -75,6 +74,7 @@ public class SinkWithRetryQueue extends SinkDecorator {
         try {
             completedLatch.await();
         } catch (InterruptedException e) {
+            instrumentation.logWarn(e.getMessage());
             instrumentation.captureNonFatalError(e);
         }
         instrumentation.logInfo("Successfully pushed {} messages to {}", failedMessages.size() - retryMessages.size(), topic);

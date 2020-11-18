@@ -25,15 +25,21 @@ public class DBSinkFactory implements SinkFactory {
     public AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient client) {
         DBSinkConfig dbSinkConfig = ConfigFactory.create(DBSinkConfig.class, configuration);
 
+        Instrumentation instrumentation = new Instrumentation(statsDReporter, DBSinkFactory.class);
+        String dbConfig = String.format(""
+                        + "\n\tDB URL: %s\n\tDB Username: %s\n\tDB Tablename: %s\n\tMax connection pool size: %s\n\tConnection timeout: %s"
+                        + "\n\tIdle timeout: %s\n\tMinimum idle: %s\n\tAudit enabled: %s\n\tUnique keys: %s",
+                dbSinkConfig.getDbUrl(), dbSinkConfig.getUser(), dbSinkConfig.getTableName(), dbSinkConfig.getMaximumConnectionPoolSize(),
+                dbSinkConfig.getConnectionTimeout(), dbSinkConfig.getIdleTimeout(), dbSinkConfig.getMinimumIdle(),
+                dbSinkConfig.getAuditEnabled(), dbSinkConfig.getUniqueKeys());
+        instrumentation.logDebug(dbConfig);
         DBConnectionPool connectionPool = new HikariDBConnectionPool(dbSinkConfig.getDbUrl(), dbSinkConfig.getUser(),
                 dbSinkConfig.getPassword(), dbSinkConfig.getMaximumConnectionPoolSize(),
                 dbSinkConfig.getConnectionTimeout(), dbSinkConfig.getIdleTimeout(), dbSinkConfig.getMinimumIdle());
-
+        instrumentation.logInfo("DB Connection established");
         QueryTemplate queryTemplate = createQueryTemplate(dbSinkConfig, client);
 
-        Instrumentation instrumentation = new Instrumentation(statsDReporter, DBSink.class);
-
-        return new DBSink(instrumentation, "db", connectionPool, queryTemplate, client);
+        return new DBSink(new Instrumentation(statsDReporter, DBSink.class), "db", connectionPool, queryTemplate, client);
     }
 
 

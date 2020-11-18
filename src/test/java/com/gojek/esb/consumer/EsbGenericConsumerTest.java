@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -78,6 +79,7 @@ public class EsbGenericConsumerTest {
 
         when(filter.filter(any())).thenReturn(Arrays.asList(expectedMsg1, expectedMsg2));
 
+        when(consumerRecords.count()).thenReturn(2);
         List<EsbMessage> messages = esbGenericConsumer.readMessages();
 
         assertNotNull(messages);
@@ -123,7 +125,26 @@ public class EsbGenericConsumerTest {
         assertThat(messages.size(), is(1));
         assertEquals(expectedMsg1, messages.get(0));
         verify(instrumentation, times(1)).captureFilteredMessageCount(1, "test");
+    }
 
+    @Test
+    public void shouldrecordStatsFromEsbLog() throws EsbFilterException {
+        ConsumerRecord<byte[], byte[]> record1 = new ConsumerRecord<>("topic1", 1, 0, key.toByteArray(), message.toByteArray());
+        ConsumerRecord<byte[], byte[]> record2 = new ConsumerRecord<>("topic2", 1, 0, key.toByteArray(), message.toByteArray());
+        when(consumerRecords.iterator()).thenReturn(Arrays.asList(record1, record2).iterator());
+
+        EsbMessage expectedMsg1 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic1", 0, 100);
+        EsbMessage expectedMsg2 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic2", 0, 100);
+
+        when(filter.filter(any())).thenReturn(Arrays.asList(expectedMsg1, expectedMsg2));
+
+        when(consumerRecords.count()).thenReturn(2);
+        List<EsbMessage> messages = esbGenericConsumer.readMessages();
+
+        verify(instrumentation, times(1)).logInfo("Pulled {} messages", 2);
+        verify(instrumentation, times(1)).capturePulledMessageHistogram(2);
+        verify(instrumentation, times(1)).logDebug("Pulled record: {}", record1);
+        verify(instrumentation, times(1)).logDebug("Pulled record: {}", record2);
     }
 
     @Test
@@ -138,6 +159,7 @@ public class EsbGenericConsumerTest {
         esbGenericConsumer.close();
 
         verify(kafkaConsumer).close();
+        verify(instrumentation).logInfo("Consumer is closing");
     }
 
     @Test
@@ -146,8 +168,16 @@ public class EsbGenericConsumerTest {
 
         try {
             esbGenericConsumer.close();
+            verify(instrumentation, times(1)).logInfo("Consumer is closing");
         } catch (Exception kafkaConsumerException) {
             fail("Failed to supress exception on close");
         }
+    }
+
+    @Test
+    public void shouldCaptureNonFatalError() {
+        doThrow(new RuntimeException()).when(kafkaConsumer).close();
+        esbGenericConsumer.close();
+        verify(instrumentation, times(1)).captureNonFatalError(any(), eq("Exception while closing consumer"));
     }
 }
