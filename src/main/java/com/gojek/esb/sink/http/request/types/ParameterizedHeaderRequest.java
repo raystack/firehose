@@ -5,6 +5,8 @@ import com.gojek.esb.config.enums.HttpRequestMethod;
 import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.metrics.Instrumentation;
+import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.sink.http.request.body.JsonBody;
 import com.gojek.esb.sink.http.request.create.IndividualRequestCreator;
@@ -25,6 +27,7 @@ import static com.gojek.esb.config.enums.HttpSinkParameterPlacementType.HEADER;
  */
 public class ParameterizedHeaderRequest implements Request {
 
+    private StatsDReporter statsDReporter;
     private HTTPSinkConfig httpSinkConfig;
     private JsonBody body;
     private HttpRequestMethod method;
@@ -32,10 +35,13 @@ public class ParameterizedHeaderRequest implements Request {
     private ProtoToFieldMapper protoToFieldMapper;
     private RequestCreator requestCreator;
 
-    public ParameterizedHeaderRequest(HTTPSinkConfig httpSinkConfig,
+    public ParameterizedHeaderRequest(StatsDReporter statsDReporter,
+                                      HTTPSinkConfig httpSinkConfig,
                                       JsonBody body,
                                       HttpRequestMethod method,
                                       ProtoToFieldMapper protoToFieldMapper) {
+
+        this.statsDReporter = statsDReporter;
         this.httpSinkConfig = httpSinkConfig;
         this.body = body;
         this.method = method;
@@ -48,8 +54,10 @@ public class ParameterizedHeaderRequest implements Request {
 
     @Override
     public Request setRequestStrategy(HeaderBuilder headerBuilder, URIBuilder uriBuilder, RequestEntityBuilder requestEntitybuilder) {
-        this.requestCreator = new IndividualRequestCreator(uriBuilder,
-                headerBuilder.withParameterizedHeader(protoToFieldMapper, httpSinkConfig.getHttpSinkParameterSource()), method, body);
+        this.requestCreator = new IndividualRequestCreator(
+                new Instrumentation(statsDReporter, IndividualRequestCreator.class), uriBuilder,
+                headerBuilder.withParameterizedHeader(protoToFieldMapper, httpSinkConfig.getHttpSinkParameterSource()),
+                method, body);
         this.requestEntityBuilder = requestEntitybuilder;
         return this;
     }

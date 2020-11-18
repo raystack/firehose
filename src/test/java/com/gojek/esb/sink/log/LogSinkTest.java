@@ -4,6 +4,7 @@ import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.consumer.TestKey;
 import com.gojek.esb.consumer.TestMessage;
 import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.Sink;
 import com.google.protobuf.DynamicMessage;
 import org.junit.Before;
@@ -22,7 +23,7 @@ import java.util.List;
 public class LogSinkTest {
 
     @Mock
-    private ProtoLogger protoLogger;
+    private Instrumentation instrumentation;
 
     @Mock
     private KeyOrMessageParser parser;
@@ -33,10 +34,9 @@ public class LogSinkTest {
 
     @Before
     public void setup() throws IOException {
-        Mockito.doNothing().when(protoLogger).log(Mockito.any(DynamicMessage.class));
         Mockito.when(parser.parse(Mockito.any(EsbMessage.class))).thenReturn(dynamicMessage);
 
-        sink = new LogSink(parser, protoLogger);
+        sink = new LogSink(parser, instrumentation);
     }
 
     @Test
@@ -45,7 +45,9 @@ public class LogSinkTest {
 
         sink.pushMessage(esbMessages);
 
-        Mockito.verify(protoLogger, Mockito.times(1)).log(Mockito.any(DynamicMessage.class));
+        Mockito.verify(instrumentation, Mockito.times(1)).logInfo(
+                Mockito.eq("\n================= DATA =======================\n{}"),
+                Mockito.any(DynamicMessage.class));
     }
 
     @Test
@@ -58,7 +60,6 @@ public class LogSinkTest {
         Mockito.verify(parser, Mockito.times(2)).parse(Mockito.any(EsbMessage.class));
     }
 
-
     @Test
     public void shouldPrintTestProto() throws IOException, DeserializerException {
         TestKey testKey = TestKey.getDefaultInstance();
@@ -67,7 +68,9 @@ public class LogSinkTest {
 
         sink.pushMessage(esbMessages);
 
-        Mockito.verify(protoLogger, Mockito.times(1)).log(Mockito.any(DynamicMessage.class));
+        Mockito.verify(instrumentation, Mockito.times(1)).logInfo(
+                Mockito.eq("\n================= DATA =======================\n{}"),
+                Mockito.any(DynamicMessage.class));
     }
 
     @Test
@@ -76,7 +79,9 @@ public class LogSinkTest {
 
         sink.pushMessage(Arrays.asList(new EsbMessage(null, testMessage, "topic", 0, 100)));
 
-        Mockito.verify(protoLogger, Mockito.times(1)).log(Mockito.any(DynamicMessage.class));
+        Mockito.verify(instrumentation, Mockito.times(1)).logInfo(
+                Mockito.eq("\n================= DATA =======================\n{}"),
+                Mockito.any(DynamicMessage.class));
         Mockito.verify(parser, Mockito.never()).parse(null);
     }
 }

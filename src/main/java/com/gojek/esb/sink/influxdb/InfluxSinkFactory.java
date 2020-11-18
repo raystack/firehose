@@ -17,7 +17,13 @@ public class InfluxSinkFactory implements SinkFactory {
     @Override
     public AbstractSink create(Map<String, String> configProperties, StatsDReporter statsDReporter, StencilClient stencilClient) {
         InfluxSinkConfig config = ConfigFactory.create(InfluxSinkConfig.class, configProperties);
+
+        Instrumentation instrumentation = new Instrumentation(statsDReporter, InfluxSinkFactory.class);
+        instrumentation.logDebug("\nInflux Url: {}\nInflux Username: {}", config.getDbUrl(), config.getUser());
+
         InfluxDB client = InfluxDBFactory.connect(config.getDbUrl(), config.getUser(), config.getPassword());
+        instrumentation.logInfo("InfluxDB connection established");
+
         return new InfluxSink(new Instrumentation(statsDReporter, InfluxSink.class), "influx.db", config, new ProtoParser(stencilClient, config.getProtoSchema()), client, stencilClient);
     }
 }

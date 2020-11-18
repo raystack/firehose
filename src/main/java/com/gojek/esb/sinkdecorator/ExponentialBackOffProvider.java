@@ -1,10 +1,6 @@
 package com.gojek.esb.sinkdecorator;
 
-import com.gojek.esb.metrics.StatsDReporter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.gojek.esb.metrics.Instrumentation;
 import static java.lang.Math.toIntExact;
 
 /**
@@ -19,25 +15,24 @@ public class ExponentialBackOffProvider implements BackOffProvider {
     private final int initialExpiryTimeInMs;
     private final int backoffRate;
     private final int maximumExpiryTimeInMS;
-    private final StatsDReporter statsDReporter;
+    private Instrumentation instrumentation;
     private final BackOff backOff;
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExponentialBackOffProvider.class);
 
     public ExponentialBackOffProvider(int initialExpiryTimeInMs, int backoffRate, int maximumExpiryTimeInMS,
-            StatsDReporter statsDReporter, BackOff backOff) {
+            Instrumentation instrumentation, BackOff backOff) {
         this.initialExpiryTimeInMs = initialExpiryTimeInMs;
         this.backoffRate = backoffRate;
         this.maximumExpiryTimeInMS = maximumExpiryTimeInMS;
-        this.statsDReporter = statsDReporter;
+        this.instrumentation = instrumentation;
         this.backOff = backOff;
     }
 
     @Override
     public void backOff(int attemptCount) {
         long sleepTime = this.calculateDelay(attemptCount);
-        LOGGER.info("backing off for {} milliseconds ", sleepTime);
+        instrumentation.logWarn("backing off for {} milliseconds ", sleepTime);
+        instrumentation.captureSleepTime("backoff_sleep_time", toIntExact(sleepTime));
         backOff.inMilliSeconds(sleepTime);
-        statsDReporter.gauge("backoff_time", toIntExact(sleepTime));
     }
 
     private long calculateDelay(int attemptCount) {

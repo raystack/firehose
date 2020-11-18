@@ -41,19 +41,21 @@ public class InfluxSink extends AbstractSink {
         for (EsbMessage esbMessage : esbMessages) {
             DynamicMessage message = protoParser.parse(esbMessage.getLogMessage());
             Point point = pointBuilder.buildPoint(message);
+            getInstrumentation().logDebug("Data point: {}", point.toString());
             batchPoints.point(point);
         }
     }
 
     @Override
     protected List<EsbMessage> execute() {
+        getInstrumentation().logDebug("Batch points: {}", batchPoints.toString());
         client.write(batchPoints);
         return new ArrayList<>();
     }
 
-
     @Override
     public void close() throws IOException {
+        getInstrumentation().logInfo("InfluxDB connection closing");
         stencilClient.close();
     }
 }

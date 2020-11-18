@@ -93,12 +93,18 @@ public class HttpSink extends AbstractSink {
 
     @Override
     public void close() throws IOException {
+        getInstrumentation().logInfo("HTTP connection closing");
         this.httpRequests = new ArrayList<>();
         stencilClient.close();
     }
 
-    private void consumeResponse(HttpResponse response) {
+    private void consumeResponse(HttpResponse response) throws IOException {
         if (response != null) {
+            String entireResponse = String.format("\nResponse Code: %s\nResponse Headers: %s\nResponse Body: %s",
+                    response.getStatusLine().getStatusCode(),
+                    Arrays.asList(response.getAllHeaders()),
+                    new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")));
+            getInstrumentation().logDebug(entireResponse);
             EntityUtils.consumeQuietly(response.getEntity());
         }
     }

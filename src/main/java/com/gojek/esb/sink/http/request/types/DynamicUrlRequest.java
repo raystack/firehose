@@ -5,6 +5,8 @@ import com.gojek.esb.config.enums.HttpRequestMethod;
 import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.metrics.Instrumentation;
+import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.http.request.body.JsonBody;
 import com.gojek.esb.sink.http.request.create.IndividualRequestCreator;
 import com.gojek.esb.sink.http.request.create.RequestCreator;
@@ -18,13 +20,15 @@ import java.util.List;
 
 public class DynamicUrlRequest implements Request {
 
+    private StatsDReporter statsDReporter;
     private HTTPSinkConfig httpSinkConfig;
     private JsonBody body;
     private HttpRequestMethod method;
     private RequestEntityBuilder requestEntityBuilder;
     private RequestCreator requestCreator;
 
-    public DynamicUrlRequest(HTTPSinkConfig httpSinkConfig, JsonBody body, HttpRequestMethod method) {
+    public DynamicUrlRequest(StatsDReporter statsDReporter, HTTPSinkConfig httpSinkConfig, JsonBody body, HttpRequestMethod method) {
+        this.statsDReporter = statsDReporter;
         this.httpSinkConfig = httpSinkConfig;
         this.body = body;
         this.method = method;
@@ -36,7 +40,8 @@ public class DynamicUrlRequest implements Request {
 
     @Override
     public Request setRequestStrategy(HeaderBuilder headerBuilder, URIBuilder uriBuilder, RequestEntityBuilder requestEntitybuilder) {
-        this.requestCreator = new IndividualRequestCreator(uriBuilder, headerBuilder, method, body);
+        this.requestCreator = new IndividualRequestCreator(
+                new Instrumentation(statsDReporter, IndividualRequestCreator.class), uriBuilder, headerBuilder, method, body);
         this.requestEntityBuilder = requestEntitybuilder;
         return this;
     }

@@ -6,6 +6,7 @@ import com.gojek.esb.config.enums.HttpSinkDataFormat;
 import com.gojek.esb.config.enums.HttpSinkParameterPlacementType;
 import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.sink.http.request.body.JsonBody;
 import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
@@ -51,6 +52,9 @@ public class ParameterizedHeaderRequestTest {
     @Mock
     private ProtoToFieldMapper protoToFieldMapper;
 
+    @Mock
+    private StatsDReporter statsDReporter;
+
     private ParameterizedHeaderRequest parameterizedHeaderRequest;
     private HttpRequestMethod httpRequestMethod;
 
@@ -66,7 +70,7 @@ public class ParameterizedHeaderRequestTest {
         when(httpSinkConfig.getHttpSinkParameterSource()).thenReturn(HttpSinkParameterSourceType.MESSAGE);
         when(httpSinkConfig.getHttpSinkParameterPlacement()).thenReturn(HttpSinkParameterPlacementType.HEADER);
 
-        parameterizedHeaderRequest = new ParameterizedHeaderRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
+        parameterizedHeaderRequest = new ParameterizedHeaderRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
         boolean canProcess = parameterizedHeaderRequest.canProcess();
         assertTrue(canProcess);
     }
@@ -75,7 +79,7 @@ public class ParameterizedHeaderRequestTest {
     public void shouldNotProcessIfParameterPlacementDisabled() {
         when(httpSinkConfig.getHttpSinkParameterSource()).thenReturn(HttpSinkParameterSourceType.DISABLED);
 
-        parameterizedHeaderRequest = new ParameterizedHeaderRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
+        parameterizedHeaderRequest = new ParameterizedHeaderRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
         boolean canProcess = parameterizedHeaderRequest.canProcess();
 
         assertFalse(canProcess);
@@ -86,7 +90,7 @@ public class ParameterizedHeaderRequestTest {
         when(httpSinkConfig.getHttpSinkParameterSource()).thenReturn(HttpSinkParameterSourceType.MESSAGE);
         when(httpSinkConfig.getHttpSinkParameterPlacement()).thenReturn(HttpSinkParameterPlacementType.QUERY);
 
-        parameterizedHeaderRequest = new ParameterizedHeaderRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
+        parameterizedHeaderRequest = new ParameterizedHeaderRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
         boolean canProcess = parameterizedHeaderRequest.canProcess();
 
         assertFalse(canProcess);
@@ -94,7 +98,7 @@ public class ParameterizedHeaderRequestTest {
 
     @Test
     public void shouldNotProcessTemplatesIfAbsent() {
-        parameterizedHeaderRequest = new ParameterizedHeaderRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
+        parameterizedHeaderRequest = new ParameterizedHeaderRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
         boolean isTemplate = parameterizedHeaderRequest.isTemplateBody(httpSinkConfig);
 
         assertFalse(isTemplate);
@@ -105,7 +109,7 @@ public class ParameterizedHeaderRequestTest {
         when(httpSinkConfig.getHttpSinkDataFormat()).thenReturn(HttpSinkDataFormat.JSON);
         when(httpSinkConfig.getHttpSinkJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
 
-        parameterizedHeaderRequest = new ParameterizedHeaderRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
+        parameterizedHeaderRequest = new ParameterizedHeaderRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
         boolean isTemplate = parameterizedHeaderRequest.isTemplateBody(httpSinkConfig);
 
         assertTrue(isTemplate);
@@ -121,7 +125,7 @@ public class ParameterizedHeaderRequestTest {
         when(requestEntityBuilder.setWrapping(false)).thenReturn(requestEntityBuilder);
         when(headerBuilder.withParameterizedHeader(protoToFieldMapper, HttpSinkParameterSourceType.MESSAGE)).thenReturn(headerBuilder);
 
-        parameterizedHeaderRequest = new ParameterizedHeaderRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
+        parameterizedHeaderRequest = new ParameterizedHeaderRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
         Request request = parameterizedHeaderRequest.setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
         request.build(Collections.singletonList(esbMessage));
 
@@ -140,7 +144,7 @@ public class ParameterizedHeaderRequestTest {
         when(requestEntityBuilder.setWrapping(false)).thenReturn(requestEntityBuilder);
         when(headerBuilder.withParameterizedHeader(protoToFieldMapper, HttpSinkParameterSourceType.MESSAGE)).thenReturn(headerBuilder);
 
-        parameterizedHeaderRequest = new ParameterizedHeaderRequest(httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
+        parameterizedHeaderRequest = new ParameterizedHeaderRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod, protoToFieldMapper);
         Request request = parameterizedHeaderRequest
                 .setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
         request.build(messages);

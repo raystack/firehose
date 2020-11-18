@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +38,6 @@ public class InstrumentationTest {
         testMessage = "test";
         testTemplate = "test: {},{},{}";
         e = new Exception();
-
     }
 
     @Test
@@ -48,14 +48,12 @@ public class InstrumentationTest {
 
     @Test
     public void shouldLogStringTemplate() {
-
         instrumentation.logInfo(testTemplate, 1, 2, 3);
         verify(logger, times(1)).info(testTemplate, 1, 2, 3);
     }
 
     @Test
     public void shouldLogWarnStringTemplate() {
-
         instrumentation.logWarn(testTemplate, 1, 2, 3);
         verify(logger, times(1)).warn(testTemplate, 1, 2, 3);
     }
@@ -64,7 +62,12 @@ public class InstrumentationTest {
     public void shouldLogDebugStringTemplate() {
         instrumentation.logDebug(testTemplate, 1, 2, 3);
         verify(logger, times(1)).debug(testTemplate, 1, 2, 3);
+    }
 
+    @Test
+    public void shouldLogErrorStringTemplate() {
+        instrumentation.logError(testTemplate, 1, 2, 3);
+        verify(logger, times(1)).error(testTemplate, 1, 2, 3);
     }
 
     @Test
@@ -94,7 +97,6 @@ public class InstrumentationTest {
         verify(logger, times(1)).warn(testTemplate, 1, 2, 3);
         verify(logger, times(1)).warn(e.getMessage(), e);
         verify(statsDReporter, times(1)).recordEvent(ERROR_EVENT, NON_FATAL_ERROR, ERROR_MESSAGE_TAG + "=" + e.getClass().getName() + ",type=" + NON_FATAL_ERROR);
-
     }
 
     @Test
@@ -103,7 +105,6 @@ public class InstrumentationTest {
         verify(logger, times(1)).error(testMessage);
         verify(logger, times(1)).error(e.getMessage(), e);
         verify(statsDReporter, times(1)).recordEvent(ERROR_EVENT, FATAL_ERROR, ERROR_MESSAGE_TAG + "=" + e.getClass().getName() + ",type=" + FATAL_ERROR);
-
     }
 
     @Test
@@ -112,7 +113,6 @@ public class InstrumentationTest {
         verify(logger, times(1)).error(testTemplate, 1, 2, 3);
         verify(logger, times(1)).error(e.getMessage(), e);
         verify(statsDReporter, times(1)).recordEvent(ERROR_EVENT, FATAL_ERROR, ERROR_MESSAGE_TAG + "=" + e.getClass().getName() + ",type=" + FATAL_ERROR);
-
     }
 
     @Test
@@ -121,7 +121,6 @@ public class InstrumentationTest {
         when(statsDReporter.getClock()).thenReturn(clock);
         instrumentation.startExecution();
         Assert.assertEquals(instrumentation.getStartExecutionTime().getEpochSecond(), java.time.Instant.now().getEpochSecond());
-
     }
 
     @Test
@@ -132,7 +131,6 @@ public class InstrumentationTest {
         verify(statsDReporter, times(1)).captureDurationSince("sink.response.time", instrumentation.getStartExecutionTime());
         verify(statsDReporter, times(1)).captureCount("messages.count", esbMessages.size(), SUCCESS_TAG);
         verify(statsDReporter, times(1)).captureHistogramWithTags(PUSHED_BATCH_SIZE, esbMessages.size(), SUCCESS_TAG);
-
     }
 
     @Test
@@ -174,16 +172,28 @@ public class InstrumentationTest {
         List<EsbMessage> esbMessages = Collections.singletonList(esbMessage);
         instrumentation.capturePreExecutionLatencies(esbMessages);
         verify(statsDReporter, times(esbMessages.size())).captureDurationSince("latency", Instant.ofEpochSecond(esbMessage.getConsumeTimestamp()));
-
     }
 
+    @Test
+    public void shouldCapturePartitionProcessTime() {
+        Instant instant = Instant.now();
+        instrumentation.captureDurationSince("kafka_process_partitions_time", instant);
+        verify(statsDReporter, times(1)).captureDurationSince("kafka_process_partitions_time", instant);
+    }
+
+    @Test
+    public void shouldCaptureBackoffSleepTime() {
+        String metric = "backoff_sleep_time";
+        int sleepTime = 10000;
+        instrumentation.captureSleepTime(metric, sleepTime);
+        verify(statsDReporter, times(1)).gauge(metric, sleepTime);
+    }
     @Test
     public void shouldCaptureCountWithTags() {
         String metric = "test.metric";
         String urlTag = "url=test";
         String httpCodeTag = "status_code=200";
         instrumentation.captureCountWithTags(metric, 1, httpCodeTag, urlTag);
-
         verify(statsDReporter, times(1)).captureCount(metric, 1, httpCodeTag, urlTag);
     }
 
@@ -192,7 +202,19 @@ public class InstrumentationTest {
         String metric = "test.metric";
         String httpCodeTag = "status_code=200";
         instrumentation.incrementCounterWithTags(metric, httpCodeTag);
-
         verify(statsDReporter, times(1)).increment(metric, httpCodeTag);
+    }
+
+    @Test
+    public void shouldIncrementCounter() {
+        String metric = "test.metric";
+        instrumentation.incrementCounter(metric);
+        verify(statsDReporter, times(1)).increment(metric);
+    }
+
+    @Test
+    public void shouldClose() throws IOException {
+        instrumentation.close();
+        verify(statsDReporter, times(1)).close();
     }
 }
