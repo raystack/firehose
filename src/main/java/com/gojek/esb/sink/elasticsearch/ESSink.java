@@ -47,7 +47,7 @@ public class ESSink extends AbstractSink {
     protected List<EsbMessage> execute() throws Exception {
         BulkResponse bulkResponse = getBulkResponse();
         if (bulkResponse.hasFailures()) {
-            getInstrumentation().logInfo("Bulk request failed");
+            getInstrumentation().logWarn("Bulk request failed");
             handleResponse(bulkResponse);
         }
         return new ArrayList<>();
@@ -55,6 +55,7 @@ public class ESSink extends AbstractSink {
 
     @Override
     public void close() throws IOException {
+        getInstrumentation().logInfo("Elastic Search connection closing");
         this.client.close();
     }
 
@@ -63,10 +64,13 @@ public class ESSink extends AbstractSink {
     }
 
     private void handleResponse(BulkResponse bulkResponse) throws NeedToRetry {
+        int failedResponseCount = 0;
         for (BulkItemResponse response : bulkResponse.getItems()) {
             if (response.isFailed()) {
+                failedResponseCount++;
                 String responseStatus = String.valueOf(response.status().getStatus());
                 if (esRetryStatusCodeBlacklist.contains(responseStatus)) {
+                    getInstrumentation().logInfo("Not retrying due to response status: {} is under blacklisted status code", responseStatus);
                     getInstrumentation().incrementCounterWithTags(MESSAGES_DROPPED_COUNT, "cause=" + response.status().name());
                     getInstrumentation().logInfo("Message dropped because of status code: " + responseStatus);
                 } else {
@@ -74,5 +78,6 @@ public class ESSink extends AbstractSink {
                 }
             }
         }
+        getInstrumentation().logWarn("Bulk request failed count: {}", failedResponseCount);
     }
 }

@@ -8,6 +8,7 @@ import com.gojek.esb.consumer.Error;
 import com.gojek.esb.consumer.TestGrpcRequest;
 import com.gojek.esb.consumer.TestGrpcResponse;
 import com.gojek.esb.consumer.TestServerGrpc;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.grpc.client.GrpcClient;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.DynamicMessage;
@@ -28,6 +29,8 @@ import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Stubber;
 
 import java.io.IOException;
@@ -54,9 +57,12 @@ public class GrpcClientTest {
     private HeaderTestInterceptor headerTestInterceptor;
     private StencilClient stencilClient;
 
+    @Mock
+    private Instrumentation instrumentation;
 
     @Before
     public void setup() throws IOException, ChannelPoolException {
+        MockitoAnnotations.initMocks(this);
         testGrpcService = mock(TestServerGrpc.TestServerImplBase.class);
         when(testGrpcService.bindService()).thenCallRealMethod();
         headerTestInterceptor = new HeaderTestInterceptor();
@@ -75,7 +81,7 @@ public class GrpcClientTest {
         grpcConfig = ConfigFactory.create(GrpcConfig.class, config);
         ChannelPool pool = ChannelPool.create("localhost", 5000, 1);
         stencilClient = StencilClientFactory.getClient();
-        grpcClient = new GrpcClient(pool, grpcConfig, stencilClient);
+        grpcClient = new GrpcClient(instrumentation, pool, grpcConfig, stencilClient);
         headers = new RecordHeaders();
     }
     @After
@@ -179,12 +185,13 @@ public class GrpcClientTest {
 
     @Test
     public void shouldReturnErrorWhenChannelPoolIsNull() {
-        GrpcClient client = new GrpcClient(null, grpcConfig, stencilClient);
+        GrpcClient client = new GrpcClient(instrumentation, null, grpcConfig, stencilClient);
         TestGrpcRequest request = TestGrpcRequest.newBuilder()
                 .setField1("field1")
                 .setField2("field2")
                 .build();
         DynamicMessage response = client.execute(request.toByteArray(), headers);
+        verify(instrumentation, times(1)).logWarn("ConnectionPool was not initiated successfully");
         assertFalse(Boolean.parseBoolean(String.valueOf(response.getField(response.getDescriptorForType().findFieldByName("success")))));
     }
 

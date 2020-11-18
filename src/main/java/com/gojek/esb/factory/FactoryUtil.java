@@ -2,11 +2,11 @@ package com.gojek.esb.factory;
 
 import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.consumer.ConsumerRebalancer;
+import com.gojek.esb.metrics.Instrumentation;
+import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.parser.KafkaEnvironmentVariables;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 
 public class FactoryUtil {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FactoryUtil.class.getName());
     private static final String BOOTSTRAP_SERVERS = "bootstrap.servers";
     private static final String GROUP_ID = "group.id";
     private static final String ENABLE_AUTO_COMMIT = "enable.auto.commit";
@@ -25,10 +24,11 @@ public class FactoryUtil {
     private static final String SESSION_TIMEOUT_MS = "session.timeout.ms";
 
 
-    public static void configureSubscription(KafkaConsumerConfig config, KafkaConsumer kafkaConsumer) {
+    public static void configureSubscription(KafkaConsumerConfig config, KafkaConsumer kafkaConsumer, StatsDReporter statsdReporter) {
+        Instrumentation instrumentation = new Instrumentation(statsdReporter, FactoryUtil.class);
         Pattern subscriptionTopicPattern = Pattern.compile(config.getKafkaTopic());
-        LOGGER.info("consumer subscribed using pattern: {}", subscriptionTopicPattern);
-        kafkaConsumer.subscribe(subscriptionTopicPattern, new ConsumerRebalancer());
+        instrumentation.logInfo("consumer subscribed using pattern: {}", subscriptionTopicPattern);
+        kafkaConsumer.subscribe(subscriptionTopicPattern, new ConsumerRebalancer(new Instrumentation(statsdReporter, ConsumerRebalancer.class)));
     }
 
     public static Map<String, Object> getConfig(KafkaConsumerConfig config, Map<String, String> extraParameters) {
@@ -42,6 +42,7 @@ public class FactoryUtil {
             put(MAX_POLL_RECORDS, config.getMaxPollRecords());
             put(SESSION_TIMEOUT_MS, config.getSessionTimeoutInMs());
         }};
+
         return merge(consumerConfigurationMap, KafkaEnvironmentVariables.parse(extraParameters));
     }
 

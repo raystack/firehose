@@ -39,7 +39,6 @@ public class GrpcSinkFactoryTest {
     }
 
 
-
     @Test
     public void shouldCreateChannelPoolWithHostAndPort() throws IOException, DeserializerException {
         when(testGrpcService.bindService()).thenCallRealMethod();
@@ -62,8 +61,4 @@ public class GrpcSinkFactoryTest {
         Assert.assertNotNull(sink);
         server.shutdownNow();
     }
-
-
 }
-
-

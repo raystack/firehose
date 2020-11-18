@@ -2,6 +2,7 @@ package com.gojek.esb.factory;
 
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
+import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.ExponentialBackOffProviderConfig;
 import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.config.RetryQueueConfig;
@@ -10,14 +11,15 @@ import com.gojek.esb.consumer.FireHoseConsumer;
 import com.gojek.esb.exception.EglcConfigurationException;
 import com.gojek.esb.filter.EsbMessageFilter;
 import com.gojek.esb.filter.Filter;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.metrics.StatsDReporterFactory;
 import com.gojek.esb.sink.Sink;
 import com.gojek.esb.sink.db.DBSinkFactory;
 import com.gojek.esb.sink.elasticsearch.ESSinkFactory;
 import com.gojek.esb.sink.grpc.GrpcSinkFactory;
 import com.gojek.esb.sink.http.HttpSinkFactory;
 import com.gojek.esb.sink.influxdb.InfluxSinkFactory;
+import com.gojek.esb.sink.log.KeyOrMessageParser;
 import com.gojek.esb.sink.log.LogSinkFactory;
 import com.gojek.esb.sink.redis.RedisSinkFactory;
 import com.gojek.esb.sinkdecorator.BackOff;
@@ -33,8 +35,6 @@ import io.opentracing.contrib.kafka.TracingKafkaProducer;
 import io.opentracing.noop.NoopTracerFactory;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -42,30 +42,31 @@ public class FireHoseConsumerFactory {
 
     private Map<String, String> config = System.getenv();
     private final KafkaConsumerConfig kafkaConsumerConfig;
-    private final StatsDReporter statsDReporter;
+    private StatsDReporter statsDReporter;
     private final Clock clockInstance;
-    private static final Logger LOGGER = LoggerFactory.getLogger(FireHoseConsumerFactory.class);
     private StencilClient stencilClient;
+    private Instrumentation instrumentation;
+    private KeyOrMessageParser parser;
 
-    public FireHoseConsumerFactory(KafkaConsumerConfig kafkaConsumerConfig) {
+    public FireHoseConsumerFactory(KafkaConsumerConfig kafkaConsumerConfig, StatsDReporter statsDReporter) {
         this.kafkaConsumerConfig = kafkaConsumerConfig;
-        LOGGER.info("--------- Config ---------");
-        LOGGER.info(this.kafkaConsumerConfig.getKafkaAddress());
-        LOGGER.info(this.kafkaConsumerConfig.getKafkaTopic());
-        LOGGER.info(this.kafkaConsumerConfig.getConsumerGroupId());
-        LOGGER.info("--------- ------ ---------");
+        this.statsDReporter = statsDReporter;
+        instrumentation = new Instrumentation(this.statsDReporter, FireHoseConsumerFactory.class);
+
+        String additionalConsumerConfig = String.format(""
+                        + "\n\tEnable Async Commit: %s"
+                        + "\n\tCommit Only Current Partition: %s",
+                this.kafkaConsumerConfig.asyncCommitEnabled(),
+                this.kafkaConsumerConfig.commitOnlyCurrentPartitions());
+        instrumentation.logDebug(additionalConsumerConfig);
+
         clockInstance = new Clock();
-        StatsDReporterFactory statsDReporterFactory = new StatsDReporterFactory(
-                this.kafkaConsumerConfig.getStatsDHost(),
-                this.kafkaConsumerConfig.getStatsDPort(),
-                this.kafkaConsumerConfig.getStatsDTags().split(",")
-        );
-        statsDReporter = statsDReporterFactory.buildReporter();
 
         String stencilUrl = this.kafkaConsumerConfig.stencilUrl();
         stencilClient = this.kafkaConsumerConfig.enableStencilClient()
-                ? StencilClientFactory.getClient(stencilUrl, config, statsDReporterFactory.getStatsDClient())
+                ? StencilClientFactory.getClient(stencilUrl, config, this.statsDReporter.getClient())
                 : StencilClientFactory.getClient();
+        parser = new KeyOrMessageParser(new ProtoParser(stencilClient, kafkaConsumerConfig.getProtoSchema()), kafkaConsumerConfig);
     }
 
     /**
@@ -75,7 +76,7 @@ public class FireHoseConsumerFactory {
      */
     public FireHoseConsumer buildConsumer() {
 
-        Filter filter = new EsbMessageFilter(kafkaConsumerConfig);
+        Filter filter = new EsbMessageFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, EsbMessageFilter.class));
         GenericKafkaFactory genericKafkaFactory = new GenericKafkaFactory();
         Tracer tracer = NoopTracerFactory.create();
         if (kafkaConsumerConfig.enableTracing()) {
@@ -86,7 +87,7 @@ public class FireHoseConsumerFactory {
         Sink retrySink = withRetry(getSink(), genericKafkaFactory, tracer);
         SinkTracer fireHoseTracer = new SinkTracer(tracer, kafkaConsumerConfig.getSinkType().name() + " SINK",
                 kafkaConsumerConfig.enableTracing());
-        return new FireHoseConsumer(consumer, retrySink, statsDReporter, clockInstance, fireHoseTracer);
+        return new FireHoseConsumer(consumer, retrySink, clockInstance, fireHoseTracer, new Instrumentation(statsDReporter, FireHoseConsumer.class));
     }
 
     /**
@@ -95,6 +96,7 @@ public class FireHoseConsumerFactory {
      * @return Sink
      */
     private Sink getSink() {
+        instrumentation.logInfo("Sink Type: {}", kafkaConsumerConfig.getSinkType().toString());
         switch (kafkaConsumerConfig.getSinkType()) {
             case DB:
                 return new DBSinkFactory().create(config, statsDReporter, stencilClient);
@@ -130,20 +132,21 @@ public class FireHoseConsumerFactory {
                 backOffConfig.exponentialBackoffInitialTimeInMs(),
                 backOffConfig.exponentialBackoffRate(),
                 backOffConfig.exponentialBackoffMaximumBackoffInMs(),
-                statsDReporter,
-                BackOff.withInstrumentationFactory(statsDReporter));
+                new Instrumentation(statsDReporter, ExponentialBackOffProvider.class),
+                new BackOff(new Instrumentation(statsDReporter, BackOff.class)));
 
         if (kafkaConsumerConfig.getRetryQueueEnabled()) {
             RetryQueueConfig retryQueueConfig = ConfigFactory.create(RetryQueueConfig.class, config);
+
             KafkaProducer<byte[], byte[]> kafkaProducer = genericKafkaFactory.getKafkaProducer(retryQueueConfig);
             TracingKafkaProducer<byte[], byte[]> tracingProducer = new TracingKafkaProducer<>(kafkaProducer, tracer);
 
             return SinkWithRetryQueue.withInstrumentationFactory(
-                    new SinkWithRetry(basicSink, backOffProvider, statsDReporter,
-                            kafkaConsumerConfig.getMaximumRetryAttempts()),
+                    new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class),
+                            kafkaConsumerConfig.getMaximumRetryAttempts(), parser),
                     tracingProducer, retryQueueConfig.getRetryTopic(), statsDReporter, backOffProvider);
         } else {
-            return new SinkWithRetry(basicSink, backOffProvider, statsDReporter);
+            return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), parser);
         }
     }
 }

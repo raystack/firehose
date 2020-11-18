@@ -36,12 +36,11 @@ public class GenericKafkaFactory {
     public EsbGenericConsumer createConsumer(KafkaConsumerConfig config, Map<String, String> extraKafkaParameters,
                                              StatsDReporter statsDReporter, Filter filter, Tracer tracer) {
 
-
         KafkaConsumer<byte[], byte[]> kafkaConsumer = new KafkaConsumer<>(FactoryUtil.getConfig(config, extraKafkaParameters));
-        FactoryUtil.configureSubscription(config, kafkaConsumer);
+        FactoryUtil.configureSubscription(config, kafkaConsumer, statsDReporter);
         Offsets offsets = !config.commitOnlyCurrentPartitions()
-                ? new TopicOffsets(kafkaConsumer, config, statsDReporter)
-                : new TopicPartitionOffsets(kafkaConsumer, config, statsDReporter);
+                ? new TopicOffsets(kafkaConsumer, config, new Instrumentation(statsDReporter, TopicOffsets.class))
+                : new TopicPartitionOffsets(kafkaConsumer, config, new Instrumentation(statsDReporter, TopicPartitionOffsets.class));
         TracingKafkaConsumer<byte[], byte[]> tracingKafkaConsumer = new TracingKafkaConsumer<>(kafkaConsumer, tracer);
         return new EsbGenericConsumer(
             tracingKafkaConsumer,

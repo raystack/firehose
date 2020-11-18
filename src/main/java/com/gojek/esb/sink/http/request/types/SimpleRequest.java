@@ -5,6 +5,8 @@ import com.gojek.esb.config.enums.HttpRequestMethod;
 import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
+import com.gojek.esb.metrics.Instrumentation;
+import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.http.request.body.JsonBody;
 import com.gojek.esb.sink.http.request.create.BatchRequestCreator;
 import com.gojek.esb.sink.http.request.create.IndividualRequestCreator;
@@ -24,11 +26,13 @@ public class SimpleRequest implements Request {
     private HttpRequestMethod method;
     private RequestEntityBuilder requestEntityBuilder;
     private RequestCreator requestCreator;
+    private StatsDReporter statsDReporter;
 
-    public SimpleRequest(HTTPSinkConfig config, JsonBody body, HttpRequestMethod method) {
+    public SimpleRequest(StatsDReporter statsDReporter, HTTPSinkConfig config, JsonBody body, HttpRequestMethod method) {
         this.httpSinkConfig = config;
         this.body = body;
         this.method = method;
+        this.statsDReporter = statsDReporter;
     }
 
     public List<HttpEntityEnclosingRequestBase> build(List<EsbMessage> esbMessages) throws DeserializerException, URISyntaxException {
@@ -38,9 +42,11 @@ public class SimpleRequest implements Request {
     @Override
     public Request setRequestStrategy(HeaderBuilder headerBuilder, URIBuilder uriBuilder, RequestEntityBuilder requestEntitybuilder) {
         if (isTemplateBody(httpSinkConfig)) {
-            this.requestCreator = new IndividualRequestCreator(uriBuilder, headerBuilder, method, body);
+            this.requestCreator = new IndividualRequestCreator(new Instrumentation(
+                    statsDReporter, IndividualRequestCreator.class), uriBuilder, headerBuilder, method, body);
         } else {
-            this.requestCreator = new BatchRequestCreator(uriBuilder, headerBuilder, method, body);
+            this.requestCreator = new BatchRequestCreator(new Instrumentation(
+                    statsDReporter, BatchRequestCreator.class), uriBuilder, headerBuilder, method, body);
         }
         this.requestEntityBuilder = requestEntitybuilder;
         return this;

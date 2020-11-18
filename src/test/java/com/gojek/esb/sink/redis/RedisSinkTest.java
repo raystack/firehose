@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
-
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -33,7 +32,6 @@ public class RedisSinkTest {
         redis.execute();
 
         verify(redisClient).execute();
-
     }
 
     @Test
@@ -43,7 +41,6 @@ public class RedisSinkTest {
         redis.prepare(esbMessages);
 
         verify(redisClient).prepare(esbMessages);
-
     }
 
     @Test
@@ -51,7 +48,13 @@ public class RedisSinkTest {
         redis.close();
 
         verify(redisClient).close();
+    }
 
+    @Test
+    public void shouldLogWhenClosingConnection() {
+        redis.close();
+
+        verify(instrumentation, times(1)).logInfo("Redis connection closing");
     }
 
     @Test
@@ -62,12 +65,12 @@ public class RedisSinkTest {
 
         verify(instrumentation, times(1)).capturePreExecutionLatencies(esbMessages);
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).logInfo("pushing {} messages", esbMessages.size());
+        verify(instrumentation, times(1)).logDebug("Preparing {} messages", esbMessages.size());
         verify(instrumentation, times(1)).captureSuccessExecutionTelemetry(any(), any());
         InOrder inOrder = inOrder(instrumentation);
+        inOrder.verify(instrumentation).logDebug("Preparing {} messages", esbMessages.size());
         inOrder.verify(instrumentation).capturePreExecutionLatencies(esbMessages);
         inOrder.verify(instrumentation).startExecution();
-        inOrder.verify(instrumentation).logInfo("pushing {} messages", esbMessages.size());
         inOrder.verify(instrumentation).captureSuccessExecutionTelemetry(any(), any());
     }
 
@@ -80,12 +83,12 @@ public class RedisSinkTest {
 
         verify(instrumentation, times(1)).capturePreExecutionLatencies(esbMessages);
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).logInfo("pushing {} messages", esbMessages.size());
+        verify(instrumentation, times(1)).logDebug("Preparing {} messages", esbMessages.size());
         verify(instrumentation, times(1)).captureFailedExecutionTelemetry(any(), any());
         InOrder inOrder = inOrder(instrumentation);
+        inOrder.verify(instrumentation).logDebug("Preparing {} messages", esbMessages.size());
         inOrder.verify(instrumentation).capturePreExecutionLatencies(esbMessages);
         inOrder.verify(instrumentation).startExecution();
-        inOrder.verify(instrumentation).logInfo("pushing {} messages", esbMessages.size());
         inOrder.verify(instrumentation).captureFailedExecutionTelemetry(any(), any());
     }
 

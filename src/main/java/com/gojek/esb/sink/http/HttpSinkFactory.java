@@ -32,15 +32,16 @@ public class HttpSinkFactory implements SinkFactory {
     public AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         HTTPSinkConfig httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
 
-        CloseableHttpClient closeableHttpClient = newHttpClient(httpSinkConfig);
+        Instrumentation instrumentation = new Instrumentation(statsDReporter, HttpSinkFactory.class);
 
-        Instrumentation instrumentation = new Instrumentation(statsDReporter, HttpSink.class);
+        CloseableHttpClient closeableHttpClient = newHttpClient(httpSinkConfig);
+        instrumentation.logInfo("HTTP connection established");
 
         UriParser uriParser = new UriParser(new ProtoParser(stencilClient, httpSinkConfig.getProtoSchema()), httpSinkConfig.getKafkaRecordParserMode());
 
-        Request request = new RequestFactory(httpSinkConfig, stencilClient, uriParser).createRequest();
+        Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();
 
-        return new HttpSink(instrumentation, request, closeableHttpClient, stencilClient, httpSinkConfig.retryStatusCodeRanges(), httpSinkConfig.requestLogStatusCodeRanges());
+        return new HttpSink(new Instrumentation(statsDReporter, HttpSink.class), request, closeableHttpClient, stencilClient, httpSinkConfig.retryStatusCodeRanges(), httpSinkConfig.requestLogStatusCodeRanges());
     }
 
     private CloseableHttpClient newHttpClient(HTTPSinkConfig httpSinkConfig) {

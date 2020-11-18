@@ -4,7 +4,6 @@ import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
-import com.gojek.esb.metrics.StatsDReporter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,9 +28,6 @@ public class DBSinkTest {
     private QueryTemplate queryTemplate;
 
     private DBSink dbSink;
-
-    @Mock
-    private StatsDReporter statsDReporter;
 
     @Mock
     private StencilClient stencilClient;
@@ -167,6 +163,15 @@ public class DBSinkTest {
         verify(stencilClient, times(1)).close();
     }
 
+    @Test
+    public void shouldLogWhenClosingConnection() throws IOException {
+        String sql = "select * from table";
+        DBSinkStub dbSinkStub = new DBSinkStub(instrumentation, "db", dbConnectionPool, queryTemplate, stencilClient, Arrays.asList(sql));
+        dbSinkStub.close();
+
+        verify(instrumentation, times(1)).logInfo("Database connection closing");
+    }
+
     @Test(expected = IOException.class)
     public void shouldThrowIOExceptionWhenFailToClose() throws InterruptedException, IOException {
         doThrow(InterruptedException.class).when(dbConnectionPool).shutdown();
@@ -175,6 +180,31 @@ public class DBSinkTest {
         DBSinkStub dbSinkStub = new DBSinkStub(instrumentation, "db", dbConnectionPool, queryTemplate, stencilClient, queriesList);
 
         dbSinkStub.close();
+    }
+
+    @Test
+    public void shouldLogQueryString() {
+        EsbMessage esbMessage = new EsbMessage("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
+        dbSink.createQueries(Arrays.asList(esbMessage));
+
+        verify(instrumentation, times(1)).logDebug(queryTemplate.toQueryString(esbMessage));
+    }
+
+    @Test
+    public void shouldLogDbResponse() throws Exception {
+        int[] updateCounts = new int[]{};
+        List<String> queries = Arrays.asList("select * from table");
+        EsbMessage esbMessage = new EsbMessage(new byte[0], new byte[0], "topic", 0, 100);
+        List<EsbMessage> esbMessages = Arrays.asList(esbMessage);
+
+        when(statement.executeBatch()).thenReturn(updateCounts);
+        DBSinkStub dbSinkStub = new DBSinkStub(instrumentation, "db", dbConnectionPool, queryTemplate, stencilClient, queries);
+
+        dbSinkStub.pushMessage(esbMessages);
+
+        verify(statement, times(1)).addBatch("select * from table");
+        verify(instrumentation, times(1)).logDebug("Preparing {} messages", 1);
+        verify(instrumentation, times(1)).logDebug("DB response: {}", Arrays.toString(updateCounts));
     }
 
     public class DBSinkStub extends DBSink {

@@ -28,19 +28,28 @@ public class GrpcSinkFactory implements SinkFactory {
     @Override
     public AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         GrpcConfig grpcConfig = ConfigFactory.create(GrpcConfig.class, configuration);
-        ChannelPool connection = null;
+        Instrumentation instrumentation = new Instrumentation(statsDReporter, GrpcSinkFactory.class);
+        String grpcSinkConfig = String.format("\n\tService host: %s\n\tService port: %s\n\tMethod url: %s\n\tResponse proto schema: %s"
+                        + "\n\tConnection pool max idle: %s\n\tConnection pool min idle: %s\n\tConnection poll size: %s"
+                        + "\n\tConnection pool max wait millis: %s\n\tConsul overloaded threshold: %s\n\tConsul service name: %s",
+                grpcConfig.getServiceHost(), grpcConfig.getServicePort(), grpcConfig.getGrpcMethodUrl(), grpcConfig.getGrpcResponseProtoSchema(),
+                grpcConfig.getConnectionPoolMaxIdle(), grpcConfig.getConnectionPoolMinIdle(), grpcConfig.getConnectionPoolSize(),
+                grpcConfig.getConnectionPoolMaxWaitMillis(), grpcConfig.getConsulOverloadedThreshold(), grpcConfig.getConsulServiceName());
+        instrumentation.logDebug(grpcSinkConfig);
+        instrumentation.logInfo("Consul service discovery enabled: {}", grpcConfig.getConsulServiceDiscovery());
 
+        ChannelPool connection = null;
         try {
             connection = createConnection(grpcConfig);
         } catch (ChannelPoolException e) {
+            instrumentation.logError(e.getMessage());
             e.printStackTrace();
         }
 
-        Instrumentation instrumentation = new Instrumentation(statsDReporter, GrpcSink.class);
+        GrpcClient grpcClient = new GrpcClient(new Instrumentation(statsDReporter, GrpcClient.class), connection, grpcConfig, stencilClient);
+        instrumentation.logInfo("GRPC connection established");
 
-        GrpcClient grpcClient = new GrpcClient(connection, grpcConfig, stencilClient);
-
-        return new GrpcSink(instrumentation, grpcClient, stencilClient);
+        return new GrpcSink(new Instrumentation(statsDReporter, GrpcSink.class), grpcClient, stencilClient);
     }
 
     private ChannelPool createConnection(GrpcConfig configuration) throws ChannelPoolException {

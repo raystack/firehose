@@ -2,6 +2,8 @@ package com.gojek.esb.metrics;
 
 import com.gojek.esb.util.Clock;
 import com.timgroup.statsd.StatsDClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -12,6 +14,7 @@ public class StatsDReporter implements Closeable {
 
     private StatsDClient client;
     private String globalTags;
+    private static final Logger LOGGER = LoggerFactory.getLogger(StatsDReporter.class);
 
     private Clock clock;
 
@@ -75,6 +78,7 @@ public class StatsDReporter implements Closeable {
 
     @Override
     public void close() throws IOException {
+        LOGGER.info("StatsD connection closed");
         client.stop();
     }
 

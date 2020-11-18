@@ -3,6 +3,7 @@ package com.gojek.esb.sink.log;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.AppConfig;
+import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.SinkFactory;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.Sink;
@@ -22,6 +23,6 @@ public class LogSinkFactory implements SinkFactory {
     public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         AppConfig appConfig = ConfigFactory.create(AppConfig.class, configuration);
         KeyOrMessageParser parser = new KeyOrMessageParser(new ProtoParser(stencilClient, appConfig.getProtoSchema()), appConfig);
-        return new LogSink(parser, new ConsoleLogger());
+        return new LogSink(parser, new Instrumentation(statsDReporter, LogSink.class));
     }
 }

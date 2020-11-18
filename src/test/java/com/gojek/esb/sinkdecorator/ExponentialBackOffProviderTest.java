@@ -1,6 +1,6 @@
 package com.gojek.esb.sinkdecorator;
 
-import com.gojek.esb.metrics.StatsDReporter;
+import com.gojek.esb.metrics.Instrumentation;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -8,13 +8,15 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static java.lang.Math.toIntExact;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ExponentialBackOffProviderTest {
 
     @Mock
-    private StatsDReporter statsDReporter;
+    private Instrumentation instrumentation;
 
     @Mock
     private BackOff backOff;
@@ -30,37 +32,47 @@ public class ExponentialBackOffProviderTest {
     @Before
     public void setup() {
         exponentialBackOffProvider = new ExponentialBackOffProvider(initialExpiryTimeInMS, backOffRate,
-                maximumBackoffTimeInMS, statsDReporter, backOff);
+                maximumBackoffTimeInMS, instrumentation, backOff);
     }
 
     @Test
     public void shouldBeWithinMaxBackoffTime() {
-
         exponentialBackOffProvider.backOff(100000000);
         verify(backOff).inMilliSeconds(maximumBackoffTimeInMS);
+
+        verify(instrumentation, times(1)).logWarn("backing off for {} milliseconds ", (long) maximumBackoffTimeInMS);
+        verify(instrumentation, times(1)).captureSleepTime("backoff_sleep_time", toIntExact(maximumBackoffTimeInMS));
     }
 
     @Test
     public void shouldBackoffExponentially() {
-
         exponentialBackOffProvider.backOff(1);
-        verify(backOff).inMilliSeconds(20);
+        long sleepTime1 = 20;
+        verify(backOff).inMilliSeconds(sleepTime1);
+
+        verify(instrumentation, times(1)).logWarn("backing off for {} milliseconds ", sleepTime1);
+        verify(instrumentation, times(1)).captureSleepTime("backoff_sleep_time", toIntExact(sleepTime1));
 
         exponentialBackOffProvider.backOff(4);
-        verify(backOff).inMilliSeconds(160);
+        long sleepTime2 = 160;
+        verify(backOff).inMilliSeconds(sleepTime2);
+
+        verify(instrumentation, times(1)).logWarn("backing off for {} milliseconds ", sleepTime2);
+        verify(instrumentation, times(1)).captureSleepTime("backoff_sleep_time", toIntExact(sleepTime2));
     }
 
     @Test
-    public void shouldSleepForBackOffTimeOnFirstRetry() throws Exception {
+    public void shouldSleepForBackOffTimeOnFirstRetry() {
         exponentialBackOffProvider.backOff(0);
 
         verify(backOff).inMilliSeconds(initialExpiryTimeInMS);
     }
 
     @Test
-    public void shouldRecordStatsForBackOffTime() throws Exception {
+    public void shouldRecordStatsForBackOffTime() {
         exponentialBackOffProvider.backOff(0);
 
-        verify(statsDReporter).gauge("backoff_time", initialExpiryTimeInMS);
+        verify(instrumentation, times(1)).logWarn("backing off for {} milliseconds ", (long) initialExpiryTimeInMS);
+        verify(instrumentation).captureSleepTime("backoff_sleep_time", initialExpiryTimeInMS);
     }
 }

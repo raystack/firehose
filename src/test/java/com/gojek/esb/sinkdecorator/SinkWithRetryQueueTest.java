@@ -6,6 +6,7 @@ import com.gojek.esb.consumer.TestMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
 
+import com.gojek.esb.metrics.StatsDReporter;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -45,6 +46,9 @@ public class SinkWithRetryQueueTest {
     @Mock
     private Instrumentation instrumentation;
 
+    @Mock
+    private StatsDReporter statsDReporter;
+
     @Before
     public void setup() {
         initMocks(this);
@@ -53,8 +57,8 @@ public class SinkWithRetryQueueTest {
     @Test
     public void shouldReturnEmptyListIfSuperReturnsEmptyList() throws IOException, DeserializerException {
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(new ArrayList<>());
-        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
-                instrumentation, backOffProvider);
+        SinkWithRetryQueue sinkWithRetryQueue = SinkWithRetryQueue.withInstrumentationFactory(sinkWithRetry, kafkaProducer, "test-topic",
+                statsDReporter, backOffProvider);
         ArrayList<EsbMessage> esbMessages = new ArrayList<>();
         esbMessages.add(esbMessage);
         List<EsbMessage> messages = sinkWithRetryQueue.pushMessage(esbMessages);
@@ -221,6 +225,9 @@ public class SinkWithRetryQueueTest {
         calls.get(0).onCompletion(null, null);
         calls.get(1).onCompletion(null, null);
         verify(instrumentation, times(1)).captureRetryAttempts();
+        verify(instrumentation, times(1)).logInfo("Pushing {} messages to retry queue topic : {}", 2, "test-topic");
+        verify(instrumentation, times(2)).incrementMessageSucceedCount();
+        verify(instrumentation, times(1)).logInfo("Successfully pushed {} messages to {}", 2, "test-topic");
     }
 
     @Test
@@ -250,7 +257,13 @@ public class SinkWithRetryQueueTest {
         verify(kafkaProducer, timeout(200).times(3)).send(any(), callbacks.capture());
         calls = callbacks.getAllValues();
         calls.get(2).onCompletion(null, null);
+
         verify(instrumentation, times(2)).captureRetryAttempts();
+        verify(instrumentation, times(1)).logInfo("Pushing {} messages to retry queue topic : {}", 1, "test-topic");
+        verify(instrumentation, times(1)).logInfo("Pushing {} messages to retry queue topic : {}", 2, "test-topic");
+        verify(instrumentation, times(2)).incrementMessageSucceedCount();
+        verify(instrumentation, times(1)).incrementMessageFailCount(any(), any());
+        verify(instrumentation, times(2)).logInfo("Successfully pushed {} messages to {}", 1, "test-topic");
     }
 
     private ProducerRecord<byte[], byte[]> expectedRecords(EsbMessage expectedMessage) {

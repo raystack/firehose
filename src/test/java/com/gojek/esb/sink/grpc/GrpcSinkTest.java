@@ -52,10 +52,16 @@ public class GrpcSinkTest {
         RecordHeaders headers = new RecordHeaders();
         when(esbMessage.getHeaders()).thenReturn(headers);
         GrpcResponse build = GrpcResponse.newBuilder().setSuccess(true).build();
-        when(grpcClient.execute(any(byte[].class), any(RecordHeaders.class))).thenReturn(DynamicMessage.parseFrom(build.getDescriptorForType(), build.toByteArray()));
+        DynamicMessage response = DynamicMessage.parseFrom(build.getDescriptorForType(), build.toByteArray());
+        when(grpcClient.execute(any(byte[].class), any(RecordHeaders.class))).thenReturn(response);
 
         sink.pushMessage(Collections.singletonList(esbMessage));
         verify(grpcClient, times(1)).execute(any(byte[].class), eq(headers));
+
+        verify(instrumentation, times(1)).logDebug("Preparing {} messages", 1);
+        verify(instrumentation, times(1)).logDebug("Response: {}", response);
+        verify(instrumentation, times(0)).logWarn("Grpc Service returned error");
+        verify(instrumentation, times(1)).logDebug("Failed messages count: {}", 0);
     }
 
     @Test
@@ -63,10 +69,32 @@ public class GrpcSinkTest {
         when(esbMessage.getLogMessage()).thenReturn(new byte[]{});
         when(esbMessage.getHeaders()).thenReturn(new RecordHeaders());
         GrpcResponse build = GrpcResponse.newBuilder().setSuccess(false).build();
-        when(grpcClient.execute(any(), any(RecordHeaders.class))).thenReturn(DynamicMessage.parseFrom(build.getDescriptorForType(), build.toByteArray()));
+        DynamicMessage response = DynamicMessage.parseFrom(build.getDescriptorForType(), build.toByteArray());
+        when(grpcClient.execute(any(), any(RecordHeaders.class))).thenReturn(response);
         List<EsbMessage> failedMessages = sink.pushMessage(Collections.singletonList(esbMessage));
 
         assertFalse(failedMessages.isEmpty());
         assertEquals(1, failedMessages.size());
+
+        verify(instrumentation, times(1)).logDebug("Preparing {} messages", 1);
+        verify(instrumentation, times(1)).logDebug("Response: {}", response);
+        verify(instrumentation, times(1)).logWarn("Grpc Service returned error");
+        verify(instrumentation, times(1)).logDebug("Failed messages count: {}", 1);
+    }
+
+    @Test
+    public void shouldCloseStencilClient() throws IOException {
+        sink = new GrpcSink(instrumentation, grpcClient, stencilClient);
+
+        sink.close();
+        verify(stencilClient, times(1)).close();
+    }
+
+    @Test
+    public void shouldLogWhenClosingConnection() throws IOException {
+        sink = new GrpcSink(instrumentation, grpcClient, stencilClient);
+
+        sink.close();
+        verify(instrumentation, times(1)).logInfo("GRPC connection closing");
     }
 }

@@ -165,7 +165,9 @@ public class ESSinkTest {
         esSinkMock.setBulkResponse(bulkResponse);
 
         esSinkMock.pushMessage(this.esbMessages);
-        verify(instrumentation, times(2)).incrementCounterWithTags(any(String.class), any(String.class));
+        verify(instrumentation, times(2)).logInfo("Not retrying due to response status: {} is under blacklisted status code", "404");
+        verify(instrumentation, times(2)).logInfo("Message dropped because of status code: 404");
+        verify(instrumentation, times(2)).incrementCounterWithTags("messages.dropped.count", "cause=NOT_FOUND");
     }
 
     @Test
@@ -187,8 +189,39 @@ public class ESSinkTest {
         Assert.assertEquals(3, failedMessages.size());
     }
 
-    public static class ESSinkMock extends ESSink {
+    @Test
+    public void shouldLogBulkRequestFailedWhenBulkResponsesHasFailures() {
+        BulkResponseItemMock bulkResponseItemMock1 = new BulkResponseItemMock(0, DocWriteRequest.OpType.UPDATE, new UpdateResponse(), 404);
+        BulkResponseItemMock bulkResponseItemMock2 = new BulkResponseItemMock(0, DocWriteRequest.OpType.UPDATE, new UpdateResponse(), 404);
+        BulkItemResponse[] bulkItemResponses = {bulkResponseItemMock1, bulkResponseItemMock2};
+        when(bulkResponse.hasFailures()).thenReturn(true);
+        when(bulkResponse.getItems()).thenReturn(bulkItemResponses);
+        ESSinkMock esSinkMock = new ESSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
+                5000, 1, esRetryStatusCodeBlacklist);
+        esSinkMock.setBulkResponse(bulkResponse);
 
+        esSinkMock.pushMessage(this.esbMessages);
+        verify(instrumentation, times(1)).logWarn("Bulk request failed");
+        verify(instrumentation, times(1)).logWarn("Bulk request failed count: {}", 2);
+    }
+
+    @Test
+    public void shouldNotLogBulkRequestFailedWhenBulkResponsesHasNotFailures() {
+        BulkResponseItemMock bulkResponseItemMock1 = new BulkResponseItemMock(0, DocWriteRequest.OpType.UPDATE, new UpdateResponse(), 404);
+        BulkResponseItemMock bulkResponseItemMock2 = new BulkResponseItemMock(0, DocWriteRequest.OpType.UPDATE, new UpdateResponse(), 404);
+        BulkItemResponse[] bulkItemResponses = {bulkResponseItemMock1, bulkResponseItemMock2};
+        when(bulkResponse.hasFailures()).thenReturn(false);
+        when(bulkResponse.getItems()).thenReturn(bulkItemResponses);
+        ESSinkMock esSinkMock = new ESSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
+                5000, 1, esRetryStatusCodeBlacklist);
+        esSinkMock.setBulkResponse(bulkResponse);
+
+        esSinkMock.pushMessage(this.esbMessages);
+        verify(instrumentation, times(0)).logWarn("Bulk request failed");
+        verify(instrumentation, times(0)).logWarn("Bulk request failed count: {}", 2);
+    }
+
+    public static class ESSinkMock extends ESSink {
 
         private BulkResponse bulkResponse;
 
