@@ -1,0 +1,179 @@
+syntax = "proto3";
+
+package com.gojek.esb.consumer;
+
+option java_multiple_files = true;
+option java_package = "com.gojek.esb.consumer";
+option java_outer_classname = "TestLogMessageProto";
+
+import "google/protobuf/timestamp.proto";
+
+message TestAggregatedSupplyKey {
+    google.protobuf.Timestamp window_start_time = 1;
+    google.protobuf.Timestamp window_end_time = 2;
+    int32 s2_id_level = 3;
+    int64 s2_id = 4;
+    TestVehicleType.Enum vehicle_type = 5;
+}
+
+message TestAggregatedSupplyMessage {
+    google.protobuf.Timestamp window_start_time = 1;
+    google.protobuf.Timestamp window_end_time = 2;
+    int32 s2_id_level = 3;
+    int64 s2_id = 4;
+    TestVehicleType.Enum vehicle_type = 5;
+    int64 unique_drivers = 6;
+    google.protobuf.Timestamp event_timestamp = 7;
+}
+
+message TestVehicleType {
+    enum Enum {
+        UNKNOWN = 0;
+        CAR = 1;
+        BIKE = 2;
+    }
+}
+message TestBookingLogKey {
+    TestServiceType.Enum service_type = 1;
+    string order_number = 2;
+    string order_url = 3;
+    TestBookingStatus.Enum status = 4;
+    google.protobuf.Timestamp event_timestamp = 5;
+}
+
+message TestBookingLogMessage {
+    TestServiceType.Enum service_type = 1;
+    string order_number = 2;
+    string order_url = 3;
+    TestBookingStatus.Enum status = 4;
+    google.protobuf.Timestamp event_timestamp = 5;
+    string customer_id = 6;
+    string customer_url = 7;
+    string driver_id = 8;
+
+    string driver_url = 9;
+
+    string activity_source = 11;
+    string service_area_id = 12;
+
+    float amount_paid_by_cash = 16;
+
+    TestLocation driver_pickup_location = 26;
+    TestLocation driver_dropoff_location = 27;
+
+    string customer_email = 28;
+    string customer_name = 29;
+    string customer_phone = 30;
+
+    string driver_email = 31;
+    string driver_name = 32;
+    string driver_phone = 33;
+
+    int32 cancel_reason_id = 36;
+    string cancel_reason_description = 37;
+
+    google.protobuf.Timestamp booking_creation_time = 41;
+
+    float total_customer_discount = 40;
+    float gopay_customer_discount = 42;
+    float voucher_customer_discount = 43;
+
+    google.protobuf.Timestamp pickup_time = 44;
+    float driver_paid_in_cash = 45;
+    float driver_paid_in_credit = 46;
+
+    TestVehicleType.Enum vehicle_type = 51;
+
+    int64 customer_total_fare_without_surge = 52;
+    bool customer_dynamic_surge_enabled = 55;
+
+    int64 driver_total_fare_without_surge = 56;
+    bool driver_dynamic_surge_enabled = 59;
+}
+
+message TestFeedbackLogKey {
+    string order_number = 1;
+    google.protobuf.Timestamp event_timestamp = 2;
+}
+
+message TestFeedbackLogMessage {
+    string order_number = 1;
+    google.protobuf.Timestamp event_timestamp = 2;
+    string driver_id = 3;
+    string customer_id = 4;
+    int32 feedback_rating = 5;
+    string feedback_comment = 6;
+    float tip_amount = 7;
+    bool feedback_skipped = 8;
+    TestServiceType.Enum service_type = 9;
+    TestFeedbackSource.Enum feedback_source = 10;
+    repeated TestReason reason = 11;
+    string locale = 12;
+    bool support_ticket_created = 13;
+    bool is_gopay_success = 14;
+    google.protobuf.Timestamp order_completion_time = 15;
+    google.protobuf.Timestamp feedback_creation_time = 16;
+}
+
+message TestReason {
+    string reason_id = 1;
+    string group_id = 2;
+}
+
+message TestFeedbackSource {
+    enum Enum {
+        CUSTOMER = 0;
+        DRIVER = 1;
+    }
+}
+
+message TestServiceType {
+    enum Enum {
+        UNKNOWN = 0;
+        GO_RIDE = 1;
+        GO_SEND = 2;
+        GO_SHOP = 3;
+    }
+}
+
+message TestBookingStatus {
+    enum Enum {
+        UNKNOWN = 0;
+        CREATED = 1;
+        DRIVER_FOUND = 2;
+        PICKED_UP = 3;
+        COMPLETED = 4;
+    }
+}
+
+message TestAuditEntityLogKey {
+    string audit_id = 1;
+    string entity_id = 2;
+    string restaurant_id = 3;
+    google.protobuf.Timestamp event_timestamp = 4;
+}
+
+message TestAuditEntityLogMessage {
+    string audit_id = 1;
+    string entity_id = 2;
+    string restaurant_id = 3;
+    google.protobuf.Timestamp event_timestamp = 4;
+    string entity_type = 5;
+    string restaurant_name = 6;
+    map<string, string> current_state = 7;
+    map<string, string> previous_values = 8;
+    string source = 9;
+}
+
+message TestLocation {
+    string name = 1;
+    string address = 2;
+    double latitude = 3;
+    double longitude = 4;
+    string type = 5;
+    string note = 6;
+    string place_id = 7;
+    float accuracy_meter = 8;
+    string gate_id = 9;
+}
+

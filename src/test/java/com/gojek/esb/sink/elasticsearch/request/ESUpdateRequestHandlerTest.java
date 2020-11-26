@@ -2,10 +2,10 @@ package com.gojek.esb.sink.elasticsearch.request;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.aggregate.supply.AggregatedSupplyMessage;
 import com.gojek.esb.config.enums.ESMessageType;
 import com.gojek.esb.config.enums.ESRequestType;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.TestAggregatedSupplyMessage;
 import com.gojek.esb.exception.JsonParseException;
 import com.gojek.esb.serializer.EsbMessageToJson;
 import com.google.gson.Gson;
@@ -43,10 +43,10 @@ public class ESUpdateRequestHandlerTest {
         logMessage = "CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM\u003d";
         esbMessageWithProto = new EsbMessage(null, Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
-        String protoClassName = AggregatedSupplyMessage.class.getName();
+        String protoClassName = TestAggregatedSupplyMessage.class.getName();
         jsonSerializer = new EsbMessageToJson(new ProtoParser(stencilClient, protoClassName), true, false);
 
-        when(stencilClient.get(protoClassName)).thenReturn(AggregatedSupplyMessage.getDescriptor());
+        when(stencilClient.get(protoClassName)).thenReturn(TestAggregatedSupplyMessage.getDescriptor());
     }
 
     @Test

@@ -3,7 +3,7 @@ package com.gojek.esb.sink.db.field;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.gofood.AuditEntityLogMessage;
+import com.gojek.esb.consumer.TestAuditEntityLogMessage;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import org.junit.Assert;
@@ -29,10 +29,10 @@ public class DBMapFieldTest {
         HashMap<String, String> currentStates = new HashMap<>();
         currentStates.put("key", "value");
         currentStates.put("key2", "value2");
-        AuditEntityLogMessage auditEntityLogMessage = AuditEntityLogMessage.newBuilder().putAllCurrentState(currentStates).build();
+        TestAuditEntityLogMessage auditEntityLogMessage = TestAuditEntityLogMessage.newBuilder().putAllCurrentState(currentStates).build();
 
-        Descriptors.FieldDescriptor currentEntityFieldDescriptor = AuditEntityLogMessage.getDescriptor().getFields().get(6);
-        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "com.gojek.esb.gofood.AuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
+        Descriptors.FieldDescriptor currentEntityFieldDescriptor = TestAuditEntityLogMessage.getDescriptor().getFields().get(6);
+        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "com.gojek.esb.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
         Object columnValue = auditEntityParsed.getField(currentEntityFieldDescriptor);
 
         DBMapField dbMapField = new DBMapField(columnValue, currentEntityFieldDescriptor);
@@ -48,10 +48,10 @@ public class DBMapFieldTest {
         currentStates.put("key", "value");
         currentStates.put("key2", "value2");
         currentStates.put("key3", "");
-        AuditEntityLogMessage auditEntityLogMessage = AuditEntityLogMessage.newBuilder().putAllCurrentState(currentStates).build();
+        TestAuditEntityLogMessage auditEntityLogMessage = TestAuditEntityLogMessage.newBuilder().putAllCurrentState(currentStates).build();
 
-        Descriptors.FieldDescriptor currentEntityFieldDescriptor = AuditEntityLogMessage.getDescriptor().getFields().get(6);
-        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "com.gojek.esb.gofood.AuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
+        Descriptors.FieldDescriptor currentEntityFieldDescriptor = TestAuditEntityLogMessage.getDescriptor().getFields().get(6);
+        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "com.gojek.esb.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
         Object columnValue = auditEntityParsed.getField(currentEntityFieldDescriptor);
 
         DBMapField dbMapField = new DBMapField(columnValue, currentEntityFieldDescriptor);
@@ -68,10 +68,10 @@ public class DBMapFieldTest {
         currentStates.put("key", "value");
         currentStates.put("key2", "value2");
         currentStates.put("key3", "value3");
-        AuditEntityLogMessage auditEntityLogMessage = AuditEntityLogMessage.newBuilder().putAllCurrentState(currentStates).build();
+        TestAuditEntityLogMessage auditEntityLogMessage = TestAuditEntityLogMessage.newBuilder().putAllCurrentState(currentStates).build();
 
-        Descriptors.FieldDescriptor currentEntityFieldDescriptor = AuditEntityLogMessage.getDescriptor().getFields().get(6);
-        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "com.gojek.esb.gofood.AuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
+        Descriptors.FieldDescriptor currentEntityFieldDescriptor = TestAuditEntityLogMessage.getDescriptor().getFields().get(6);
+        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "com.gojek.esb.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
         Object columnValue = auditEntityParsed.getField(currentEntityFieldDescriptor);
 
         DBMapField dbMapField = new DBMapField(columnValue, currentEntityFieldDescriptor);
@@ -85,10 +85,10 @@ public class DBMapFieldTest {
         HashMap<String, String> currentStates = new HashMap<>();
         currentStates.put("key", "value");
         currentStates.put("key2", "value2");
-        AuditEntityLogMessage auditEntityLogMessage = AuditEntityLogMessage.newBuilder().setAuditId("audit_id").putAllCurrentState(currentStates).build();
+        TestAuditEntityLogMessage auditEntityLogMessage = TestAuditEntityLogMessage.newBuilder().setAuditId("audit_id").putAllCurrentState(currentStates).build();
 
-        Descriptors.FieldDescriptor auditIdFieldDescriptor = AuditEntityLogMessage.getDescriptor().getFields().get(0);
-        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "com.gojek.esb.gofood.AuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
+        Descriptors.FieldDescriptor auditIdFieldDescriptor = TestAuditEntityLogMessage.getDescriptor().getFields().get(0);
+        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "com.gojek.esb.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
         Object columnValue = auditEntityParsed.getField(auditIdFieldDescriptor);
 
         DBMapField dbMapField = new DBMapField(columnValue, auditIdFieldDescriptor);
