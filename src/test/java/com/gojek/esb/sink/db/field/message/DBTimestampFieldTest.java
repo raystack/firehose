@@ -3,7 +3,7 @@ package com.gojek.esb.sink.db.field.message;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.gofood.AuditEntityLogMessage;
+import com.gojek.esb.consumer.TestAuditEntityLogMessage;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Timestamp;
@@ -27,10 +27,10 @@ public class DBTimestampFieldTest {
 
         Instant now = Instant.now();
         Timestamp timestamp = Timestamp.newBuilder().setSeconds(now.getEpochSecond()).setNanos(now.getNano()).build();
-        AuditEntityLogMessage auditEntityLogMessage = AuditEntityLogMessage.newBuilder().setEventTimestamp(timestamp).build();
+        TestAuditEntityLogMessage auditEntityLogMessage = TestAuditEntityLogMessage.newBuilder().setEventTimestamp(timestamp).build();
 
-        Descriptors.FieldDescriptor timestampFieldDescriptor = AuditEntityLogMessage.getDescriptor().getFields().get(3);
-        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "com.gojek.esb.gofood.AuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
+        Descriptors.FieldDescriptor timestampFieldDescriptor = TestAuditEntityLogMessage.getDescriptor().getFields().get(3);
+        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "com.gojek.esb.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
         Object columnValue = auditEntityParsed.getField(timestampFieldDescriptor);
 
         DBTimestampField dbTime = new DBTimestampField(columnValue);
@@ -43,10 +43,10 @@ public class DBTimestampFieldTest {
 
         Instant now = Instant.now();
         Timestamp timestamp = Timestamp.newBuilder().setSeconds(now.getEpochSecond()).setNanos(now.getNano()).build();
-        AuditEntityLogMessage auditEntityLogMessage = AuditEntityLogMessage.newBuilder().setEventTimestamp(timestamp).build();
+        TestAuditEntityLogMessage auditEntityLogMessage = TestAuditEntityLogMessage.newBuilder().setEventTimestamp(timestamp).build();
 
-        Descriptors.FieldDescriptor timestampFieldDescriptor = AuditEntityLogMessage.getDescriptor().getFields().get(3);
-        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "com.gojek.esb.gofood.AuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
+        Descriptors.FieldDescriptor timestampFieldDescriptor = TestAuditEntityLogMessage.getDescriptor().getFields().get(3);
+        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "com.gojek.esb.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
         Object columnValue = auditEntityParsed.getField(timestampFieldDescriptor);
 
         DBTimestampField dbTime = new DBTimestampField(columnValue);
@@ -59,10 +59,10 @@ public class DBTimestampFieldTest {
 
         Instant now = Instant.now();
         Timestamp timestamp = Timestamp.newBuilder().setSeconds(now.getEpochSecond()).setNanos(now.getNano()).build();
-        AuditEntityLogMessage auditEntityLogMessage = AuditEntityLogMessage.newBuilder().setEventTimestamp(timestamp).setAuditId("audit_id").build();
+        TestAuditEntityLogMessage auditEntityLogMessage = TestAuditEntityLogMessage.newBuilder().setEventTimestamp(timestamp).setAuditId("audit_id").build();
 
-        Descriptors.FieldDescriptor auditIdFieldDescriptor = AuditEntityLogMessage.getDescriptor().getFields().get(0);
-        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "com.gojek.esb.gofood.AuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
+        Descriptors.FieldDescriptor auditIdFieldDescriptor = TestAuditEntityLogMessage.getDescriptor().getFields().get(0);
+        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "com.gojek.esb.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
         Object columnValue = auditEntityParsed.getField(auditIdFieldDescriptor);
 
         DBTimestampField dbTime = new DBTimestampField(columnValue);

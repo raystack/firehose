@@ -3,8 +3,8 @@ package com.gojek.esb.serializer;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.aggregate.supply.AggregatedSupplyMessage;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.TestAggregatedSupplyMessage;
 import com.gojek.esb.exception.DeserializerException;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +21,7 @@ public class EsbMessageToJsonTest {
     @Before
     public void setUp() {
         StencilClient stencilClient = StencilClientFactory.getClient();
-        protoParser = new ProtoParser(stencilClient, AggregatedSupplyMessage.class.getName());
+        protoParser = new ProtoParser(stencilClient, TestAggregatedSupplyMessage.class.getName());
         logMessage = "CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM\u003d";
         logKey = "CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigC";
     }

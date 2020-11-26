@@ -3,8 +3,8 @@ package com.gojek.esb.sink.db.field.message;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.feedback.FeedbackLogMessage;
-import com.gojek.esb.feedback.Reason;
+import com.gojek.esb.consumer.TestFeedbackLogMessage;
+import com.gojek.esb.consumer.TestReason;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import org.junit.Assert;
@@ -18,7 +18,7 @@ public class DBCollectionFieldTest {
     private StencilClient stencilClient;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         stencilClient = StencilClientFactory.getClient();
     }
 
@@ -26,18 +26,19 @@ public class DBCollectionFieldTest {
     @Test
     public void shouldParseTheCollectionFieldAsString() throws Exception {
 
-        Reason reason = Reason.newBuilder().setReasonId("1").setGroupId("1").build();
-        Reason reason2 = Reason.newBuilder().setReasonId("2").setGroupId("2").build();
-        ArrayList<Reason> reasons = new ArrayList<>();
+        TestReason reason = TestReason.newBuilder().setReasonId("1").setGroupId("1").build();
+        TestReason reason2 = TestReason.newBuilder().setReasonId("2").setGroupId("2").build();
+        ArrayList<TestReason> reasons = new ArrayList<>();
         reasons.add(reason);
         reasons.add(reason2);
-        FeedbackLogMessage feedback = FeedbackLogMessage
+        TestFeedbackLogMessage feedback = TestFeedbackLogMessage
                 .newBuilder()
                 .addAllReason(reasons)
                 .build();
 
-        Descriptors.FieldDescriptor reasonFieldDescriptor = FeedbackLogMessage.getDescriptor().getFields().get(10);
-        DynamicMessage feedbackParsed = new ProtoParser(stencilClient, "com.gojek.esb.feedback.FeedbackLogMessage").parse(feedback.toByteArray());
+        Descriptors.FieldDescriptor reasonFieldDescriptor = TestFeedbackLogMessage.getDescriptor().getFields().get(10);
+
+        DynamicMessage feedbackParsed = new ProtoParser(stencilClient, "com.gojek.esb.consumer.TestFeedbackLogMessage").parse(feedback.toByteArray());
         Object columnValue = feedbackParsed.getField(reasonFieldDescriptor);
 
         DBCollectionField dbCollectionField = new DBCollectionField(columnValue, reasonFieldDescriptor);
@@ -49,18 +50,19 @@ public class DBCollectionFieldTest {
     @Test
     public void shouldBeAbleToParseCollectionFields() throws Exception {
 
-        Reason reason = Reason.newBuilder().setReasonId("1").setGroupId("1").build();
-        Reason reason2 = Reason.newBuilder().setReasonId("2").setGroupId("2").build();
-        ArrayList<Reason> reasons = new ArrayList<>();
+        TestReason reason = TestReason.newBuilder().setReasonId("1").setGroupId("1").build();
+        TestReason reason2 = TestReason.newBuilder().setReasonId("2").setGroupId("2").build();
+        ArrayList<TestReason> reasons = new ArrayList<>();
         reasons.add(reason);
         reasons.add(reason2);
-        FeedbackLogMessage feedback = FeedbackLogMessage
+        TestFeedbackLogMessage feedback = TestFeedbackLogMessage
                 .newBuilder()
                 .addAllReason(reasons)
                 .build();
 
-        Descriptors.FieldDescriptor reasonFieldDescriptor = FeedbackLogMessage.getDescriptor().getFields().get(10);
-        DynamicMessage feedbackParsed = new ProtoParser(stencilClient, "com.gojek.esb.feedback.FeedbackLogMessage").parse(feedback.toByteArray());
+        Descriptors.FieldDescriptor reasonFieldDescriptor = TestFeedbackLogMessage.getDescriptor().getFields().get(10);
+
+        DynamicMessage feedbackParsed = new ProtoParser(stencilClient, "com.gojek.esb.consumer.TestFeedbackLogMessage").parse(feedback.toByteArray());
         Object columnValue = feedbackParsed.getField(reasonFieldDescriptor);
 
         DBCollectionField dbCollectionField = new DBCollectionField(columnValue, reasonFieldDescriptor);
@@ -71,19 +73,20 @@ public class DBCollectionFieldTest {
     @Test
     public void shouldNotBeAbleToParseStringFields() throws Exception {
 
-        Reason reason = Reason.newBuilder().setReasonId("1").setGroupId("1").build();
-        Reason reason2 = Reason.newBuilder().setReasonId("2").setGroupId("2").build();
-        ArrayList<Reason> reasons = new ArrayList<>();
+        TestReason reason = TestReason.newBuilder().setReasonId("1").setGroupId("1").build();
+        TestReason reason2 = TestReason.newBuilder().setReasonId("2").setGroupId("2").build();
+        ArrayList<TestReason> reasons = new ArrayList<>();
         reasons.add(reason);
         reasons.add(reason2);
-        FeedbackLogMessage feedback = FeedbackLogMessage
+        TestFeedbackLogMessage feedback = TestFeedbackLogMessage
                 .newBuilder()
                 .setOrderNumber("order_number")
                 .addAllReason(reasons)
                 .build();
 
-        Descriptors.FieldDescriptor orderNumberFieldDescriptor = FeedbackLogMessage.getDescriptor().getFields().get(0);
-        DynamicMessage feedbackParsed = new ProtoParser(stencilClient, "com.gojek.esb.feedback.FeedbackLogMessage").parse(feedback.toByteArray());
+        Descriptors.FieldDescriptor orderNumberFieldDescriptor = TestFeedbackLogMessage.getDescriptor().getFields().get(0);
+
+        DynamicMessage feedbackParsed = new ProtoParser(stencilClient, "com.gojek.esb.consumer.TestFeedbackLogMessage").parse(feedback.toByteArray());
         Object columnValue = feedbackParsed.getField(orderNumberFieldDescriptor);
 
         DBCollectionField dbCollectionField = new DBCollectionField(columnValue, orderNumberFieldDescriptor);

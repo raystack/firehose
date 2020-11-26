@@ -2,7 +2,7 @@ package com.gojek.esb.builder;
 
 import com.gojek.esb.config.InfluxSinkConfig;
 import com.gojek.esb.consumer.TestDurationMessage;
-import com.gojek.esb.feedback.FeedbackLogMessage;
+import com.gojek.esb.consumer.TestFeedbackLogMessage;
 import com.google.protobuf.Duration;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -21,17 +21,17 @@ public class PointBuilderTest {
         influxConfigProps.setProperty("MEASUREMENT_NAME", "test_point_builder");
         influxConfigProps.setProperty("PROTO_EVENT_TIMESTAMP_INDEX", "2");
         influxConfigProps.setProperty("DATABASE_NAME", "test");
-        influxConfigProps.setProperty("PROTO_SCHEMA", FeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("PROTO_SCHEMA", TestFeedbackLogMessage.class.getName());
         influxConfigProps.setProperty("FIELD_NAME_PROTO_INDEX_MAPPING", "{ \"2\": \"event_timestamp\", \"7\": \"tip_amount\" }");
         influxConfigProps.setProperty("TAG_NAME_PROTO_INDEX_MAPPING", "{ \"4\": \"customer_id\", \"3\": \"driver_id\" }");
 
-        FeedbackLogMessage feedbackLogMessage = FeedbackLogMessage.newBuilder()
+        TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setCustomerId("CUSTOMER")
                 .setDriverId("DRIVER")
                 .setTipAmount(10000)
                 .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000000)).build();
 
-        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(FeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
 
         InfluxSinkConfig influxSinkConfig = ConfigFactory.create(InfluxSinkConfig.class, influxConfigProps);
 
@@ -47,15 +47,15 @@ public class PointBuilderTest {
         influxConfigProps.setProperty("MEASUREMENT_NAME", "test_point_builder");
         influxConfigProps.setProperty("PROTO_EVENT_TIMESTAMP_INDEX", "2");
         influxConfigProps.setProperty("DATABASE_NAME", "test");
-        influxConfigProps.setProperty("PROTO_SCHEMA", FeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("PROTO_SCHEMA", TestFeedbackLogMessage.class.getName());
         influxConfigProps.setProperty("FIELD_NAME_PROTO_INDEX_MAPPING", "{ \"10\": \"feedback_source\"}");
         influxConfigProps.setProperty("TAG_NAME_PROTO_INDEX_MAPPING", "{ \"1\": \"order_number\" }");
 
-        FeedbackLogMessage feedbackLogMessage = FeedbackLogMessage.newBuilder()
+        TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setOrderNumber("ORDER")
-                .setFeedbackSource(com.gojek.esb.feedback.FeedbackSource.Enum.DRIVER)
+                .setFeedbackSource(com.gojek.esb.consumer.TestFeedbackSource.Enum.DRIVER)
                 .build();
-        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(FeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
 
         InfluxSinkConfig influxSinkConfig = ConfigFactory.create(InfluxSinkConfig.class, influxConfigProps);
 
@@ -72,7 +72,7 @@ public class PointBuilderTest {
         influxConfigProps.setProperty("MEASUREMENT_NAME", "test_point_builder");
         influxConfigProps.setProperty("PROTO_EVENT_TIMESTAMP_INDEX", "5");
         influxConfigProps.setProperty("DATABASE_NAME", "test");
-        influxConfigProps.setProperty("PROTO_SCHEMA", FeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("PROTO_SCHEMA", TestFeedbackLogMessage.class.getName());
         influxConfigProps.setProperty("FIELD_NAME_PROTO_INDEX_MAPPING", "{ \"4\": \"duration\" }");
         influxConfigProps.setProperty("TAG_NAME_PROTO_INDEX_MAPPING", "{ \"1\": \"order_number\" }");
 
@@ -97,11 +97,11 @@ public class PointBuilderTest {
         influxConfigProps.setProperty("MEASUREMENT_NAME", "test_point_builder");
         influxConfigProps.setProperty("PROTO_EVENT_TIMESTAMP_INDEX", "2");
         influxConfigProps.setProperty("DATABASE_NAME", "test");
-        influxConfigProps.setProperty("PROTO_SCHEMA", FeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("PROTO_SCHEMA", TestFeedbackLogMessage.class.getName());
         influxConfigProps.setProperty("FIELD_NAME_PROTO_INDEX_MAPPING", "{ \"2\": \"event_timestamp\", \"7\": \"tip_amount\", \"15\": { \"1\": \"order_completion_time_seconds\" } }");
         influxConfigProps.setProperty("TAG_NAME_PROTO_INDEX_MAPPING", "{ \"4\": \"customer_id\", \"3\": \"driver_id\" }");
 
-        FeedbackLogMessage feedbackLogMessage = FeedbackLogMessage.newBuilder()
+        TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setCustomerId("CUSTOMER")
                 .setDriverId("DRIVER")
                 .setTipAmount(10000)
@@ -109,7 +109,7 @@ public class PointBuilderTest {
                 .setOrderCompletionTime(Timestamp.newBuilder().setSeconds(12345))
                 .build();
 
-        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(FeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
 
         InfluxSinkConfig influxSinkConfig = ConfigFactory.create(InfluxSinkConfig.class, influxConfigProps);
 
@@ -125,11 +125,11 @@ public class PointBuilderTest {
         influxConfigProps.setProperty("MEASUREMENT_NAME", "test_point_builder");
         influxConfigProps.setProperty("PROTO_EVENT_TIMESTAMP_INDEX", "2");
         influxConfigProps.setProperty("DATABASE_NAME", "test");
-        influxConfigProps.setProperty("PROTO_SCHEMA", FeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("PROTO_SCHEMA", TestFeedbackLogMessage.class.getName());
         influxConfigProps.setProperty("FIELD_NAME_PROTO_INDEX_MAPPING", "{ \"2\": \"event_timestamp\", \"7\": \"tip_amount\" }");
         influxConfigProps.setProperty("TAG_NAME_PROTO_INDEX_MAPPING", "{ \"4\": \"customer_id\", \"3\": \"driver_id\", \"15\": \"order_completion_time_seconds\" }");
 
-        FeedbackLogMessage feedbackLogMessage = FeedbackLogMessage.newBuilder()
+        TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setCustomerId("CUSTOMER")
                 .setDriverId("DRIVER")
                 .setTipAmount(10000)
@@ -137,7 +137,7 @@ public class PointBuilderTest {
                 .setOrderCompletionTime(Timestamp.newBuilder().setSeconds(12345))
                 .build();
 
-        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(FeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
 
         InfluxSinkConfig influxSinkConfig = ConfigFactory.create(InfluxSinkConfig.class, influxConfigProps);
 

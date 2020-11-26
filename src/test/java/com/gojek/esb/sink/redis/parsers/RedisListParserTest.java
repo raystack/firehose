@@ -2,10 +2,10 @@ package com.gojek.esb.sink.redis.parsers;
 
 import com.gojek.de.stencil.client.ClassLoadStencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.booking.BookingLogMessage;
 import com.gojek.esb.config.RedisSinkConfig;
 import com.gojek.esb.config.enums.RedisSinkType;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.TestBookingLogMessage;
 import com.gojek.esb.consumer.TestKey;
 import com.gojek.esb.consumer.TestMessage;
 import com.gojek.esb.metrics.StatsDReporter;
@@ -45,13 +45,13 @@ public class RedisListParserTest {
     public void setUp() throws Exception {
 
         TestKey testKey = TestKey.newBuilder().setOrderNumber("ORDER-1-FROM-KEY").build();
-        BookingLogMessage bookingMessage = BookingLogMessage.newBuilder().setOrderNumber(bookingOrderNumber).setCustomerTotalFareWithoutSurge(bookingCustomerTotalFare).setAmountPaidByCash(bookingAmountPaidByCash).build();
+        TestBookingLogMessage bookingMessage = TestBookingLogMessage.newBuilder().setOrderNumber(bookingOrderNumber).setCustomerTotalFareWithoutSurge(bookingCustomerTotalFare).setAmountPaidByCash(bookingAmountPaidByCash).build();
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order").setOrderDetails("ORDER-DETAILS").build();
         testEsbMessage = new EsbMessage(testKey.toByteArray(), testMessage.toByteArray(), "test", 1, 11);
         bookingEsbMessage = new EsbMessage(testKey.toByteArray(), bookingMessage.toByteArray(), "test", 1, 11);
         stencilClient = new ClassLoadStencilClient();
         testMessageProtoParser = new ProtoParser(stencilClient, TestMessage.class.getCanonicalName());
-        bookingMessageProtoParser = new ProtoParser(stencilClient, BookingLogMessage.class.getCanonicalName());
+        bookingMessageProtoParser = new ProtoParser(stencilClient, TestBookingLogMessage.class.getCanonicalName());
         testKeyProtoParser = new ProtoParser(stencilClient, TestKey.class.getCanonicalName());
     }
 
