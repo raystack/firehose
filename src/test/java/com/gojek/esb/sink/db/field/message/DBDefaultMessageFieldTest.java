@@ -3,8 +3,8 @@ package com.gojek.esb.sink.db.field.message;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.booking.BookingLogMessage;
-import com.gojek.esb.types.Location;
+import com.gojek.esb.consumer.TestBookingLogMessage;
+import com.gojek.esb.consumer.TestLocation;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import org.junit.Assert;
@@ -22,11 +22,11 @@ public class DBDefaultMessageFieldTest {
     @Test
     public void shouldParseTheMessageFieldAsString() throws Exception {
 
-        BookingLogMessage booking = BookingLogMessage.newBuilder().setDriverDropoffLocation(Location.newBuilder().setName("location_address").build()).build();
+        TestBookingLogMessage booking = TestBookingLogMessage.newBuilder().setDriverDropoffLocation(TestLocation.newBuilder().setName("location_name").build()).build();
 
-        Descriptors.FieldDescriptor locationFieldDescriptor = BookingLogMessage.getDescriptor().getFields().get(25);
-        DynamicMessage feedbackParsed = new ProtoParser(stencilClient, "com.gojek.esb.booking.BookingLogMessage").parse(booking.toByteArray());
-        Object columnValue = feedbackParsed.getField(locationFieldDescriptor);
+        Descriptors.FieldDescriptor locationFieldDescriptor = TestBookingLogMessage.getDescriptor().getFields().get(12);
+        DynamicMessage bookingParsed = new ProtoParser(stencilClient, "com.gojek.esb.consumer.TestBookingLogMessage").parse(booking.toByteArray());
+        Object columnValue = bookingParsed.getField(locationFieldDescriptor);
 
         DBDefaultMessageField dbDefaultMessageField = new DBDefaultMessageField(columnValue);
         Assert.assertEquals("{\"name\":\"\",\"address\":\"\",\"latitude\":0.0,\"longitude\":0.0,\"type\":\"\",\"note\":\"\",\"place_id\":\"\",\"accuracy_meter\":0.0,\"gate_id\":\"\"}", dbDefaultMessageField.getColumn());
@@ -35,11 +35,11 @@ public class DBDefaultMessageFieldTest {
     @Test
     public void shouldBeAbleToParseMessageFields() throws Exception {
 
-        BookingLogMessage booking = BookingLogMessage.newBuilder().setDriverDropoffLocation(Location.newBuilder().setName("location_address").build()).build();
+        TestBookingLogMessage booking = TestBookingLogMessage.newBuilder().setDriverDropoffLocation(TestLocation.newBuilder().setName("location_name").build()).build();
 
-        Descriptors.FieldDescriptor locationFieldDescriptor = BookingLogMessage.getDescriptor().getFields().get(25);
-        DynamicMessage feedbackParsed = new ProtoParser(stencilClient, "com.gojek.esb.booking.BookingLogMessage").parse(booking.toByteArray());
-        Object columnValue = feedbackParsed.getField(locationFieldDescriptor);
+        Descriptors.FieldDescriptor locationFieldDescriptor = TestBookingLogMessage.getDescriptor().getFields().get(12);
+        DynamicMessage bookingParsed = new ProtoParser(stencilClient, "com.gojek.esb.consumer.TestBookingLogMessage").parse(booking.toByteArray());
+        Object columnValue = bookingParsed.getField(locationFieldDescriptor);
 
         DBDefaultMessageField dbDefaultMessageField = new DBDefaultMessageField(columnValue);
 
@@ -49,11 +49,11 @@ public class DBDefaultMessageFieldTest {
     @Test
     public void shouldNotBeAbleToParseNormalFields() throws Exception {
 
-        BookingLogMessage booking = BookingLogMessage.newBuilder().setDriverDropoffLocation(Location.newBuilder().setName("location_address").build()).setCustomerId("customer_id").build();
+        TestBookingLogMessage booking = TestBookingLogMessage.newBuilder().setDriverDropoffLocation(TestLocation.newBuilder().setName("location_name").build()).setCustomerId("customer_id").build();
 
-        Descriptors.FieldDescriptor customerIdFieldDescriptor = BookingLogMessage.getDescriptor().getFields().get(5);
-        DynamicMessage feedbackParsed = new ProtoParser(stencilClient, "com.gojek.esb.booking.BookingLogMessage").parse(booking.toByteArray());
-        Object columnValue = feedbackParsed.getField(customerIdFieldDescriptor);
+        Descriptors.FieldDescriptor customerIdFieldDescriptor = TestBookingLogMessage.getDescriptor().getFields().get(5);
+        DynamicMessage bookingParsed = new ProtoParser(stencilClient, "com.gojek.esb.consumer.TestBookingLogMessage").parse(booking.toByteArray());
+        Object columnValue = bookingParsed.getField(customerIdFieldDescriptor);
 
         DBDefaultMessageField dbDefaultMessageField = new DBDefaultMessageField(columnValue);
 

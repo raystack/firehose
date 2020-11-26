@@ -3,8 +3,8 @@ package com.gojek.esb.sink.http.request.uri;
 import com.gojek.de.stencil.client.ClassLoadStencilClient;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.booking.BookingLogMessage;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.TestBookingLogMessage;
 import com.gojek.esb.consumer.TestKey;
 import com.gojek.esb.consumer.TestMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -31,14 +31,14 @@ public class UriParserTest {
         initMocks(this);
         TestKey testKey = TestKey.newBuilder().setOrderNumber("ORDER-1-FROM-KEY").build();
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order").setOrderDetails("ORDER-DETAILS").build();
-        BookingLogMessage bookingMessage = BookingLogMessage.newBuilder().setOrderNumber("bookingOrderNumber").setCustomerTotalFareWithoutSurge(2000L).setAmountPaidByCash(12.3F).build();
+        TestBookingLogMessage bookingMessage = TestBookingLogMessage.newBuilder().setOrderNumber("bookingOrderNumber").setCustomerTotalFareWithoutSurge(2000L).setAmountPaidByCash(12.3F).build();
 
         testEsbMessage = new EsbMessage(testKey.toByteArray(), testMessage.toByteArray(), "test", 1, 11);
         bookingEsbMessage = new EsbMessage(testKey.toByteArray(), bookingMessage.toByteArray(), "test", 1, 11);
 
         StencilClient stencilClient = new ClassLoadStencilClient();
         testMessageProtoParser = new ProtoParser(stencilClient, TestMessage.class.getCanonicalName());
-        bookingMessageProtoParser = new ProtoParser(stencilClient, BookingLogMessage.class.getCanonicalName());
+        bookingMessageProtoParser = new ProtoParser(stencilClient, TestBookingLogMessage.class.getCanonicalName());
     }
 
     @Test

@@ -3,8 +3,8 @@ package com.gojek.esb.serializer;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.aggregate.supply.AggregatedSupplyMessage;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.TestAggregatedSupplyMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.exception.EglcConfigurationException;
 import com.gojek.esb.metrics.Instrumentation;
@@ -50,7 +50,7 @@ public class EsbMessageToTemplatizedJsonTest {
     public void shouldProperlySerializeMessageToTemplateWithSingleUnknownField() {
         String template = "{\"test\":\"$.vehicle_type\"}";
         StencilClient stencilClient = StencilClientFactory.getClient();
-        protoParser = new ProtoParser(stencilClient, AggregatedSupplyMessage.class.getName());
+        protoParser = new ProtoParser(stencilClient, TestAggregatedSupplyMessage.class.getName());
         EsbMessageToTemplatizedJson esbMessageToTemplatizedJson = EsbMessageToTemplatizedJson
                 .create(instrumentation, template, protoParser);
         EsbMessage esbMessage = new EsbMessage(Base64.getDecoder().decode(logKey.getBytes()),
@@ -65,7 +65,7 @@ public class EsbMessageToTemplatizedJsonTest {
     public void shouldProperlySerializeMessageToTemplateWithAsItIs() {
         String template = "\"$._all_\"";
         StencilClient stencilClient = StencilClientFactory.getClient();
-        protoParser = new ProtoParser(stencilClient, AggregatedSupplyMessage.class.getName());
+        protoParser = new ProtoParser(stencilClient, TestAggregatedSupplyMessage.class.getName());
         EsbMessageToTemplatizedJson esbMessageToTemplatizedJson = EsbMessageToTemplatizedJson
                 .create(instrumentation, template, protoParser);
         EsbMessage esbMessage = new EsbMessage(Base64.getDecoder().decode(logKey.getBytes()),
@@ -90,7 +90,7 @@ public class EsbMessageToTemplatizedJsonTest {
 
         String template = "{\"test\":\"$.invalidPath\"}";
         StencilClient stencilClient = StencilClientFactory.getClient();
-        protoParser = new ProtoParser(stencilClient, AggregatedSupplyMessage.class.getName());
+        protoParser = new ProtoParser(stencilClient, TestAggregatedSupplyMessage.class.getName());
         EsbMessageToTemplatizedJson esbMessageToTemplatizedJson = EsbMessageToTemplatizedJson
                 .create(instrumentation, template, protoParser);
         EsbMessage esbMessage = new EsbMessage(Base64.getDecoder().decode(logKey.getBytes()),
@@ -132,7 +132,7 @@ public class EsbMessageToTemplatizedJsonTest {
         List<String> pathList = new ArrayList<>(paths);
 
         StencilClient stencilClient = StencilClientFactory.getClient();
-        protoParser = new ProtoParser(stencilClient, AggregatedSupplyMessage.class.getName());
+        protoParser = new ProtoParser(stencilClient, TestAggregatedSupplyMessage.class.getName());
         EsbMessageToTemplatizedJson.create(instrumentation, template, protoParser);
 
         Mockito.verify(instrumentation, Mockito.times(1)).logDebug("\nPaths: {}", pathList);

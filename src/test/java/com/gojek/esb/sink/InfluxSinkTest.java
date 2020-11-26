@@ -3,12 +3,12 @@ package com.gojek.esb.sink;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.booking.BookingLogMessage;
 import com.gojek.esb.config.InfluxSinkConfig;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.TestBookingLogMessage;
+import com.gojek.esb.consumer.TestFeedbackLogKey;
+import com.gojek.esb.consumer.TestFeedbackLogMessage;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.feedback.FeedbackLogKey;
-import com.gojek.esb.feedback.FeedbackLogMessage;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.influxdb.InfluxSink;
 import com.google.protobuf.DynamicMessage;
@@ -74,12 +74,12 @@ public class InfluxSinkTest {
         props.setProperty("MEASUREMENT_NAME", measurementName);
         props.setProperty("PROTO_EVENT_TIMESTAMP_INDEX", "2");
         props.setProperty("DATABASE_NAME", databaseName);
-        props.setProperty("PROTO_SCHEMA", FeedbackLogMessage.class.getName());
+        props.setProperty("PROTO_SCHEMA", TestFeedbackLogMessage.class.getName());
 
-        FeedbackLogMessage feedbackLogMessage = FeedbackLogMessage.newBuilder().setDriverId(driverId).setOrderNumber(orderNumber)
+        TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder().setDriverId(driverId).setOrderNumber(orderNumber)
                 .setFeedbackComment(feedbackComment).setTipAmount(tipAmount).setEventTimestamp(
                         Timestamp.newBuilder().setSeconds(TIMESTAMP_IN_EPOCH_SECONDS).build()).build();
-        FeedbackLogKey feedbackLogKey = FeedbackLogKey.newBuilder().setOrderNumber(orderNumber).build();
+        TestFeedbackLogKey feedbackLogKey = TestFeedbackLogKey.newBuilder().setOrderNumber(orderNumber).build();
 
         esbMessage = new EsbMessage(feedbackLogKey.toByteArray(), feedbackLogMessage.toByteArray(), databaseName, 1, 1);
         esbMessages = Collections.singletonList(esbMessage);
@@ -96,8 +96,7 @@ public class InfluxSinkTest {
         props.setProperty("PROTO_EVENT_TIMESTAMP_INDEX", "5");
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
 
-        DynamicMessage dynamicMessage = DynamicMessage.newBuilder(BookingLogMessage.getDescriptor()).build();
-
+        DynamicMessage dynamicMessage = DynamicMessage.newBuilder(TestBookingLogMessage.getDescriptor()).build();
         when(protoParser.parse(any())).thenReturn(dynamicMessage);
         InfluxSinkStub influx = new InfluxSinkStub(instrumentation, "influx", config, protoParser, client, stencilClient);
 
