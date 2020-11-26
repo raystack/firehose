@@ -3,12 +3,12 @@ package com.gojek.esb.sink.db;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.booking.BookingLogMessage;
 import com.gojek.esb.consumer.TestMapMessage;
 import com.gojek.esb.consumer.TestMessage;
+import com.gojek.esb.consumer.TestFeedbackLogMessage;
+import com.gojek.esb.consumer.TestBookingLogMessage;
 import com.gojek.esb.consumer.TestNestedMessage;
 import com.gojek.esb.consumer.TestNestedRepeatedMessage;
-import com.gojek.esb.feedback.FeedbackLogMessage;
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.google.protobuf.Timestamp;
 import net.minidev.json.JSONObject;
@@ -26,7 +26,7 @@ import java.util.Properties;
 
 public class ProtoToFieldMapperTest {
 
-    private FeedbackLogMessage message;
+    private TestFeedbackLogMessage message;
     private Properties protoToDbMapping;
     private ProtoParser protoParser;
 
@@ -41,7 +41,7 @@ public class ProtoToFieldMapperTest {
 
     @Before
     public void setUp() throws Exception {
-        FeedbackLogMessage.Builder builder = FeedbackLogMessage.newBuilder();
+        TestFeedbackLogMessage.Builder builder = TestFeedbackLogMessage.newBuilder();
         now = Instant.now();
         defaultTimestamp = Timestamp.newBuilder().setSeconds(now.getEpochSecond()).setNanos(now.getNano()).build();
 
@@ -62,7 +62,7 @@ public class ProtoToFieldMapperTest {
         protoToDbMapping.put("6", "feedback_comment");
         stencilClient = StencilClientFactory.getClient();
 
-        protoParser = new ProtoParser(stencilClient, FeedbackLogMessage.class.getName());
+        protoParser = new ProtoParser(stencilClient, TestFeedbackLogMessage.class.getName());
 
 
         TestMessage.Builder testBuilder = TestMessage.newBuilder();
@@ -121,7 +121,7 @@ public class ProtoToFieldMapperTest {
     @Test
     public void shouldContainNanoSecondsInTimestamp() throws IOException {
 
-        FeedbackLogMessage.Builder builder = FeedbackLogMessage.newBuilder();
+        TestFeedbackLogMessage.Builder builder = TestFeedbackLogMessage.newBuilder();
         Instant expectedTime = Instant.now();
         Timestamp timestamp = Timestamp.newBuilder().setSeconds(expectedTime.getEpochSecond()).setNanos(expectedTime.getNano()).build();
         builder.setEventTimestamp(timestamp);
@@ -224,6 +224,6 @@ public class ProtoToFieldMapperTest {
         protoParser = new ProtoParser(stencilClient, "NonexistentClass");
         ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, protoToDbMapping);
 
-        protoToFieldMapper.getFields(BookingLogMessage.newBuilder().setCustomerEmail("test.com").build().toByteArray());
+        protoToFieldMapper.getFields(TestBookingLogMessage.newBuilder().setCustomerEmail("test.com").build().toByteArray());
     }
 }

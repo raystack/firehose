@@ -1,10 +1,10 @@
 package com.gojek.esb.proto;
 
-import com.gojek.esb.booking.BookingLogKey;
 import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.TestBookingLogKey;
+import com.gojek.esb.consumer.TestFeedbackLogKey;
+import com.gojek.esb.consumer.TestFeedbackLogMessage;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.feedback.FeedbackLogKey;
-import com.gojek.esb.feedback.FeedbackLogMessage;
 import com.google.protobuf.Timestamp;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +19,6 @@ public class ProtoMessageTest {
     private static final String EXPECTED_FEEDBACK = "good";
     private static final int ORDER_NUMBER_INDEX = 1;
     private static final int FEEDBACK_INDEX = 6;
-    private static final int EVENT_TIMESTAMP_INDEX = 2;
 
     @Before
     public void setUp() {
@@ -29,7 +28,7 @@ public class ProtoMessageTest {
     @Test
     public void shouldGetFieldValueBasedOnIndex() throws DeserializerException {
 
-        ProtoMessage protoMessage = new ProtoMessage(FeedbackLogMessage.class.getName());
+        ProtoMessage protoMessage = new ProtoMessage(TestFeedbackLogMessage.class.getName());
 
         assertEquals(EXPECTED_ORDER_NUMBER, protoMessage.get(esbMessage, ORDER_NUMBER_INDEX));
         assertEquals(EXPECTED_FEEDBACK, protoMessage.get(esbMessage, FEEDBACK_INDEX));
@@ -60,7 +59,7 @@ public class ProtoMessageTest {
 
     @Test
     public void shouldThrowExceptionForCorruptedEsbMessages() {
-        ProtoMessage protoMessage = new ProtoMessage(BookingLogKey.class.getName());
+        ProtoMessage protoMessage = new ProtoMessage(TestBookingLogKey.class.getName());
 
         try {
             protoMessage.get(esbMessage, FEEDBACK_INDEX);
@@ -72,8 +71,8 @@ public class ProtoMessageTest {
     }
 
     private void setupEsbMessages(String expectedOrderNumber, String expectedFeedback) {
-        FeedbackLogMessage feedbackLogMessage = FeedbackLogMessage.newBuilder().setOrderNumber(expectedOrderNumber).setFeedbackComment(expectedFeedback).setEventTimestamp(getTimestamp(TIMESTAMP_IN_EPOCH_SECONDS)).build();
-        FeedbackLogKey feedbackLogKey = FeedbackLogKey.newBuilder().build();
+        TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder().setOrderNumber(expectedOrderNumber).setFeedbackComment(expectedFeedback).setEventTimestamp(getTimestamp(TIMESTAMP_IN_EPOCH_SECONDS)).build();
+        TestFeedbackLogKey feedbackLogKey = TestFeedbackLogKey.newBuilder().build();
         esbMessage = new EsbMessage(feedbackLogKey.toByteArray(), feedbackLogMessage.toByteArray(), "topic", 1, 1);
     }
 
