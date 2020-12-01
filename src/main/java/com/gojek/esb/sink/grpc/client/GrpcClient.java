@@ -3,7 +3,6 @@ package com.gojek.esb.sink.grpc.client;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.GrpcConfig;
-import com.gojek.esb.de.meta.GrpcResponse;
 import com.gojek.esb.metrics.Instrumentation;
 import com.google.protobuf.DynamicMessage;
 import com.gopay.grpc.ChannelPool;
@@ -31,12 +30,14 @@ public class GrpcClient {
     private ChannelPool channelPool;
     private final GrpcConfig grpcConfig;
     private ProtoParser protoParser;
+    private  StencilClient stencilClient;
 
     public GrpcClient(Instrumentation instrumentation, ChannelPool channelPool, GrpcConfig grpcConfig, StencilClient stencilClient) {
         this.instrumentation = instrumentation;
         this.channelPool = channelPool;
         this.grpcConfig = grpcConfig;
         this.protoParser = new ProtoParser(stencilClient, grpcConfig.getGrpcResponseProtoSchema());
+        this.stencilClient = stencilClient;
     }
 
     @Trace(dispatcher = true)
@@ -72,7 +73,7 @@ public class GrpcClient {
 
         } catch (Exception e) {
             instrumentation.logWarn(e.getMessage());
-            dynamicMessage = DynamicMessage.newBuilder(GrpcResponse.getDescriptor()).build();
+            dynamicMessage = DynamicMessage.newBuilder(this.stencilClient.get(this.grpcConfig.getGrpcResponseProtoSchema())).build();
 
         } finally {
             if (managedChannel != null) {
