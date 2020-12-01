@@ -3,7 +3,7 @@ package com.gojek.esb.sink.grpc;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.consumer.EsbMessage;
-import com.gojek.esb.de.meta.GrpcResponse;
+import com.gojek.esb.consumer.TestGrpcResponse;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.grpc.client.GrpcClient;
@@ -51,7 +51,7 @@ public class GrpcSinkTest {
         when(esbMessage.getLogMessage()).thenReturn(new byte[]{});
         RecordHeaders headers = new RecordHeaders();
         when(esbMessage.getHeaders()).thenReturn(headers);
-        GrpcResponse build = GrpcResponse.newBuilder().setSuccess(true).build();
+        TestGrpcResponse build = TestGrpcResponse.newBuilder().setSuccess(true).build();
         DynamicMessage response = DynamicMessage.parseFrom(build.getDescriptorForType(), build.toByteArray());
         when(grpcClient.execute(any(byte[].class), any(RecordHeaders.class))).thenReturn(response);
 
@@ -68,7 +68,7 @@ public class GrpcSinkTest {
     public void shouldReturnBackListOfFailedMessages() throws IOException, DeserializerException {
         when(esbMessage.getLogMessage()).thenReturn(new byte[]{});
         when(esbMessage.getHeaders()).thenReturn(new RecordHeaders());
-        GrpcResponse build = GrpcResponse.newBuilder().setSuccess(false).build();
+        TestGrpcResponse build = TestGrpcResponse.newBuilder().setSuccess(false).build();
         DynamicMessage response = DynamicMessage.parseFrom(build.getDescriptorForType(), build.toByteArray());
         when(grpcClient.execute(any(), any(RecordHeaders.class))).thenReturn(response);
         List<EsbMessage> failedMessages = sink.pushMessage(Collections.singletonList(esbMessage));
