@@ -5,16 +5,16 @@ import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.GrpcConfig;
 import com.gojek.esb.metrics.Instrumentation;
 import com.google.protobuf.DynamicMessage;
-import com.gopay.grpc.ChannelPool;
 import com.newrelic.api.agent.Trace;
-import io.grpc.CallOptions;
-import io.grpc.ClientInterceptors;
-import io.grpc.Channel;
+
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.stub.ClientCalls;
 import io.grpc.stub.MetadataUtils;
+import io.grpc.Channel;
+import io.grpc.ClientInterceptors;
+import io.grpc.CallOptions;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
@@ -27,31 +27,27 @@ import java.io.InputStream;
 public class GrpcClient {
 
     private Instrumentation instrumentation;
-    private ChannelPool channelPool;
     private final GrpcConfig grpcConfig;
     private ProtoParser protoParser;
     private  StencilClient stencilClient;
+    private ManagedChannel managedChannel;
 
-    public GrpcClient(Instrumentation instrumentation, ChannelPool channelPool, GrpcConfig grpcConfig, StencilClient stencilClient) {
+    public GrpcClient(Instrumentation instrumentation, GrpcConfig grpcConfig, ManagedChannel managedChannel, StencilClient stencilClient) {
         this.instrumentation = instrumentation;
-        this.channelPool = channelPool;
         this.grpcConfig = grpcConfig;
         this.protoParser = new ProtoParser(stencilClient, grpcConfig.getGrpcResponseProtoSchema());
         this.stencilClient = stencilClient;
+        this.managedChannel = managedChannel;
     }
 
     @Trace(dispatcher = true)
     public DynamicMessage execute(byte[] logMessage, Headers headers) {
 
         MethodDescriptor.Marshaller<byte[]> marshaller = getMarshaller();
-        ManagedChannel managedChannel = null;
         DynamicMessage dynamicMessage;
 
         try {
-            if (channelPool == null) {
-                throw new IllegalStateException("ConnectionPool was not initiated successfully");
-            }
-            managedChannel = channelPool.borrowObject(grpcConfig.getConnectionPoolMaxWaitMillis());
+
 
             Metadata metadata = new Metadata();
             for (Header header : headers) {
@@ -75,11 +71,8 @@ public class GrpcClient {
             instrumentation.logWarn(e.getMessage());
             dynamicMessage = DynamicMessage.newBuilder(this.stencilClient.get(this.grpcConfig.getGrpcResponseProtoSchema())).build();
 
-        } finally {
-            if (managedChannel != null) {
-                channelPool.returnObject(managedChannel);
-            }
         }
+
         return dynamicMessage;
     }
 
@@ -100,5 +93,4 @@ public class GrpcClient {
             }
         };
     }
-
 }
