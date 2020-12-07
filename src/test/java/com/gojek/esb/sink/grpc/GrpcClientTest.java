@@ -12,16 +12,7 @@ import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.grpc.client.GrpcClient;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.DynamicMessage;
-import com.gopay.grpc.ChannelPool;
-import com.gopay.grpc.ChannelPoolException;
-import io.grpc.Metadata;
-import io.grpc.Server;
-import io.grpc.ServerBuilder;
-import io.grpc.ServerCall;
-import io.grpc.ServerCallHandler;
-import io.grpc.ServerInterceptor;
-import io.grpc.ServerInterceptors;
-import io.grpc.ServerServiceDefinition;
+import io.grpc.*;
 import io.grpc.stub.StreamObserver;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.common.header.internals.RecordHeader;
@@ -56,12 +47,13 @@ public class GrpcClientTest {
     private static final List<String> HEADER_KEYS = Arrays.asList("test-header-key-1", "test-header-key-2");
     private HeaderTestInterceptor headerTestInterceptor;
     private StencilClient stencilClient;
+    private ManagedChannel managedChannel;
 
     @Mock
     private Instrumentation instrumentation;
 
     @Before
-    public void setup() throws IOException, ChannelPoolException {
+    public void setup() throws IOException {
         MockitoAnnotations.initMocks(this);
         testGrpcService = mock(TestServerGrpc.TestServerImplBase.class);
         when(testGrpcService.bindService()).thenCallRealMethod();
@@ -79,9 +71,9 @@ public class GrpcClientTest {
         config.put("GRPC_RESPONSE_PROTO_SCHEMA", "com.gojek.esb.consumer.TestGrpcResponse");
 
         grpcConfig = ConfigFactory.create(GrpcConfig.class, config);
-        ChannelPool pool = ChannelPool.create("localhost", 5000, 1);
         stencilClient = StencilClientFactory.getClient();
-        grpcClient = new GrpcClient(instrumentation, pool, grpcConfig, stencilClient);
+        managedChannel = ManagedChannelBuilder.forAddress(grpcConfig.getServiceHost(), grpcConfig.getServicePort()).usePlaintext().build();
+        grpcClient = new GrpcClient(instrumentation, grpcConfig, managedChannel, stencilClient);
         headers = new RecordHeaders();
     }
     @After
@@ -183,17 +175,7 @@ public class GrpcClientTest {
         assertFalse(Boolean.parseBoolean(String.valueOf(response.getField(response.getDescriptorForType().findFieldByName("success")))));
     }
 
-    @Test
-    public void shouldReturnErrorWhenChannelPoolIsNull() {
-        GrpcClient client = new GrpcClient(instrumentation, null, grpcConfig, stencilClient);
-        TestGrpcRequest request = TestGrpcRequest.newBuilder()
-                .setField1("field1")
-                .setField2("field2")
-                .build();
-        DynamicMessage response = client.execute(request.toByteArray(), headers);
-        verify(instrumentation, times(1)).logWarn("ConnectionPool was not initiated successfully");
-        assertFalse(Boolean.parseBoolean(String.valueOf(response.getField(response.getDescriptorForType().findFieldByName("success")))));
-    }
+
 
     private <T extends AbstractMessage> Stubber doAnswerProtoReponse(T response) {
         return doAnswer(invocation -> {

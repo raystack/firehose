@@ -30,17 +30,6 @@ public interface GrpcConfig extends AppConfig {
     @Config.DefaultValue("500")
     Integer getConnectionPoolMaxWaitMillis();
 
-    @Config.Key("CONSUL_SERVICE_DISCOVERY")
-    @Config.DefaultValue("false")
-    Boolean getConsulServiceDiscovery();
-
-    @Config.Key("CONSUL_SERVICE_NAME")
-    String getConsulServiceName();
-
-    @Config.Key("CONSUL_OVERLOADED_THRESHOLD")
-    @Config.DefaultValue("40")
-    float getConsulOverloadedThreshold();
-
     @Config.Key("GRPC_RESPONSE_PROTO_SCHEMA")
     @Config.DefaultValue("com.gojek.esb.de.meta.GrpcResponse")
     String getGrpcResponseProtoSchema();
