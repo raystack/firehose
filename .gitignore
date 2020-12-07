@@ -8,7 +8,6 @@ classes
 generated
 *.ipr
 *.iws
-config/checkstyle
 .classpath
 .project
 .settings
