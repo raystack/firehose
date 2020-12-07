@@ -7,10 +7,8 @@ import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.AbstractSink;
 import com.gojek.esb.sink.SinkFactory;
 import com.gojek.esb.sink.grpc.client.GrpcClient;
-import com.gopay.grpc.ChannelPool;
-import com.gopay.grpc.ChannelPoolException;
-import com.gopay.grpc.ConsulChannelPool;
-import io.grpc.netty.NegotiationType;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.util.Map;
@@ -31,50 +29,18 @@ public class GrpcSinkFactory implements SinkFactory {
         Instrumentation instrumentation = new Instrumentation(statsDReporter, GrpcSinkFactory.class);
         String grpcSinkConfig = String.format("\n\tService host: %s\n\tService port: %s\n\tMethod url: %s\n\tResponse proto schema: %s"
                         + "\n\tConnection pool max idle: %s\n\tConnection pool min idle: %s\n\tConnection poll size: %s"
-                        + "\n\tConnection pool max wait millis: %s\n\tConsul overloaded threshold: %s\n\tConsul service name: %s",
+                        + "\n\tConnection pool max wait millis: %s",
                 grpcConfig.getServiceHost(), grpcConfig.getServicePort(), grpcConfig.getGrpcMethodUrl(), grpcConfig.getGrpcResponseProtoSchema(),
                 grpcConfig.getConnectionPoolMaxIdle(), grpcConfig.getConnectionPoolMinIdle(), grpcConfig.getConnectionPoolSize(),
-                grpcConfig.getConnectionPoolMaxWaitMillis(), grpcConfig.getConsulOverloadedThreshold(), grpcConfig.getConsulServiceName());
+                grpcConfig.getConnectionPoolMaxWaitMillis());
         instrumentation.logDebug(grpcSinkConfig);
-        instrumentation.logInfo("Consul service discovery enabled: {}", grpcConfig.getConsulServiceDiscovery());
 
-        ChannelPool connection = null;
-        try {
-            connection = createConnection(grpcConfig);
-        } catch (ChannelPoolException e) {
-            instrumentation.logError(e.getMessage());
-            e.printStackTrace();
-        }
+        ManagedChannel managedChannel = ManagedChannelBuilder.forAddress(grpcConfig.getServiceHost(), grpcConfig.getServicePort()).usePlaintext().build();
 
-        GrpcClient grpcClient = new GrpcClient(new Instrumentation(statsDReporter, GrpcClient.class), connection, grpcConfig, stencilClient);
+        GrpcClient grpcClient = new GrpcClient(new Instrumentation(statsDReporter, GrpcClient.class), grpcConfig, managedChannel, stencilClient);
         instrumentation.logInfo("GRPC connection established");
 
         return new GrpcSink(new Instrumentation(statsDReporter, GrpcSink.class), grpcClient, stencilClient);
     }
-
-    private ChannelPool createConnection(GrpcConfig configuration) throws ChannelPoolException {
-        if (configuration.getConsulServiceDiscovery()) {
-            return getChannelPoolWithServiceDiscovery(configuration);
-        }
-
-        return ChannelPool.create(configuration.getServiceHost(),
-                configuration.getServicePort(),
-                configuration.getConnectionPoolSize(),
-                configuration.getConnectionPoolMaxIdle(),
-                configuration.getConnectionPoolMinIdle(),
-                "grpc-pool",
-                NegotiationType.PLAINTEXT);
-    }
-
-    private ChannelPool getChannelPoolWithServiceDiscovery(GrpcConfig configuration) throws ChannelPoolException {
-            return ConsulChannelPool.create(configuration.getServiceHost(),
-                    configuration.getServicePort(),
-                    configuration.getConsulServiceName(),
-                    configuration.getConnectionPoolSize(),
-                    configuration.getConnectionPoolMaxIdle(),
-                    configuration.getConnectionPoolMinIdle(),
-                    configuration.getConsulOverloadedThreshold(),
-                    "grpc-pool");
-        }
 
 }
