@@ -20,11 +20,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.gojek.esb.metrics.Metrics.HTTP_RESPONSE_CODE;
@@ -36,7 +36,7 @@ import static com.gojek.esb.metrics.Metrics.MESSAGES_DROPPED_COUNT;
  */
 public class HttpSink extends AbstractSink {
 
-    private static final int SUCCESS_CODE = 200;
+    private static final String SUCCESS_CODE_PATTERN = "^2.*";
 
     private Request request;
     private List<HttpEntityEnclosingRequestBase> httpRequests;
@@ -76,7 +76,7 @@ public class HttpSink extends AbstractSink {
                 }
                 if (shouldRetry(response)) {
                     throw new NeedToRetry(statusCode(response));
-                } else if (response.getStatusLine().getStatusCode() != SUCCESS_CODE) {
+                } else if (!Pattern.compile(SUCCESS_CODE_PATTERN).matcher(String.valueOf(response.getStatusLine().getStatusCode())).matches()) {
                     captureMessageDropCount(response, httpRequest);
                 }
             } catch (IOException e) {
@@ -100,11 +100,11 @@ public class HttpSink extends AbstractSink {
 
     private void consumeResponse(HttpResponse response) throws IOException {
         if (response != null) {
-            String entireResponse = String.format("\nResponse Code: %s\nResponse Headers: %s\nResponse Body: %s",
-                    response.getStatusLine().getStatusCode(),
-                    Arrays.asList(response.getAllHeaders()),
-                    new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")));
-            getInstrumentation().logDebug(entireResponse);
+//            String entireResponse = String.format("\nResponse Code: %s\nResponse Headers: %s\nResponse Body: %s",
+//                    response.getStatusLine().getStatusCode(),
+//                    Arrays.asList(response.getAllHeaders()),
+//                    new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")));
+//            getInstrumentation().logDebug(entireResponse);
             EntityUtils.consumeQuietly(response.getEntity());
         }
     }
