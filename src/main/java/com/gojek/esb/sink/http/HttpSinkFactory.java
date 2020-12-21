@@ -1,6 +1,5 @@
 package com.gojek.esb.sink.http;
 
-import com.gojek.auth.OAuth2Credential;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.HTTPSinkConfig;
@@ -8,6 +7,7 @@ import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.AbstractSink;
 import com.gojek.esb.sink.SinkFactory;
+import com.gojek.esb.sink.http.auth.OAuth2Credential;
 import com.gojek.esb.sink.http.request.types.Request;
 import com.gojek.esb.sink.http.request.RequestFactory;
 import com.gojek.esb.sink.http.request.uri.UriParser;
@@ -34,7 +34,7 @@ public class HttpSinkFactory implements SinkFactory {
 
         Instrumentation instrumentation = new Instrumentation(statsDReporter, HttpSinkFactory.class);
 
-        CloseableHttpClient closeableHttpClient = newHttpClient(httpSinkConfig);
+        CloseableHttpClient closeableHttpClient = newHttpClient(httpSinkConfig, statsDReporter);
         instrumentation.logInfo("HTTP connection established");
 
         UriParser uriParser = new UriParser(new ProtoParser(stencilClient, httpSinkConfig.getProtoSchema()), httpSinkConfig.getKafkaRecordParserMode());
@@ -44,7 +44,7 @@ public class HttpSinkFactory implements SinkFactory {
         return new HttpSink(new Instrumentation(statsDReporter, HttpSink.class), request, closeableHttpClient, stencilClient, httpSinkConfig.retryStatusCodeRanges(), httpSinkConfig.requestLogStatusCodeRanges());
     }
 
-    private CloseableHttpClient newHttpClient(HTTPSinkConfig httpSinkConfig) {
+    private CloseableHttpClient newHttpClient(HTTPSinkConfig httpSinkConfig, StatsDReporter statsDReporter) {
         Integer maxHttpConnections = httpSinkConfig.getMaxHttpConnections();
         RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(httpSinkConfig.getRequestTimeoutInMs())
                 .setConnectionRequestTimeout(httpSinkConfig.getRequestTimeoutInMs())
@@ -55,6 +55,7 @@ public class HttpSinkFactory implements SinkFactory {
         HttpClientBuilder builder = HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig);
         if (httpSinkConfig.getHttpSinkOAuth2Enabled()) {
             OAuth2Credential oauth2 = new OAuth2Credential(
+                    new Instrumentation(statsDReporter, OAuth2Credential.class),
                     httpSinkConfig.getHttpSinkOAuth2ClientName(),
                     httpSinkConfig.getHttpSinkOAuth2ClientSecret(),
                     httpSinkConfig.getHttpSinkOAuth2Scope(),
