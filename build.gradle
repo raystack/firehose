@@ -1,0 +1,213 @@
+buildscript {
+    repositories {
+        maven { url 'https://plugins.gradle.org/m2/' }
+    }
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.8'
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.4.7"
+        classpath "org.ajoberstar:gradle-git:1.6.0"
+    }
+}
+
+plugins {
+    id 'java'
+    id 'idea'
+    id 'checkstyle'
+    id 'jacoco'
+    id "com.google.protobuf" version "0.8.7"
+    id 'nebula.ospackage' version '3.5.0'
+    id 'io.franzbecker.gradle-lombok' version '1.14'
+}
+
+lombok {
+    version = '1.18.4'
+    sha256 = ""
+}
+
+group 'com.gojek.esb'
+version '1.0.0'
+
+
+def projName = "firehose"
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "http://packages.confluent.io/maven"
+    }
+}
+
+
+private Properties loadEnv() {
+    Properties properties = new Properties()
+    properties.load(new FileInputStream(file("${projectDir}/env/local.properties")));
+    properties
+}
+
+def mainClassName = "com.gojek.esb.launch.Main"
+
+dependencies {
+    compile group: 'com.google.protobuf', name: 'protobuf-java', version: '3.1.0'
+    compile group: 'com.google.protobuf', name: 'protobuf-java-util', version: '3.1.0'
+    compile group: 'com.newrelic.agent.java', name: 'newrelic-api', version: '3.31.1'
+    compile group: 'com.timgroup', name: 'java-statsd-client', version: '3.1.0'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2'
+    compile group: 'org.aeonbits.owner', name: 'owner', version: '1.0.9'
+    compile group: 'com.zaxxer', name: 'HikariCP', version: '2.6.0'
+    compile group: 'com.google.guava', name: 'guava', version: '23.5-jre'
+    compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'
+    compile group: 'com.samskivert', name: 'jmustache', version: '1.13'
+    compile group: 'org.postgresql', name: 'postgresql', version: '9.4.1212'
+    compile group: 'org.apache.kafka', name: 'kafka-clients', version: '2.4.0'
+    compile group: 'org.apache.commons', name: 'commons-jexl', version: '2.1'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.7'
+    compile group: 'com.gojek', name: 'stencil', version: '4.2.0' exclude group: 'org.slf4j'
+    compile group: 'org.influxdb', name: 'influxdb-java', version: '2.5'
+    compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
+    compile group: 'redis.clients', name: 'jedis', version: '3.0.1'
+    compile group: 'io.opentracing', name: 'opentracing-api', version: '0.33.0'
+    compile group: 'io.opentracing.contrib', name: 'opentracing-kafka-client', version: '0.1.4'
+    compile group: 'io.jaegertracing', name: 'jaeger-client', version: '1.0.0'
+    compile group: 'org.elasticsearch.client', name: 'elasticsearch-rest-high-level-client', version: '6.3.1'
+    compile 'io.confluent:monitoring-interceptors:3.0.0'
+    compile "io.grpc:grpc-all:1.18.0"
+    compile group: 'org.jfrog.buildinfo', name: 'build-info-extractor', version: '2.6.3'
+    compile group: 'com.google.gradle', name: 'osdetector-gradle-plugin', version: '1.2.1'
+    compile group: 'org.apache.ivy', name: 'ivy', version: '2.2.0'
+
+
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile 'org.mockito:mockito-core:2.0.99-beta'
+    testCompile "com.github.tomakehurst:wiremock:2.3.1"
+    testCompile group: 'io.opentracing', name: 'opentracing-mock', version: '0.33.0'
+    testCompile group: 'org.mock-server', name: 'mockserver-netty', version: '3.10.5'
+    testCompile gradleTestKit()
+}
+
+protobuf {
+    generatedFilesBaseDir = "$projectDir/src/generated"
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.1.0"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.0.3"
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+}
+
+test {
+    beforeTest { descriptor ->
+        logger.lifecycle("Running test: " + descriptor)
+    }
+    testLogging {
+        exceptionFormat "full" // default is "short"
+        events "passed", "skipped", "failed"
+    }
+    useJUnit {
+        excludeCategories 'com.gojek.esb.test.categories.IntegrationTest'
+    }
+}
+
+jar {
+    from {
+        (configurations.runtime).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    manifest {
+        attributes 'Main-Class': 'com.gojek.esb.launch.Main'
+    }
+}
+
+idea {
+    module {
+        testSourceDirs += file("$projectDir/src/generated/test/java")
+    }
+}
+
+task runConsumer(type: JavaExec) {
+    Properties properties = loadEnv()
+    def env = System.getenv()
+    env.each { k, v ->
+        properties.setProperty(k, v)
+    }
+    main = mainClassName
+    classpath = sourceSets.main.runtimeClasspath
+    environment properties
+}
+
+task dist(type: Deb, dependsOn: ['build']) {
+    packageName = 'firehose'
+    version = project.hasProperty('projVersion') ? project.projVersion : '0.1'
+
+    into '/opt/firehose/firehose/'
+
+    from("${buildDir}/libs") {
+        fileMode = 0755
+        into 'bin'
+    }
+}
+
+allprojects {
+
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+
+    tasks.withType(JavaExec) {
+        if (System.getProperty('DEBUG', 'false') == 'true') {
+            jvmArgs '-Xdebug', '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=9009'
+        }
+    }
+
+}
+
+checkstyle {
+    toolVersion '7.6.1'
+    configFile file("config/checkstyle/checkstyle.xml")
+}
+checkstyleMain {
+    source = 'src/main/java'
+}
+checkstyleTest {
+    source = 'src/test/java'
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        csv.enabled false
+        html.enabled = true
+        html.destination file("${reportsDir}/jacoco/")
+    }
+    afterEvaluate {
+        classDirectories = files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: ['**/config/**', '**/factory/**', '**/exception/**', '**/serializer/**', '**/Clock**'])
+        })
+    }
+}
+tasks.withType(Test) {
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.81
+            }
+        }
+    }
+}
+check.dependsOn jacocoTestCoverageVerification
