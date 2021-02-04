@@ -10,12 +10,9 @@ import org.apache.http.RequestLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.HttpRequest;
@@ -24,16 +21,16 @@ import org.mockserver.verify.VerificationTimes;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 import static org.mockserver.model.NottableString.not;
 import static org.mockserver.model.NottableString.string;
 
-@RunWith(JUnit4.class)
 public class OAuth2CredentialTest {
-    private static ClientAndServer mockServer;
+    private ClientAndServer mockServer;
     private HttpGet httpRequest;
     private OAuth2Credential oAuth2Credential;
     private HttpClient httpClient;
@@ -42,19 +39,9 @@ public class OAuth2CredentialTest {
     @Mock
     private StatsDReporter statsDReporter;
 
-    @BeforeClass
-    public static void startServer() {
-        mockServer = startClientAndServer(1080);
-    }
-
-    @AfterClass
-    public static void stopServer() {
-        mockServer.stop();
-    }
-
     @Before
     public void setUp() {
-        mockServer.reset();
+        mockServer = startClientAndServer(1080);
         httpRequest = new HttpGet("http://127.0.0.1:1080/api");
         String clientId = "clientId";
         String clientSecret = "clientSecret";
@@ -63,6 +50,11 @@ public class OAuth2CredentialTest {
         oAuth2Credential = new OAuth2Credential(new Instrumentation(statsDReporter, OAuth2Credential.class), clientId, clientSecret, scope, accessTokenEndpoint);
         httpClient = oAuth2Credential.initialize(HttpClients.custom()).build();
         okHttpClient = new OkHttpClient.Builder().addInterceptor(oAuth2Credential).build();
+    }
+
+    @After
+    public void tearDown() {
+        mockServer.stop();
     }
 
     @Test
