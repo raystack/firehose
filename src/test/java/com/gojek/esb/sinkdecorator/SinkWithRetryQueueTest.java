@@ -248,6 +248,7 @@ public class SinkWithRetryQueueTest {
         });
 
         thread.start();
+        Thread.sleep(100L);
 
         ArgumentCaptor<Callback> callbacks = ArgumentCaptor.forClass(Callback.class);
         verify(kafkaProducer, timeout(1000).times(2)).send(any(), callbacks.capture());
