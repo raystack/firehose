@@ -1,5 +1,6 @@
 package com.gojek.esb.sink.http.auth;
 
+import org.joda.time.DateTimeUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,6 +12,7 @@ public class OAuth2AccessTokenTest {
 
     @Before
     public void setUp() {
+        DateTimeUtils.setCurrentMillisFixed(System.currentTimeMillis());
         accessToken = "SAMPLE-TOKEN";
     }
 
