@@ -1,5 +1,7 @@
 package com.gojek.esb.sink.http.auth;
 
+import org.joda.time.DateTimeUtils;
+
 public class OAuth2AccessToken {
     private final String accessToken;
     private final Long expirationTimeMs;
@@ -9,7 +11,7 @@ public class OAuth2AccessToken {
     public OAuth2AccessToken(String accessToken, Integer expiresIn) {
         this.accessToken = accessToken;
         expiresIn = expiresIn == null ? DEFAULT_EXPIRATION_TIME : expiresIn;
-        this.expirationTimeMs = System.currentTimeMillis() + (expiresIn * MILLIS);
+        this.expirationTimeMs = DateTimeUtils.currentTimeMillis() + (expiresIn * MILLIS);
     }
 
     public boolean isExpired() {
@@ -22,7 +24,7 @@ public class OAuth2AccessToken {
     }
 
     public Long getExpiresIn() {
-        return (this.expirationTimeMs - System.currentTimeMillis()) / MILLIS;
+        return (this.expirationTimeMs - DateTimeUtils.currentTimeMillis()) / MILLIS;
     }
 }
 
