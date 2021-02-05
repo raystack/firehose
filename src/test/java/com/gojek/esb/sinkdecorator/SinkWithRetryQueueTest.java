@@ -5,7 +5,6 @@ import com.gojek.esb.consumer.TestKey;
 import com.gojek.esb.consumer.TestMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
-
 import com.gojek.esb.metrics.StatsDReporter;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -21,6 +20,7 @@ import org.mockito.Mock;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -134,7 +134,6 @@ public class SinkWithRetryQueueTest {
         headers.add(new RecordHeader("key2", "value2".getBytes()));
 
 
-
         TestMessage message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc")
                 .setOrderDetails("details").build();
         TestKey key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
@@ -203,6 +202,7 @@ public class SinkWithRetryQueueTest {
     @Test
     public void shouldRecordMessagesToRetryQueue() throws Exception {
         ArrayList<EsbMessage> esbMessages = new ArrayList<>();
+        CountDownLatch completedLatch = new CountDownLatch(1);
         esbMessages.add(esbMessage);
         esbMessages.add(esbMessage);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
@@ -212,6 +212,7 @@ public class SinkWithRetryQueueTest {
         Thread thread = new Thread(() -> {
             try {
                 sinkWithRetryQueue.pushMessage(esbMessages);
+                completedLatch.countDown();
             } catch (IOException | DeserializerException e) {
                 e.printStackTrace();
             }
@@ -224,6 +225,7 @@ public class SinkWithRetryQueueTest {
         List<Callback> calls = callbacks.getAllValues();
         calls.get(0).onCompletion(null, null);
         calls.get(1).onCompletion(null, null);
+        completedLatch.await();
         verify(instrumentation, times(1)).captureRetryAttempts();
         verify(instrumentation, times(1)).logInfo("Pushing {} messages to retry queue topic : {}", 2, "test-topic");
         verify(instrumentation, times(2)).incrementMessageSucceedCount();
@@ -233,6 +235,7 @@ public class SinkWithRetryQueueTest {
     @Test
     public void shouldRecordRetriesIfKafkaThrowsException() throws Exception {
         ArrayList<EsbMessage> esbMessages = new ArrayList<>();
+        CountDownLatch completedLatch = new CountDownLatch(1);
         esbMessages.add(esbMessage);
         esbMessages.add(esbMessage);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
@@ -242,6 +245,7 @@ public class SinkWithRetryQueueTest {
         Thread thread = new Thread(() -> {
             try {
                 sinkWithRetryQueue.pushMessage(esbMessages);
+                completedLatch.countDown();
             } catch (IOException | DeserializerException e) {
                 e.printStackTrace();
             }
@@ -258,6 +262,7 @@ public class SinkWithRetryQueueTest {
         verify(kafkaProducer, timeout(200).times(3)).send(any(), callbacks.capture());
         calls = callbacks.getAllValues();
         calls.get(2).onCompletion(null, null);
+        completedLatch.await();
 
         verify(instrumentation, times(2)).captureRetryAttempts();
         verify(instrumentation, times(1)).logInfo("Pushing {} messages to retry queue topic : {}", 1, "test-topic");
