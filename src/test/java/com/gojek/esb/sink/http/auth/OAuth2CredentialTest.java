@@ -10,6 +10,7 @@ import org.apache.http.RequestLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
+import org.joda.time.DateTimeUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,8 +22,8 @@ import org.mockserver.verify.VerificationTimes;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
@@ -41,6 +42,7 @@ public class OAuth2CredentialTest {
 
     @Before
     public void setUp() {
+        DateTimeUtils.setCurrentMillisFixed(System.currentTimeMillis());
         mockServer = startClientAndServer(1080);
         httpRequest = new HttpGet("http://127.0.0.1:1080/api");
         String clientId = "clientId";
@@ -170,15 +172,13 @@ public class OAuth2CredentialTest {
 
         mockServer.verify(oauthRequest, VerificationTimes.exactly(1));
         mockServer.verify(getRequest, VerificationTimes.exactly(1));
-        assertTrue(oAuth2Credential.getAccessToken().getExpiresIn() > 3550);
-        assertTrue(oAuth2Credential.getAccessToken().getExpiresIn() < 3600);
+        assertEquals(3600, (long) oAuth2Credential.getAccessToken().getExpiresIn());
 
         oAuth2Credential.setAccessToken(null);
         okHttpClient.newCall(transformRequest(httpRequest)).execute();
         mockServer.verify(oauthRequest, VerificationTimes.exactly(2));
         mockServer.verify(getRequest, VerificationTimes.exactly(2));
-        assertTrue(oAuth2Credential.getAccessToken().getExpiresIn() > 3550);
-        assertTrue(oAuth2Credential.getAccessToken().getExpiresIn() < 3600);
+        assertEquals(3600, (long) oAuth2Credential.getAccessToken().getExpiresIn());
     }
 
     @Test
