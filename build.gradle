@@ -17,6 +17,7 @@ plugins {
     id "com.google.protobuf" version "0.8.7"
     id 'nebula.ospackage' version '3.5.0'
     id 'io.franzbecker.gradle-lombok' version '1.14'
+    id 'maven-publish'
 }
 
 lombok {
@@ -128,6 +129,29 @@ jar {
     }
     manifest {
         attributes 'Main-Class': 'com.gojek.esb.launch.Main'
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/odpf/firehose"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
 
