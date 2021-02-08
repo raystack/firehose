@@ -1,6 +1,7 @@
 package com.gojek.esb.sink.http.auth;
 
 import com.gojek.esb.exception.OAuth2Exception;
+import org.joda.time.DateTimeUtils;
 import org.junit.*;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.HttpRequest;
@@ -28,6 +29,7 @@ public class OAuth2ClientTest {
 
     @Before
     public void setUp() {
+        DateTimeUtils.setCurrentMillisFixed(System.currentTimeMillis());
         mockServer.reset();
         String clientId = "clientId";
         String clientSecret = "clientSecret";
