@@ -1,8 +1,8 @@
-#Firehose
+# Firehose
 Firehose allows smooth and effortless consumption of data from Kafka. This data can then be used for different downstream applications like an HTTP service or database to create data driven applications, deliver crucial business insights in real time and monitor critical application flows.
 
 Detailed documentation for Firehose can be found [here](). 
-##Features
+## Features
 * FILTER: You can apply [filter]() on your input stream based on any field present in your ProtoBuf.
 * HTTP Sink: Firehose supports HTTP sink with some exclusive features
     * Output in Protobuf format
@@ -27,7 +27,7 @@ Detailed documentation for Firehose can be found [here]().
 
 To know more about these and many more such features, checkout [Firehose Documentation]() 
 
-##Build and Run it
+## Build and Run it
 * Clone the repo `git clone https://github.com/odpf/firehose.git`
 * Build the jar `./gradlew clean build`
 * Configure the environment variables in `env/local.properties`
@@ -48,16 +48,16 @@ To know more about these and many more such features, checkout [Firehose Documen
 
 * Sample configuration for other sinks along with some advanced configurations can be found [here]()
 
-##Run unit tests
+## Run unit tests
 `./gradlew test`
 
-##Run code quality checks
+## Run code quality checks
 `./gradlew checkstyleMain checkstyleTest`
 
-##Cleaning the build
+## Cleaning the build
 `./gradlew clean`
 
-##Run with Docker
+## Run with Docker
 * Firehose Docker image can be found [here]()
 * Command to run simple Log Sink
 ```
@@ -65,12 +65,12 @@ docker run -e KAFKA_ADDRESS=127.0.0.1:6667 -e CONSUMER_GROUP_ID=kafka-consumer-g
 ```
 NOTE: Make sure your protos (.jar file) are located in `work-dir`, this is required for Filter functionality to work.
 
-##Run with Kubernetes
+## Run with Kubernetes
 * Create a firehose deployment using the helm chart available [here]()
 * Deployment also includes telegraf container which pushes stats metrics
 
 
-##Fork and Contribute
+## Fork and Contribute
 This is an active open-source project. We are always open to people who want to use the system or contribute to it. You can raise a PR for any feature/possible bugs or help us with documentation.
 
 To contribute follow the instructions here:
