@@ -18,7 +18,7 @@ jobs:
 
   publishJar:
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
