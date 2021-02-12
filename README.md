@@ -61,7 +61,7 @@ To know more about these and many more such features, checkout [Firehose Documen
 * Firehose Docker image can be found [here]()
 * Command to run simple Log Sink
 ```
-docker run -e KAFKA_ADDRESS=127.0.0.1:6667 -e CONSUMER_GROUP_ID=kafka-consumer-group-id -e KAFKA_TOPIC=sample-topic -e SINK=log -e KAFKA_CONSUMER_CONFIG_AUTO_OFFSET_RESET=latest -e PROTO_SCHEMA=com.github.firehose.sampleLogProto.SampleLogMessage [FIREHOSE-DOCKER-IMAGE-URL] "java -cp bin/*:/work-dir/* com.gojek.esb.launch.Main"
+docker run -e KAFKA_ADDRESS=127.0.0.1:9092 -e CONSUMER_GROUP_ID=kafka-consumer-group-id -e KAFKA_TOPIC=sample-topic -e SINK=log -e KAFKA_CONSUMER_CONFIG_AUTO_OFFSET_RESET=latest -e PROTO_SCHEMA=com.github.firehose.sampleLogProto.SampleLogMessage odpf/firehose:latest
 ```
 NOTE: Make sure your protos (.jar file) are located in `work-dir`, this is required for Filter functionality to work.
 
