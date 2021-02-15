@@ -4,7 +4,7 @@ import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.InfluxSinkConfig;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.consumer.TestBookingLogMessage;
 import com.gojek.esb.consumer.TestFeedbackLogKey;
 import com.gojek.esb.consumer.TestFeedbackLogMessage;
@@ -49,13 +49,13 @@ public class InfluxSinkTest {
     private final int tipAmountIndex = 7;
     private final int driverIdIndex = 3;
     private Sink sink;
-    private EsbMessage esbMessage;
+    private Message message;
     private Point expectedPoint;
     private InfluxSinkConfig config;
     private Properties props = new Properties();
     private Point.Builder pointBuilder;
     private StencilClient stencilClient;
-    private List<EsbMessage> esbMessages;
+    private List<Message> messages;
 
     @Mock
     private InfluxDB client;
@@ -71,18 +71,18 @@ public class InfluxSinkTest {
 
     @Before
     public void setUp() {
-        props.setProperty("MEASUREMENT_NAME", measurementName);
-        props.setProperty("PROTO_EVENT_TIMESTAMP_INDEX", "2");
-        props.setProperty("DATABASE_NAME", databaseName);
-        props.setProperty("PROTO_SCHEMA", TestFeedbackLogMessage.class.getName());
+        props.setProperty("sink.influx.measurement.name", measurementName);
+        props.setProperty("sink.influx.proto.event.timestamp.index", "2");
+        props.setProperty("sink.influx.db.name", databaseName);
+        props.setProperty("proto.schema", TestFeedbackLogMessage.class.getName());
 
         TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder().setDriverId(driverId).setOrderNumber(orderNumber)
                 .setFeedbackComment(feedbackComment).setTipAmount(tipAmount).setEventTimestamp(
                         Timestamp.newBuilder().setSeconds(TIMESTAMP_IN_EPOCH_SECONDS).build()).build();
         TestFeedbackLogKey feedbackLogKey = TestFeedbackLogKey.newBuilder().setOrderNumber(orderNumber).build();
 
-        esbMessage = new EsbMessage(feedbackLogKey.toByteArray(), feedbackLogMessage.toByteArray(), databaseName, 1, 1);
-        esbMessages = Collections.singletonList(esbMessage);
+        message = new Message(feedbackLogKey.toByteArray(), feedbackLogMessage.toByteArray(), databaseName, 1, 1);
+        messages = Collections.singletonList(message);
 
         pointBuilder = Point.measurement(measurementName).addField("feedbackOrderNumber", orderNumber)
                 .addField("comment", feedbackComment).addField("tipAmount", tipAmount).time(TIMESTAMP_IN_EPOCH_SECONDS, TimeUnit.SECONDS);
@@ -93,15 +93,15 @@ public class InfluxSinkTest {
     public void shouldPrepareBatchPoints() throws IOException, DeserializerException {
         setupFieldNameIndexMappingProperties();
         setupTagNameIndexMappingProperties();
-        props.setProperty("PROTO_EVENT_TIMESTAMP_INDEX", "5");
+        props.setProperty("sink.influx.proto.event.timestamp.index", "5");
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
 
         DynamicMessage dynamicMessage = DynamicMessage.newBuilder(TestBookingLogMessage.getDescriptor()).build();
         when(protoParser.parse(any())).thenReturn(dynamicMessage);
         InfluxSinkStub influx = new InfluxSinkStub(instrumentation, "influx", config, protoParser, client, stencilClient);
 
-        influx.prepare(esbMessages);
-        verify(protoParser, times(1)).parse(esbMessage.getLogMessage());
+        influx.prepare(messages);
+        verify(protoParser, times(1)).parse(message.getLogMessage());
     }
 
     @Test
@@ -115,7 +115,7 @@ public class InfluxSinkTest {
 
         ArgumentCaptor<BatchPoints> batchPointsArgumentCaptor = ArgumentCaptor.forClass(BatchPoints.class);
 
-        sink.pushMessage(esbMessages);
+        sink.pushMessage(messages);
         verify(client, times(1)).write(batchPointsArgumentCaptor.capture());
         List<BatchPoints> batchPointsList = batchPointsArgumentCaptor.getAllValues();
 
@@ -124,13 +124,13 @@ public class InfluxSinkTest {
 
     @Test
     public void shouldThrowExceptionOnEmptyFieldNameIndexMapping() throws IOException, DeserializerException {
-        props.setProperty("FIELD_NAME_PROTO_INDEX_MAPPING", emptyFieldNameIndex);
-        props.setProperty("TAG_NAME_PROTO_INDEX_MAPPING", emptyTagNameIndexMapping);
+        props.setProperty("sink.influx.field.name.proto.index.mapping", emptyFieldNameIndex);
+        props.setProperty("sink.influx.tag.name.proto.index.mapping", emptyTagNameIndexMapping);
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
         sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getProtoSchema()), client, stencilClient);
 
         try {
-            sink.pushMessage(esbMessages);
+            sink.pushMessage(messages);
         } catch (Exception e) {
             assertEquals(InfluxSink.FIELD_NAME_MAPPING_ERROR_MESSAGE, e.getMessage());
         }
@@ -147,9 +147,9 @@ public class InfluxSinkTest {
         RuntimeException runtimeException = new RuntimeException();
         doThrow(runtimeException).when(instrumentation).startExecution();
 
-        sink.pushMessage(esbMessages);
+        sink.pushMessage(messages);
 
-        verify(instrumentation, times(1)).captureFailedExecutionTelemetry(runtimeException, esbMessages.size());
+        verify(instrumentation, times(1)).captureFailedExecutionTelemetry(runtimeException, messages.size());
     }
 
 
@@ -157,15 +157,15 @@ public class InfluxSinkTest {
     public void shouldPushMessagesWithType() throws DeserializerException, IOException {
         expectedPoint = pointBuilder.build();
         setupFieldNameIndexMappingProperties();
-        props.setProperty("TAG_NAME_PROTO_INDEX_MAPPING", emptyTagNameIndexMapping);
+        props.setProperty("sink.influx.tag.name.proto.index.mapping", emptyTagNameIndexMapping);
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
         sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getProtoSchema()), client, stencilClient);
         ArgumentCaptor<BatchPoints> batchPointsArgumentCaptor = ArgumentCaptor.forClass(BatchPoints.class);
 
-        sink.pushMessage(esbMessages);
-        verify(instrumentation, times(1)).capturePreExecutionLatencies(esbMessages);
+        sink.pushMessage(messages);
+        verify(instrumentation, times(1)).capturePreExecutionLatencies(messages);
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).logDebug("Preparing {} messages", esbMessages.size());
+        verify(instrumentation, times(1)).logDebug("Preparing {} messages", messages.size());
         verify(client, times(1)).write(batchPointsArgumentCaptor.capture());
         List<BatchPoints> batchPointsList = batchPointsArgumentCaptor.getAllValues();
 
@@ -201,21 +201,21 @@ public class InfluxSinkTest {
         sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getProtoSchema()), client, stencilClient);
         ArgumentCaptor<BatchPoints> batchPointsArgumentCaptor = ArgumentCaptor.forClass(BatchPoints.class);
 
-        sink.pushMessage(esbMessages);
+        sink.pushMessage(messages);
         verify(client, times(1)).write(batchPointsArgumentCaptor.capture());
         List<BatchPoints> batchPointsList = batchPointsArgumentCaptor.getAllValues();
 
-        verify(instrumentation, times(1)).logDebug("Preparing {} messages", esbMessages.size());
+        verify(instrumentation, times(1)).logDebug("Preparing {} messages", messages.size());
         verify(instrumentation, times(1)).logDebug("Data point: {}", batchPointsList.get(0).getPoints().get(0).toString());
         verify(instrumentation, times(1)).logDebug("Batch points: {}", batchPointsList.get(0).toString());
     }
 
     private void setupFieldNameIndexMappingProperties() {
-        props.setProperty("FIELD_NAME_PROTO_INDEX_MAPPING", String.format("{\"%d\":\"feedbackOrderNumber\", \"%d\":\"comment\" , \"%d\":\"tipAmount\"}", feedbackOrderNumberIndex, feedbackCommentIndex, tipAmountIndex));
+        props.setProperty("sink.influx.field.name.proto.index.mapping", String.format("{\"%d\":\"feedbackOrderNumber\", \"%d\":\"comment\" , \"%d\":\"tipAmount\"}", feedbackOrderNumberIndex, feedbackCommentIndex, tipAmountIndex));
     }
 
     private void setupTagNameIndexMappingProperties() {
-        props.setProperty("TAG_NAME_PROTO_INDEX_MAPPING", String.format("{\"%d\":\"driver_id\"}", driverIdIndex));
+        props.setProperty("sink.influx.tag.name.proto.index.mapping", String.format("{\"%d\":\"driver_id\"}", driverIdIndex));
     }
 
     public class InfluxSinkStub extends InfluxSink {
@@ -223,8 +223,8 @@ public class InfluxSinkTest {
             super(instrumentation, sinkType, config, protoParser, client, stencilClient);
         }
 
-        public void prepare(List<EsbMessage> messages) throws IOException {
-            super.prepare(messages);
+        public void prepare(List<Message> messageList) throws IOException {
+            super.prepare(messageList);
         }
     }
 

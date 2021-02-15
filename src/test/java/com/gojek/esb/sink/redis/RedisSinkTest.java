@@ -1,6 +1,6 @@
 package com.gojek.esb.sink.redis;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.redis.client.RedisClient;
 import com.gojek.esb.sink.redis.exception.NoResponseException;
@@ -36,11 +36,11 @@ public class RedisSinkTest {
 
     @Test
     public void shouldInvokePrepareOnTheClient() {
-        ArrayList<EsbMessage> esbMessages = new ArrayList<>();
+        ArrayList<Message> messages = new ArrayList<>();
 
-        redis.prepare(esbMessages);
+        redis.prepare(messages);
 
-        verify(redisClient).prepare(esbMessages);
+        verify(redisClient).prepare(messages);
     }
 
     @Test
@@ -59,17 +59,17 @@ public class RedisSinkTest {
 
     @Test
     public void sendsMetricsForSuccessMessages() {
-        ArrayList<EsbMessage> esbMessages = new ArrayList<>();
+        ArrayList<Message> messages = new ArrayList<>();
 
-        redis.pushMessage(esbMessages);
+        redis.pushMessage(messages);
 
-        verify(instrumentation, times(1)).capturePreExecutionLatencies(esbMessages);
+        verify(instrumentation, times(1)).capturePreExecutionLatencies(messages);
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).logDebug("Preparing {} messages", esbMessages.size());
+        verify(instrumentation, times(1)).logDebug("Preparing {} messages", messages.size());
         verify(instrumentation, times(1)).captureSuccessExecutionTelemetry(any(), any());
         InOrder inOrder = inOrder(instrumentation);
-        inOrder.verify(instrumentation).logDebug("Preparing {} messages", esbMessages.size());
-        inOrder.verify(instrumentation).capturePreExecutionLatencies(esbMessages);
+        inOrder.verify(instrumentation).logDebug("Preparing {} messages", messages.size());
+        inOrder.verify(instrumentation).capturePreExecutionLatencies(messages);
         inOrder.verify(instrumentation).startExecution();
         inOrder.verify(instrumentation).captureSuccessExecutionTelemetry(any(), any());
     }
@@ -77,17 +77,17 @@ public class RedisSinkTest {
     @Test
     public void sendsMetricsForFailedMessages() {
         when(redisClient.execute()).thenThrow(new NoResponseException());
-        ArrayList<EsbMessage> esbMessages = new ArrayList<>();
+        ArrayList<Message> messages = new ArrayList<>();
 
-        redis.pushMessage(esbMessages);
+        redis.pushMessage(messages);
 
-        verify(instrumentation, times(1)).capturePreExecutionLatencies(esbMessages);
+        verify(instrumentation, times(1)).capturePreExecutionLatencies(messages);
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).logDebug("Preparing {} messages", esbMessages.size());
+        verify(instrumentation, times(1)).logDebug("Preparing {} messages", messages.size());
         verify(instrumentation, times(1)).captureFailedExecutionTelemetry(any(), any());
         InOrder inOrder = inOrder(instrumentation);
-        inOrder.verify(instrumentation).logDebug("Preparing {} messages", esbMessages.size());
-        inOrder.verify(instrumentation).capturePreExecutionLatencies(esbMessages);
+        inOrder.verify(instrumentation).logDebug("Preparing {} messages", messages.size());
+        inOrder.verify(instrumentation).capturePreExecutionLatencies(messages);
         inOrder.verify(instrumentation).startExecution();
         inOrder.verify(instrumentation).captureFailedExecutionTelemetry(any(), any());
     }

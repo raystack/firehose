@@ -2,7 +2,7 @@ package com.gojek.esb.sink.log;
 
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.AppConfig;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import lombok.AllArgsConstructor;
@@ -15,7 +15,7 @@ public class KeyOrMessageParser {
     private ProtoParser protoParser;
     private AppConfig appConfig;
 
-    public DynamicMessage parse(EsbMessage message) throws IOException {
+    public DynamicMessage parse(Message message) throws IOException {
         if (appConfig.getKafkaRecordParserMode().equals("key")) {
             return protoParse(message.getLogKey());
         }

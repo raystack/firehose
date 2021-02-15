@@ -1,10 +1,10 @@
 package com.gojek.esb.sink.redis.dataentry;
 
 import com.gojek.esb.metrics.Instrumentation;
-import com.gojek.esb.sink.redis.ttl.DurationTTL;
-import com.gojek.esb.sink.redis.ttl.ExactTimeTTL;
-import com.gojek.esb.sink.redis.ttl.NoRedisTTL;
-import com.gojek.esb.sink.redis.ttl.RedisTTL;
+import com.gojek.esb.sink.redis.ttl.DurationTtl;
+import com.gojek.esb.sink.redis.ttl.ExactTimeTtl;
+import com.gojek.esb.sink.redis.ttl.NoRedisTtl;
+import com.gojek.esb.sink.redis.ttl.RedisTtl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,13 +29,13 @@ public class RedisHashSetFieldEntryTest {
     @Mock
     private JedisCluster jedisCluster;
 
-    private RedisTTL redisTTL;
+    private RedisTtl redisTTL;
     private RedisHashSetFieldEntry redisHashSetFieldEntry;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        redisTTL = new NoRedisTTL();
+        redisTTL = new NoRedisTtl();
         redisHashSetFieldEntry = new RedisHashSetFieldEntry("test-key", "test-field", "test-value", instrumentation);
     }
 
@@ -51,7 +51,7 @@ public class RedisHashSetFieldEntryTest {
 
     @Test
     public void shouldSetProperTTLForExactTimeForPipeline() {
-        redisTTL = new ExactTimeTTL(1000L);
+        redisTTL = new ExactTimeTtl(1000L);
         redisHashSetFieldEntry.pushMessage(pipeline, redisTTL);
 
         verify(pipeline, times(1)).expireAt("test-key", 1000L);
@@ -60,7 +60,7 @@ public class RedisHashSetFieldEntryTest {
 
     @Test
     public void shouldSetProperTTLForDurationForPipeline() {
-        redisTTL = new DurationTTL(1000);
+        redisTTL = new DurationTtl(1000);
         redisHashSetFieldEntry.pushMessage(pipeline, redisTTL);
 
         verify(pipeline, times(1)).expire("test-key", 1000);
@@ -79,7 +79,7 @@ public class RedisHashSetFieldEntryTest {
 
     @Test
     public void shouldSetProperTTLForExactTimeForCluster() {
-        redisTTL = new ExactTimeTTL(1000L);
+        redisTTL = new ExactTimeTtl(1000L);
         redisHashSetFieldEntry.pushMessage(jedisCluster, redisTTL);
 
         verify(jedisCluster, times(1)).expireAt("test-key", 1000L);
@@ -88,7 +88,7 @@ public class RedisHashSetFieldEntryTest {
 
     @Test
     public void shouldSetProperTTLForDuration() {
-        redisTTL = new DurationTTL(1000);
+        redisTTL = new DurationTtl(1000);
         redisHashSetFieldEntry.pushMessage(jedisCluster, redisTTL);
 
         verify(jedisCluster, times(1)).expire("test-key", 1000);

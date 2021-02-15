@@ -2,7 +2,7 @@ package com.gojek.esb.sink.redis.parsers;
 
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.RedisSinkConfig;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
@@ -22,20 +22,20 @@ public abstract class RedisParser {
     private ProtoParser protoParser;
     private RedisSinkConfig redisSinkConfig;
 
-    public abstract List<RedisDataEntry> parse(EsbMessage esbMessage);
+    public abstract List<RedisDataEntry> parse(Message message);
 
-    public List<RedisDataEntry> parse(List<EsbMessage> esbMessages) {
-        return esbMessages
+    public List<RedisDataEntry> parse(List<Message> messages) {
+        return messages
                 .stream()
                 .map(this::parse)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
 
-    DynamicMessage parseEsbMessage(EsbMessage esbMessage) {
+    DynamicMessage parseEsbMessage(Message message) {
         DynamicMessage parsedMessage;
         try {
-            parsedMessage = protoParser.parse(getPayload(esbMessage));
+            parsedMessage = protoParser.parse(getPayload(message));
         } catch (InvalidProtocolBufferException e) {
             throw new IllegalArgumentException("Unable to parse data when reading Key", e);
         }
@@ -88,11 +88,11 @@ public abstract class RedisParser {
         return parsedMessage.getField(fieldDescriptor);
     }
 
-    byte[] getPayload(EsbMessage esbMessage) {
+    byte[] getPayload(Message message) {
         if (redisSinkConfig.getKafkaRecordParserMode().equals("key")) {
-            return esbMessage.getLogKey();
+            return message.getLogKey();
         } else {
-            return esbMessage.getLogMessage();
+            return message.getLogMessage();
         }
     }
 }

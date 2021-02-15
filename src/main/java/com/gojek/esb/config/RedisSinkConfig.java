@@ -1,40 +1,40 @@
 package com.gojek.esb.config;
 
-import com.gojek.esb.config.converter.RedisSinkTypeConverter;
-import com.gojek.esb.config.converter.RedisTTLTypeConverter;
-import com.gojek.esb.config.converter.RedisServerTypeConverter;
-import com.gojek.esb.config.enums.RedisSinkType;
-import com.gojek.esb.config.enums.RedisTTLType;
-import com.gojek.esb.config.enums.RedisServerType;
+import com.gojek.esb.config.converter.RedisSinkDataTypeConverter;
+import com.gojek.esb.config.converter.RedisSinkTtlTypeConverter;
+import com.gojek.esb.config.converter.RedisSinkDeploymentTypeConverter;
+import com.gojek.esb.config.enums.RedisSinkDataType;
+import com.gojek.esb.config.enums.RedisSinkTtlType;
+import com.gojek.esb.config.enums.RedisSinkDeploymentType;
 
 public interface RedisSinkConfig extends AppConfig {
-    @Key("REDIS_URLS")
-    String getRedisUrls();
+    @Key("sink.redis.urls")
+    String getSinkRedisUrls();
 
-    @Key("REDIS_KEY_TEMPLATE")
-    String getRedisKeyTemplate();
+    @Key("sink.redis.key.template")
+    String getSinkRedisKeyTemplate();
 
-    @Key("REDIS_SINK_TYPE")
+    @Key("sink.redis.data.type")
     @DefaultValue("HASHSET")
-    @ConverterClass(RedisSinkTypeConverter.class)
-    RedisSinkType getRedisSinkType();
+    @ConverterClass(RedisSinkDataTypeConverter.class)
+    RedisSinkDataType getSinkRedisDataType();
 
-    @Key("REDIS_LIST_DATA_PROTO_INDEX")
-    String getRedisListDataProtoIndex();
+    @Key("sink.redis.list.data.proto.index")
+    String getSinkRedisListDataProtoIndex();
 
-    @Key("REDIS_TTL_TYPE")
+    @Key("sink.redis.ttl.type")
     @DefaultValue("DISABLE")
-    @ConverterClass(RedisTTLTypeConverter.class)
-    RedisTTLType getRedisTTLType();
+    @ConverterClass(RedisSinkTtlTypeConverter.class)
+    RedisSinkTtlType getSinkRedisTtlType();
 
-    @Key("REDIS_TTL_VALUE")
+    @Key("sink.redis.ttl.value")
     @DefaultValue("0")
-    long getRedisTTLValue();
+    long getSinkRedisTtlValue();
 
-    @Key("REDIS_SERVER_TYPE")
+    @Key("sink.redis.deployment.type")
     @DefaultValue("Standalone")
-    @ConverterClass(RedisServerTypeConverter.class)
-    RedisServerType getRedisServerType();
+    @ConverterClass(RedisSinkDeploymentTypeConverter.class)
+    RedisSinkDeploymentType getSinkRedisServerType();
 
 
 }

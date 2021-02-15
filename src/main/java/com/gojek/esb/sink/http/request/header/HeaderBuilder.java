@@ -1,7 +1,7 @@
 package com.gojek.esb.sink.http.request.header;
 
 import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.google.common.base.CaseFormat;
 
@@ -25,7 +25,7 @@ public class HeaderBuilder {
                         .toMap(headerKeyValue -> headerKeyValue.split(":")[0], headerKeyValue -> headerKeyValue.split(":")[1]));
     }
 
-    public Map<String, String> build(EsbMessage esbMessage) {
+    public Map<String, String> build(Message message) {
         Map<String, String> baseHeaders = build();
         if (protoToFieldMapper == null) {
             return baseHeaders;
@@ -33,8 +33,8 @@ public class HeaderBuilder {
 
         // flow for parameterized headers
         Map<String, Object> paramMap = protoToFieldMapper
-                .getFields((httpSinkParameterSourceType == HttpSinkParameterSourceType.KEY) ? esbMessage.getLogKey()
-                        : esbMessage.getLogMessage());
+                .getFields((httpSinkParameterSourceType == HttpSinkParameterSourceType.KEY) ? message.getLogKey()
+                        : message.getLogMessage());
 
         Map<String, String> parameterizedHeaders = paramMap.entrySet().stream()
                 .collect(Collectors.toMap(e -> convertToCustomHeaders(e.getKey()), e -> e.getValue().toString()));

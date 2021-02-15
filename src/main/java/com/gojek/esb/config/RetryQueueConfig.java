@@ -2,38 +2,38 @@ package com.gojek.esb.config;
 
 public interface RetryQueueConfig extends AppConfig {
 
-    @Key("RETRY_QUEUE_KAFKA_ACKS")
+    @Key("retry.queue.kafka.acks")
     @DefaultValue("all")
     String getRetryQueueKafkaAcks();
 
-    @Key("RETRY_QUEUE_KAFKA_RETRIES")
+    @Key("retry.queue.kafka.retries")
     @DefaultValue("2147483647")
     String getRetryQueueKafkaRetries();
 
-    @Key("RETRY_QUEUE_KAFKA_BATCH_SIZE")
+    @Key("retry.queue.kafka.batch.size")
     @DefaultValue("16384")
     String getRetryQueueKafkaBatchSize();
 
-    @Key("RETRY_QUEUE_KAFKA_LINGER_MS")
+    @Key("retry.queue.kafka.linger.ms")
     @DefaultValue("0")
-    String getRetryQueueKafkaLingerSize();
+    String getRetryQueueKafkaLingerMs();
 
-    @Key("RETRY_QUEUE_KAFKA_BUFFER_MEMORY")
+    @Key("retry.queue.kafka.buffer.memory")
     @DefaultValue("33554432")
     String getRetryQueueKafkaBufferMemory();
 
-    @Key("RETRY_QUEUE_KAFKA_KEY_SERIALIZER")
+    @Key("retry.queue.kafka.key.serializer")
     @DefaultValue("org.apache.kafka.common.serialization.ByteArraySerializer")
     String getRetryQueueKafkaKeySerializer();
 
-    @Key("RETRY_QUEUE_KAFKA_VALUE_SERIALIZER")
+    @Key("retry.queue.kafka.value.serializer")
     @DefaultValue("org.apache.kafka.common.serialization.ByteArraySerializer")
     String getRetryQueueKafkaValueSerializer();
 
-    @Key("RETRY_QUEUE_KAFKA_BOOTSTRAP_SERVERS")
-    String getRetryQueueKafkaBootStrapServers();
+    @Key("retry.queue.kafka.brokers")
+    String getRetryQueueKafkaBrokers();
 
-    @Key("RETRY_TOPIC")
-    @DefaultValue("false")
-    String getRetryTopic();
+    @Key("retry.queue.kafka.topic")
+    @DefaultValue("firehose-retry-topic")
+    String getRetryQueueKafkaTopic();
 }

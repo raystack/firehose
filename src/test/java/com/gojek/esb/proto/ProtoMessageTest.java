@@ -1,6 +1,6 @@
 package com.gojek.esb.proto;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.consumer.TestBookingLogKey;
 import com.gojek.esb.consumer.TestFeedbackLogKey;
 import com.gojek.esb.consumer.TestFeedbackLogMessage;
@@ -14,7 +14,7 @@ import static org.junit.Assert.fail;
 
 public class ProtoMessageTest {
     private static final int TIMESTAMP_IN_EPOCH_SECONDS = 149860000;
-    private EsbMessage esbMessage;
+    private Message message;
     private static final String EXPECTED_ORDER_NUMBER = "R-123";
     private static final String EXPECTED_FEEDBACK = "good";
     private static final int ORDER_NUMBER_INDEX = 1;
@@ -30,8 +30,8 @@ public class ProtoMessageTest {
 
         ProtoMessage protoMessage = new ProtoMessage(TestFeedbackLogMessage.class.getName());
 
-        assertEquals(EXPECTED_ORDER_NUMBER, protoMessage.get(esbMessage, ORDER_NUMBER_INDEX));
-        assertEquals(EXPECTED_FEEDBACK, protoMessage.get(esbMessage, FEEDBACK_INDEX));
+        assertEquals(EXPECTED_ORDER_NUMBER, protoMessage.get(message, ORDER_NUMBER_INDEX));
+        assertEquals(EXPECTED_FEEDBACK, protoMessage.get(message, FEEDBACK_INDEX));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class ProtoMessageTest {
         ProtoMessage protoMessage = new ProtoMessage(TestBookingLogKey.class.getName());
 
         try {
-            protoMessage.get(esbMessage, FEEDBACK_INDEX);
+            protoMessage.get(message, FEEDBACK_INDEX);
 
             fail("Should throw deserialzer exception on recieving corrupted messages");
         } catch (DeserializerException e) {
@@ -73,7 +73,7 @@ public class ProtoMessageTest {
     private void setupEsbMessages(String expectedOrderNumber, String expectedFeedback) {
         TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder().setOrderNumber(expectedOrderNumber).setFeedbackComment(expectedFeedback).setEventTimestamp(getTimestamp(TIMESTAMP_IN_EPOCH_SECONDS)).build();
         TestFeedbackLogKey feedbackLogKey = TestFeedbackLogKey.newBuilder().build();
-        esbMessage = new EsbMessage(feedbackLogKey.toByteArray(), feedbackLogMessage.toByteArray(), "topic", 1, 1);
+        message = new Message(feedbackLogKey.toByteArray(), feedbackLogMessage.toByteArray(), "topic", 1, 1);
     }
 
     private Timestamp getTimestamp(int seconds) {

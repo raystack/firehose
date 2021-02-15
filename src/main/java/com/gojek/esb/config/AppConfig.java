@@ -1,7 +1,7 @@
 package com.gojek.esb.config;
 
 import com.gojek.esb.config.converter.ProtoIndexToFieldMapConverter;
-import com.gojek.esb.config.converter.SinkConverter;
+import com.gojek.esb.config.converter.SinkTypeConverter;
 import com.gojek.esb.config.enums.SinkType;
 import org.aeonbits.owner.Config;
 
@@ -9,49 +9,49 @@ import java.util.Properties;
 
 public interface AppConfig extends Config {
 
-    @Key("STATSD_HOST")
+    @Key("statsd.host")
     @DefaultValue("localhost")
     String getStatsDHost();
 
-    @Key("STATSD_PORT")
+    @Key("statsd.port")
     @DefaultValue("8125")
     Integer getStatsDPort();
 
-    @Key("STATSD_TAGS")
+    @Key("statsd.tags")
     @DefaultValue("")
     String getStatsDTags();
 
-    @Key("SINK")
-    @ConverterClass(SinkConverter.class)
+    @Key("sink.type")
+    @ConverterClass(SinkTypeConverter.class)
     SinkType getSinkType();
 
-    @Key("NUMBER_OF_CONSUMERS_THREADS")
+    @Key("consumer.threads.num")
     @DefaultValue("1")
-    Integer noOfConsumerThreads();
+    Integer getConsumerThreadsNum();
 
-    @Key("DELAY_TO_CLEAN_UP_CONSUMER_THREADS")
+    @Key("consumer.threads.cleanup.delay")
     @DefaultValue("2000")
-    Integer threadCleanupDelay();
+    Integer getConsumerThreadsCleanupDelay();
 
-    @Key("ENABLE_STENCIL_CLIENT")
+    @Key("stencil.enable")
     @DefaultValue("false")
-    Boolean enableStencilClient();
+    Boolean isStencilEnable();
 
-    @Key("STENCIL_URL")
-    String stencilUrl();
+    @Key("stencil.urls")
+    String getStencilUrls();
 
-    @Key("PROTO_SCHEMA")
+    @Key("proto.schema")
     String getProtoSchema();
 
-    @Key("PROTO_TO_COLUMN_MAPPING")
+    @Key("input.output.mapping")
     @ConverterClass(ProtoIndexToFieldMapConverter.class)
-    Properties getProtoToFieldMapping();
+    Properties getInputOutputMapping();
 
-    @Key("KAFKA_RECORD_PARSER_MODE")
+    @Key("kafka.record.parcer.mode")
     @DefaultValue("message")
     String getKafkaRecordParserMode();
 
-    @Key("ENABLE_TRACE")
+    @Key("trace.enable")
     @DefaultValue("false")
-    Boolean enableTracing();
+    Boolean isTraceEnable();
 }

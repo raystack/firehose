@@ -27,14 +27,14 @@ public class RedisSinkFactory implements SinkFactory {
         Instrumentation instrumentation = new Instrumentation(statsDReporter, RedisSinkFactory.class);
         String redisConfig = String.format("\n\tredis.urls = %s\n\tredis.key.template = %s\n\tredis.sink.type = %s"
                         + "\n\tredis.list.data.proto.index = %s\n\tredis.ttl.type = %s\n\tredis.ttl.value = %d",
-                redisSinkConfig.getRedisUrls(),
-                redisSinkConfig.getRedisKeyTemplate(),
-                redisSinkConfig.getRedisSinkType().toString(),
-                redisSinkConfig.getRedisListDataProtoIndex(),
-                redisSinkConfig.getRedisTTLType().toString(),
-                redisSinkConfig.getRedisTTLValue());
+                redisSinkConfig.getSinkRedisUrls(),
+                redisSinkConfig.getSinkRedisKeyTemplate(),
+                redisSinkConfig.getSinkRedisDataType().toString(),
+                redisSinkConfig.getSinkRedisListDataProtoIndex(),
+                redisSinkConfig.getSinkRedisTtlType().toString(),
+                redisSinkConfig.getSinkRedisTtlValue());
         instrumentation.logDebug(redisConfig);
-        instrumentation.logInfo("Redis server type = {}", redisSinkConfig.getRedisServerType());
+        instrumentation.logInfo("Redis server type = {}", redisSinkConfig.getSinkRedisServerType());
 
         RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
         RedisClient client = redisClientFactory.getClient();

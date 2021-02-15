@@ -65,7 +65,7 @@ public class TopicPartitionOffsetsTest {
 
     @Test
     public void shouldCommitSyncForCurrentPartitions() {
-        when(consumerConfig.asyncCommitEnabled()).thenReturn(false);
+        when(consumerConfig.isSourceKafkaAsyncCommitEnable()).thenReturn(false);
 
         offsets.commit(consumerRecords);
 
@@ -74,7 +74,7 @@ public class TopicPartitionOffsetsTest {
 
     @Test
     public void shouldAsyncCommitForCurrentPartitions() {
-        when(consumerConfig.asyncCommitEnabled()).thenReturn(true);
+        when(consumerConfig.isSourceKafkaAsyncCommitEnable()).thenReturn(true);
 
         offsets.commit(consumerRecords);
 

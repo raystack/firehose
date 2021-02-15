@@ -1,11 +1,11 @@
 package com.gojek.esb.sink.redis.client;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import com.gojek.esb.sink.redis.exception.NoResponseException;
 import com.gojek.esb.sink.redis.parsers.RedisParser;
-import com.gojek.esb.sink.redis.ttl.RedisTTL;
+import com.gojek.esb.sink.redis.ttl.RedisTtl;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
@@ -17,11 +17,11 @@ public class RedisStandaloneClient implements RedisClient {
 
     private Instrumentation instrumentation;
     private RedisParser redisParser;
-    private RedisTTL redisTTL;
+    private RedisTtl redisTTL;
     private Jedis jedis;
     private Pipeline jedisPipelined;
 
-    public RedisStandaloneClient(Instrumentation instrumentation, RedisParser redisParser, RedisTTL redisTTL, Jedis jedis) {
+    public RedisStandaloneClient(Instrumentation instrumentation, RedisParser redisParser, RedisTtl redisTTL, Jedis jedis) {
         this.instrumentation = instrumentation;
         this.redisParser = redisParser;
         this.redisTTL = redisTTL;
@@ -29,8 +29,8 @@ public class RedisStandaloneClient implements RedisClient {
     }
 
     @Override
-    public void prepare(List<EsbMessage> esbMessages) {
-        List<RedisDataEntry> redisDataEntries = redisParser.parse(esbMessages);
+    public void prepare(List<Message> messages) {
+        List<RedisDataEntry> redisDataEntries = redisParser.parse(messages);
         jedisPipelined = jedis.pipelined();
 
         jedisPipelined.multi();
@@ -38,7 +38,7 @@ public class RedisStandaloneClient implements RedisClient {
     }
 
     @Override
-    public List<EsbMessage> execute() {
+    public List<Message> execute() {
         Response<List<Object>> responses = jedisPipelined.exec();
         instrumentation.logDebug("jedis responses: {}", responses);
         jedisPipelined.sync();

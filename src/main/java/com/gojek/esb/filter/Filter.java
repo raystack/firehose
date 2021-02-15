@@ -1,6 +1,6 @@
 package com.gojek.esb.filter;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 
 import java.util.List;
 
@@ -12,9 +12,9 @@ public interface Filter {
     /**
      * The method used for filtering the messages.
      *
-     * @param messages the protobuf records in binary format that are wrapped in {@link EsbMessage}
+     * @param messages the protobuf records in binary format that are wrapped in {@link Message}
      * @return filtered messages.
-     * @throws EsbFilterException
+     * @throws FilterException
      */
-    List<EsbMessage> filter(List<EsbMessage> messages) throws EsbFilterException;
+    List<Message> filter(List<Message> messages) throws FilterException;
 }

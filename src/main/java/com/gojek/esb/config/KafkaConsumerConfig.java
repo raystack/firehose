@@ -1,67 +1,66 @@
 package com.gojek.esb.config;
 
-import com.gojek.esb.config.converter.ESBFilterTypeConverter;
-import com.gojek.esb.config.enums.EsbFilterType;
+import com.gojek.esb.config.converter.FilterTypeConverter;
+import com.gojek.esb.config.enums.FilterType;
 
 /**
  * The interface for configurations required to instantiate a consumer.
  */
 public interface KafkaConsumerConfig extends AppConfig {
-    @Key("ENABLE_ASYNC_COMMIT")
+    @Key("source.kafka.async.commit.enable")
     @DefaultValue("true")
-    boolean asyncCommitEnabled();
+    boolean isSourceKafkaAsyncCommitEnable();
 
-    @Key("COMMIT_ONLY_CURRENT_PARTITIONS")
+    @Key("source.kafka.commit.only.current.partitions.enable")
     @DefaultValue("true")
-    boolean commitOnlyCurrentPartitions();
+    boolean isSourceKafkaCommitOnlyCurrentPartitionsEnable();
 
-    @Key("KAFKA_TOPIC")
-    String getKafkaTopic();
+    @Key("source.kafka.topic")
+    String getSourceKafkaTopic();
 
-    @Key("KAFKA_ADDRESS")
-    String getKafkaAddress();
+    @Key("source.kafka.brokers")
+    String getSourceKafkaBrokers();
 
-    @Key("CONSUMER_GROUP_ID")
-    String getConsumerGroupId();
+    @Key("source.kafka.consumer.group.id")
+    String getSourceKafkaConsumerGroupId();
 
-    @Key("KAFKA_CONSUMER_CONFIG_ENABLE_AUTO_COMMIT")
+    @Key("source.kafka.consumer.config.auto.commit.enable")
     @DefaultValue("false")
-    boolean isAutoCommitEnabled();
+    boolean isSourceKafkaConsumerConfigAutoCommitEnable();
 
-    @Key("KAFKA_CONSUMER_CONFIG_METADATA_MAX_AGE_MS")
+    @Key("source.kafka.consumer.config.metadata.max.age.ms")
     @DefaultValue("500")
-    int getMetadataMaxAgeInMs();
+    int getSourceKafkaConsumerConfigMetadataMaxAgeMs();
 
-    @Key("KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS")
+    @Key("source.kafka.consumer.config.max.poll.records")
     @DefaultValue("500")
-    int getMaxPollRecords();
+    int getSourceKafkaConsumerConfigMaxPollRecords();
 
-    @Key("KAFKA_CONSUMER_CONFIG_SESSION_TIMEOUT_MS")
+    @Key("source.kafka.consumer.config.session.timeout.ms")
     @DefaultValue("10000")
-    int getSessionTimeoutInMs();
+    int getSourceKafkaConsumerConfigSessionTimeoutMs();
 
-
-    @Key("KAFKA_POLL_TIME_OUT")
+    @Key("source.kafka.poll.timeout.ms")
     @DefaultValue("9223372036854775807")
-    Long getPollTimeOut();
+    Long getSourceKafkaPollTimeoutMs();
 
-    @Key("FILTER_TYPE")
-    @ConverterClass(ESBFilterTypeConverter.class)
+    @Key("filter.type")
+    @ConverterClass(FilterTypeConverter.class)
     @DefaultValue("NONE")
-    EsbFilterType getFilterType();
+    FilterType getFilterType();
 
-    @Key("FILTER_EXPRESSION")
+    @Key("filter.expression")
     String getFilterExpression();
 
-    @Key("FILTER_PROTO_SCHEMA")
+    @Key("filter.proto.schema")
     String getFilterProtoSchema();
 
-    @Key("MAX_RETRY_ATTEMPTS")
+    @Key("retry.queue.attempts.to.trigger")
     @DefaultValue("1")
-    Integer getMaximumRetryAttempts();
+    Integer getRetryQueueAttemptsToTrigger();
 
-    @Key("ENABLE_RETRY_QUEUE")
+    @Key("retry.queue.enable")
     @DefaultValue("false")
-    Boolean getRetryQueueEnabled();
+    Boolean isRetryQueueEnable();
 
 }

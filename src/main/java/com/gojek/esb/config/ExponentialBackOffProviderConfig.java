@@ -2,15 +2,15 @@ package com.gojek.esb.config;
 
 public interface ExponentialBackOffProviderConfig extends AppConfig {
 
-    @Key("EXPONENTIAL_BACKOFF_INITIAL_BACKOFF_IN_MS")
+    @Key("retry.exponential.backoff.initial.ms")
     @DefaultValue("10")
-    Integer exponentialBackoffInitialTimeInMs();
+    Integer getRetryExponentialBackoffInitialMs();
 
-    @Key("EXPONENTIAL_BACKOFF_RATE")
+    @Key("retry.exponential.backoff.rate")
     @DefaultValue("2")
-    Integer exponentialBackoffRate();
+    Integer getRetryExponentialBackoffRate();
 
-    @Key("EXPONENTIAL_BACKOFF_MAXIMUM_BACKOFF_IN_MS")
+    @Key("retry.exponential.backoff.max.ms")
     @DefaultValue("60000")
-    Integer exponentialBackoffMaximumBackoffInMs();
+    Integer getRetryExponentialBackoffMaxMs();
 }

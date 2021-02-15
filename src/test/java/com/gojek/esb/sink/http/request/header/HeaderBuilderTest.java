@@ -1,7 +1,7 @@
 package com.gojek.esb.sink.http.request.header;
 
 import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.proto.ProtoToFieldMapper;
 import com.gojek.esb.sink.http.request.uri.UriParser;
 import org.junit.Before;
@@ -27,17 +27,17 @@ public class HeaderBuilderTest {
     @Mock
     private ProtoToFieldMapper protoToFieldMapper;
 
-    private EsbMessage esbMessage;
+    private Message message;
 
     @Before
     public void setUp() {
         initMocks(this);
         String logKey = "CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigC";
         String logMessage = "CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM\u003d";
-        esbMessage = new EsbMessage(Base64.getDecoder().decode(logKey.getBytes()),
+        message = new Message(Base64.getDecoder().decode(logKey.getBytes()),
                 Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
-        when(uriParser.parse(esbMessage, "http://dummy.com")).thenReturn("http://dummy.com");
+        when(uriParser.parse(message, "http://dummy.com")).thenReturn("http://dummy.com");
     }
 
     @Test
@@ -84,7 +84,7 @@ public class HeaderBuilderTest {
         String headerConfig = "content-type:json";
         HeaderBuilder headerBuilder = new HeaderBuilder(headerConfig);
 
-        Map<String, String> header = headerBuilder.build(esbMessage);
+        Map<String, String> header = headerBuilder.build(message);
         assertEquals("json", header.get("content-type"));
     }
 
@@ -92,12 +92,12 @@ public class HeaderBuilderTest {
     public void shouldHaveExtraParameterizedHeaderIfParameterizedHeaderEnabled() {
         String headerConfig = "content-type:json";
         Map<String, Object> mockParamMap = Collections.singletonMap("order_number", "RB_1234");
-        when(protoToFieldMapper.getFields(esbMessage.getLogMessage())).thenReturn(mockParamMap);
+        when(protoToFieldMapper.getFields(message.getLogMessage())).thenReturn(mockParamMap);
 
         HeaderBuilder headerBuilder = new HeaderBuilder(headerConfig)
                 .withParameterizedHeader(protoToFieldMapper, HttpSinkParameterSourceType.MESSAGE);
 
-        Map<String, String> header = headerBuilder.build(esbMessage);
+        Map<String, String> header = headerBuilder.build(message);
 
         assertEquals("RB_1234", header.get("X-OrderNumber"));
     }
@@ -106,12 +106,12 @@ public class HeaderBuilderTest {
     public void shouldKeepBasedHeadersUnchangedAndAddExtraHeaderChangingTheName() {
         String headerConfig = "content-type:json";
         Map<String, Object> mockParamMap = Collections.singletonMap("order_number", "RB_1234");
-        when(protoToFieldMapper.getFields(esbMessage.getLogMessage())).thenReturn(mockParamMap);
+        when(protoToFieldMapper.getFields(message.getLogMessage())).thenReturn(mockParamMap);
 
         HeaderBuilder headerBuilder = new HeaderBuilder(headerConfig)
                 .withParameterizedHeader(protoToFieldMapper, HttpSinkParameterSourceType.MESSAGE);
 
-        Map<String, String> header = headerBuilder.build(esbMessage);
+        Map<String, String> header = headerBuilder.build(message);
 
         assertEquals("RB_1234", header.get("X-OrderNumber"));
         assertEquals("json", header.get("content-type"));
@@ -123,8 +123,8 @@ public class HeaderBuilderTest {
         HeaderBuilder headerBuilder = new HeaderBuilder(headerConfig)
                 .withParameterizedHeader(protoToFieldMapper, HttpSinkParameterSourceType.KEY);
 
-        headerBuilder.build(esbMessage);
-        verify(protoToFieldMapper, times(1)).getFields(esbMessage.getLogKey());
+        headerBuilder.build(message);
+        verify(protoToFieldMapper, times(1)).getFields(message.getLogKey());
     }
 
     @Test
@@ -133,7 +133,7 @@ public class HeaderBuilderTest {
         HeaderBuilder headerBuilder = new HeaderBuilder(headerConfig)
                 .withParameterizedHeader(protoToFieldMapper, HttpSinkParameterSourceType.MESSAGE);
 
-        headerBuilder.build(esbMessage);
-        verify(protoToFieldMapper, times(1)).getFields(esbMessage.getLogMessage());
+        headerBuilder.build(message);
+        verify(protoToFieldMapper, times(1)).getFields(message.getLogMessage());
     }
 }

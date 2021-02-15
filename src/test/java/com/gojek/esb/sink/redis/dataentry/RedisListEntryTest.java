@@ -1,10 +1,10 @@
 package com.gojek.esb.sink.redis.dataentry;
 
 import com.gojek.esb.metrics.Instrumentation;
-import com.gojek.esb.sink.redis.ttl.DurationTTL;
-import com.gojek.esb.sink.redis.ttl.ExactTimeTTL;
-import com.gojek.esb.sink.redis.ttl.NoRedisTTL;
-import com.gojek.esb.sink.redis.ttl.RedisTTL;
+import com.gojek.esb.sink.redis.ttl.DurationTtl;
+import com.gojek.esb.sink.redis.ttl.ExactTimeTtl;
+import com.gojek.esb.sink.redis.ttl.NoRedisTtl;
+import com.gojek.esb.sink.redis.ttl.RedisTtl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,12 +29,12 @@ public class RedisListEntryTest {
     @Mock
     private JedisCluster jedisCluster;
 
-    private RedisTTL redisTTL;
+    private RedisTtl redisTTL;
     private RedisListEntry redisListEntry;
 
     @Before
     public void setup() {
-        redisTTL = new NoRedisTTL();
+        redisTTL = new NoRedisTtl();
         redisListEntry = new RedisListEntry("test-key", "test-value", instrumentation);
     }
 
@@ -50,7 +50,7 @@ public class RedisListEntryTest {
 
     @Test
     public void shouldSetProperTTLForExactTimeForPipeline() {
-        redisTTL = new ExactTimeTTL(1000L);
+        redisTTL = new ExactTimeTtl(1000L);
         redisListEntry.pushMessage(pipeline, redisTTL);
 
         verify(pipeline, times(1)).expireAt("test-key", 1000L);
@@ -59,7 +59,7 @@ public class RedisListEntryTest {
 
     @Test
     public void shouldSetProperTTLForDurationForPipeline() {
-        redisTTL = new DurationTTL(1000);
+        redisTTL = new DurationTtl(1000);
         redisListEntry.pushMessage(pipeline, redisTTL);
 
         verify(pipeline, times(1)).expire("test-key", 1000);
@@ -78,7 +78,7 @@ public class RedisListEntryTest {
 
     @Test
     public void shouldSetProperTTLForExactTimeForCluster() {
-        redisTTL = new ExactTimeTTL(1000L);
+        redisTTL = new ExactTimeTtl(1000L);
         redisListEntry.pushMessage(jedisCluster, redisTTL);
 
         verify(jedisCluster, times(1)).expireAt("test-key", 1000L);
@@ -87,7 +87,7 @@ public class RedisListEntryTest {
 
     @Test
     public void shouldSetProperTTLForDurationForCluster() {
-        redisTTL = new DurationTTL(1000);
+        redisTTL = new DurationTtl(1000);
         redisListEntry.pushMessage(jedisCluster, redisTTL);
 
         verify(jedisCluster, times(1)).expire("test-key", 1000);

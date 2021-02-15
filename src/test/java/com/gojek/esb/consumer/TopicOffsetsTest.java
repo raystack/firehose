@@ -39,7 +39,7 @@ public class TopicOffsetsTest {
 
     @Test
     public void shouldCommitSyncForAllPartitions() {
-        when(consumerConfig.asyncCommitEnabled()).thenReturn(false);
+        when(consumerConfig.isSourceKafkaAsyncCommitEnable()).thenReturn(false);
 
         topicOffsets.commit(consumerRecords);
 
@@ -48,7 +48,7 @@ public class TopicOffsetsTest {
 
     @Test
     public void shouldAsyncCommitForAllPartitions() {
-        when(consumerConfig.asyncCommitEnabled()).thenReturn(true);
+        when(consumerConfig.isSourceKafkaAsyncCommitEnable()).thenReturn(true);
 
         topicOffsets.commit(consumerRecords);
 

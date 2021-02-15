@@ -1,6 +1,6 @@
 package com.gojek.esb.sink.redis;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.AbstractSink;
 import com.gojek.esb.sink.redis.client.RedisClient;
@@ -23,12 +23,12 @@ public class RedisSink extends AbstractSink {
     }
 
     @Override
-    protected void prepare(List<EsbMessage> esbMessages) {
-        redisClient.prepare(esbMessages);
+    protected void prepare(List<Message> messages) {
+        redisClient.prepare(messages);
     }
 
     @Override
-    protected List<EsbMessage> execute() throws NoResponseException {
+    protected List<Message> execute() throws NoResponseException {
         return redisClient.execute();
     }
 

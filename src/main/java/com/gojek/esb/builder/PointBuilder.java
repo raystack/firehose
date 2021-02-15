@@ -27,10 +27,10 @@ public class PointBuilder {
     private Integer timeStampIndex;
 
     public PointBuilder(InfluxSinkConfig config) {
-        tagNameProtoIndexMapping = config.getTagNameProtoIndexMapping();
-        fieldNameProtoIndexMapping = config.getFieldNameProtoIndexMapping();
-        this.timeStampIndex = config.getEventTimestampIndex();
-        this.measurementName = config.getMeasurementName();
+        tagNameProtoIndexMapping = config.getSinkInfluxTagNameProtoIndexMapping();
+        fieldNameProtoIndexMapping = config.getSinkInfluxFieldNameProtoIndexMapping();
+        this.timeStampIndex = config.getSinkInfluxProtoEventTimestampIndex();
+        this.measurementName = config.getSinkInfluxMeasurementName();
     }
 
     public Point buildPoint(DynamicMessage message) throws InvalidProtocolBufferException {

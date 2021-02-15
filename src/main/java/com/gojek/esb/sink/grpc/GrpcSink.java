@@ -2,7 +2,7 @@ package com.gojek.esb.sink.grpc;
 
 
 import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.AbstractSink;
@@ -20,7 +20,7 @@ import java.util.List;
 public class GrpcSink extends AbstractSink {
 
     private final GrpcClient grpcClient;
-    private List<EsbMessage> esbMessages;
+    private List<Message> messages;
     private StencilClient stencilClient;
 
     public GrpcSink(Instrumentation instrumentation, GrpcClient grpcClient, StencilClient stencilClient) {
@@ -30,10 +30,10 @@ public class GrpcSink extends AbstractSink {
     }
 
     @Override
-    protected List<EsbMessage> execute() throws Exception {
-        ArrayList<EsbMessage> failedEsbMessages = new ArrayList<>();
+    protected List<Message> execute() throws Exception {
+        ArrayList<Message> failedMessages = new ArrayList<>();
 
-        for (EsbMessage message : this.esbMessages) {
+        for (Message message : this.messages) {
             DynamicMessage response = grpcClient.execute(message.getLogMessage(), message.getHeaders());
             getInstrumentation().logDebug("Response: {}", response);
             Object m = response.getField(response.getDescriptorForType().findFieldByName("success"));
@@ -41,22 +41,22 @@ public class GrpcSink extends AbstractSink {
 
             if (!success) {
                 getInstrumentation().logWarn("Grpc Service returned error");
-                failedEsbMessages.add(message);
+                failedMessages.add(message);
             }
         }
-        getInstrumentation().logDebug("Failed messages count: {}", failedEsbMessages.size());
-        return failedEsbMessages;
+        getInstrumentation().logDebug("Failed messages count: {}", failedMessages.size());
+        return failedMessages;
     }
 
     @Override
-    protected void prepare(List<EsbMessage> esbMessages2) throws DeserializerException {
-        this.esbMessages = esbMessages2;
+    protected void prepare(List<Message> messages2) throws DeserializerException {
+        this.messages = messages2;
     }
 
     @Override
     public void close() throws IOException {
         getInstrumentation().logInfo("GRPC connection closing");
-        this.esbMessages = new ArrayList<>();
+        this.messages = new ArrayList<>();
         stencilClient.close();
     }
 }

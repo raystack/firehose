@@ -1,6 +1,6 @@
 package com.gojek.esb.sink.log;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.Sink;
 import lombok.AllArgsConstructor;
@@ -20,8 +20,8 @@ public class LogSink implements Sink {
     private Instrumentation instrumentation;
 
     @Override
-    public List<EsbMessage> pushMessage(List<EsbMessage> esbMessages) throws IOException {
-        for (EsbMessage message : esbMessages) {
+    public List<Message> pushMessage(List<Message> messages) throws IOException {
+        for (Message message : messages) {
             instrumentation.logInfo("\n================= DATA =======================\n{}", parser.parse(message));
         }
         return new ArrayList<>();

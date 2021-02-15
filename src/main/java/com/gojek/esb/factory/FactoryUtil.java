@@ -26,21 +26,21 @@ public class FactoryUtil {
 
     public static void configureSubscription(KafkaConsumerConfig config, KafkaConsumer kafkaConsumer, StatsDReporter statsdReporter) {
         Instrumentation instrumentation = new Instrumentation(statsdReporter, FactoryUtil.class);
-        Pattern subscriptionTopicPattern = Pattern.compile(config.getKafkaTopic());
+        Pattern subscriptionTopicPattern = Pattern.compile(config.getSourceKafkaTopic());
         instrumentation.logInfo("consumer subscribed using pattern: {}", subscriptionTopicPattern);
         kafkaConsumer.subscribe(subscriptionTopicPattern, new ConsumerRebalancer(new Instrumentation(statsdReporter, ConsumerRebalancer.class)));
     }
 
     public static Map<String, Object> getConfig(KafkaConsumerConfig config, Map<String, String> extraParameters) {
         HashMap<String, Object> consumerConfigurationMap = new HashMap<String, Object>() {{
-            put(BOOTSTRAP_SERVERS, config.getKafkaAddress());
-            put(GROUP_ID, config.getConsumerGroupId());
-            put(ENABLE_AUTO_COMMIT, config.isAutoCommitEnabled());
+            put(BOOTSTRAP_SERVERS, config.getSourceKafkaBrokers());
+            put(GROUP_ID, config.getSourceKafkaConsumerGroupId());
+            put(ENABLE_AUTO_COMMIT, config.isSourceKafkaConsumerConfigAutoCommitEnable());
             put(KEY_DESERIALIZER, ByteArrayDeserializer.class.getName());
             put(VALUE_DESERIALIZER, ByteArrayDeserializer.class.getName());
-            put(METADATA_MAX_AGE_MS, config.getMetadataMaxAgeInMs());
-            put(MAX_POLL_RECORDS, config.getMaxPollRecords());
-            put(SESSION_TIMEOUT_MS, config.getSessionTimeoutInMs());
+            put(METADATA_MAX_AGE_MS, config.getSourceKafkaConsumerConfigMetadataMaxAgeMs());
+            put(MAX_POLL_RECORDS, config.getSourceKafkaConsumerConfigMaxPollRecords());
+            put(SESSION_TIMEOUT_MS, config.getSourceKafkaConsumerConfigSessionTimeoutMs());
         }};
 
         return merge(consumerConfigurationMap, KafkaEnvironmentVariables.parse(extraParameters));

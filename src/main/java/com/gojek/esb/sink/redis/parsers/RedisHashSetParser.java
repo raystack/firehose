@@ -2,7 +2,7 @@ package com.gojek.esb.sink.redis.parsers;
 
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.RedisSinkConfig;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.proto.ProtoToFieldMapper;
@@ -27,11 +27,11 @@ public class RedisHashSetParser extends RedisParser {
     }
 
     @Override
-    public List<RedisDataEntry> parse(EsbMessage esbMessage) {
-        DynamicMessage parsedMessage = parseEsbMessage(esbMessage);
-        String redisKey = parseTemplate(parsedMessage, redisSinkConfig.getRedisKeyTemplate());
+    public List<RedisDataEntry> parse(Message message) {
+        DynamicMessage parsedMessage = parseEsbMessage(message);
+        String redisKey = parseTemplate(parsedMessage, redisSinkConfig.getSinkRedisKeyTemplate());
         List<RedisDataEntry> messageEntries = new ArrayList<>();
-        Map<String, Object> protoToFieldMap = protoToFieldMapper.getFields(getPayload(esbMessage));
+        Map<String, Object> protoToFieldMap = protoToFieldMapper.getFields(getPayload(message));
         protoToFieldMap.forEach((key, value) -> messageEntries.add(new RedisHashSetFieldEntry(redisKey, parseTemplate(parsedMessage, key), String.valueOf(value), new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class))));
         return messageEntries;
     }

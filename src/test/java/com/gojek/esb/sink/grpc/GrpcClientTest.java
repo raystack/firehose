@@ -3,7 +3,7 @@ package com.gojek.esb.sink.grpc;
 
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.esb.config.GrpcConfig;
+import com.gojek.esb.config.GrpcSinkConfig;
 import com.gojek.esb.consumer.Error;
 import com.gojek.esb.consumer.TestGrpcRequest;
 import com.gojek.esb.consumer.TestGrpcResponse;
@@ -42,7 +42,7 @@ public class GrpcClientTest {
     private Server server;
     private GrpcClient grpcClient;
     private TestServerGrpc.TestServerImplBase testGrpcService;
-    private GrpcConfig grpcConfig;
+    private GrpcSinkConfig grpcSinkConfig;
     private RecordHeaders headers;
     private static final List<String> HEADER_KEYS = Arrays.asList("test-header-key-1", "test-header-key-2");
     private HeaderTestInterceptor headerTestInterceptor;
@@ -65,15 +65,15 @@ public class GrpcClientTest {
                 .build()
                 .start();
         Map<String, String> config = new HashMap<>();
-        config.put("GRPC_SERVICE_HOST", "localhost");
-        config.put("GRPC_SERVICE_PORT", "5000");
-        config.put("GRPC_METHOD_URL", "com.gojek.esb.consumer.TestServer/TestRpcMethod");
-        config.put("GRPC_RESPONSE_PROTO_SCHEMA", "com.gojek.esb.consumer.TestGrpcResponse");
+        config.put("sink.grpc.service.host", "localhost");
+        config.put("sink.grpc.service.port", "5000");
+        config.put("sink.grpc.method.url", "com.gojek.esb.consumer.TestServer/TestRpcMethod");
+        config.put("sink.grpc.response.proto.schema", "com.gojek.esb.consumer.TestGrpcResponse");
 
-        grpcConfig = ConfigFactory.create(GrpcConfig.class, config);
+        grpcSinkConfig = ConfigFactory.create(GrpcSinkConfig.class, config);
         stencilClient = StencilClientFactory.getClient();
-        managedChannel = ManagedChannelBuilder.forAddress(grpcConfig.getServiceHost(), grpcConfig.getServicePort()).usePlaintext().build();
-        grpcClient = new GrpcClient(instrumentation, grpcConfig, managedChannel, stencilClient);
+        managedChannel = ManagedChannelBuilder.forAddress(grpcSinkConfig.getSinkGrpcServiceHost(), grpcSinkConfig.getSinkGrpcServicePort()).usePlaintext().build();
+        grpcClient = new GrpcClient(instrumentation, grpcSinkConfig, managedChannel, stencilClient);
         headers = new RecordHeaders();
     }
     @After
