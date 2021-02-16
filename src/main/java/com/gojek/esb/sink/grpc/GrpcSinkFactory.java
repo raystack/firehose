@@ -27,12 +27,8 @@ public class GrpcSinkFactory implements SinkFactory {
     public AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         GrpcSinkConfig grpcConfig = ConfigFactory.create(GrpcSinkConfig.class, configuration);
         Instrumentation instrumentation = new Instrumentation(statsDReporter, GrpcSinkFactory.class);
-        String grpcSinkConfig = String.format("\n\tService host: %s\n\tService port: %s\n\tMethod url: %s\n\tResponse proto schema: %s"
-                        + "\n\tConnection pool max idle: %s\n\tConnection pool min idle: %s\n\tConnection poll size: %s"
-                        + "\n\tConnection pool max wait millis: %s",
-                grpcConfig.getSinkGrpcServiceHost(), grpcConfig.getSinkGrpcServicePort(), grpcConfig.getSinkGrpcMethodUrl(), grpcConfig.getSinkGrpcResponseProtoSchema(),
-                grpcConfig.getSinkGrpcConnectionPoolMaxIdle(), grpcConfig.getSinkGrpcConnectionPoolMinIdle(), grpcConfig.getSinkGrpcConnectionPoolSize(),
-                grpcConfig.getSinkGrpcConnectionPoolMaxWaitMs());
+        String grpcSinkConfig = String.format("\n\tService host: %s\n\tService port: %s\n\tMethod url: %s\n\tResponse proto schema: %s",
+                grpcConfig.getSinkGrpcServiceHost(), grpcConfig.getSinkGrpcServicePort(), grpcConfig.getSinkGrpcMethodUrl(), grpcConfig.getSinkGrpcResponseProtoSchema());
         instrumentation.logDebug(grpcSinkConfig);
 
         ManagedChannel managedChannel = ManagedChannelBuilder.forAddress(grpcConfig.getSinkGrpcServiceHost(), grpcConfig.getSinkGrpcServicePort()).usePlaintext().build();
