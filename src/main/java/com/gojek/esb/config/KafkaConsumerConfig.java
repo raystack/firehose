@@ -1,8 +1,5 @@
 package com.gojek.esb.config;
 
-import com.gojek.esb.config.converter.FilterTypeConverter;
-import com.gojek.esb.config.enums.FilterType;
-
 /**
  * The interface for configurations required to instantiate a consumer.
  */
@@ -43,24 +40,5 @@ public interface KafkaConsumerConfig extends AppConfig {
     @Key("source.kafka.poll.timeout.ms")
     @DefaultValue("9223372036854775807")
     Long getSourceKafkaPollTimeoutMs();
-
-    @Key("filter.type")
-    @ConverterClass(FilterTypeConverter.class)
-    @DefaultValue("NONE")
-    FilterType getFilterType();
-
-    @Key("filter.expression")
-    String getFilterExpression();
-
-    @Key("filter.proto.schema")
-    String getFilterProtoSchema();
-
-    @Key("retry.queue.attempts.to.trigger")
-    @DefaultValue("1")
-    Integer getRetryQueueAttemptsToTrigger();
-
-    @Key("retry.queue.enable")
-    @DefaultValue("false")
-    Boolean isRetryQueueEnable();
 
 }

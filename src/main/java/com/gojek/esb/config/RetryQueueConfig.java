@@ -2,6 +2,10 @@ package com.gojek.esb.config;
 
 public interface RetryQueueConfig extends AppConfig {
 
+    @Key("retry.queue.attempts.to.trigger")
+    @DefaultValue("1")
+    Integer getRetryQueueAttemptsToTrigger();
+
     @Key("retry.queue.kafka.acks")
     @DefaultValue("all")
     String getRetryQueueKafkaAcks();

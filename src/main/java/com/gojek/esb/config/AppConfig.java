@@ -1,7 +1,9 @@
 package com.gojek.esb.config;
 
+import com.gojek.esb.config.converter.FilterTypeConverter;
 import com.gojek.esb.config.converter.ProtoIndexToFieldMapConverter;
 import com.gojek.esb.config.converter.SinkTypeConverter;
+import com.gojek.esb.config.enums.FilterType;
 import com.gojek.esb.config.enums.SinkType;
 import org.aeonbits.owner.Config;
 
@@ -51,7 +53,34 @@ public interface AppConfig extends Config {
     @DefaultValue("message")
     String getKafkaRecordParserMode();
 
+    @Key("filter.type")
+    @ConverterClass(FilterTypeConverter.class)
+    @DefaultValue("NONE")
+    FilterType getFilterType();
+
+    @Key("filter.expression")
+    String getFilterExpression();
+
+    @Key("filter.proto.schema")
+    String getFilterProtoSchema();
+
     @Key("trace.enable")
     @DefaultValue("false")
     Boolean isTraceEnable();
+
+    @Key("retry.exponential.backoff.initial.ms")
+    @DefaultValue("10")
+    Integer getRetryExponentialBackoffInitialMs();
+
+    @Key("retry.exponential.backoff.rate")
+    @DefaultValue("2")
+    Integer getRetryExponentialBackoffRate();
+
+    @Key("retry.exponential.backoff.max.ms")
+    @DefaultValue("60000")
+    Integer getRetryExponentialBackoffMaxMs();
+
+    @Key("retry.queue.enable")
+    @DefaultValue("false")
+    Boolean isRetryQueueEnable();
 }

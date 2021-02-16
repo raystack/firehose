@@ -3,7 +3,7 @@ package com.gojek.esb.factory;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.config.ExponentialBackOffProviderConfig;
+import com.gojek.esb.config.AppConfig;
 import com.gojek.esb.config.KafkaConsumerConfig;
 import com.gojek.esb.config.RetryQueueConfig;
 import com.gojek.esb.consumer.GenericConsumer;
@@ -126,7 +126,7 @@ public class FirehoseConsumerFactory {
      * @return Sink
      */
     private Sink withRetry(Sink basicSink, GenericKafkaFactory genericKafkaFactory, Tracer tracer) {
-        ExponentialBackOffProviderConfig backOffConfig = ConfigFactory.create(ExponentialBackOffProviderConfig.class,
+        AppConfig backOffConfig = ConfigFactory.create(AppConfig.class,
                 config);
         BackOffProvider backOffProvider = new ExponentialBackOffProvider(
                 backOffConfig.getRetryExponentialBackoffInitialMs(),
@@ -143,7 +143,7 @@ public class FirehoseConsumerFactory {
 
             return SinkWithRetryQueue.withInstrumentationFactory(
                     new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class),
-                            kafkaConsumerConfig.getRetryQueueAttemptsToTrigger(), parser),
+                            retryQueueConfig.getRetryQueueAttemptsToTrigger(), parser),
                     tracingProducer, retryQueueConfig.getRetryQueueKafkaTopic(), statsDReporter, backOffProvider);
         } else {
             return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), parser);

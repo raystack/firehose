@@ -34,7 +34,7 @@ public interface RedisSinkConfig extends AppConfig {
     @Key("sink.redis.deployment.type")
     @DefaultValue("Standalone")
     @ConverterClass(RedisSinkDeploymentTypeConverter.class)
-    RedisSinkDeploymentType getSinkRedisServerType();
+    RedisSinkDeploymentType getSinkRedisDeploymentType();
 
 
 }

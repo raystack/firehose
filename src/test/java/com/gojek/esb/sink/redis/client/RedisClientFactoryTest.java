@@ -36,7 +36,7 @@ public class RedisClientFactoryTest {
     public void shouldGetStandaloneClient() {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
         when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
-        when(redisSinkConfig.getSinkRedisServerType()).thenReturn(RedisSinkDeploymentType.STANDALONE);
+        when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.STANDALONE);
         when(redisSinkConfig.getSinkRedisUrls()).thenReturn("0.0.0.0:0");
 
         RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
@@ -50,7 +50,7 @@ public class RedisClientFactoryTest {
     public void shouldGetStandaloneClientWhenURLHasSpaces() {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
         when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
-        when(redisSinkConfig.getSinkRedisServerType()).thenReturn(RedisSinkDeploymentType.STANDALONE);
+        when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.STANDALONE);
         when(redisSinkConfig.getSinkRedisUrls()).thenReturn(" 0.0.0.0:0 ");
         RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
 
@@ -63,7 +63,7 @@ public class RedisClientFactoryTest {
     public void shouldGetClusterClient() {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
         when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
-        when(redisSinkConfig.getSinkRedisServerType()).thenReturn(RedisSinkDeploymentType.CLUSTER);
+        when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.CLUSTER);
         when(redisSinkConfig.getSinkRedisUrls()).thenReturn("0.0.0.0:0, 1.1.1.1:1");
         RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
 
@@ -76,7 +76,7 @@ public class RedisClientFactoryTest {
     public void shouldGetClusterClientWhenURLHasSpaces() {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
         when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
-        when(redisSinkConfig.getSinkRedisServerType()).thenReturn(RedisSinkDeploymentType.CLUSTER);
+        when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.CLUSTER);
         when(redisSinkConfig.getSinkRedisUrls()).thenReturn(" 0.0.0.0:0, 1.1.1.1:1 ");
         RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
 
@@ -92,7 +92,7 @@ public class RedisClientFactoryTest {
 
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
         when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
-        when(redisSinkConfig.getSinkRedisServerType()).thenReturn(RedisSinkDeploymentType.CLUSTER);
+        when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.CLUSTER);
         when(redisSinkConfig.getSinkRedisUrls()).thenReturn("localhost:6379,localhost:6378,localhost");
 
         RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
@@ -107,7 +107,7 @@ public class RedisClientFactoryTest {
 
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
         when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
-        when(redisSinkConfig.getSinkRedisServerType()).thenReturn(RedisSinkDeploymentType.STANDALONE);
+        when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.STANDALONE);
         when(redisSinkConfig.getSinkRedisUrls()).thenReturn("localhost");
 
         RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);

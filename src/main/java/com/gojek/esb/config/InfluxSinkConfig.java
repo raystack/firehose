@@ -5,7 +5,7 @@ import org.aeonbits.owner.Config;
 
 import java.util.Properties;
 
-public interface InfluxSinkConfig extends JdbcSinkConfig {
+public interface InfluxSinkConfig extends AppConfig {
     @Config.Key("sink.influx.field.name.proto.index.mapping")
     @Config.ConverterClass(ProtoIndexToFieldMapConverter.class)
     Properties getSinkInfluxFieldNameProtoIndexMapping();

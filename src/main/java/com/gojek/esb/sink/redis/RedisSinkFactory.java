@@ -34,7 +34,7 @@ public class RedisSinkFactory implements SinkFactory {
                 redisSinkConfig.getSinkRedisTtlType().toString(),
                 redisSinkConfig.getSinkRedisTtlValue());
         instrumentation.logDebug(redisConfig);
-        instrumentation.logInfo("Redis server type = {}", redisSinkConfig.getSinkRedisServerType());
+        instrumentation.logInfo("Redis server type = {}", redisSinkConfig.getSinkRedisDeploymentType());
 
         RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
         RedisClient client = redisClientFactory.getClient();
