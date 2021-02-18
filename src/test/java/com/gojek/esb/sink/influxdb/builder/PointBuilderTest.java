@@ -1,4 +1,4 @@
-package com.gojek.esb.builder;
+package com.gojek.esb.sink.influxdb.builder;
 
 import com.gojek.esb.config.InfluxSinkConfig;
 import com.gojek.esb.consumer.TestDurationMessage;

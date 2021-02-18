@@ -126,16 +126,16 @@ public class FirehoseConsumerFactory {
      * @return Sink
      */
     private Sink withRetry(Sink basicSink, GenericKafkaFactory genericKafkaFactory, Tracer tracer) {
-        AppConfig backOffConfig = ConfigFactory.create(AppConfig.class,
+        AppConfig appConfig = ConfigFactory.create(AppConfig.class,
                 config);
         BackOffProvider backOffProvider = new ExponentialBackOffProvider(
-                backOffConfig.getRetryExponentialBackoffInitialMs(),
-                backOffConfig.getRetryExponentialBackoffRate(),
-                backOffConfig.getRetryExponentialBackoffMaxMs(),
+                appConfig.getRetryExponentialBackoffInitialMs(),
+                appConfig.getRetryExponentialBackoffRate(),
+                appConfig.getRetryExponentialBackoffMaxMs(),
                 new Instrumentation(statsDReporter, ExponentialBackOffProvider.class),
                 new BackOff(new Instrumentation(statsDReporter, BackOff.class)));
 
-        if (kafkaConsumerConfig.isRetryQueueEnable()) {
+        if (appConfig.isRetryQueueEnable()) {
             RetryQueueConfig retryQueueConfig = ConfigFactory.create(RetryQueueConfig.class, config);
 
             KafkaProducer<byte[], byte[]> kafkaProducer = genericKafkaFactory.getKafkaProducer(retryQueueConfig);

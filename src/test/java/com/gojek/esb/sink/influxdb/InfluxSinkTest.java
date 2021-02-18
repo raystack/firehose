@@ -1,4 +1,4 @@
-package com.gojek.esb.sink;
+package com.gojek.esb.sink.influxdb;
 
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
@@ -10,7 +10,7 @@ import com.gojek.esb.consumer.TestFeedbackLogKey;
 import com.gojek.esb.consumer.TestFeedbackLogMessage;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
-import com.gojek.esb.sink.influxdb.InfluxSink;
+import com.gojek.esb.sink.Sink;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Timestamp;
 import org.aeonbits.owner.ConfigFactory;

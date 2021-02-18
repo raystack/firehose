@@ -51,12 +51,12 @@ public class MessageToTemplatizedJsonTest {
         String template = "{\"test\":\"$.vehicle_type\"}";
         StencilClient stencilClient = StencilClientFactory.getClient();
         protoParser = new ProtoParser(stencilClient, TestAggregatedSupplyMessage.class.getName());
-        MessageToTemplatizedJson esbMessageToTemplatizedJson = MessageToTemplatizedJson
+        MessageToTemplatizedJson messageToTemplatizedJson = MessageToTemplatizedJson
                 .create(instrumentation, template, protoParser);
         Message message = new Message(Base64.getDecoder().decode(logKey.getBytes()),
                 Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
-        String serializedMessage = esbMessageToTemplatizedJson.serialize(message);
+        String serializedMessage = messageToTemplatizedJson.serialize(message);
         String expectedMessage = "{\"test\":\"BIKE\"}";
         Assert.assertEquals(expectedMessage, serializedMessage);
     }
@@ -66,12 +66,12 @@ public class MessageToTemplatizedJsonTest {
         String template = "\"$._all_\"";
         StencilClient stencilClient = StencilClientFactory.getClient();
         protoParser = new ProtoParser(stencilClient, TestAggregatedSupplyMessage.class.getName());
-        MessageToTemplatizedJson esbMessageToTemplatizedJson = MessageToTemplatizedJson
+        MessageToTemplatizedJson messageToTemplatizedJson = MessageToTemplatizedJson
                 .create(instrumentation, template, protoParser);
         Message message = new Message(Base64.getDecoder().decode(logKey.getBytes()),
                 Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
-        String serializedMessage = esbMessageToTemplatizedJson.serialize(message);
+        String serializedMessage = messageToTemplatizedJson.serialize(message);
         String expectedMessage = "{\n"
                 + "  \"window_start_time\": \"2017-03-20T10:54:00Z\",\n"
                 + "  \"window_end_time\": \"2017-03-20T10:55:00Z\",\n"
@@ -91,12 +91,12 @@ public class MessageToTemplatizedJsonTest {
         String template = "{\"test\":\"$.invalidPath\"}";
         StencilClient stencilClient = StencilClientFactory.getClient();
         protoParser = new ProtoParser(stencilClient, TestAggregatedSupplyMessage.class.getName());
-        MessageToTemplatizedJson esbMessageToTemplatizedJson = MessageToTemplatizedJson
+        MessageToTemplatizedJson messageToTemplatizedJson = MessageToTemplatizedJson
                 .create(instrumentation, template, protoParser);
         Message message = new Message(Base64.getDecoder().decode(logKey.getBytes()),
                 Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
-        esbMessageToTemplatizedJson.serialize(message);
+        messageToTemplatizedJson.serialize(message);
     }
 
     @Test
