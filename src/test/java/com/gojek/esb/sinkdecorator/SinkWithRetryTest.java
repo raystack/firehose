@@ -1,6 +1,6 @@
 package com.gojek.esb.sinkdecorator;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
 
@@ -30,7 +30,7 @@ public class SinkWithRetryTest {
     private BackOffProvider backOffProvider;
 
     @Mock
-    private EsbMessage esbMessage;
+    private Message message;
 
     @Mock
     private Instrumentation instrumentation;
@@ -47,23 +47,23 @@ public class SinkWithRetryTest {
     public void shouldReturnEmptyListIfSuperReturnsEmptyList() throws IOException, DeserializerException {
         when(sinkDecorator.pushMessage(anyList())).thenReturn(new ArrayList<>());
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, 3, parser);
-        List<EsbMessage> esbMessages = sinkWithRetry.pushMessage(
-                Collections.singletonList(new EsbMessage("key".getBytes(), "value".getBytes(), "topic", 1, 1)));
+        List<Message> messages = sinkWithRetry.pushMessage(
+                Collections.singletonList(new Message("key".getBytes(), "value".getBytes(), "topic", 1, 1)));
 
-        assertTrue(esbMessages.isEmpty());
+        assertTrue(messages.isEmpty());
         verify(sinkDecorator, Mockito.times(1)).pushMessage(anyList());
     }
 
     @Test
     public void shouldRetryForNumberOfAttemptsIfSuperReturnsEsbMessages() throws IOException, DeserializerException {
-        ArrayList<EsbMessage> messages = new ArrayList<>();
-        messages.add(esbMessage);
-        messages.add(esbMessage);
+        ArrayList<Message> messages = new ArrayList<>();
+        messages.add(message);
+        messages.add(message);
         when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages)
                 .thenReturn(messages);
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, 3, parser);
 
-        List<EsbMessage> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(esbMessage));
+        List<Message> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(message));
 
         assertFalse(esbMessages.isEmpty());
         verify(sinkDecorator, Mockito.times(4)).pushMessage(anyList());
@@ -71,14 +71,14 @@ public class SinkWithRetryTest {
 
     @Test
     public void shouldRetryForNumberOfAttemptsAndSendEmptyMessageOnSuccess() throws IOException, DeserializerException {
-        ArrayList<EsbMessage> messages = new ArrayList<>();
-        messages.add(esbMessage);
-        messages.add(esbMessage);
+        ArrayList<Message> messages = new ArrayList<>();
+        messages.add(message);
+        messages.add(message);
         when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages)
                 .thenReturn(new ArrayList<>());
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, 3, parser);
 
-        List<EsbMessage> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(esbMessage));
+        List<Message> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(message));
 
         assertTrue(esbMessages.isEmpty());
         verify(sinkDecorator, Mockito.times(3)).pushMessage(anyList());
@@ -86,14 +86,14 @@ public class SinkWithRetryTest {
 
     @Test
     public void shouldRetryUntilSuccess() throws IOException, DeserializerException {
-        ArrayList<EsbMessage> messages = new ArrayList<>();
-        messages.add(esbMessage);
-        messages.add(esbMessage);
+        ArrayList<Message> messages = new ArrayList<>();
+        messages.add(message);
+        messages.add(message);
         when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages)
                 .thenReturn(messages).thenReturn(messages).thenReturn(new ArrayList<>());
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, parser);
 
-        List<EsbMessage> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(esbMessage));
+        List<Message> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(message));
 
         assertTrue(esbMessages.isEmpty());
         verify(sinkDecorator, Mockito.times(6)).pushMessage(anyList());
@@ -101,15 +101,15 @@ public class SinkWithRetryTest {
 
     @Test
     public void shouldLogRetriesMessages() throws IOException, DeserializerException {
-        ArrayList<EsbMessage> messages = new ArrayList<>();
+        ArrayList<Message> messages = new ArrayList<>();
         int maxRetryAttempts = 10;
-        messages.add(esbMessage);
-        messages.add(esbMessage);
+        messages.add(message);
+        messages.add(message);
         when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages)
                 .thenReturn(messages).thenReturn(messages).thenReturn(new ArrayList<>());
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, maxRetryAttempts, parser);
 
-        List<EsbMessage> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(esbMessage));
+        List<Message> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(message));
         assertTrue(esbMessages.isEmpty());
         verify(instrumentation, times(1)).logWarn("Maximum retry attemps: {}", 10);
         verify(instrumentation, times(5)).incrementCounter("request_retries");

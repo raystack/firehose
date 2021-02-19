@@ -1,15 +1,15 @@
 package com.gojek.esb.sink.http.request.types;
 
-import com.gojek.esb.config.HTTPSinkConfig;
-import com.gojek.esb.config.enums.HttpRequestMethod;
-import com.gojek.esb.config.enums.HttpSinkDataFormat;
+import com.gojek.esb.config.HttpSinkConfig;
+import com.gojek.esb.config.enums.HttpSinkRequestMethodType;
+import com.gojek.esb.config.enums.HttpSinkDataFormatType;
 import com.gojek.esb.config.enums.HttpSinkParameterSourceType;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.http.request.body.JsonBody;
 import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
-import com.gojek.esb.sink.http.request.uri.URIBuilder;
+import com.gojek.esb.sink.http.request.uri.UriBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -29,7 +29,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class SimpleRequestTest {
 
     @Mock
-    private URIBuilder uriBuilder;
+    private UriBuilder uriBuilder;
 
     @Mock
     private HeaderBuilder headerBuilder;
@@ -41,38 +41,38 @@ public class SimpleRequestTest {
     private JsonBody jsonBody;
 
     @Mock
-    private HTTPSinkConfig httpSinkConfig;
+    private HttpSinkConfig httpSinkConfig;
 
     @Mock
     private StatsDReporter statsDReporter;
 
     @Mock
-    private EsbMessage esbMessage;
+    private Message message;
 
     private SimpleRequest simpleRequest;
-    private HttpRequestMethod httpRequestMethod;
+    private HttpSinkRequestMethodType httpSinkRequestMethodType;
 
     @Before
     public void setup() {
         initMocks(this);
-        httpRequestMethod = HttpRequestMethod.POST;
-        when(httpSinkConfig.getServiceURL()).thenReturn("http://127.0.0.1:1080/api");
+        httpSinkRequestMethodType = HttpSinkRequestMethodType.POST;
+        when(httpSinkConfig.getSinkHttpServiceUrl()).thenReturn("http://127.0.0.1:1080/api");
     }
 
     @Test
     public void shouldProcessBaseCase() {
-        when(httpSinkConfig.getHttpSinkParameterSource()).thenReturn(HttpSinkParameterSourceType.DISABLED);
+        when(httpSinkConfig.getSinkHttpParameterSource()).thenReturn(HttpSinkParameterSourceType.DISABLED);
 
-        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod);
+        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpSinkRequestMethodType);
         boolean canProcess = simpleRequest.canProcess();
         assertTrue(canProcess);
     }
 
     @Test
     public void shouldNotProcessForDyanamicURL() {
-        when(httpSinkConfig.getServiceURL()).thenReturn("http://127.0.0.1:1080/api,%s");
+        when(httpSinkConfig.getSinkHttpServiceUrl()).thenReturn("http://127.0.0.1:1080/api,%s");
 
-        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod);
+        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpSinkRequestMethodType);
         boolean canProcess = simpleRequest.canProcess();
 
         assertFalse(canProcess);
@@ -80,9 +80,9 @@ public class SimpleRequestTest {
 
     @Test
     public void shouldNotProcessIfParameterIsEnabled() {
-        when(httpSinkConfig.getHttpSinkParameterSource()).thenReturn(HttpSinkParameterSourceType.MESSAGE);
+        when(httpSinkConfig.getSinkHttpParameterSource()).thenReturn(HttpSinkParameterSourceType.MESSAGE);
 
-        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod);
+        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpSinkRequestMethodType);
         boolean canProcess = simpleRequest.canProcess();
 
         assertFalse(canProcess);
@@ -90,7 +90,7 @@ public class SimpleRequestTest {
 
     @Test
     public void shouldNotProcessTemplatesIfAbsent() {
-        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod);
+        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpSinkRequestMethodType);
         boolean isTemplate = simpleRequest.isTemplateBody(httpSinkConfig);
 
         assertFalse(isTemplate);
@@ -98,10 +98,10 @@ public class SimpleRequestTest {
 
     @Test
     public void shouldProcessTemplatesIfPresent() {
-        when(httpSinkConfig.getHttpSinkDataFormat()).thenReturn(HttpSinkDataFormat.JSON);
-        when(httpSinkConfig.getHttpSinkJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
+        when(httpSinkConfig.getSinkHttpDataFormat()).thenReturn(HttpSinkDataFormatType.JSON);
+        when(httpSinkConfig.getSinkHttpJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
 
-        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod);
+        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpSinkRequestMethodType);
         boolean isTemplate = simpleRequest.isTemplateBody(httpSinkConfig);
 
         assertTrue(isTemplate);
@@ -109,25 +109,25 @@ public class SimpleRequestTest {
 
     @Test
     public void shouldCheckTemplateAvailabilityForSettingRequestStrategy() {
-        when(httpSinkConfig.getHttpSinkDataFormat()).thenReturn(HttpSinkDataFormat.JSON);
-        when(httpSinkConfig.getHttpSinkJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
+        when(httpSinkConfig.getSinkHttpDataFormat()).thenReturn(HttpSinkDataFormatType.JSON);
+        when(httpSinkConfig.getSinkHttpJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
 
-        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod);
+        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpSinkRequestMethodType);
         simpleRequest.setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
 
-        verify(httpSinkConfig, times(1)).getHttpSinkDataFormat();
-        verify(httpSinkConfig, times(1)).getHttpSinkJsonBodyTemplate();
+        verify(httpSinkConfig, times(1)).getSinkHttpDataFormat();
+        verify(httpSinkConfig, times(1)).getSinkHttpJsonBodyTemplate();
     }
 
     @org.junit.Test
     public void shouldProcessMessagesInBatchIfTemplateDisabled() throws URISyntaxException {
         List<String> serializedMessages = Arrays.asList("Hello", "World!", "How");
-        List<EsbMessage> messages = Arrays.asList(esbMessage, esbMessage, esbMessage);
-        when(httpSinkConfig.getHttpSinkDataFormat()).thenReturn(HttpSinkDataFormat.PROTO);
+        List<Message> messages = Arrays.asList(message, message, message);
+        when(httpSinkConfig.getSinkHttpDataFormat()).thenReturn(HttpSinkDataFormatType.PROTO);
         when(jsonBody.serialize(any())).thenReturn(serializedMessages);
         when(requestEntityBuilder.setWrapping(true)).thenReturn(requestEntityBuilder);
 
-        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod);
+        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpSinkRequestMethodType);
         Request request = simpleRequest.setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
         request.build(messages);
 
@@ -139,18 +139,18 @@ public class SimpleRequestTest {
     @Test
     public void shouldProcessMessagesIndividuallyIfTemplateEnabled() throws URISyntaxException {
         List<String> serializedMessages = Arrays.asList("Hello", "World!", "How");
-        List<EsbMessage> messages = Arrays.asList(esbMessage, esbMessage, esbMessage);
-        when(httpSinkConfig.getHttpSinkDataFormat()).thenReturn(HttpSinkDataFormat.JSON);
-        when(httpSinkConfig.getHttpSinkJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
+        List<Message> messages = Arrays.asList(message, message, message);
+        when(httpSinkConfig.getSinkHttpDataFormat()).thenReturn(HttpSinkDataFormatType.JSON);
+        when(httpSinkConfig.getSinkHttpJsonBodyTemplate()).thenReturn("{\"test\":\"$.routes[0]\", \"$.order_number\" : \"xxx\"}");
         when(jsonBody.serialize(any())).thenReturn(serializedMessages);
         when(requestEntityBuilder.setWrapping(false)).thenReturn(requestEntityBuilder);
 
-        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpRequestMethod);
+        simpleRequest = new SimpleRequest(statsDReporter, httpSinkConfig, jsonBody, httpSinkRequestMethodType);
         Request request = simpleRequest.setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
         request.build(messages);
 
-        verify(uriBuilder, times(3)).build(esbMessage);
-        verify(headerBuilder, times(3)).build(esbMessage);
+        verify(uriBuilder, times(3)).build(message);
+        verify(headerBuilder, times(3)).build(message);
         verify(requestEntityBuilder, times(3)).buildHttpEntity(any(String.class));
     }
 }

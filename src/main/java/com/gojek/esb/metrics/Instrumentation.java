@@ -1,6 +1,6 @@
 package com.gojek.esb.metrics;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,14 +134,14 @@ public class Instrumentation {
         statsDReporter.increment(RETRY_ATTEMPTS);
     }
 
-    public void incrementMessageFailCount(EsbMessage message, Exception e) {
+    public void incrementMessageFailCount(Message message, Exception e) {
         statsDReporter.increment(RETRY_MESSAGE_COUNT, FAILURE_TAG);
         captureNonFatalError(e, "Unable to send record with key {} and message {} ", message.getLogKey(), message.getLogMessage());
     }
 
     // ===================== Latency / LifetimeTillSink =====================
 
-    public void capturePreExecutionLatencies(List<EsbMessage> messages) {
+    public void capturePreExecutionLatencies(List<Message> messages) {
         messages.forEach(message -> {
             statsDReporter.captureDurationSince(LIFETIME_TILL_EXECUTION, Instant.ofEpochMilli(message.getTimestamp()));
             statsDReporter.captureDurationSince(LATENCY_ACROSS_FIREHOSE, Instant.ofEpochMilli(message.getConsumeTimestamp()));

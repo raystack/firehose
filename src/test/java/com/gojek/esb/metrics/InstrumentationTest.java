@@ -1,6 +1,6 @@
 package com.gojek.esb.metrics;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.util.Clock;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,7 +25,7 @@ public class InstrumentationTest {
     @Mock
     private Logger logger;
     @Mock
-    private EsbMessage esbMessage;
+    private Message message;
 
     private Instrumentation instrumentation;
     private String testMessage;
@@ -125,20 +125,20 @@ public class InstrumentationTest {
 
     @Test
     public void shouldCaptureSuccessExecutionTelemetry() {
-        List<EsbMessage> esbMessages = Collections.singletonList(esbMessage);
-        instrumentation.captureSuccessExecutionTelemetry("test", esbMessages.size());
-        verify(logger, times(1)).info("Pushed {} messages to {}.", esbMessages.size(), "test");
+        List<Message> messages = Collections.singletonList(message);
+        instrumentation.captureSuccessExecutionTelemetry("test", messages.size());
+        verify(logger, times(1)).info("Pushed {} messages to {}.", messages.size(), "test");
         verify(statsDReporter, times(1)).captureDurationSince("sink.response.time", instrumentation.getStartExecutionTime());
-        verify(statsDReporter, times(1)).captureCount("messages.count", esbMessages.size(), SUCCESS_TAG);
-        verify(statsDReporter, times(1)).captureHistogramWithTags(PUSHED_BATCH_SIZE, esbMessages.size(), SUCCESS_TAG);
+        verify(statsDReporter, times(1)).captureCount("messages.count", messages.size(), SUCCESS_TAG);
+        verify(statsDReporter, times(1)).captureHistogramWithTags(PUSHED_BATCH_SIZE, messages.size(), SUCCESS_TAG);
     }
 
     @Test
     public void shouldCaptureFailedExecutionTelemetry() {
-        List<EsbMessage> esbMessages = Collections.singletonList(esbMessage);
-        instrumentation.captureFailedExecutionTelemetry(e, esbMessages.size());
-        verify(statsDReporter, times(1)).captureCount("messages.count", esbMessages.size(), FAILURE_TAG);
-        verify(statsDReporter, times(1)).captureHistogramWithTags(PUSHED_BATCH_SIZE, esbMessages.size(), FAILURE_TAG);
+        List<Message> messages = Collections.singletonList(message);
+        instrumentation.captureFailedExecutionTelemetry(e, messages.size());
+        verify(statsDReporter, times(1)).captureCount("messages.count", messages.size(), FAILURE_TAG);
+        verify(statsDReporter, times(1)).captureHistogramWithTags(PUSHED_BATCH_SIZE, messages.size(), FAILURE_TAG);
     }
 
     @Test
@@ -155,23 +155,23 @@ public class InstrumentationTest {
 
     @Test
     public void shouldIncrementMessageFailCount() {
-        instrumentation.incrementMessageFailCount(esbMessage, e);
+        instrumentation.incrementMessageFailCount(message, e);
         verify(statsDReporter, times(1)).increment(RETRY_MESSAGE_COUNT, FAILURE_TAG);
         verify(logger, times(1)).warn(e.getMessage(), e);
     }
 
     @Test
     public void shouldCaptureLifetimeTillSink() {
-        List<EsbMessage> esbMessages = Collections.singletonList(esbMessage);
-        instrumentation.capturePreExecutionLatencies(esbMessages);
-        verify(statsDReporter, times(esbMessages.size())).captureDurationSince("lifetime.till.execution", Instant.ofEpochSecond(esbMessage.getTimestamp()));
+        List<Message> messages = Collections.singletonList(message);
+        instrumentation.capturePreExecutionLatencies(messages);
+        verify(statsDReporter, times(messages.size())).captureDurationSince("lifetime.till.execution", Instant.ofEpochSecond(message.getTimestamp()));
     }
 
     @Test
     public void shouldCaptureLatencyAcrossFirehose() {
-        List<EsbMessage> esbMessages = Collections.singletonList(esbMessage);
-        instrumentation.capturePreExecutionLatencies(esbMessages);
-        verify(statsDReporter, times(esbMessages.size())).captureDurationSince("latency", Instant.ofEpochSecond(esbMessage.getConsumeTimestamp()));
+        List<Message> messages = Collections.singletonList(message);
+        instrumentation.capturePreExecutionLatencies(messages);
+        verify(statsDReporter, times(messages.size())).captureDurationSince("latency", Instant.ofEpochSecond(message.getConsumeTimestamp()));
     }
 
     @Test

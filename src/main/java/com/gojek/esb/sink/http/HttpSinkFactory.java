@@ -2,7 +2,7 @@ package com.gojek.esb.sink.http;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.config.HTTPSinkConfig;
+import com.gojek.esb.config.HttpSinkConfig;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.AbstractSink;
@@ -30,7 +30,7 @@ public class HttpSinkFactory implements SinkFactory {
 
     @Override
     public AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
-        HTTPSinkConfig httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
+        HttpSinkConfig httpSinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         Instrumentation instrumentation = new Instrumentation(statsDReporter, HttpSinkFactory.class);
 
@@ -41,25 +41,25 @@ public class HttpSinkFactory implements SinkFactory {
 
         Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();
 
-        return new HttpSink(new Instrumentation(statsDReporter, HttpSink.class), request, closeableHttpClient, stencilClient, httpSinkConfig.retryStatusCodeRanges(), httpSinkConfig.requestLogStatusCodeRanges());
+        return new HttpSink(new Instrumentation(statsDReporter, HttpSink.class), request, closeableHttpClient, stencilClient, httpSinkConfig.getSinkHttpRetryStatusCodeRanges(), httpSinkConfig.getSinkHttpRequestLogStatusCodeRanges());
     }
 
-    private CloseableHttpClient newHttpClient(HTTPSinkConfig httpSinkConfig, StatsDReporter statsDReporter) {
-        Integer maxHttpConnections = httpSinkConfig.getMaxHttpConnections();
-        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(httpSinkConfig.getRequestTimeoutInMs())
-                .setConnectionRequestTimeout(httpSinkConfig.getRequestTimeoutInMs())
-                .setConnectTimeout(httpSinkConfig.getRequestTimeoutInMs()).build();
+    private CloseableHttpClient newHttpClient(HttpSinkConfig httpSinkConfig, StatsDReporter statsDReporter) {
+        Integer maxHttpConnections = httpSinkConfig.getSinkHttpMaxConnections();
+        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(httpSinkConfig.getSinkHttpRequestTimeoutMs())
+                .setConnectionRequestTimeout(httpSinkConfig.getSinkHttpRequestTimeoutMs())
+                .setConnectTimeout(httpSinkConfig.getSinkHttpRequestTimeoutMs()).build();
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         connectionManager.setMaxTotal(maxHttpConnections);
         connectionManager.setDefaultMaxPerRoute(maxHttpConnections);
         HttpClientBuilder builder = HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig);
-        if (httpSinkConfig.getHttpSinkOAuth2Enabled()) {
+        if (httpSinkConfig.isSinkHttpOAuth2Enable()) {
             OAuth2Credential oauth2 = new OAuth2Credential(
                     new Instrumentation(statsDReporter, OAuth2Credential.class),
-                    httpSinkConfig.getHttpSinkOAuth2ClientName(),
-                    httpSinkConfig.getHttpSinkOAuth2ClientSecret(),
-                    httpSinkConfig.getHttpSinkOAuth2Scope(),
-                    httpSinkConfig.getHttpSinkOAuth2AccessTokenURL());
+                    httpSinkConfig.getSinkHttpOAuth2ClientName(),
+                    httpSinkConfig.getSinkHttpOAuth2ClientSecret(),
+                    httpSinkConfig.getSinkHttpOAuth2Scope(),
+                    httpSinkConfig.getSinkHttpOAuth2AccessTokenUrl());
             builder = oauth2.initialize(builder);
         }
         return builder.build();

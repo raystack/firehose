@@ -2,9 +2,9 @@ package com.gojek.esb.sink.redis.client;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.esb.config.RedisSinkConfig;
-import com.gojek.esb.config.enums.RedisServerType;
-import com.gojek.esb.config.enums.RedisSinkType;
-import com.gojek.esb.config.enums.RedisTTLType;
+import com.gojek.esb.config.enums.RedisSinkDeploymentType;
+import com.gojek.esb.config.enums.RedisSinkDataType;
+import com.gojek.esb.config.enums.RedisSinkTtlType;
 import com.gojek.esb.exception.EglcConfigurationException;
 import com.gojek.esb.metrics.StatsDReporter;
 import org.junit.Assert;
@@ -34,10 +34,10 @@ public class RedisClientFactoryTest {
 
     @Test
     public void shouldGetStandaloneClient() {
-        when(redisSinkConfig.getRedisSinkType()).thenReturn(RedisSinkType.LIST);
-        when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
-        when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.STANDALONE);
-        when(redisSinkConfig.getRedisUrls()).thenReturn("0.0.0.0:0");
+        when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
+        when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
+        when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.STANDALONE);
+        when(redisSinkConfig.getSinkRedisUrls()).thenReturn("0.0.0.0:0");
 
         RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
 
@@ -48,10 +48,10 @@ public class RedisClientFactoryTest {
 
     @Test
     public void shouldGetStandaloneClientWhenURLHasSpaces() {
-        when(redisSinkConfig.getRedisSinkType()).thenReturn(RedisSinkType.LIST);
-        when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
-        when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.STANDALONE);
-        when(redisSinkConfig.getRedisUrls()).thenReturn(" 0.0.0.0:0 ");
+        when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
+        when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
+        when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.STANDALONE);
+        when(redisSinkConfig.getSinkRedisUrls()).thenReturn(" 0.0.0.0:0 ");
         RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
 
         RedisClient client = redisClientFactory.getClient();
@@ -61,10 +61,10 @@ public class RedisClientFactoryTest {
 
     @Test
     public void shouldGetClusterClient() {
-        when(redisSinkConfig.getRedisSinkType()).thenReturn(RedisSinkType.LIST);
-        when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
-        when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.CLUSTER);
-        when(redisSinkConfig.getRedisUrls()).thenReturn("0.0.0.0:0, 1.1.1.1:1");
+        when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
+        when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
+        when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.CLUSTER);
+        when(redisSinkConfig.getSinkRedisUrls()).thenReturn("0.0.0.0:0, 1.1.1.1:1");
         RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
 
         RedisClient client = redisClientFactory.getClient();
@@ -74,10 +74,10 @@ public class RedisClientFactoryTest {
 
     @Test
     public void shouldGetClusterClientWhenURLHasSpaces() {
-        when(redisSinkConfig.getRedisSinkType()).thenReturn(RedisSinkType.LIST);
-        when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
-        when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.CLUSTER);
-        when(redisSinkConfig.getRedisUrls()).thenReturn(" 0.0.0.0:0, 1.1.1.1:1 ");
+        when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
+        when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
+        when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.CLUSTER);
+        when(redisSinkConfig.getSinkRedisUrls()).thenReturn(" 0.0.0.0:0, 1.1.1.1:1 ");
         RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
 
         RedisClient client = redisClientFactory.getClient();
@@ -90,10 +90,10 @@ public class RedisClientFactoryTest {
         expectedException.expect(EglcConfigurationException.class);
         expectedException.expectMessage("Invalid url(s) for redis cluster: localhost:6379,localhost:6378,localhost");
 
-        when(redisSinkConfig.getRedisSinkType()).thenReturn(RedisSinkType.LIST);
-        when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
-        when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.CLUSTER);
-        when(redisSinkConfig.getRedisUrls()).thenReturn("localhost:6379,localhost:6378,localhost");
+        when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
+        when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
+        when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.CLUSTER);
+        when(redisSinkConfig.getSinkRedisUrls()).thenReturn("localhost:6379,localhost:6378,localhost");
 
         RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
 
@@ -105,10 +105,10 @@ public class RedisClientFactoryTest {
         expectedException.expect(EglcConfigurationException.class);
         expectedException.expectMessage("Invalid url for redis standalone: localhost");
 
-        when(redisSinkConfig.getRedisSinkType()).thenReturn(RedisSinkType.LIST);
-        when(redisSinkConfig.getRedisTTLType()).thenReturn(RedisTTLType.DURATION);
-        when(redisSinkConfig.getRedisServerType()).thenReturn(RedisServerType.STANDALONE);
-        when(redisSinkConfig.getRedisUrls()).thenReturn("localhost");
+        when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
+        when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
+        when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.STANDALONE);
+        when(redisSinkConfig.getSinkRedisUrls()).thenReturn("localhost");
 
         RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig, stencilClient);
 

@@ -2,13 +2,13 @@ package com.gojek.esb.sink.http.factory;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.config.HTTPSinkConfig;
-import com.gojek.esb.config.enums.HttpSinkDataFormat;
+import com.gojek.esb.config.HttpSinkConfig;
+import com.gojek.esb.config.enums.HttpSinkDataFormatType;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.serializer.EsbMessageSerializer;
-import com.gojek.esb.serializer.EsbMessageToJson;
-import com.gojek.esb.serializer.EsbMessageToTemplatizedJson;
+import com.gojek.esb.serializer.MessageSerializer;
+import com.gojek.esb.serializer.MessageToJson;
+import com.gojek.esb.serializer.MessageToTemplatizedJson;
 import com.gojek.esb.serializer.JsonWrappedProtoByte;
 import lombok.AllArgsConstructor;
 
@@ -18,26 +18,26 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class SerializerFactory {
 
-    private HTTPSinkConfig httpSinkConfig;
+    private HttpSinkConfig httpSinkConfig;
     private StencilClient stencilClient;
     private StatsDReporter statsDReporter;
 
-    public EsbMessageSerializer build() {
+    public MessageSerializer build() {
         Instrumentation instrumentation = new Instrumentation(statsDReporter, SerializerFactory.class);
-        if (isProtoSchemaEmpty() || httpSinkConfig.getHttpSinkDataFormat() == HttpSinkDataFormat.PROTO) {
+        if (isProtoSchemaEmpty() || httpSinkConfig.getSinkHttpDataFormat() == HttpSinkDataFormatType.PROTO) {
             instrumentation.logDebug("Serializer type: JsonWrappedProtoByte");
             // Fallback to json wrapped proto byte
             return new JsonWrappedProtoByte();
         }
 
-        if (httpSinkConfig.getHttpSinkDataFormat() == HttpSinkDataFormat.JSON) {
+        if (httpSinkConfig.getSinkHttpDataFormat() == HttpSinkDataFormatType.JSON) {
             ProtoParser protoParser = new ProtoParser(stencilClient, httpSinkConfig.getProtoSchema());
-            if (httpSinkConfig.getHttpSinkJsonBodyTemplate().isEmpty()) {
-                instrumentation.logDebug("Serializer type: EsbMessageToJson", HttpSinkDataFormat.JSON);
-                return new EsbMessageToJson(protoParser, false, true);
+            if (httpSinkConfig.getSinkHttpJsonBodyTemplate().isEmpty()) {
+                instrumentation.logDebug("Serializer type: EsbMessageToJson", HttpSinkDataFormatType.JSON);
+                return new MessageToJson(protoParser, false, true);
             } else {
                 instrumentation.logDebug("Serializer type: EsbMessageToTemplatizedJson");
-                return EsbMessageToTemplatizedJson.create(new Instrumentation(statsDReporter, EsbMessageToTemplatizedJson.class), httpSinkConfig.getHttpSinkJsonBodyTemplate(), protoParser);
+                return MessageToTemplatizedJson.create(new Instrumentation(statsDReporter, MessageToTemplatizedJson.class), httpSinkConfig.getSinkHttpJsonBodyTemplate(), protoParser);
             }
         }
 

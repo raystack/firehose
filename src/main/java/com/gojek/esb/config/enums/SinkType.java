@@ -1,12 +1,12 @@
 package com.gojek.esb.config.enums;
 
 public enum SinkType {
-    DB,
+    JDBC,
     HTTP,
     LOG,
     CLEVERTAP,
     INFLUXDB,
     ELASTICSEARCH,
     REDIS,
-    GRPC
+    GRPC;
 }

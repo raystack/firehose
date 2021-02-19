@@ -1,6 +1,6 @@
 package com.gojek.esb.sinkdecorator;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.consumer.TestKey;
 import com.gojek.esb.consumer.TestMessage;
 import com.gojek.esb.exception.DeserializerException;
@@ -41,7 +41,7 @@ public class SinkWithRetryQueueTest {
     private BackOffProvider backOffProvider;
 
     @Mock
-    private EsbMessage esbMessage;
+    private Message message;
 
     @Mock
     private Instrumentation instrumentation;
@@ -59,9 +59,9 @@ public class SinkWithRetryQueueTest {
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(new ArrayList<>());
         SinkWithRetryQueue sinkWithRetryQueue = SinkWithRetryQueue.withInstrumentationFactory(sinkWithRetry, kafkaProducer, "test-topic",
                 statsDReporter, backOffProvider);
-        ArrayList<EsbMessage> esbMessages = new ArrayList<>();
-        esbMessages.add(esbMessage);
-        List<EsbMessage> messages = sinkWithRetryQueue.pushMessage(esbMessages);
+        ArrayList<Message> esbMessages = new ArrayList<>();
+        esbMessages.add(message);
+        List<Message> messages = sinkWithRetryQueue.pushMessage(esbMessages);
 
         assertTrue(messages.isEmpty());
         verifyZeroInteractions(kafkaProducer);
@@ -69,16 +69,16 @@ public class SinkWithRetryQueueTest {
 
     @Test
     public void shouldPublishToKafkaIfListIsNotEmpty() throws Exception {
-        ArrayList<EsbMessage> esbMessages = new ArrayList<>();
-        esbMessages.add(esbMessage);
-        esbMessages.add(esbMessage);
-        when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
+        ArrayList<Message> messages = new ArrayList<>();
+        messages.add(message);
+        messages.add(message);
+        when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
         SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
                 instrumentation, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
-                sinkWithRetryQueue.pushMessage(esbMessages);
+                sinkWithRetryQueue.pushMessage(messages);
             } catch (IOException | DeserializerException e) {
                 e.printStackTrace();
             }
@@ -95,16 +95,16 @@ public class SinkWithRetryQueueTest {
 
     @Test
     public void testRunShouldSendWithCorrectArgumentsIfHeadersAreNotSet() throws IOException, DeserializerException {
-        ArrayList<EsbMessage> esbMessages = new ArrayList<>();
-        esbMessages.add(esbMessage);
-        esbMessages.add(esbMessage);
-        when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
+        ArrayList<Message> messages = new ArrayList<>();
+        messages.add(message);
+        messages.add(message);
+        when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
         SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
                 instrumentation, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
-                sinkWithRetryQueue.pushMessage(esbMessages);
+                sinkWithRetryQueue.pushMessage(messages);
             } catch (IOException | DeserializerException e) {
                 e.printStackTrace();
             }
@@ -122,33 +122,33 @@ public class SinkWithRetryQueueTest {
         calls.get(0).onCompletion(null, null);
         calls.get(1).onCompletion(null, null);
 
-        assertEquals(expectedRecords(esbMessages.get(0)), actualRecords.get(0));
-        assertEquals(expectedRecords(esbMessages.get(1)), actualRecords.get(1));
+        assertEquals(expectedRecords(messages.get(0)), actualRecords.get(0));
+        assertEquals(expectedRecords(messages.get(1)), actualRecords.get(1));
     }
 
     @Test
     public void testRunShouldSendWithCorrectArgumentsIfHeadersAreSet() throws IOException, DeserializerException {
-        ArrayList<EsbMessage> esbMessages = new ArrayList<>();
+        ArrayList<Message> messages = new ArrayList<>();
         Headers headers = new RecordHeaders();
         headers.add(new RecordHeader("key1", "value1".getBytes()));
         headers.add(new RecordHeader("key2", "value2".getBytes()));
 
 
-        TestMessage message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc")
+        TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc")
                 .setOrderDetails("details").build();
         TestKey key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
 
-        EsbMessage msg1 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic1", 0, 100, headers, 1L, 1L);
-        EsbMessage msg2 = new EsbMessage(key.toByteArray(), message.toByteArray(), "topic2", 0, 100, headers, 1L, 1L);
-        esbMessages.add(msg1);
-        esbMessages.add(msg2);
-        when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
+        Message msg1 = new Message(key.toByteArray(), testMessage.toByteArray(), "topic1", 0, 100, headers, 1L, 1L);
+        Message msg2 = new Message(key.toByteArray(), testMessage.toByteArray(), "topic2", 0, 100, headers, 1L, 1L);
+        messages.add(msg1);
+        messages.add(msg2);
+        when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
         SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
                 instrumentation, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
-                sinkWithRetryQueue.pushMessage(esbMessages);
+                sinkWithRetryQueue.pushMessage(messages);
             } catch (IOException | DeserializerException e) {
                 e.printStackTrace();
             }
@@ -166,22 +166,22 @@ public class SinkWithRetryQueueTest {
         calls.get(0).onCompletion(null, null);
         calls.get(1).onCompletion(null, null);
 
-        assertEquals(expectedRecords(esbMessages.get(0)), actualRecords.get(0));
-        assertEquals(expectedRecords(esbMessages.get(1)), actualRecords.get(1));
+        assertEquals(expectedRecords(messages.get(0)), actualRecords.get(0));
+        assertEquals(expectedRecords(messages.get(1)), actualRecords.get(1));
     }
 
     @Test
     public void shouldRetryPublishToKafka() throws Exception {
-        ArrayList<EsbMessage> esbMessages = new ArrayList<>();
-        esbMessages.add(esbMessage);
-        esbMessages.add(esbMessage);
-        when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
+        ArrayList<Message> messages = new ArrayList<>();
+        messages.add(message);
+        messages.add(message);
+        when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
         SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
                 instrumentation, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
-                sinkWithRetryQueue.pushMessage(esbMessages);
+                sinkWithRetryQueue.pushMessage(messages);
             } catch (IOException | DeserializerException e) {
                 e.printStackTrace();
             }
@@ -201,17 +201,17 @@ public class SinkWithRetryQueueTest {
 
     @Test
     public void shouldRecordMessagesToRetryQueue() throws Exception {
-        ArrayList<EsbMessage> esbMessages = new ArrayList<>();
+        ArrayList<Message> messages = new ArrayList<>();
         CountDownLatch completedLatch = new CountDownLatch(1);
-        esbMessages.add(esbMessage);
-        esbMessages.add(esbMessage);
-        when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
+        messages.add(message);
+        messages.add(message);
+        when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
         SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
                 instrumentation, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
-                sinkWithRetryQueue.pushMessage(esbMessages);
+                sinkWithRetryQueue.pushMessage(messages);
                 completedLatch.countDown();
             } catch (IOException | DeserializerException e) {
                 e.printStackTrace();
@@ -234,17 +234,17 @@ public class SinkWithRetryQueueTest {
 
     @Test
     public void shouldRecordRetriesIfKafkaThrowsException() throws Exception {
-        ArrayList<EsbMessage> esbMessages = new ArrayList<>();
+        ArrayList<Message> messages = new ArrayList<>();
         CountDownLatch completedLatch = new CountDownLatch(1);
-        esbMessages.add(esbMessage);
-        esbMessages.add(esbMessage);
-        when(sinkWithRetry.pushMessage(anyList())).thenReturn(esbMessages);
+        messages.add(message);
+        messages.add(message);
+        when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
         SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
                 instrumentation, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
-                sinkWithRetryQueue.pushMessage(esbMessages);
+                sinkWithRetryQueue.pushMessage(messages);
                 completedLatch.countDown();
             } catch (IOException | DeserializerException e) {
                 e.printStackTrace();
@@ -272,7 +272,7 @@ public class SinkWithRetryQueueTest {
         verify(instrumentation, times(2)).logInfo("Successfully pushed {} messages to {}", 1, "test-topic");
     }
 
-    private ProducerRecord<byte[], byte[]> expectedRecords(EsbMessage expectedMessage) {
+    private ProducerRecord<byte[], byte[]> expectedRecords(Message expectedMessage) {
         return new ProducerRecord<>("test-topic", null, null, expectedMessage.getLogKey(),
                 expectedMessage.getLogMessage(), expectedMessage.getHeaders());
     }

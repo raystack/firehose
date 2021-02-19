@@ -32,7 +32,7 @@ public class ProtoIndexToFieldMapConverterTest {
     public void shouldValidateJsonConfigForDuplicates() {
         String json = "{\"1\":\"order_number\",\"2\":\"event_timestamp\",\"3\":\"event_timestamp\"}";
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("duplicates found in PROTO_TO_COLUMN_MAPPING for : [event_timestamp]");
+        thrown.expectMessage("duplicates found in input.output.mapping for : [event_timestamp]");
         new ProtoIndexToFieldMapConverter().convert(null, json);
     }
 
@@ -40,7 +40,7 @@ public class ProtoIndexToFieldMapConverterTest {
     public void shouldValidateJsonConfigForDuplicatesInNestedJsons() {
         String json = "{\"1\":\"order_number\",\"2\":\"event_timestamp\",\"3\":{\"1\":\"event_timestamp\",\"2\":\"order_number\"}}";
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("duplicates found in PROTO_TO_COLUMN_MAPPING for : [event_timestamp, order_number]");
+        thrown.expectMessage("duplicates found in input.output.mapping for : [event_timestamp, order_number]");
         new ProtoIndexToFieldMapConverter().convert(null, json);
     }
 

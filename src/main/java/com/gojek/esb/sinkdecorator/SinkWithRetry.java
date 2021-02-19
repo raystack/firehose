@@ -1,6 +1,6 @@
 package com.gojek.esb.sinkdecorator;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.Sink;
@@ -39,9 +39,9 @@ public class SinkWithRetry extends SinkDecorator {
     }
 
     @Override
-    public List<EsbMessage> pushMessage(List<EsbMessage> esbMessage) throws IOException, DeserializerException {
+    public List<Message> pushMessage(List<Message> esbMessage) throws IOException, DeserializerException {
         int attemptCount = 0;
-        List<EsbMessage> failedMessages;
+        List<Message> failedMessages;
         failedMessages = super.pushMessage(esbMessage);
         if (failedMessages.isEmpty()) {
             return failedMessages;
@@ -55,7 +55,7 @@ public class SinkWithRetry extends SinkDecorator {
             instrumentation.logWarn("Retrying messages attempt count: {}, Number of messages: {}", attemptCount, failedMessages.size());
 
             List<DynamicMessage> serializedBody = new ArrayList<>();
-            for (EsbMessage message : failedMessages) {
+            for (Message message : failedMessages) {
                 serializedBody.add(parser.parse(message));
             }
 

@@ -2,7 +2,7 @@ package com.gojek.esb.sink.log;
 
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.AppConfig;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.consumer.TestMessage;
 import com.google.protobuf.DynamicMessage;
 import org.junit.Before;
@@ -25,7 +25,7 @@ public class KeyOrMessageParserTest {
 
     private DynamicMessage dynamicMessage;
 
-    private EsbMessage esbMessage;
+    private Message message;
 
     private KeyOrMessageParser parser;
 
@@ -36,13 +36,13 @@ public class KeyOrMessageParserTest {
         Mockito.when(appConfig.getKafkaRecordParserMode()).thenReturn("message");
         Mockito.when(protoParser.parse(Mockito.any(byte[].class))).thenReturn(dynamicMessage);
 
-        esbMessage = new EsbMessage("logKey".getBytes(), "logMessage".getBytes(), "topic", 0, 10);
+        message = new Message("logKey".getBytes(), "logMessage".getBytes(), "topic", 0, 10);
         parser = new KeyOrMessageParser(protoParser, appConfig);
     }
 
     @Test
     public void shouldParseMessageByDefault() throws IOException {
-        parser.parse(esbMessage);
+        parser.parse(message);
 
         Mockito.verify(protoParser, Mockito.times(1)).parse("logMessage".getBytes());
     }
@@ -50,7 +50,7 @@ public class KeyOrMessageParserTest {
     @Test
     public void shouldParseKeyWhenKafkaMessageParserModeSetToKey() throws IOException {
         Mockito.when(appConfig.getKafkaRecordParserMode()).thenReturn("key");
-        parser.parse(esbMessage);
+        parser.parse(message);
 
         Mockito.verify(protoParser, Mockito.times(1)).parse("logKey".getBytes());
     }

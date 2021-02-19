@@ -2,7 +2,7 @@ package com.gojek.esb.sink.grpc.client;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.config.GrpcConfig;
+import com.gojek.esb.config.GrpcSinkConfig;
 import com.gojek.esb.metrics.Instrumentation;
 import com.google.protobuf.DynamicMessage;
 import com.newrelic.api.agent.Trace;
@@ -27,15 +27,15 @@ import java.io.InputStream;
 public class GrpcClient {
 
     private Instrumentation instrumentation;
-    private final GrpcConfig grpcConfig;
+    private final GrpcSinkConfig grpcSinkConfig;
     private ProtoParser protoParser;
     private  StencilClient stencilClient;
     private ManagedChannel managedChannel;
 
-    public GrpcClient(Instrumentation instrumentation, GrpcConfig grpcConfig, ManagedChannel managedChannel, StencilClient stencilClient) {
+    public GrpcClient(Instrumentation instrumentation, GrpcSinkConfig grpcSinkConfig, ManagedChannel managedChannel, StencilClient stencilClient) {
         this.instrumentation = instrumentation;
-        this.grpcConfig = grpcConfig;
-        this.protoParser = new ProtoParser(stencilClient, grpcConfig.getGrpcResponseProtoSchema());
+        this.grpcSinkConfig = grpcSinkConfig;
+        this.protoParser = new ProtoParser(stencilClient, grpcSinkConfig.getSinkGrpcResponseProtoSchema());
         this.stencilClient = stencilClient;
         this.managedChannel = managedChannel;
     }
@@ -60,7 +60,7 @@ public class GrpcClient {
                     decoratedChannel,
                     MethodDescriptor.newBuilder(marshaller, marshaller)
                             .setType(MethodDescriptor.MethodType.UNARY)
-                            .setFullMethodName(grpcConfig.getGrpcMethodUrl())
+                            .setFullMethodName(grpcSinkConfig.getSinkGrpcMethodUrl())
                             .build(),
                     CallOptions.DEFAULT,
                     logMessage);
@@ -69,7 +69,7 @@ public class GrpcClient {
 
         } catch (Exception e) {
             instrumentation.logWarn(e.getMessage());
-            dynamicMessage = DynamicMessage.newBuilder(this.stencilClient.get(this.grpcConfig.getGrpcResponseProtoSchema())).build();
+            dynamicMessage = DynamicMessage.newBuilder(this.stencilClient.get(this.grpcSinkConfig.getSinkGrpcResponseProtoSchema())).build();
 
         }
 

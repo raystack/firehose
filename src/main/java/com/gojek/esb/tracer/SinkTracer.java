@@ -1,6 +1,6 @@
 package com.gojek.esb.tracer;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import io.opentracing.References;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -23,7 +23,7 @@ public class SinkTracer implements Traceable, Closeable {
     private boolean enabled;
 
     @Override
-    public List<Span> startTrace(List<EsbMessage> messages) {
+    public List<Span> startTrace(List<Message> messages) {
         if (enabled) {
             return messages.stream().map(m -> traceMessage(m)).collect(Collectors.toList());
         } else {
@@ -31,7 +31,7 @@ public class SinkTracer implements Traceable, Closeable {
         }
     }
 
-    private Span traceMessage(EsbMessage message) {
+    private Span traceMessage(Message message) {
         SpanContext parentContext = null;
         if (message.getHeaders() != null) {
             parentContext = TracingKafkaUtils.extractSpanContext(message.getHeaders(), tracer);

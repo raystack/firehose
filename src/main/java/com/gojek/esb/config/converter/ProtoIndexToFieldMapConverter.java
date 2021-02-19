@@ -46,7 +46,7 @@ public class ProtoIndexToFieldMapConverter implements org.aeonbits.owner.Convert
         DuplicateFinder duplicateFinder = flattenValues(properties)
                 .collect(DuplicateFinder::new, DuplicateFinder::accept, DuplicateFinder::combine);
         if (duplicateFinder.duplicates.size() > 0) {
-            throw new IllegalArgumentException("duplicates found in PROTO_TO_COLUMN_MAPPING for : " + duplicateFinder.duplicates);
+            throw new IllegalArgumentException("duplicates found in input.output.mapping for : " + duplicateFinder.duplicates);
         }
     }
 

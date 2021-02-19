@@ -14,7 +14,7 @@ import static org.mockito.Mockito.verify;
 @RunWith(MockitoJUnitRunner.class)
 public class DurationTTLTest {
 
-    private DurationTTL durationTTL;
+    private DurationTtl durationTTL;
 
     @Mock
     private Pipeline pipeline;
@@ -24,18 +24,18 @@ public class DurationTTLTest {
 
     @Before
     public void setup() {
-        durationTTL = new DurationTTL(10);
+        durationTTL = new DurationTtl(10);
     }
 
     @Test
     public void shouldSetTTLInSecondsForPipeline() {
-        durationTTL.setTTL(pipeline, "test-key");
+        durationTTL.setTtl(pipeline, "test-key");
         verify(pipeline, times(1)).expire("test-key", 10);
     }
 
     @Test
     public void shouldSetTTLInSecondsForCluster() {
-        durationTTL.setTTL(jedisCluster, "test-key");
+        durationTTL.setTtl(jedisCluster, "test-key");
         verify(jedisCluster, times(1)).expire("test-key", 10);
     }
 }

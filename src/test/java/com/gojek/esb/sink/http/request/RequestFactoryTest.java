@@ -1,12 +1,12 @@
 package com.gojek.esb.sink.http.request;
 
 import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.esb.config.HTTPSinkConfig;
+import com.gojek.esb.config.HttpSinkConfig;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.http.request.types.SimpleRequest;
 import com.gojek.esb.sink.http.request.types.DynamicUrlRequest;
 import com.gojek.esb.sink.http.request.types.ParameterizedHeaderRequest;
-import com.gojek.esb.sink.http.request.types.ParameterizedURIRequest;
+import com.gojek.esb.sink.http.request.types.ParameterizedUriRequest;
 import com.gojek.esb.sink.http.request.types.Request;
 import com.gojek.esb.sink.http.request.uri.UriParser;
 import org.aeonbits.owner.ConfigFactory;
@@ -27,7 +27,7 @@ public class RequestFactoryTest {
     private StatsDReporter statsDReporter;
     @Mock
     private UriParser uriParser;
-    private HTTPSinkConfig httpSinkConfig;
+    private HttpSinkConfig httpSinkConfig;
 
     private Map<String, String> configuration = new HashMap<>();
 
@@ -39,8 +39,8 @@ public class RequestFactoryTest {
 
     @Test
     public void shouldReturnBatchRequestWhenPrameterSourceIsDisabledAndServiceUrlIsConstant() {
-        configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api");
-        httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
+        configuration.put("sink.http.service.url", "http://127.0.0.1:1080/api");
+        httpSinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();
 
@@ -49,8 +49,8 @@ public class RequestFactoryTest {
 
     @Test
     public void shouldReturnDynamicUrlRequestWhenPrameterSourceIsDisabledAndServiceUrlIsNotParametrised() {
-        configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api,%s");
-        httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
+        configuration.put("sink.http.service.url", "http://127.0.0.1:1080/api,%s");
+        httpSinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();
 
@@ -59,10 +59,10 @@ public class RequestFactoryTest {
 
     @Test
     public void shouldReturnParameterizedRequstWhenParameterSourceIsNotDisableAndPlacementTypeIsHeader() {
-        configuration.put("HTTP_SINK_PARAMETER_SOURCE", "key");
-        configuration.put("HTTP_SINK_PARAMETER_PLACEMENT", "header");
-        configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api,%s");
-        httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
+        configuration.put("sink.http.parameter.source", "key");
+        configuration.put("sink.http.parameter.placement", "header");
+        configuration.put("sink.http.service.url", "http://127.0.0.1:1080/api,%s");
+        httpSinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();
 
@@ -71,13 +71,13 @@ public class RequestFactoryTest {
 
     @Test
     public void shouldReturnParameterizedRequstWhenParameterSourceIsNotDisableAndPlacementTypeIsQuery() {
-        configuration.put("HTTP_SINK_PARAMETER_SOURCE", "key");
-        configuration.put("HTTP_SINK_PARAMETER_PLACEMENT", "query");
-        configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api,%s");
-        httpSinkConfig = ConfigFactory.create(HTTPSinkConfig.class, configuration);
+        configuration.put("sink.http.parameter.source", "key");
+        configuration.put("sink.http.parameter.placement", "query");
+        configuration.put("sink.http.service.url", "http://127.0.0.1:1080/api,%s");
+        httpSinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();
 
-        assertTrue(request instanceof ParameterizedURIRequest);
+        assertTrue(request instanceof ParameterizedUriRequest);
     }
 }

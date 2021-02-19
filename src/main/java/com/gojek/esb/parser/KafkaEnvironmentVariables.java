@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 public class KafkaEnvironmentVariables {
 
-    private static final String KAFKA_PREFIX = "kafka_consumer_config_";
+    private static final String KAFKA_PREFIX = "source.kafka.consumer.config.";
 
     public static Map<String, String> parse(Map<String, String> envVars) {
         if (envVars == null || envVars.isEmpty()) {
@@ -20,7 +20,6 @@ public class KafkaEnvironmentVariables {
     }
 
     private static String parseVarName(String varName) {
-        String[] names = varName.toLowerCase().replaceAll(KAFKA_PREFIX, "").split("_");
-        return String.join(".", names);
+        return varName.toLowerCase().replaceAll(KAFKA_PREFIX, "");
     }
 }

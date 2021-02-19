@@ -5,26 +5,35 @@ import org.aeonbits.owner.Config;
 
 import java.util.Properties;
 
-public interface InfluxSinkConfig extends DBSinkConfig {
-    @Config.Key("FIELD_NAME_PROTO_INDEX_MAPPING")
+public interface InfluxSinkConfig extends AppConfig {
+    @Config.Key("sink.influx.field.name.proto.index.mapping")
     @Config.ConverterClass(ProtoIndexToFieldMapConverter.class)
-    Properties getFieldNameProtoIndexMapping();
+    Properties getSinkInfluxFieldNameProtoIndexMapping();
 
-    @Config.Key("TAG_NAME_PROTO_INDEX_MAPPING")
+    @Config.Key("sink.influx.tag.name.proto.index.mapping")
     @Config.ConverterClass(ProtoIndexToFieldMapConverter.class)
-    Properties getTagNameProtoIndexMapping();
+    Properties getSinkInfluxTagNameProtoIndexMapping();
 
-    @Config.Key("MEASUREMENT_NAME")
-    String getMeasurementName();
+    @Config.Key("sink.influx.measurement.name")
+    String getSinkInfluxMeasurementName();
 
-    @Config.Key("PROTO_EVENT_TIMESTAMP_INDEX")
-    Integer getEventTimestampIndex();
+    @Config.Key("sink.influx.proto.event.timestamp.index")
+    Integer getSinkInfluxProtoEventTimestampIndex();
 
-    @Config.Key("DATABASE_NAME")
-    String getDatabaseName();
+    @Config.Key("sink.influx.db.name")
+    String getSinkInfluxDbName();
 
-    @Config.Key("INFLUX_RETENTION_POLICY")
+    @Config.Key("sink.influx.retention.policy")
     @DefaultValue("autogen")
-    String getRetentionPolicy();
+    String getSinkInfluxRetentionPolicy();
+
+    @Config.Key("sink.influx.url")
+    String getSinkInfluxUrl();
+
+    @Config.Key("sink.influx.username")
+    String getSinkInfluxUsername();
+
+    @Config.Key("sink.influx.password")
+    String getSinkInfluxPassword();
 }
 

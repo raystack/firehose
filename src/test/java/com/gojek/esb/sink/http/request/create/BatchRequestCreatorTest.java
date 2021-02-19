@@ -1,13 +1,13 @@
 package com.gojek.esb.sink.http.request.create;
 
-import com.gojek.esb.config.enums.HttpRequestMethod;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.config.enums.HttpSinkRequestMethodType;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.http.request.body.JsonBody;
 import com.gojek.esb.sink.http.request.entity.RequestEntityBuilder;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
-import com.gojek.esb.sink.http.request.uri.URIBuilder;
+import com.gojek.esb.sink.http.request.uri.UriBuilder;
 import org.apache.http.Header;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.entity.ContentType;
@@ -36,7 +36,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class BatchRequestCreatorTest {
 
     @Mock
-    private URIBuilder uriBuilder;
+    private UriBuilder uriBuilder;
 
     @Mock
     private HeaderBuilder headerBuilder;
@@ -50,76 +50,76 @@ public class BatchRequestCreatorTest {
     @Mock
     private Instrumentation instrumentation;
 
-    private List<EsbMessage> esbMessages;
+    private List<Message> messages;
 
     @Before
     public void setup() {
         initMocks(this);
-        EsbMessage esbMessage = new EsbMessage(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
-        esbMessages = Collections.singletonList(esbMessage);
+        Message message = new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
+        messages = Collections.singletonList(message);
     }
 
     @Test
     public void shouldWrapMessageToASingleRequest() throws DeserializerException, URISyntaxException {
-        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
-        List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(esbMessages, requestEntityBuilder);
+        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody);
+        List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(messages, requestEntityBuilder);
 
         assertEquals(1, requests.size());
         verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
-                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(esbMessages), HttpRequestMethod.PUT);
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages), HttpSinkRequestMethodType.PUT);
     }
 
     @Test
     public void shouldWrapMessageToASingleRequestWhenPostRequest() throws DeserializerException, URISyntaxException {
-        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpRequestMethod.POST, jsonBody);
-        List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(esbMessages, requestEntityBuilder);
+        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.POST, jsonBody);
+        List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(messages, requestEntityBuilder);
 
         assertEquals(1, requests.size());
         verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
-                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(esbMessages), HttpRequestMethod.POST);
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages), HttpSinkRequestMethodType.POST);
     }
 
     @Test
     public void shouldWrapMessagesToASingleRequest() throws DeserializerException, URISyntaxException {
-        EsbMessage esbMessage1 = new EsbMessage(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
-        EsbMessage esbMessage2 = new EsbMessage(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
-        esbMessages = new ArrayList<>();
-        esbMessages.add(esbMessage1);
-        esbMessages.add(esbMessage2);
+        Message message1 = new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
+        Message message2 = new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
+        messages = new ArrayList<>();
+        messages.add(message1);
+        messages.add(message2);
 
-        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpRequestMethod.PUT, jsonBody);
-        List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(esbMessages, requestEntityBuilder);
+        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody);
+        List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(messages, requestEntityBuilder);
 
         assertEquals(1, requests.size());
         verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
-                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(esbMessages), HttpRequestMethod.PUT);
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages), HttpSinkRequestMethodType.PUT);
     }
 
     @Test
     public void shouldSetRequestPropertiesOnlyOnce() throws DeserializerException, URISyntaxException {
-        EsbMessage esbMessage1 = new EsbMessage(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
-        EsbMessage esbMessage2 = new EsbMessage(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
-        esbMessages = new ArrayList<>();
-        esbMessages.add(esbMessage1);
-        esbMessages.add(esbMessage2);
+        Message message1 = new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
+        Message message2 = new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
+        messages = new ArrayList<>();
+        messages.add(message1);
+        messages.add(message2);
 
-        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpRequestMethod.POST, jsonBody);
-        batchRequestCreator.create(esbMessages, requestEntityBuilder);
+        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.POST, jsonBody);
+        batchRequestCreator.create(messages, requestEntityBuilder);
 
         verify(uriBuilder, times(1)).build();
         verify(headerBuilder, times(1)).build();
         verify(requestEntityBuilder, times(1)).buildHttpEntity(any(String.class));
         verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
-                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(esbMessages), HttpRequestMethod.POST);
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages), HttpSinkRequestMethodType.POST);
     }
 
     @Test
     public void shouldProperlyBuildRequests() throws DeserializerException, URISyntaxException {
-        EsbMessage esbMessage1 = new EsbMessage(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
-        EsbMessage esbMessage2 = new EsbMessage(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
-        esbMessages = new ArrayList<>();
-        esbMessages.add(esbMessage1);
-        esbMessages.add(esbMessage2);
+        Message message1 = new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
+        Message message2 = new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
+        messages = new ArrayList<>();
+        messages.add(message1);
+        messages.add(message2);
 
         HashMap<String, String> headerMap = new HashMap<>();
         headerMap.put("Authorization", "auth_token");
@@ -131,11 +131,11 @@ public class BatchRequestCreatorTest {
 
         when(uriBuilder.build()).thenReturn(new URI("dummyEndpoint"));
         when(headerBuilder.build()).thenReturn(headerMap);
-        when(jsonBody.serialize(esbMessages)).thenReturn(serializedMessages);
+        when(jsonBody.serialize(messages)).thenReturn(serializedMessages);
         when(requestEntityBuilder.buildHttpEntity(any())).thenReturn(new StringEntity("[\"dummyMessage1\", \"dummyMessage2\"]", ContentType.APPLICATION_JSON));
 
-        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpRequestMethod.POST, jsonBody);
-        List<HttpEntityEnclosingRequestBase> httpEntityEnclosingRequestBases = batchRequestCreator.create(esbMessages, requestEntityBuilder);
+        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.POST, jsonBody);
+        List<HttpEntityEnclosingRequestBase> httpEntityEnclosingRequestBases = batchRequestCreator.create(messages, requestEntityBuilder);
 
         BasicHeader header1 = new BasicHeader("Authorization", "auth_token");
         BasicHeader header2 = new BasicHeader("Accept", "text/plain");
@@ -146,6 +146,6 @@ public class BatchRequestCreatorTest {
         assertEquals(new URI("dummyEndpoint"), httpEntityEnclosingRequestBases.get(0).getURI());
         Assert.assertTrue(new ReflectionEquals(httpEntityEnclosingRequestBases.get(0).getAllHeaders()).matches(headers));
         verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
-                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(esbMessages), HttpRequestMethod.POST);
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages), HttpSinkRequestMethodType.POST);
     }
 }
