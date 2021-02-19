@@ -1,7 +1,7 @@
 package com.gojek.esb.sink.http.request.uri;
 
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -20,16 +20,16 @@ public class UriParser {
         this.parserMode = parserMode;
     }
 
-    public String parse(EsbMessage esbMessage, String serviceUrl) {
-        DynamicMessage parsedMessage = parseEsbMessage(esbMessage);
+    public String parse(Message message, String serviceUrl) {
+        DynamicMessage parsedMessage = parseEsbMessage(message);
         return parseServiceUrl(parsedMessage, serviceUrl);
 
     }
 
-    private DynamicMessage parseEsbMessage(EsbMessage esbMessage) {
+    private DynamicMessage parseEsbMessage(Message message) {
         DynamicMessage parsedMessage;
         try {
-            parsedMessage = protoParser.parse(getPayload(esbMessage));
+            parsedMessage = protoParser.parse(getPayload(message));
         } catch (InvalidProtocolBufferException e) {
             throw new IllegalArgumentException("Unable to parse Service URL", e);
         }
@@ -83,11 +83,11 @@ public class UriParser {
         return parsedMessage.getField(fieldDescriptor);
     }
 
-    private byte[] getPayload(EsbMessage esbMessage) {
+    private byte[] getPayload(Message message) {
         if (parserMode.equals("key")) {
-            return esbMessage.getLogKey();
+            return message.getLogKey();
         } else {
-            return esbMessage.getLogMessage();
+            return message.getLogMessage();
         }
     }
 

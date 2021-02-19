@@ -19,7 +19,7 @@ public class TopicOffsets implements Offsets {
 
     @Override
     public void commit(ConsumerRecords<byte[], byte[]> records) {
-        if (kafkaConsumerConfig.asyncCommitEnabled()) {
+        if (kafkaConsumerConfig.isSourceKafkaAsyncCommitEnable()) {
             commitAsync();
         } else {
             kafkaConsumer.commitSync();

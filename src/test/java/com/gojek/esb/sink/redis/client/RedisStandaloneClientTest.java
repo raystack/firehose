@@ -1,6 +1,6 @@
 package com.gojek.esb.sink.redis.client;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
@@ -9,7 +9,7 @@ import com.gojek.esb.sink.redis.dataentry.RedisHashSetFieldEntry;
 import com.gojek.esb.sink.redis.dataentry.RedisListEntry;
 import com.gojek.esb.sink.redis.exception.NoResponseException;
 import com.gojek.esb.sink.redis.parsers.RedisParser;
-import com.gojek.esb.sink.redis.ttl.RedisTTL;
+import com.gojek.esb.sink.redis.ttl.RedisTtl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,13 +44,13 @@ public class RedisStandaloneClientTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
     private RedisClient redisClient;
-    private List<EsbMessage> esbMessages;
+    private List<Message> messages;
     private List<RedisDataEntry> redisDataEntries;
     @Mock
     private RedisParser redisMessageParser;
 
     @Mock
-    private RedisTTL redisTTL;
+    private RedisTtl redisTTL;
 
     @Mock
     private Jedis jedis;
@@ -65,22 +65,22 @@ public class RedisStandaloneClientTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        esbMessages = Arrays.asList(new EsbMessage(new byte[0], new byte[0], "topic", 0, 100),
-                new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
+        messages = Arrays.asList(new Message(new byte[0], new byte[0], "topic", 0, 100),
+                new Message(new byte[0], new byte[0], "topic", 0, 100));
 
         redisClient = new RedisStandaloneClient(instrumentation, redisMessageParser, redisTTL, jedis);
 
         redisDataEntries = new ArrayList<>();
 
         when(jedis.pipelined()).thenReturn(jedisPipeline);
-        when(redisMessageParser.parse(esbMessages)).thenReturn(redisDataEntries);
+        when(redisMessageParser.parse(messages)).thenReturn(redisDataEntries);
     }
 
     @Test
     public void pushesDataEntryForListInATransaction() throws DeserializerException {
         populateRedisDataEntry(firstRedisListEntry, secondRedisListEntry);
 
-        redisClient.prepare(esbMessages);
+        redisClient.prepare(messages);
 
         verify(jedisPipeline, times(1)).multi();
         verify(jedisPipeline).lpush(firstRedisListEntry.getKey(), firstRedisListEntry.getValue());
@@ -91,17 +91,17 @@ public class RedisStandaloneClientTest {
     public void setsTTLForListItemsInATransaction() throws DeserializerException {
         populateRedisDataEntry(firstRedisListEntry, secondRedisListEntry);
 
-        redisClient.prepare(esbMessages);
+        redisClient.prepare(messages);
 
-        verify(redisTTL).setTTL(jedisPipeline, firstRedisListEntry.getKey());
-        verify(redisTTL).setTTL(jedisPipeline, secondRedisListEntry.getKey());
+        verify(redisTTL).setTtl(jedisPipeline, firstRedisListEntry.getKey());
+        verify(redisTTL).setTtl(jedisPipeline, secondRedisListEntry.getKey());
     }
 
     @Test
     public void pushesDataEntryForSetInATransaction() throws DeserializerException {
         populateRedisDataEntry(firstRedisSetEntry, secondRedisSetEntry);
 
-        redisClient.prepare(esbMessages);
+        redisClient.prepare(messages);
 
         verify(jedisPipeline, times(1)).multi();
         verify(jedisPipeline).hset(firstRedisSetEntry.getKey(), firstRedisSetEntry.getField(), firstRedisSetEntry.getValue());
@@ -112,10 +112,10 @@ public class RedisStandaloneClientTest {
     public void setsTTLForSetItemsInATransaction() throws DeserializerException {
         populateRedisDataEntry(firstRedisSetEntry, secondRedisSetEntry);
 
-        redisClient.prepare(esbMessages);
+        redisClient.prepare(messages);
 
-        verify(redisTTL).setTTL(jedisPipeline, firstRedisSetEntry.getKey());
-        verify(redisTTL).setTTL(jedisPipeline, secondRedisSetEntry.getKey());
+        verify(redisTTL).setTtl(jedisPipeline, firstRedisSetEntry.getKey());
+        verify(redisTTL).setTtl(jedisPipeline, secondRedisSetEntry.getKey());
     }
 
     @Test
@@ -124,7 +124,7 @@ public class RedisStandaloneClientTest {
         when(jedisPipeline.exec()).thenReturn(responses);
         when(responses.get()).thenReturn(Collections.singletonList("MOCK_LIST_ITEM"));
 
-        redisClient.prepare(esbMessages);
+        redisClient.prepare(messages);
         redisClient.execute();
 
         verify(jedisPipeline).exec();
@@ -137,7 +137,7 @@ public class RedisStandaloneClientTest {
         when(jedisPipeline.exec()).thenReturn(responses);
         when(responses.get()).thenReturn(Collections.singletonList("MOCK_LIST_ITEM"));
 
-        redisClient.prepare(esbMessages);
+        redisClient.prepare(messages);
         redisClient.execute();
 
         verify(jedisPipeline).sync();
@@ -151,7 +151,7 @@ public class RedisStandaloneClientTest {
         when(jedisPipeline.exec()).thenReturn(responses);
         when(responses.get()).thenReturn(null);
 
-        redisClient.prepare(esbMessages);
+        redisClient.prepare(messages);
         redisClient.execute();
     }
 
@@ -163,7 +163,7 @@ public class RedisStandaloneClientTest {
         when(jedisPipeline.exec()).thenReturn(responses);
         when(responses.get()).thenReturn(new ArrayList<>());
 
-        redisClient.prepare(esbMessages);
+        redisClient.prepare(messages);
         redisClient.execute();
     }
 
@@ -173,8 +173,8 @@ public class RedisStandaloneClientTest {
         when(jedisPipeline.exec()).thenReturn(responses);
         when(responses.get()).thenReturn(Collections.singletonList("MOCK_LIST_ITEM"));
 
-        redisClient.prepare(esbMessages);
-        List<EsbMessage> elementsToRetry = redisClient.execute();
+        redisClient.prepare(messages);
+        List<Message> elementsToRetry = redisClient.execute();
 
         Assert.assertEquals(0, elementsToRetry.size());
     }

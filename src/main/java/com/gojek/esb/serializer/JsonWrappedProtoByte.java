@@ -1,6 +1,6 @@
 package com.gojek.esb.serializer;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.exception.DeserializerException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -16,17 +16,17 @@ import com.google.gson.GsonBuilder;
  * }
  * </pre>
  */
-public class JsonWrappedProtoByte implements EsbMessageSerializer {
+public class JsonWrappedProtoByte implements MessageSerializer {
 
   private Gson gson;
 
   public JsonWrappedProtoByte() {
-    this.gson = new GsonBuilder().registerTypeAdapter(EsbMessage.class, new EsbMessageJsonSerializer()).create();
+    this.gson = new GsonBuilder().registerTypeAdapter(Message.class, new MessageJsonSerializer()).create();
   }
 
   @Override
-  public String serialize(EsbMessage esbMessage) throws DeserializerException {
-    return gson.toJson(esbMessage);
+  public String serialize(Message message) throws DeserializerException {
+    return gson.toJson(message);
   }
 
 }

@@ -5,18 +5,18 @@ import com.gojek.esb.exception.EglcConfigurationException;
 
 public class RedisTTLFactory {
 
-    public static RedisTTL getTTl(RedisSinkConfig redisSinkConfig) {
-        long redisTTLValue = redisSinkConfig.getRedisTTLValue();
+    public static RedisTtl getTTl(RedisSinkConfig redisSinkConfig) {
+        long redisTTLValue = redisSinkConfig.getSinkRedisTtlValue();
         if (redisTTLValue < 0) {
             throw new EglcConfigurationException("Provide a positive TTL value");
         }
-        switch (redisSinkConfig.getRedisTTLType()) {
+        switch (redisSinkConfig.getSinkRedisTtlType()) {
             case EXACT_TIME:
-                return new ExactTimeTTL(redisTTLValue);
+                return new ExactTimeTtl(redisTTLValue);
             case DURATION:
-                return new DurationTTL((int) redisTTLValue);
+                return new DurationTtl((int) redisTTLValue);
             default:
-                return new NoRedisTTL();
+                return new NoRedisTtl();
         }
     }
 }

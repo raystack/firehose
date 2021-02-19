@@ -1,6 +1,6 @@
 package com.gojek.esb.tracer;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import io.opentracing.Span;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
@@ -15,12 +15,12 @@ import static org.junit.Assert.assertEquals;
 public class SinkTracerTest {
 
 
-    private List<EsbMessage> messages;
+    private List<Message> messages;
 
     @Before
     public void setUp() {
-        EsbMessage msg1 = new EsbMessage(new byte[]{}, new byte[]{}, "topic", 0, 100);
-        EsbMessage msg2 = new EsbMessage(new byte[]{}, new byte[]{}, "topic", 0, 100);
+        Message msg1 = new Message(new byte[]{}, new byte[]{}, "topic", 0, 100);
+        Message msg2 = new Message(new byte[]{}, new byte[]{}, "topic", 0, 100);
         messages = Arrays.asList(msg1, msg2);
     }
 

@@ -1,11 +1,10 @@
 package com.gojek.esb.proto;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.exception.EglcConfigurationException;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessageV3;
-import com.google.protobuf.Message;
 
 import java.lang.reflect.Method;
 
@@ -19,25 +18,25 @@ public class ProtoMessage {
         this.esbMessageParser = parserMethod(protoClassName);
     }
 
-    public Object get(EsbMessage esbMessage, int protoIndex) throws DeserializerException {
+    public Object get(Message message, int protoIndex) throws DeserializerException {
         GeneratedMessageV3 protoMsg;
-        protoMsg = (GeneratedMessageV3) parseProtobuf(esbMessage);
+        protoMsg = (GeneratedMessageV3) parseProtobuf(message);
         Descriptors.FieldDescriptor fieldDescriptor = protoMsg.getDescriptorForType().findFieldByNumber(protoIndex);
         return protoMsg.getField(fieldDescriptor);
     }
 
-    public Object parseProtobuf(EsbMessage esbMessage) throws DeserializerException {
+    public Object parseProtobuf(Message message) throws DeserializerException {
         try {
-            return esbMessageParser.invoke(null, esbMessage.getLogMessage());
+            return esbMessageParser.invoke(null, message.getLogMessage());
         } catch (ReflectiveOperationException e) {
             throw new DeserializerException(DESERIALIZE_ERROR_MESSAGE, e);
         }
     }
 
     private Method parserMethod(String protoClassName) {
-        Class<Message> builderClass;
+        Class<com.google.protobuf.Message> builderClass;
         try {
-            builderClass = (Class<Message>) Class.forName(protoClassName);
+            builderClass = (Class<com.google.protobuf.Message>) Class.forName(protoClassName);
         } catch (ClassNotFoundException e) {
             throw new EglcConfigurationException(CLASS_NAME_NOT_FOUND, e);
         }

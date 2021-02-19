@@ -1,6 +1,6 @@
 package com.gojek.esb.tracer;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import io.opentracing.Span;
 
 import java.util.List;
@@ -14,7 +14,7 @@ public interface Traceable {
      * @param messages
      * @return
      */
-    List<Span> startTrace(List<EsbMessage> messages);
+    List<Span> startTrace(List<Message> messages);
 
     /**
      * @param spans

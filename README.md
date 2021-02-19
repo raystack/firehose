@@ -12,7 +12,7 @@ Detailed documentation for Firehose can be found [here]().
 
     For more details on these and more such features, Checkout the [Firehose HTTP Sink]()
 * DB Sinks
-    * [Postgres]()
+    * [JDBC]()
     * [Redis]()
     * [Influx]()
     * [Elasticsearch]()
@@ -37,13 +37,13 @@ To know more about these and many more such features, checkout [Firehose Documen
 
 |        Name         |                              Description                              |          Example          |
 | :-----------------: | :-------------------------------------------------------------------: | :-----------------------: |
-|   `KAFKA_ADDRESS`   | The url/IP of the Kafka broker to which this consumer should connect to. |   `127.0.0.1:6667`   |
-| `CONSUMER_GROUP_ID` |                     The Kafka consumer group id.                      | `kafka-consumer-group-id` |
-|    `KAFKA_TOPIC`    |         The Kafka topic(s) this consumer should subscribe to.         |      `sample-topic`       |
-|       `SINK`        |                      Sink mode for the firehose                       |          `log`            |
-|   `PROTO_SCHEMA`    |              Fully qualified name of the proto schema for log message | `com.github.firehose.sampleLogProto.SampleLogMessage`  |
+|   `source.kafka.brokers`   | The url/IP of the Kafka broker to which this consumer should connect to. |   `127.0.0.1:9092`   |
+| `source.kafka.consumer.group.id` |                     The Kafka consumer group id.                      | `kafka-consumer-group-id` |
+|    `source.kafka.topic`    |         The Kafka topic(s) this consumer should subscribe to.         |      `sample-topic`       |
+|       `sink.type`        |                      Sink mode for the firehose                       |          `log`            |
+|   `proto.schema`    |              Fully qualified name of the proto schema for log message | `com.github.firehose.sampleLogProto.SampleLogMessage`  |
 
-* The value of `KAFKA_TOPIC` variable could even be a regex. e.g. `sample-topic-1|sample-topic-2`.
+* The value of `source.kafka.topic` variable could even be a regex. e.g. `sample-topic-1|sample-topic-2`.
 * To subscribe to all smaple topics, the value of this config could be set to `sample-topic.*`.
 
 * Sample configuration for other sinks along with some advanced configurations can be found [here]()
@@ -61,7 +61,7 @@ To know more about these and many more such features, checkout [Firehose Documen
 * Firehose Docker image can be found [here]()
 * Command to run simple Log Sink
 ```
-docker run -e KAFKA_ADDRESS=127.0.0.1:9092 -e CONSUMER_GROUP_ID=kafka-consumer-group-id -e KAFKA_TOPIC=sample-topic -e SINK=log -e KAFKA_CONSUMER_CONFIG_AUTO_OFFSET_RESET=latest -e PROTO_SCHEMA=com.github.firehose.sampleLogProto.SampleLogMessage odpf/firehose:latest
+docker run -e source.kafka.brokers=127.0.0.1:6667 -e source.kafka.consumer.group.id=kafka-consumer-group-id -e source.kafka.topic=sample-topic -e sink.type=log -e source.kafka.consumer.config.auto.offset.reset=latest -e proto.schema=com.github.firehose.sampleLogProto.SampleLogMessage odpf/firehose:latest
 ```
 NOTE: Make sure your protos (.jar file) are located in `work-dir`, this is required for Filter functionality to work.
 

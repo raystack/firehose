@@ -3,7 +3,7 @@ package com.gojek.esb.sink.http.request.uri;
 import com.gojek.de.stencil.client.ClassLoadStencilClient;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.consumer.TestBookingLogMessage;
 import com.gojek.esb.consumer.TestKey;
 import com.gojek.esb.consumer.TestMessage;
@@ -23,18 +23,18 @@ public class UriParserTest {
     private ProtoParser protoParser;
     private ProtoParser testMessageProtoParser;
     private ProtoParser bookingMessageProtoParser;
-    private EsbMessage testEsbMessage;
-    private EsbMessage bookingEsbMessage;
+    private Message message;
+    private Message bookingMessage;
 
     @Before
     public void setUp() {
         initMocks(this);
         TestKey testKey = TestKey.newBuilder().setOrderNumber("ORDER-1-FROM-KEY").build();
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order").setOrderDetails("ORDER-DETAILS").build();
-        TestBookingLogMessage bookingMessage = TestBookingLogMessage.newBuilder().setOrderNumber("bookingOrderNumber").setCustomerTotalFareWithoutSurge(2000L).setAmountPaidByCash(12.3F).build();
+        TestBookingLogMessage testBookingLogMessage = TestBookingLogMessage.newBuilder().setOrderNumber("bookingOrderNumber").setCustomerTotalFareWithoutSurge(2000L).setAmountPaidByCash(12.3F).build();
 
-        testEsbMessage = new EsbMessage(testKey.toByteArray(), testMessage.toByteArray(), "test", 1, 11);
-        bookingEsbMessage = new EsbMessage(testKey.toByteArray(), bookingMessage.toByteArray(), "test", 1, 11);
+        this.message = new Message(testKey.toByteArray(), testMessage.toByteArray(), "test", 1, 11);
+        this.bookingMessage = new Message(testKey.toByteArray(), testBookingLogMessage.toByteArray(), "test", 1, 11);
 
         StencilClient stencilClient = new ClassLoadStencilClient();
         testMessageProtoParser = new ProtoParser(stencilClient, TestMessage.class.getCanonicalName());
@@ -45,7 +45,7 @@ public class UriParserTest {
     public void shouldReturnTheServiceUrlAsItIsWhenServiceUrlIsNotParametrizedAndParserModeIsMessage() {
         UriParser uriParser = new UriParser(testMessageProtoParser, "message");
         String serviceUrl = "http://dummyurl.com";
-        String parsedUrl = uriParser.parse(testEsbMessage, serviceUrl);
+        String parsedUrl = uriParser.parse(message, serviceUrl);
 
         assertEquals(serviceUrl, parsedUrl);
     }
@@ -54,7 +54,7 @@ public class UriParserTest {
     public void shouldReturnTheServiceUrlAsItIsWhenServiceUrlIsNotParametrizedAndParserModeIsKey() {
         UriParser uriParser = new UriParser(testMessageProtoParser, "key");
         String serviceUrl = "http://dummyurl.com";
-        String parsedUrl = uriParser.parse(testEsbMessage, serviceUrl);
+        String parsedUrl = uriParser.parse(message, serviceUrl);
 
         assertEquals(serviceUrl, parsedUrl);
     }
@@ -63,7 +63,7 @@ public class UriParserTest {
     public void shouldSetTheValueInServiceUrlFromGivenProtoIndexWhenServiceUrlIsParametrizedAndParserModeIsMessage() {
         UriParser uriParser = new UriParser(testMessageProtoParser, "message");
         String serviceUrl = "http://dummyurl.com/%s,1";
-        String parsedUrl = uriParser.parse(testEsbMessage, serviceUrl);
+        String parsedUrl = uriParser.parse(message, serviceUrl);
 
         assertEquals("http://dummyurl.com/test-order", parsedUrl);
     }
@@ -72,7 +72,7 @@ public class UriParserTest {
     public void shouldSetTheValueInServiceUrlFromGivenProtoIndexWhenServiceUrlIsParametrizedAndParserModeIsKey() {
         UriParser uriParser = new UriParser(testMessageProtoParser, "key");
         String serviceUrl = "http://dummyurl.com/%s,1";
-        String parsedUrl = uriParser.parse(testEsbMessage, serviceUrl);
+        String parsedUrl = uriParser.parse(message, serviceUrl);
 
         assertEquals("http://dummyurl.com/ORDER-1-FROM-KEY", parsedUrl);
     }
@@ -81,7 +81,7 @@ public class UriParserTest {
     public void shouldSetTheFloatValueInServiceUrlFromGivenProtoIndexWhenServiceUrlIsParametrizedAndParserModeIsMessage() {
         UriParser uriParser = new UriParser(bookingMessageProtoParser, "message");
         String serviceUrl = "http://dummyurl.com/%.2f,16";
-        String parsedUrl = uriParser.parse(bookingEsbMessage, serviceUrl);
+        String parsedUrl = uriParser.parse(bookingMessage, serviceUrl);
 
         assertEquals("http://dummyurl.com/12.30", parsedUrl);
     }
@@ -90,7 +90,7 @@ public class UriParserTest {
     public void shouldSetTheLongValueInServiceUrlFromGivenProtoIndexWhenServiceUrlIsParametrizedAndParserModeIsMessage() {
         UriParser uriParser = new UriParser(bookingMessageProtoParser, "message");
         String serviceUrl = "http://dummyurl.com/%d,52";
-        String parsedUrl = uriParser.parse(bookingEsbMessage, serviceUrl);
+        String parsedUrl = uriParser.parse(bookingMessage, serviceUrl);
 
         assertEquals("http://dummyurl.com/2000", parsedUrl);
     }
@@ -102,7 +102,7 @@ public class UriParserTest {
         String serviceUrl = "http://dummyurl.com/%s,1";
 
         try {
-            uriParser.parse(testEsbMessage, serviceUrl);
+            uriParser.parse(message, serviceUrl);
         } catch (IllegalArgumentException e) {
             assertEquals("Unable to parse Service URL", e.getMessage());
         }
@@ -114,7 +114,7 @@ public class UriParserTest {
         UriParser uriParser = new UriParser(testMessageProtoParser, "message");
         String serviceUrl = "";
         try {
-            uriParser.parse(testEsbMessage, serviceUrl);
+            uriParser.parse(message, serviceUrl);
         } catch (IllegalArgumentException e) {
             assertEquals("Service URL '" + serviceUrl + "' is invalid", e.getMessage());
         }
@@ -126,7 +126,7 @@ public class UriParserTest {
         UriParser uriParser = new UriParser(testMessageProtoParser, "message");
         String serviceUrl = ",,,";
         try {
-            uriParser.parse(testEsbMessage, serviceUrl);
+            uriParser.parse(message, serviceUrl);
         } catch (InvalidConfigurationException e) {
             assertEquals("Empty Service URL configuration: '" + serviceUrl + "'", e.getMessage());
         }
@@ -138,7 +138,7 @@ public class UriParserTest {
         UriParser uriParser = new UriParser(testMessageProtoParser, "message");
         String serviceUrl = "http://dummy.com/%s, 6a";
         try {
-            uriParser.parse(testEsbMessage, serviceUrl);
+            uriParser.parse(message, serviceUrl);
         } catch (IllegalArgumentException e) {
             assertEquals("Invalid Proto Index", e.getMessage());
         }
@@ -150,7 +150,7 @@ public class UriParserTest {
         UriParser uriParser = new UriParser(testMessageProtoParser, "message");
         String serviceUrl = "http://dummy.com/%s, 1000";
         try {
-            uriParser.parse(testEsbMessage, serviceUrl);
+            uriParser.parse(message, serviceUrl);
         } catch (IllegalArgumentException e) {
             assertEquals("Descriptor not found for index: 1000", e.getMessage());
         }

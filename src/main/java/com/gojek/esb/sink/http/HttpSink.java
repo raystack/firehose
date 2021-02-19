@@ -1,7 +1,7 @@
 package com.gojek.esb.sink.http;
 
 import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.exception.NeedToRetry;
 import com.gojek.esb.metrics.Instrumentation;
@@ -55,9 +55,9 @@ public class HttpSink extends AbstractSink {
     }
 
     @Override
-    protected void prepare(List<EsbMessage> esbMessages) throws DeserializerException, IOException {
+    protected void prepare(List<Message> messages) throws DeserializerException, IOException {
         try {
-            httpRequests = request.build(esbMessages);
+            httpRequests = request.build(messages);
         } catch (URISyntaxException e) {
             throw new IOException(e);
         }
@@ -65,7 +65,7 @@ public class HttpSink extends AbstractSink {
 
     @Override
     @Trace(dispatcher = true)
-    protected List<EsbMessage> execute() throws Exception {
+    protected List<Message> execute() throws Exception {
         HttpResponse response = null;
         for (HttpEntityEnclosingRequestBase httpRequest : httpRequests) {
             try {

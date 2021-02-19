@@ -2,7 +2,7 @@ package com.gojek.esb.sink.grpc;
 
 
 import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.consumer.TestGrpcResponse;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
@@ -29,7 +29,7 @@ public class GrpcSinkTest {
     private GrpcSink sink;
 
     @Mock
-    private EsbMessage esbMessage;
+    private Message message;
 
     @Mock
     private GrpcClient grpcClient;
@@ -48,14 +48,14 @@ public class GrpcSinkTest {
 
     @Test
     public void shouldWriteToSink() throws Exception {
-        when(esbMessage.getLogMessage()).thenReturn(new byte[]{});
+        when(message.getLogMessage()).thenReturn(new byte[]{});
         RecordHeaders headers = new RecordHeaders();
-        when(esbMessage.getHeaders()).thenReturn(headers);
+        when(message.getHeaders()).thenReturn(headers);
         TestGrpcResponse build = TestGrpcResponse.newBuilder().setSuccess(true).build();
         DynamicMessage response = DynamicMessage.parseFrom(build.getDescriptorForType(), build.toByteArray());
         when(grpcClient.execute(any(byte[].class), any(RecordHeaders.class))).thenReturn(response);
 
-        sink.pushMessage(Collections.singletonList(esbMessage));
+        sink.pushMessage(Collections.singletonList(message));
         verify(grpcClient, times(1)).execute(any(byte[].class), eq(headers));
 
         verify(instrumentation, times(1)).logDebug("Preparing {} messages", 1);
@@ -66,12 +66,12 @@ public class GrpcSinkTest {
 
     @Test
     public void shouldReturnBackListOfFailedMessages() throws IOException, DeserializerException {
-        when(esbMessage.getLogMessage()).thenReturn(new byte[]{});
-        when(esbMessage.getHeaders()).thenReturn(new RecordHeaders());
+        when(message.getLogMessage()).thenReturn(new byte[]{});
+        when(message.getHeaders()).thenReturn(new RecordHeaders());
         TestGrpcResponse build = TestGrpcResponse.newBuilder().setSuccess(false).build();
         DynamicMessage response = DynamicMessage.parseFrom(build.getDescriptorForType(), build.toByteArray());
         when(grpcClient.execute(any(), any(RecordHeaders.class))).thenReturn(response);
-        List<EsbMessage> failedMessages = sink.pushMessage(Collections.singletonList(esbMessage));
+        List<Message> failedMessages = sink.pushMessage(Collections.singletonList(message));
 
         assertFalse(failedMessages.isEmpty());
         assertEquals(1, failedMessages.size());

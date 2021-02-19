@@ -27,7 +27,7 @@ public class TopicPartitionOffsets implements Offsets {
     public void commit(ConsumerRecords<byte[], byte[]> records) {
         Map<TopicPartition, OffsetAndMetadata> offsets = createOffsetsAndMetadata(records);
 
-        if (kafkaConsumerConfig.asyncCommitEnabled()) {
+        if (kafkaConsumerConfig.isSourceKafkaAsyncCommitEnable()) {
             commitAsync(offsets);
         } else {
             kafkaConsumer.commitSync(offsets);

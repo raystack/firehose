@@ -1,6 +1,6 @@
 package com.gojek.esb.sink.log;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.consumer.TestKey;
 import com.gojek.esb.consumer.TestMessage;
 import com.gojek.esb.exception.DeserializerException;
@@ -34,16 +34,16 @@ public class LogSinkTest {
 
     @Before
     public void setup() throws IOException {
-        Mockito.when(parser.parse(Mockito.any(EsbMessage.class))).thenReturn(dynamicMessage);
+        Mockito.when(parser.parse(Mockito.any(Message.class))).thenReturn(dynamicMessage);
 
         sink = new LogSink(parser, instrumentation);
     }
 
     @Test
     public void shouldPrintProto() throws IOException, DeserializerException {
-        List<EsbMessage> esbMessages = Arrays.asList(new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
+        List<Message> messages = Arrays.asList(new Message(new byte[0], new byte[0], "topic", 0, 100));
 
-        sink.pushMessage(esbMessages);
+        sink.pushMessage(messages);
 
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo(
                 Mockito.eq("\n================= DATA =======================\n{}"),
@@ -52,21 +52,21 @@ public class LogSinkTest {
 
     @Test
     public void shouldParseProto() throws IOException, InvocationTargetException, IllegalAccessException, DeserializerException {
-        List<EsbMessage> esbMessages = Arrays.asList(new EsbMessage(new byte[0], new byte[0], "topic", 0, 100),
-                new EsbMessage(new byte[0], new byte[0], "topic-2", 0, 100));
+        List<Message> messages = Arrays.asList(new Message(new byte[0], new byte[0], "topic", 0, 100),
+                new Message(new byte[0], new byte[0], "topic-2", 0, 100));
 
-        sink.pushMessage(esbMessages);
+        sink.pushMessage(messages);
 
-        Mockito.verify(parser, Mockito.times(2)).parse(Mockito.any(EsbMessage.class));
+        Mockito.verify(parser, Mockito.times(2)).parse(Mockito.any(Message.class));
     }
 
     @Test
     public void shouldPrintTestProto() throws IOException, DeserializerException {
         TestKey testKey = TestKey.getDefaultInstance();
         TestMessage testMessage = TestMessage.getDefaultInstance();
-        List<EsbMessage> esbMessages = Arrays.asList(new EsbMessage(testKey.toByteArray(), testMessage.toByteArray(), "topic", 0, 100));
+        List<Message> messages = Arrays.asList(new Message(testKey.toByteArray(), testMessage.toByteArray(), "topic", 0, 100));
 
-        sink.pushMessage(esbMessages);
+        sink.pushMessage(messages);
 
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo(
                 Mockito.eq("\n================= DATA =======================\n{}"),
@@ -77,7 +77,7 @@ public class LogSinkTest {
     public void shouldSkipParsingAndNotFailIfKeyIsNull() throws IOException, DeserializerException, InvocationTargetException, IllegalAccessException {
         byte[] testMessage = TestMessage.getDefaultInstance().toByteArray();
 
-        sink.pushMessage(Arrays.asList(new EsbMessage(null, testMessage, "topic", 0, 100)));
+        sink.pushMessage(Arrays.asList(new Message(null, testMessage, "topic", 0, 100)));
 
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo(
                 Mockito.eq("\n================= DATA =======================\n{}"),

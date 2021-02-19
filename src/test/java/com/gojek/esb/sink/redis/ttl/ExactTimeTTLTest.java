@@ -12,7 +12,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 public class ExactTimeTTLTest {
 
-    private ExactTimeTTL exactTimeTTL;
+    private ExactTimeTtl exactTimeTTL;
     @Mock
     private Pipeline pipeline;
 
@@ -22,18 +22,18 @@ public class ExactTimeTTLTest {
     @Before
     public void setup() {
         initMocks(this);
-        exactTimeTTL = new ExactTimeTTL(10000000L);
+        exactTimeTTL = new ExactTimeTtl(10000000L);
     }
 
     @Test
     public void shouldSetUnixTimeStampAsTTLForPipeline() {
-        exactTimeTTL.setTTL(pipeline, "test-key");
+        exactTimeTTL.setTtl(pipeline, "test-key");
         verify(pipeline, times(1)).expireAt("test-key", 10000000L);
     }
 
     @Test
     public void shouldSetUnixTimeStampAsTTLForCluster() {
-        exactTimeTTL.setTTL(jedisCluster, "test-key");
+        exactTimeTTL.setTtl(jedisCluster, "test-key");
         verify(jedisCluster, times(1)).expireAt("test-key", 10000000L);
     }
 }
