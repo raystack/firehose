@@ -6,9 +6,9 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 import java.util.List;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.serializer.EsbMessageSerializer;
+import com.gojek.esb.serializer.MessageSerializer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,24 +20,24 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class JsonBodyTest {
 
   @Mock
-  private EsbMessageSerializer esbMessageSerializer;
+  private MessageSerializer messageSerializer;
 
-  private EsbMessage esbMessage;
-  private List<EsbMessage> esbMessages;
+  private Message message;
+  private List<Message> messages;
 
   @Before
   public void setUp() {
-    esbMessage = new EsbMessage(new byte[] {10, 20 }, new byte[] {1, 2 }, "sample-topic", 0, 100);
-    esbMessages = Collections.singletonList(esbMessage);
+    message = new Message(new byte[] {10, 20 }, new byte[] {1, 2 }, "sample-topic", 0, 100);
+    messages = Collections.singletonList(message);
   }
 
   @Test
   public void shouldReturnSameSizeOfBodyAsEsbMessage() {
-    JsonBody jsonBody = new JsonBody(esbMessageSerializer);
+    JsonBody jsonBody = new JsonBody(messageSerializer);
 
     List<String> bodyContent;
     try {
-      bodyContent = jsonBody.serialize(esbMessages);
+      bodyContent = jsonBody.serialize(messages);
     } catch (DeserializerException e) {
       throw new RuntimeException(e.toString());
     }
@@ -49,10 +49,10 @@ public class JsonBodyTest {
     List<String> contentString;
     String mockSerializeResult = "{\"MockSerializer\": []}";
     try {
-      when(esbMessageSerializer.serialize(esbMessage)).thenReturn(mockSerializeResult);
+      when(messageSerializer.serialize(message)).thenReturn(mockSerializeResult);
 
-      JsonBody jsonBody = new JsonBody(esbMessageSerializer);
-      contentString = jsonBody.serialize(esbMessages);
+      JsonBody jsonBody = new JsonBody(messageSerializer);
+      contentString = jsonBody.serialize(messages);
 
     } catch (DeserializerException e) {
       throw new RuntimeException(e.toString());

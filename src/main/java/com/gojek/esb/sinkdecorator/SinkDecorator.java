@@ -1,6 +1,6 @@
 package com.gojek.esb.sinkdecorator;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.sink.Sink;
 
@@ -16,8 +16,8 @@ public class SinkDecorator implements Sink {
     }
 
     @Override
-    public List<EsbMessage> pushMessage(List<EsbMessage> esbMessage) throws IOException, DeserializerException {
-        return this.sink.pushMessage(esbMessage);
+    public List<Message> pushMessage(List<Message> message) throws IOException, DeserializerException {
+        return this.sink.pushMessage(message);
     }
 
     @Override

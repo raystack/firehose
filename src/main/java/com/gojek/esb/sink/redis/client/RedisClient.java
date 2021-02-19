@@ -1,13 +1,13 @@
 package com.gojek.esb.sink.redis.client;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 
 import java.util.List;
 
 public interface RedisClient {
-    void prepare(List<EsbMessage> esbMessages);
+    void prepare(List<Message> messages);
 
-    List<EsbMessage> execute();
+    List<Message> execute();
 
     void close();
 }

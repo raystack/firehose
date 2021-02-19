@@ -1,7 +1,7 @@
 package com.gojek.esb.proto;
 
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.sink.db.DBMapper;
+import com.gojek.esb.sink.jdbc.JdbcMapper;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -48,13 +48,13 @@ public class ProtoToFieldMapper {
         Enumeration<Object> keys = protoToDbMapping.keys();
         while (keys.hasMoreElements()) {
             String key = (String) keys.nextElement();
-            DBMapper dbMapper = new DBMapper(key, message, protoToDbMapping).initialize();
-            Object column = dbMapper.getColumn();
+            JdbcMapper jdbcMapper = new JdbcMapper(key, message, protoToDbMapping).initialize();
+            Object column = jdbcMapper.getColumn();
             if (column instanceof String) {
-                columnToValueMap = dbMapper.add(columnToValueMap);
+                columnToValueMap = jdbcMapper.add(columnToValueMap);
             } else if (column instanceof Properties) {
-                Asserts.check(dbMapper.getColumnValue() instanceof Message, "could not handle mapping");
-                updateMapping((Message) dbMapper.getColumnValue(), (Properties) column, columnToValueMap);
+                Asserts.check(jdbcMapper.getColumnValue() instanceof Message, "could not handle mapping");
+                updateMapping((Message) jdbcMapper.getColumnValue(), (Properties) column, columnToValueMap);
             } else {
                 throw new RuntimeException("column can either be properties or string");
             }

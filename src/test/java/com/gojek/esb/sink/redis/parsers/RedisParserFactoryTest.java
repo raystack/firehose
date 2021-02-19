@@ -3,7 +3,7 @@ package com.gojek.esb.sink.redis.parsers;
 import com.gojek.de.stencil.client.ClassLoadStencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.RedisSinkConfig;
-import com.gojek.esb.config.enums.RedisSinkType;
+import com.gojek.esb.config.enums.RedisSinkDataType;
 import com.gojek.esb.consumer.TestMessage;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.proto.ProtoToFieldMapper;
@@ -44,13 +44,13 @@ public class RedisParserFactoryTest {
         protoToFieldMapper = new ProtoToFieldMapper(testMessageProtoParser, getProperties("3", "details"));
     }
 
-    private void setRedisSinkConfig(RedisSinkType redisSinkType) {
-        when(redisSinkConfig.getRedisSinkType()).thenReturn(redisSinkType);
+    private void setRedisSinkConfig(RedisSinkDataType redisSinkDataType) {
+        when(redisSinkConfig.getSinkRedisDataType()).thenReturn(redisSinkDataType);
     }
 
     @Test
     public void shouldReturnNewRedisListParser() {
-        setRedisSinkConfig(RedisSinkType.LIST);
+        setRedisSinkConfig(RedisSinkDataType.LIST);
 
         RedisParser parser = RedisParserFactory.getParser(protoToFieldMapper, testMessageProtoParser, redisSinkConfig, statsDReporter);
 
@@ -59,7 +59,7 @@ public class RedisParserFactoryTest {
 
     @Test
     public void shouldReturnNewRedisHashSetParser() {
-        setRedisSinkConfig(RedisSinkType.HASHSET);
+        setRedisSinkConfig(RedisSinkDataType.HASHSET);
 
         RedisParser parser = RedisParserFactory.getParser(protoToFieldMapper, testMessageProtoParser, redisSinkConfig, statsDReporter);
 

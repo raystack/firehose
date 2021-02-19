@@ -56,7 +56,7 @@ gcm_key: "abc123"
 * `sampleLogMessage.getDriverId()=="abcde12345"&&sampleLogMessage.getDriverLocation().getLatitude()>0.6487193703651428`
 * `sampleLogMessage.getDriverLocation().getAltitudeInMeters>0.9949166178703308`
 
-**Note: Use `SINK=log` for testing the applied filtering** 
+**Note: Use `sink.type=log` for testing the applied filtering** 
 
 
 

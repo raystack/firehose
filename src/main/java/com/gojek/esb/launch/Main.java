@@ -1,9 +1,9 @@
 package com.gojek.esb.launch;
 
 import com.gojek.esb.config.KafkaConsumerConfig;
-import com.gojek.esb.consumer.FireHoseConsumer;
+import com.gojek.esb.consumer.FirehoseConsumer;
 import com.gojek.esb.consumer.Task;
-import com.gojek.esb.factory.FireHoseConsumerFactory;
+import com.gojek.esb.factory.FirehoseConsumerFactory;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.metrics.StatsDReporterFactory;
@@ -23,18 +23,18 @@ public class Main {
                 .fromKafkaConsumerConfig(kafkaConsumerConfig)
                 .buildReporter();
         Instrumentation instrumentation = new Instrumentation(statsDReporter, Main.class);
-        instrumentation.logInfo("Number of consumer threads: " + kafkaConsumerConfig.noOfConsumerThreads());
-        instrumentation.logInfo("Delay to clean up consumer threads in ms: " + kafkaConsumerConfig.threadCleanupDelay());
+        instrumentation.logInfo("Number of consumer threads: " + kafkaConsumerConfig.getConsumerThreadsNum());
+        instrumentation.logInfo("Delay to clean up consumer threads in ms: " + kafkaConsumerConfig.getConsumerThreadsCleanupDelay());
 
         Task consumerTask = new Task(
-                kafkaConsumerConfig.noOfConsumerThreads(),
-                kafkaConsumerConfig.threadCleanupDelay(),
+                kafkaConsumerConfig.getConsumerThreadsNum(),
+                kafkaConsumerConfig.getConsumerThreadsCleanupDelay(),
                 new Instrumentation(statsDReporter, Task.class),
                 taskFinished -> {
 
-                    FireHoseConsumer fireHoseConsumer = null;
+                    FirehoseConsumer firehoseConsumer = null;
                     try {
-                        fireHoseConsumer = new FireHoseConsumerFactory(
+                        firehoseConsumer = new FirehoseConsumerFactory(
                                 kafkaConsumerConfig,
                                 statsDReporter)
                                 .buildConsumer();
@@ -43,13 +43,13 @@ public class Main {
                                 instrumentation.logWarn("Consumer Thread interrupted, leaving the loop!");
                                 break;
                             }
-                            fireHoseConsumer.processPartitions();
+                            firehoseConsumer.processPartitions();
                         }
                     } catch (Exception e) {
                         instrumentation.captureFatalError(e, "Exception on creating the consumer, exiting the application");
                         System.exit(1);
                     } finally {
-                        ensureThreadInterruptStateIsClearedAndClose(fireHoseConsumer, instrumentation);
+                        ensureThreadInterruptStateIsClearedAndClose(firehoseConsumer, instrumentation);
                         taskFinished.run();
                     }
                 });
@@ -64,10 +64,10 @@ public class Main {
         instrumentation.logInfo("Exiting main thread");
     }
 
-    private static void ensureThreadInterruptStateIsClearedAndClose(FireHoseConsumer fireHoseConsumer, Instrumentation instrumentation) {
+    private static void ensureThreadInterruptStateIsClearedAndClose(FirehoseConsumer firehoseConsumer, Instrumentation instrumentation) {
         Thread.interrupted();
         try {
-            fireHoseConsumer.close();
+            firehoseConsumer.close();
         } catch (IOException e) {
             instrumentation.captureFatalError(e, "Exception on closing firehose consumer");
         }

@@ -1,7 +1,7 @@
 package com.gojek.esb.sink.http;
 
 import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.AbstractSink;
@@ -35,8 +35,8 @@ public class HttpSinkFactoryTest {
     @Mock
     private StencilClient stencilClient;
 
-    private List<EsbMessage> esbMessages = Collections.singletonList(
-            new EsbMessage(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100));
+    private List<Message> messages = Collections.singletonList(
+            new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100));
 
     private static ClientAndServer mockServer;
 
@@ -67,13 +67,13 @@ public class HttpSinkFactoryTest {
     @Test(expected = Test.None.class)
     public void shouldNotEmbedAccessTokenIfGoAuthDisabled() throws IOException, DeserializerException {
         Map<String, String> configuration = new HashMap<>();
-        configuration.put("HTTP_SINK_OAUTH2_ENABLED", "false");
-        configuration.put("HTTP_SINK_OAUTH2_ACCESS_TOKEN_URL", "http://127.0.0.1:1080/oauth2/token");
-        configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api");
+        configuration.put("sink.http.oauth2.enable", "false");
+        configuration.put("sink.http.oauth2.access.token.url", "http://127.0.0.1:1080/oauth2/token");
+        configuration.put("sink.http.service.url", "http://127.0.0.1:1080/api");
         AbstractSink sink = new HttpSinkFactory().create(configuration, statsDReporter, stencilClient);
 
         when(statsDReporter.getClock()).thenReturn(new Clock());
-        sink.pushMessage(esbMessages);
+        sink.pushMessage(messages);
 
         mockServer.verify(request().withPath("/oauth2/token"), VerificationTimes.exactly(0));
     }
@@ -81,13 +81,13 @@ public class HttpSinkFactoryTest {
     @Test(expected = Test.None.class)
     public void shouldEmbedAccessTokenIfGoAuthEnabled() throws IOException, DeserializerException {
         Map<String, String> configuration = new HashMap<>();
-        configuration.put("HTTP_SINK_OAUTH2_ENABLED", "true");
-        configuration.put("HTTP_SINK_OAUTH2_ACCESS_TOKEN_URL", "http://127.0.0.1:1080/oauth2/token");
-        configuration.put("SERVICE_URL", "http://127.0.0.1:1080/api");
+        configuration.put("sink.http.oauth2.enable", "true");
+        configuration.put("sink.http.oauth2.access.token.url", "http://127.0.0.1:1080/oauth2/token");
+        configuration.put("sink.http.service.url", "http://127.0.0.1:1080/api");
         AbstractSink sink = new HttpSinkFactory().create(configuration, statsDReporter, stencilClient);
 
         when(statsDReporter.getClock()).thenReturn(new Clock());
-        sink.pushMessage(esbMessages);
+        sink.pushMessage(messages);
 
         mockServer.verify(request().withPath("/oauth2/token"), VerificationTimes.exactly(1));
     }

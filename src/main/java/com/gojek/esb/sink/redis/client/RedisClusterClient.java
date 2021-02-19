@@ -1,10 +1,10 @@
 package com.gojek.esb.sink.redis.client;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import com.gojek.esb.sink.redis.parsers.RedisParser;
-import com.gojek.esb.sink.redis.ttl.RedisTTL;
+import com.gojek.esb.sink.redis.ttl.RedisTtl;
 import redis.clients.jedis.JedisCluster;
 
 import java.util.ArrayList;
@@ -14,11 +14,11 @@ public class RedisClusterClient implements RedisClient {
 
     private Instrumentation instrumentation;
     private RedisParser redisParser;
-    private RedisTTL redisTTL;
+    private RedisTtl redisTTL;
     private JedisCluster jedisCluster;
     private List<RedisDataEntry> redisDataEntries;
 
-    public RedisClusterClient(Instrumentation instrumentation, RedisParser redisParser, RedisTTL redisTTL, JedisCluster jedisCluster) {
+    public RedisClusterClient(Instrumentation instrumentation, RedisParser redisParser, RedisTtl redisTTL, JedisCluster jedisCluster) {
         this.instrumentation = instrumentation;
         this.redisParser = redisParser;
         this.redisTTL = redisTTL;
@@ -26,12 +26,12 @@ public class RedisClusterClient implements RedisClient {
     }
 
     @Override
-    public void prepare(List<EsbMessage> esbMessages) {
-        redisDataEntries = redisParser.parse(esbMessages);
+    public void prepare(List<Message> messages) {
+        redisDataEntries = redisParser.parse(messages);
     }
 
     @Override
-    public List<EsbMessage> execute() {
+    public List<Message> execute() {
         redisDataEntries.forEach(redisDataEntry -> redisDataEntry.pushMessage(jedisCluster, redisTTL));
         return new ArrayList<>();
     }

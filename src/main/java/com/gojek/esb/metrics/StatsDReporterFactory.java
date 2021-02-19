@@ -48,7 +48,7 @@ public class StatsDReporterFactory {
       LOGGER.info("NonBlocking StatsD client connection established");
     } catch (Exception e) {
       LOGGER.warn("Exception on creating StatsD client, disabling StatsD and Audit client", e);
-      LOGGER.warn("FireHose is running without collecting any metrics!!!!!!!!");
+      LOGGER.warn("Firehose is running without collecting any metrics!!!!!!!!");
       statsDClient = new NoOpStatsDClient();
     }
     return statsDClient;

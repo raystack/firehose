@@ -1,13 +1,13 @@
 package com.gojek.esb.sink.redis.client;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
 import com.gojek.esb.sink.redis.dataentry.RedisHashSetFieldEntry;
 import com.gojek.esb.sink.redis.dataentry.RedisListEntry;
 import com.gojek.esb.sink.redis.parsers.RedisParser;
-import com.gojek.esb.sink.redis.ttl.RedisTTL;
+import com.gojek.esb.sink.redis.ttl.RedisTtl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,36 +42,36 @@ public class RedisClusterClientTest {
     private RedisParser redisParser;
 
     @Mock
-    private RedisTTL redisTTL;
-    private List<EsbMessage> esbMessages;
+    private RedisTtl redisTTL;
+    private List<Message> messages;
     private RedisClusterClient redisClusterClient;
     private ArrayList<RedisDataEntry> redisDataEntries;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        esbMessages = Arrays.asList(new EsbMessage(new byte[0], new byte[0], "topic", 0, 100),
-                new EsbMessage(new byte[0], new byte[0], "topic", 0, 100));
+        messages = Arrays.asList(new Message(new byte[0], new byte[0], "topic", 0, 100),
+                new Message(new byte[0], new byte[0], "topic", 0, 100));
 
         redisClusterClient = new RedisClusterClient(instrumentation, redisParser, redisTTL, jedisCluster);
 
         redisDataEntries = new ArrayList<>();
 
-        when(redisParser.parse(esbMessages)).thenReturn(redisDataEntries);
+        when(redisParser.parse(messages)).thenReturn(redisDataEntries);
     }
 
     @Test
     public void shouldParseEsbMessagesWhenPreparing() {
-        redisClusterClient.prepare(esbMessages);
+        redisClusterClient.prepare(messages);
 
-        verify(redisParser).parse(esbMessages);
+        verify(redisParser).parse(messages);
     }
 
     @Test
     public void shouldSendAllListDataWhenExecuting() {
         populateRedisDataEntry(firstRedisListEntry, secondRedisListEntry);
 
-        redisClusterClient.prepare(esbMessages);
+        redisClusterClient.prepare(messages);
         redisClusterClient.execute();
 
         verify(jedisCluster).lpush(firstRedisListEntry.getKey(), firstRedisListEntry.getValue());
@@ -82,7 +82,7 @@ public class RedisClusterClientTest {
     public void shouldSendAllSetDataWhenExecuting() {
         populateRedisDataEntry(firstRedisSetEntry, secondRedisSetEntry);
 
-        redisClusterClient.prepare(esbMessages);
+        redisClusterClient.prepare(messages);
         redisClusterClient.execute();
 
         verify(jedisCluster).hset(firstRedisSetEntry.getKey(), firstRedisSetEntry.getField(), firstRedisListEntry.getValue());
@@ -93,8 +93,8 @@ public class RedisClusterClientTest {
     public void shouldReturnEmptyArrayAfterExecuting() {
         populateRedisDataEntry(firstRedisSetEntry, secondRedisSetEntry);
 
-        redisClusterClient.prepare(esbMessages);
-        List<EsbMessage> retryElements = redisClusterClient.execute();
+        redisClusterClient.prepare(messages);
+        List<Message> retryElements = redisClusterClient.execute();
 
         Assert.assertEquals(0, retryElements.size());
     }

@@ -2,9 +2,9 @@ package com.gojek.esb.sink.influxdb;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.builder.PointBuilder;
+import com.gojek.esb.sink.influxdb.builder.PointBuilder;
 import com.gojek.esb.config.InfluxSinkConfig;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.sink.AbstractSink;
 import com.gojek.esb.metrics.Instrumentation;
 import com.google.protobuf.DynamicMessage;
@@ -36,9 +36,9 @@ public class InfluxSink extends AbstractSink {
     }
 
     @Override
-    protected void prepare(List<EsbMessage> esbMessages) throws IOException {
-        batchPoints = BatchPoints.database(config.getDatabaseName()).retentionPolicy(config.getRetentionPolicy()).build();
-        for (EsbMessage esbMessage : esbMessages) {
+    protected void prepare(List<Message> messages) throws IOException {
+        batchPoints = BatchPoints.database(config.getSinkInfluxDbName()).retentionPolicy(config.getSinkInfluxRetentionPolicy()).build();
+        for (Message esbMessage : messages) {
             DynamicMessage message = protoParser.parse(esbMessage.getLogMessage());
             Point point = pointBuilder.buildPoint(message);
             getInstrumentation().logDebug("Data point: {}", point.toString());
@@ -47,7 +47,7 @@ public class InfluxSink extends AbstractSink {
     }
 
     @Override
-    protected List<EsbMessage> execute() {
+    protected List<Message> execute() {
         getInstrumentation().logDebug("Batch points: {}", batchPoints.toString());
         client.write(batchPoints);
         return new ArrayList<>();

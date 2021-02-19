@@ -1,6 +1,6 @@
 package com.gojek.esb.sinkdecorator;
 
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
@@ -36,8 +36,8 @@ public class SinkWithRetryQueue extends SinkDecorator {
     }
 
     @Override
-    public List<EsbMessage> pushMessage(List<EsbMessage> esbMessage) throws IOException, DeserializerException {
-        List<EsbMessage> retryQueueMessages = super.pushMessage(esbMessage);
+    public List<Message> pushMessage(List<Message> message) throws IOException, DeserializerException {
+        List<Message> retryQueueMessages = super.pushMessage(message);
         int attemptCount = 0;
 
         while (!retryQueueMessages.isEmpty()) {
@@ -49,13 +49,13 @@ public class SinkWithRetryQueue extends SinkDecorator {
         return retryQueueMessages;
     }
 
-    private ArrayList<EsbMessage> pushToKafka(List<EsbMessage> failedMessages) {
+    private ArrayList<Message> pushToKafka(List<Message> failedMessages) {
         CountDownLatch completedLatch = new CountDownLatch(1);
         AtomicInteger recordsProcessed = new AtomicInteger();
-        ArrayList<EsbMessage> retryMessages = new ArrayList<>();
+        ArrayList<Message> retryMessages = new ArrayList<>();
 
         instrumentation.logInfo("Pushing {} messages to retry queue topic : {}", failedMessages.size(), topic);
-        for (EsbMessage message : failedMessages) {
+        for (Message message : failedMessages) {
             kafkaProducer.send(new ProducerRecord<>(topic, null, null, message.getLogKey(), message.getLogMessage(),
                     message.getHeaders()), (metadata, e) -> {
                 recordsProcessed.incrementAndGet();
@@ -81,7 +81,7 @@ public class SinkWithRetryQueue extends SinkDecorator {
         return retryMessages;
     }
 
-    private void addToFailedRecords(ArrayList<EsbMessage> retryMessages, EsbMessage message) {
+    private void addToFailedRecords(ArrayList<Message> retryMessages, Message message) {
         synchronized (this) {
             retryMessages.add(message);
         }

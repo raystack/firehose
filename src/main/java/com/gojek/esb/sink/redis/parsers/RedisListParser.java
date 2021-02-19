@@ -2,7 +2,7 @@ package com.gojek.esb.sink.redis.parsers;
 
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.RedisSinkConfig;
-import com.gojek.esb.consumer.EsbMessage;
+import com.gojek.esb.consumer.Message;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.redis.dataentry.RedisDataEntry;
@@ -23,12 +23,12 @@ public class RedisListParser extends RedisParser {
     }
 
     @Override
-    public List<RedisDataEntry> parse(EsbMessage esbMessage) {
-        DynamicMessage parsedMessage = parseEsbMessage(esbMessage);
-        String redisKey = parseTemplate(parsedMessage, redisSinkConfig.getRedisKeyTemplate());
-        String protoIndex = redisSinkConfig.getRedisListDataProtoIndex();
+    public List<RedisDataEntry> parse(Message message) {
+        DynamicMessage parsedMessage = parseEsbMessage(message);
+        String redisKey = parseTemplate(parsedMessage, redisSinkConfig.getSinkRedisKeyTemplate());
+        String protoIndex = redisSinkConfig.getSinkRedisListDataProtoIndex();
         if (protoIndex == null) {
-            throw new IllegalArgumentException("Please provide REDIS_LIST_DATA_PROTO_INDEX in list sink");
+            throw new IllegalArgumentException("Please provide sink.redis.list.data.proto.index in list sink");
         }
         List<RedisDataEntry> messageEntries = new ArrayList<>();
         messageEntries.add(new RedisListEntry(redisKey, getDataByFieldNumber(parsedMessage, protoIndex).toString(), new Instrumentation(statsDReporter, RedisListEntry.class)));
