@@ -61,7 +61,7 @@ public class QueryTemplate {
                 .filter(e -> !e.isEmpty())
                 .collect(Collectors.toSet());
 
-        Properties messageProtoToDBColumnsMapping = jdbcSinkConfig.getInputOutputMapping();
+        Properties messageProtoToDBColumnsMapping = jdbcSinkConfig.getInputSchemaProtoToColumnMapping();
         insertColumns = getInsertColumns(messageProtoToDBColumnsMapping);
 
         updateColumns = selectNonUniqueKeyColumns(uniqueKeys, insertColumns);

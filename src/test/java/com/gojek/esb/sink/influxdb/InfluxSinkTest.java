@@ -74,7 +74,7 @@ public class InfluxSinkTest {
         props.setProperty("sink.influx.measurement.name", measurementName);
         props.setProperty("sink.influx.proto.event.timestamp.index", "2");
         props.setProperty("sink.influx.db.name", databaseName);
-        props.setProperty("proto.schema", TestFeedbackLogMessage.class.getName());
+        props.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
 
         TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder().setDriverId(driverId).setOrderNumber(orderNumber)
                 .setFeedbackComment(feedbackComment).setTipAmount(tipAmount).setEventTimestamp(
@@ -111,7 +111,7 @@ public class InfluxSinkTest {
         setupTagNameIndexMappingProperties();
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
 
-        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getProtoSchema()), client, stencilClient);
+        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getInputSchemaProtoClass()), client, stencilClient);
 
         ArgumentCaptor<BatchPoints> batchPointsArgumentCaptor = ArgumentCaptor.forClass(BatchPoints.class);
 
@@ -127,7 +127,7 @@ public class InfluxSinkTest {
         props.setProperty("sink.influx.field.name.proto.index.mapping", emptyFieldNameIndex);
         props.setProperty("sink.influx.tag.name.proto.index.mapping", emptyTagNameIndexMapping);
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
-        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getProtoSchema()), client, stencilClient);
+        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getInputSchemaProtoClass()), client, stencilClient);
 
         try {
             sink.pushMessage(messages);
@@ -142,7 +142,7 @@ public class InfluxSinkTest {
         setupFieldNameIndexMappingProperties();
         setupTagNameIndexMappingProperties();
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
-        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getProtoSchema()), client, stencilClient);
+        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getInputSchemaProtoClass()), client, stencilClient);
 
         RuntimeException runtimeException = new RuntimeException();
         doThrow(runtimeException).when(instrumentation).startExecution();
@@ -159,7 +159,7 @@ public class InfluxSinkTest {
         setupFieldNameIndexMappingProperties();
         props.setProperty("sink.influx.tag.name.proto.index.mapping", emptyTagNameIndexMapping);
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
-        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getProtoSchema()), client, stencilClient);
+        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getInputSchemaProtoClass()), client, stencilClient);
         ArgumentCaptor<BatchPoints> batchPointsArgumentCaptor = ArgumentCaptor.forClass(BatchPoints.class);
 
         sink.pushMessage(messages);
@@ -176,7 +176,7 @@ public class InfluxSinkTest {
     public void shouldCloseStencilClient() throws IOException {
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
 
-        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(mockStencilClient, config.getProtoSchema()), client, mockStencilClient);
+        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(mockStencilClient, config.getInputSchemaProtoClass()), client, mockStencilClient);
         sink.close();
 
         verify(mockStencilClient, times(1)).close();
@@ -186,7 +186,7 @@ public class InfluxSinkTest {
     public void shouldLogWhenClosingConnection() throws IOException {
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
 
-        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(mockStencilClient, config.getProtoSchema()), client, mockStencilClient);
+        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(mockStencilClient, config.getInputSchemaProtoClass()), client, mockStencilClient);
         sink.close();
 
         verify(instrumentation, times(1)).logInfo("InfluxDB connection closing");
@@ -198,7 +198,7 @@ public class InfluxSinkTest {
         setupTagNameIndexMappingProperties();
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
 
-        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getProtoSchema()), client, stencilClient);
+        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getInputSchemaProtoClass()), client, stencilClient);
         ArgumentCaptor<BatchPoints> batchPointsArgumentCaptor = ArgumentCaptor.forClass(BatchPoints.class);
 
         sink.pushMessage(messages);

@@ -29,7 +29,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class SinkWithRetryQueueTest {
+public class SinkWithDlqTest {
 
     @Mock
     private KafkaProducer<byte[], byte[]> kafkaProducer;
@@ -57,11 +57,11 @@ public class SinkWithRetryQueueTest {
     @Test
     public void shouldReturnEmptyListIfSuperReturnsEmptyList() throws IOException, DeserializerException {
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(new ArrayList<>());
-        SinkWithRetryQueue sinkWithRetryQueue = SinkWithRetryQueue.withInstrumentationFactory(sinkWithRetry, kafkaProducer, "test-topic",
+        SinkWithDlq sinkWithDlq = SinkWithDlq.withInstrumentationFactory(sinkWithRetry, kafkaProducer, "test-topic",
                 statsDReporter, backOffProvider);
         ArrayList<Message> esbMessages = new ArrayList<>();
         esbMessages.add(message);
-        List<Message> messages = sinkWithRetryQueue.pushMessage(esbMessages);
+        List<Message> messages = sinkWithDlq.pushMessage(esbMessages);
 
         assertTrue(messages.isEmpty());
         verifyZeroInteractions(kafkaProducer);
@@ -74,11 +74,11 @@ public class SinkWithRetryQueueTest {
         messages.add(message);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, kafkaProducer, "test-topic",
                 instrumentation, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
-                sinkWithRetryQueue.pushMessage(messages);
+                sinkWithDlq.pushMessage(messages);
             } catch (IOException | DeserializerException e) {
                 e.printStackTrace();
             }
@@ -100,11 +100,11 @@ public class SinkWithRetryQueueTest {
         messages.add(message);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, kafkaProducer, "test-topic",
                 instrumentation, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
-                sinkWithRetryQueue.pushMessage(messages);
+                sinkWithDlq.pushMessage(messages);
             } catch (IOException | DeserializerException e) {
                 e.printStackTrace();
             }
@@ -144,11 +144,11 @@ public class SinkWithRetryQueueTest {
         messages.add(msg2);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, kafkaProducer, "test-topic",
                 instrumentation, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
-                sinkWithRetryQueue.pushMessage(messages);
+                sinkWithDlq.pushMessage(messages);
             } catch (IOException | DeserializerException e) {
                 e.printStackTrace();
             }
@@ -177,11 +177,11 @@ public class SinkWithRetryQueueTest {
         messages.add(message);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, kafkaProducer, "test-topic",
                 instrumentation, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
-                sinkWithRetryQueue.pushMessage(messages);
+                sinkWithDlq.pushMessage(messages);
             } catch (IOException | DeserializerException e) {
                 e.printStackTrace();
             }
@@ -207,11 +207,11 @@ public class SinkWithRetryQueueTest {
         messages.add(message);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, kafkaProducer, "test-topic",
                 instrumentation, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
-                sinkWithRetryQueue.pushMessage(messages);
+                sinkWithDlq.pushMessage(messages);
                 completedLatch.countDown();
             } catch (IOException | DeserializerException e) {
                 e.printStackTrace();
@@ -240,11 +240,11 @@ public class SinkWithRetryQueueTest {
         messages.add(message);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithRetryQueue sinkWithRetryQueue = new SinkWithRetryQueue(sinkWithRetry, kafkaProducer, "test-topic",
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, kafkaProducer, "test-topic",
                 instrumentation, backOffProvider);
         Thread thread = new Thread(() -> {
             try {
-                sinkWithRetryQueue.pushMessage(messages);
+                sinkWithDlq.pushMessage(messages);
                 completedLatch.countDown();
             } catch (IOException | DeserializerException e) {
                 e.printStackTrace();

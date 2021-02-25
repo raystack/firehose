@@ -19,9 +19,9 @@ import java.util.List;
  * A concrete class of Filter. This class is responsible
  * for filtering the messages based on a filter condition.
  * <p>
- * The filter expression is obtained from the {@link KafkaConsumerConfig#getFilterExpression()}
- * along with configurations for {@link KafkaConsumerConfig#getFilterType()} - [key|message]
- * and {@link KafkaConsumerConfig#getFilterProtoSchema()} - FQCN of the protobuf schema.
+ * The filter expression is obtained from the {@link KafkaConsumerConfig#getFilterJexlExpression()}
+ * along with configurations for {@link KafkaConsumerConfig#getFilterJexlDataSource()} - [key|message]
+ * and {@link KafkaConsumerConfig#getFilterJexlProtoSchema()} - FQCN of the protobuf schema.
  */
 public class MessageFilter implements Filter {
 
@@ -37,14 +37,14 @@ public class MessageFilter implements Filter {
         this.engine.setStrict(true);
 
         this.instrumentation = instrumentation;
-        this.filterType = consumerConfig.getFilterType();
-        this.protoSchema = consumerConfig.getFilterProtoSchema();
+        this.filterType = consumerConfig.getFilterJexlDataSource();
+        this.protoSchema = consumerConfig.getFilterJexlProtoSchema();
 
         this.instrumentation.logInfo("\n\tFilter type: {}", this.filterType);
-        if (isNotNone(consumerConfig.getFilterType())) {
-            this.expression = this.engine.createExpression(consumerConfig.getFilterExpression());
+        if (isNotNone(consumerConfig.getFilterJexlDataSource())) {
+            this.expression = this.engine.createExpression(consumerConfig.getFilterJexlExpression());
             this.instrumentation.logInfo("\n\tFilter schema: {}", this.protoSchema);
-            this.instrumentation.logInfo("\n\tFilter expression: {}", consumerConfig.getFilterExpression());
+            this.instrumentation.logInfo("\n\tFilter expression: {}", consumerConfig.getFilterJexlExpression());
 
         } else {
             this.instrumentation.logInfo("No filter is selected");

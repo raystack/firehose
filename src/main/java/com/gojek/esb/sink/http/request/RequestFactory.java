@@ -63,7 +63,7 @@ public class RequestFactory {
 
     private ProtoToFieldMapper getProtoToFieldMapper() {
         ProtoParser protoParser = new ProtoParser(stencilClient, httpSinkConfig.getSinkHttpParameterProtoSchema());
-        return new ProtoToFieldMapper(protoParser, httpSinkConfig.getInputOutputMapping());
+        return new ProtoToFieldMapper(protoParser, httpSinkConfig.getInputSchemaProtoToColumnMapping());
     }
 
     private JsonBody createBody() {
