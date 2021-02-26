@@ -127,7 +127,7 @@ public class Instrumentation {
     // =================== RetryTelemetry ======================
 
     public void incrementMessageSucceedCount() {
-        statsDReporter.increment(RETRY_MESSAGE_COUNT, SUCCESS_TAG);
+        statsDReporter.increment(DLQ_MESSAGE_COUNT, SUCCESS_TAG);
     }
 
     public void captureRetryAttempts() {
@@ -135,7 +135,7 @@ public class Instrumentation {
     }
 
     public void incrementMessageFailCount(Message message, Exception e) {
-        statsDReporter.increment(RETRY_MESSAGE_COUNT, FAILURE_TAG);
+        statsDReporter.increment(DLQ_MESSAGE_COUNT, FAILURE_TAG);
         captureNonFatalError(e, "Unable to send record with key {} and message {} ", message.getLogKey(), message.getLogMessage());
     }
 

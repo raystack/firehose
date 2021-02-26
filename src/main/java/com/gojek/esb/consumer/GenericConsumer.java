@@ -70,7 +70,7 @@ public class GenericConsumer {
         List<Message> filteredMessage = filter.filter(messages);
         Integer filteredMessageCount = messages.size() - filteredMessage.size();
         if (filteredMessageCount > 0) {
-            instrumentation.captureFilteredMessageCount(filteredMessageCount, consumerConfig.getFilterExpression());
+            instrumentation.captureFilteredMessageCount(filteredMessageCount, consumerConfig.getFilterJexlExpression());
         }
         return filteredMessage;
     }

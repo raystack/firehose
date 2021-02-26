@@ -83,7 +83,7 @@ public interface HttpSinkConfig extends AppConfig {
     @ConverterClass(HttpSinkParameterPlacementTypeConverter.class)
     HttpSinkParameterPlacementType getSinkHttpParameterPlacement();
 
-    @Key("sink.http.parameter.proto.schema")
-    String getSinkHttpParameterProtoSchema();
+    @Key("sink.http.parameter.schema.proto.class")
+    String getSinkHttpParameterSchemaProtoClass();
 
 }

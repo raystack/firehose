@@ -35,7 +35,7 @@ public class GrpcClient {
     public GrpcClient(Instrumentation instrumentation, GrpcSinkConfig grpcSinkConfig, ManagedChannel managedChannel, StencilClient stencilClient) {
         this.instrumentation = instrumentation;
         this.grpcSinkConfig = grpcSinkConfig;
-        this.protoParser = new ProtoParser(stencilClient, grpcSinkConfig.getSinkGrpcResponseProtoSchema());
+        this.protoParser = new ProtoParser(stencilClient, grpcSinkConfig.getSinkGrpcResponseSchemaProtoClass());
         this.stencilClient = stencilClient;
         this.managedChannel = managedChannel;
     }
@@ -69,7 +69,7 @@ public class GrpcClient {
 
         } catch (Exception e) {
             instrumentation.logWarn(e.getMessage());
-            dynamicMessage = DynamicMessage.newBuilder(this.stencilClient.get(this.grpcSinkConfig.getSinkGrpcResponseProtoSchema())).build();
+            dynamicMessage = DynamicMessage.newBuilder(this.stencilClient.get(this.grpcSinkConfig.getSinkGrpcResponseSchemaProtoClass())).build();
 
         }
 

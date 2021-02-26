@@ -144,7 +144,7 @@ public class InstrumentationTest {
     @Test
     public void shouldIncrementMessageSucceedCount() {
         instrumentation.incrementMessageSucceedCount();
-        verify(statsDReporter, times(1)).increment(RETRY_MESSAGE_COUNT, SUCCESS_TAG);
+        verify(statsDReporter, times(1)).increment(DLQ_MESSAGE_COUNT, SUCCESS_TAG);
     }
 
     @Test
@@ -156,7 +156,7 @@ public class InstrumentationTest {
     @Test
     public void shouldIncrementMessageFailCount() {
         instrumentation.incrementMessageFailCount(message, e);
-        verify(statsDReporter, times(1)).increment(RETRY_MESSAGE_COUNT, FAILURE_TAG);
+        verify(statsDReporter, times(1)).increment(DLQ_MESSAGE_COUNT, FAILURE_TAG);
         verify(logger, times(1)).warn(e.getMessage(), e);
     }
 

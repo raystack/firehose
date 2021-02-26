@@ -37,7 +37,7 @@ public class HttpSinkFactory implements SinkFactory {
         CloseableHttpClient closeableHttpClient = newHttpClient(httpSinkConfig, statsDReporter);
         instrumentation.logInfo("HTTP connection established");
 
-        UriParser uriParser = new UriParser(new ProtoParser(stencilClient, httpSinkConfig.getProtoSchema()), httpSinkConfig.getKafkaRecordParserMode());
+        UriParser uriParser = new UriParser(new ProtoParser(stencilClient, httpSinkConfig.getInputSchemaProtoClass()), httpSinkConfig.getKafkaRecordParserMode());
 
         Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();
 

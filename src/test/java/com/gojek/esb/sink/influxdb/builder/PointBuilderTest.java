@@ -21,7 +21,7 @@ public class PointBuilderTest {
         influxConfigProps.setProperty("sink.influx.measurement.name", "test_point_builder");
         influxConfigProps.setProperty("sink.influx.proto.event.timestamp.index", "2");
         influxConfigProps.setProperty("sink.influx.db.name", "test");
-        influxConfigProps.setProperty("proto.schema", TestFeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
         influxConfigProps.setProperty("sink.influx.field.name.proto.index.mapping", "{ \"2\": \"event_timestamp\", \"7\": \"tip_amount\" }");
         influxConfigProps.setProperty("sink.influx.tag.name.proto.index.mapping", "{ \"4\": \"customer_id\", \"3\": \"driver_id\" }");
 
@@ -47,7 +47,7 @@ public class PointBuilderTest {
         influxConfigProps.setProperty("sink.influx.measurement.name", "test_point_builder");
         influxConfigProps.setProperty("sink.influx.proto.event.timestamp.index", "2");
         influxConfigProps.setProperty("sink.influx.db.name", "test");
-        influxConfigProps.setProperty("proto.schema", TestFeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
         influxConfigProps.setProperty("sink.influx.field.name.proto.index.mapping", "{ \"10\": \"feedback_source\"}");
         influxConfigProps.setProperty("sink.influx.tag.name.proto.index.mapping", "{ \"1\": \"order_number\" }");
 
@@ -72,7 +72,7 @@ public class PointBuilderTest {
         influxConfigProps.setProperty("sink.influx.measurement.name", "test_point_builder");
         influxConfigProps.setProperty("sink.influx.proto.event.timestamp.index", "5");
         influxConfigProps.setProperty("sink.influx.db.name", "test");
-        influxConfigProps.setProperty("proto.schema", TestFeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
         influxConfigProps.setProperty("sink.influx.field.name.proto.index.mapping", "{ \"4\": \"duration\" }");
         influxConfigProps.setProperty("sink.influx.tag.name.proto.index.mapping", "{ \"1\": \"order_number\" }");
 
@@ -97,7 +97,7 @@ public class PointBuilderTest {
         influxConfigProps.setProperty("sink.influx.measurement.name", "test_point_builder");
         influxConfigProps.setProperty("sink.influx.proto.event.timestamp.index", "2");
         influxConfigProps.setProperty("sink.influx.db.name", "test");
-        influxConfigProps.setProperty("proto.schema", TestFeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
         influxConfigProps.setProperty("sink.influx.field.name.proto.index.mapping", "{ \"2\": \"event_timestamp\", \"7\": \"tip_amount\", \"15\": { \"1\": \"order_completion_time_seconds\" } }");
         influxConfigProps.setProperty("sink.influx.tag.name.proto.index.mapping", "{ \"4\": \"customer_id\", \"3\": \"driver_id\" }");
 
@@ -125,7 +125,7 @@ public class PointBuilderTest {
         influxConfigProps.setProperty("sink.influx.measurement.name", "test_point_builder");
         influxConfigProps.setProperty("sink.influx.proto.event.timestamp.index", "2");
         influxConfigProps.setProperty("sink.influx.db.name", "test");
-        influxConfigProps.setProperty("proto.schema", TestFeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
         influxConfigProps.setProperty("sink.influx.field.name.proto.index.mapping", "{ \"2\": \"event_timestamp\", \"7\": \"tip_amount\" }");
         influxConfigProps.setProperty("sink.influx.tag.name.proto.index.mapping", "{ \"4\": \"customer_id\", \"3\": \"driver_id\", \"15\": \"order_completion_time_seconds\" }");
 

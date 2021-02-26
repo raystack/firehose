@@ -18,10 +18,10 @@ public class Metrics {
     public static final String PULLED_BATCH_SIZE = "pulled.batch.size";
     public static final String PUSHED_BATCH_SIZE = "pushed.batch.size";
 
-    //RETRY
-    public static final String RETRY_QUEUE_PREFIX = "retry.queue.";
-    public static final String RETRY_ATTEMPTS = RETRY_QUEUE_PREFIX + "attempts";
-    public static final String RETRY_MESSAGE_COUNT = RETRY_QUEUE_PREFIX + "messages.count";
+    //DLQ
+    public static final String DLQ_PREFIX = "dlq.";
+    public static final String RETRY_ATTEMPTS = DLQ_PREFIX + "attempts";
+    public static final String DLQ_MESSAGE_COUNT = DLQ_PREFIX + "messages.count";
     public static final String REQUEST_RETRY = "request_retries";
 
     //TAGS

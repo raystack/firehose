@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import com.gojek.esb.config.KafkaConsumerConfig;
-import com.gojek.esb.config.RetryQueueConfig;
+import com.gojek.esb.config.DlqConfig;
 import com.gojek.esb.consumer.GenericConsumer;
 import com.gojek.esb.consumer.Offsets;
 import com.gojek.esb.consumer.TopicOffsets;
@@ -50,16 +50,16 @@ public class GenericKafkaFactory {
             new Instrumentation(statsDReporter, GenericConsumer.class));
     }
 
-    public KafkaProducer<byte[], byte[]> getKafkaProducer(RetryQueueConfig config) {
+    public KafkaProducer<byte[], byte[]> getKafkaProducer(DlqConfig config) {
         Properties props = new Properties();
-        props.put("bootstrap.servers", config.getRetryQueueKafkaBrokers());
-        props.put("acks", config.getRetryQueueKafkaAcks());
-        props.put("retries", config.getRetryQueueKafkaRetries());
-        props.put("batch.size", config.getRetryQueueKafkaBatchSize());
-        props.put("linger.ms", config.getRetryQueueKafkaLingerMs());
-        props.put("buffer.memory", config.getRetryQueueKafkaBufferMemory());
-        props.put("key.serializer", config.getRetryQueueKafkaKeySerializer());
-        props.put("value.serializer", config.getRetryQueueKafkaValueSerializer());
+        props.put("bootstrap.servers", config.getDlqKafkaBrokers());
+        props.put("acks", config.getDlqKafkaAcks());
+        props.put("retries", config.getDlqKafkaRetries());
+        props.put("batch.size", config.getDlqKafkaBatchSize());
+        props.put("linger.ms", config.getDlqKafkaLingerMs());
+        props.put("buffer.memory", config.getDlqKafkaBufferMemory());
+        props.put("key.serializer", config.getDlqKafkaKeySerializer());
+        props.put("value.serializer", config.getDlqKafkaValueSerializer());
 
         return new KafkaProducer<>(props);
     }

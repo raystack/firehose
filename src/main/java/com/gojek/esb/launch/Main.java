@@ -23,12 +23,12 @@ public class Main {
                 .fromKafkaConsumerConfig(kafkaConsumerConfig)
                 .buildReporter();
         Instrumentation instrumentation = new Instrumentation(statsDReporter, Main.class);
-        instrumentation.logInfo("Number of consumer threads: " + kafkaConsumerConfig.getConsumerThreadsNum());
-        instrumentation.logInfo("Delay to clean up consumer threads in ms: " + kafkaConsumerConfig.getConsumerThreadsCleanupDelay());
+        instrumentation.logInfo("Number of consumer threads: " + kafkaConsumerConfig.getApplicationThreadCount());
+        instrumentation.logInfo("Delay to clean up consumer threads in ms: " + kafkaConsumerConfig.getApplicationThreadCleanupDelay());
 
         Task consumerTask = new Task(
-                kafkaConsumerConfig.getConsumerThreadsNum(),
-                kafkaConsumerConfig.getConsumerThreadsCleanupDelay(),
+                kafkaConsumerConfig.getApplicationThreadCount(),
+                kafkaConsumerConfig.getApplicationThreadCleanupDelay(),
                 new Instrumentation(statsDReporter, Task.class),
                 taskFinished -> {
 
