@@ -14,15 +14,15 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class SinkWithRetryQueue extends SinkDecorator {
+public class SinkWithDlq extends SinkDecorator {
 
     private Producer<byte[], byte[]> kafkaProducer;
     private final String topic;
     private BackOffProvider backOffProvider;
     private Instrumentation instrumentation;
 
-    public SinkWithRetryQueue(Sink sink, Producer<byte[], byte[]> kafkaProducer, String topic,
-                              Instrumentation instrumentation, BackOffProvider backOffProvider) {
+    public SinkWithDlq(Sink sink, Producer<byte[], byte[]> kafkaProducer, String topic,
+                       Instrumentation instrumentation, BackOffProvider backOffProvider) {
         super(sink);
         this.kafkaProducer = kafkaProducer;
         this.topic = topic;
@@ -30,9 +30,9 @@ public class SinkWithRetryQueue extends SinkDecorator {
         this.instrumentation = instrumentation;
     }
 
-    public static SinkWithRetryQueue withInstrumentationFactory(Sink sink, Producer<byte[], byte[]> kafkaProducer, String topic,
-                                                                StatsDReporter statsDReporter, BackOffProvider backOffProvider) {
-        return new SinkWithRetryQueue(sink, kafkaProducer, topic, new Instrumentation(statsDReporter, SinkWithRetryQueue.class), backOffProvider);
+    public static SinkWithDlq withInstrumentationFactory(Sink sink, Producer<byte[], byte[]> kafkaProducer, String topic,
+                                                         StatsDReporter statsDReporter, BackOffProvider backOffProvider) {
+        return new SinkWithDlq(sink, kafkaProducer, topic, new Instrumentation(statsDReporter, SinkWithDlq.class), backOffProvider);
     }
 
     @Override

@@ -24,6 +24,6 @@ public class InfluxSinkFactory implements SinkFactory {
         InfluxDB client = InfluxDBFactory.connect(config.getSinkInfluxUrl(), config.getSinkInfluxUsername(), config.getSinkInfluxPassword());
         instrumentation.logInfo("InfluxDB connection established");
 
-        return new InfluxSink(new Instrumentation(statsDReporter, InfluxSink.class), "influx.db", config, new ProtoParser(stencilClient, config.getProtoSchema()), client, stencilClient);
+        return new InfluxSink(new Instrumentation(statsDReporter, InfluxSink.class), "influx.db", config, new ProtoParser(stencilClient, config.getInputSchemaProtoClass()), client, stencilClient);
     }
 }

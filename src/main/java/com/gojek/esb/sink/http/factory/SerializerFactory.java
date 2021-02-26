@@ -31,7 +31,7 @@ public class SerializerFactory {
         }
 
         if (httpSinkConfig.getSinkHttpDataFormat() == HttpSinkDataFormatType.JSON) {
-            ProtoParser protoParser = new ProtoParser(stencilClient, httpSinkConfig.getProtoSchema());
+            ProtoParser protoParser = new ProtoParser(stencilClient, httpSinkConfig.getInputSchemaProtoClass());
             if (httpSinkConfig.getSinkHttpJsonBodyTemplate().isEmpty()) {
                 instrumentation.logDebug("Serializer type: EsbMessageToJson", HttpSinkDataFormatType.JSON);
                 return new MessageToJson(protoParser, false, true);
@@ -49,6 +49,6 @@ public class SerializerFactory {
     }
 
     private boolean isProtoSchemaEmpty() {
-        return httpSinkConfig.getProtoSchema() == null || httpSinkConfig.getProtoSchema().equals("");
+        return httpSinkConfig.getInputSchemaProtoClass() == null || httpSinkConfig.getInputSchemaProtoClass().equals("");
     }
 }

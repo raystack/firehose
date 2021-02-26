@@ -14,7 +14,7 @@ public interface GrpcSinkConfig extends AppConfig {
     @Config.Key("sink.grpc.method.url")
     String getSinkGrpcMethodUrl();
 
-    @Config.Key("sink.grpc.response.proto.schema")
-    String getSinkGrpcResponseProtoSchema();
+    @Config.Key("sink.grpc.response.schema.proto.class")
+    String getSinkGrpcResponseSchemaProtoClass();
 
 }

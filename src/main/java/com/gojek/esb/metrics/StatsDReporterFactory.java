@@ -30,9 +30,9 @@ public class StatsDReporterFactory {
 
   public static StatsDReporterFactory fromKafkaConsumerConfig(KafkaConsumerConfig kafkaConsumerConfig) {
     return new StatsDReporterFactory(
-      kafkaConsumerConfig.getStatsDHost(),
-      kafkaConsumerConfig.getStatsDPort(),
-      kafkaConsumerConfig.getStatsDTags().split(","));
+      kafkaConsumerConfig.getMetricStatsDHost(),
+      kafkaConsumerConfig.getMetricStatsDPort(),
+      kafkaConsumerConfig.getMetricStatsDTags().split(","));
   }
 
   public StatsDReporter buildReporter() {
