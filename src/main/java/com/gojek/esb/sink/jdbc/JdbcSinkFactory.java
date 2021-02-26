@@ -43,8 +43,8 @@ public class JdbcSinkFactory implements SinkFactory {
 
 
     private QueryTemplate createQueryTemplate(JdbcSinkConfig jdbcSinkConfig, StencilClient stencilClient) {
-        ProtoParser protoParser = new ProtoParser(stencilClient, jdbcSinkConfig.getProtoSchema());
-        ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, jdbcSinkConfig.getInputOutputMapping());
+        ProtoParser protoParser = new ProtoParser(stencilClient, jdbcSinkConfig.getInputSchemaProtoClass());
+        ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, jdbcSinkConfig.getInputSchemaProtoToColumnMapping());
         return new QueryTemplate(jdbcSinkConfig, protoToFieldMapper);
     }
 }

@@ -5,7 +5,7 @@ import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.config.AppConfig;
 import com.gojek.esb.config.KafkaConsumerConfig;
-import com.gojek.esb.config.RetryQueueConfig;
+import com.gojek.esb.config.DlqConfig;
 import com.gojek.esb.consumer.GenericConsumer;
 import com.gojek.esb.consumer.FirehoseConsumer;
 import com.gojek.esb.exception.EglcConfigurationException;
@@ -26,7 +26,7 @@ import com.gojek.esb.sinkdecorator.BackOff;
 import com.gojek.esb.sinkdecorator.BackOffProvider;
 import com.gojek.esb.sinkdecorator.ExponentialBackOffProvider;
 import com.gojek.esb.sinkdecorator.SinkWithRetry;
-import com.gojek.esb.sinkdecorator.SinkWithRetryQueue;
+import com.gojek.esb.sinkdecorator.SinkWithDlq;
 import com.gojek.esb.tracer.SinkTracer;
 import com.gojek.esb.util.Clock;
 import io.jaegertracing.Configuration;
@@ -62,11 +62,11 @@ public class FirehoseConsumerFactory {
 
         clockInstance = new Clock();
 
-        String stencilUrl = this.kafkaConsumerConfig.getStencilUrls();
-        stencilClient = this.kafkaConsumerConfig.isStencilEnable()
+        String stencilUrl = this.kafkaConsumerConfig.getSchemaRegistryStencilUrls();
+        stencilClient = this.kafkaConsumerConfig.isSchemaRegistryStencilEnable()
                 ? StencilClientFactory.getClient(stencilUrl, config, this.statsDReporter.getClient())
                 : StencilClientFactory.getClient();
-        parser = new KeyOrMessageParser(new ProtoParser(stencilClient, kafkaConsumerConfig.getProtoSchema()), kafkaConsumerConfig);
+        parser = new KeyOrMessageParser(new ProtoParser(stencilClient, kafkaConsumerConfig.getInputSchemaProtoClass()), kafkaConsumerConfig);
     }
 
     /**
@@ -79,14 +79,14 @@ public class FirehoseConsumerFactory {
         Filter filter = new MessageFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, MessageFilter.class));
         GenericKafkaFactory genericKafkaFactory = new GenericKafkaFactory();
         Tracer tracer = NoopTracerFactory.create();
-        if (kafkaConsumerConfig.isTraceEnable()) {
+        if (kafkaConsumerConfig.isTraceJaegarEnable()) {
             tracer = Configuration.fromEnv("Firehose" + ": " + kafkaConsumerConfig.getSourceKafkaConsumerGroupId()).getTracer();
         }
         GenericConsumer consumer = genericKafkaFactory.createConsumer(kafkaConsumerConfig, config,
                 statsDReporter, filter, tracer);
         Sink retrySink = withRetry(getSink(), genericKafkaFactory, tracer);
         SinkTracer firehoseTracer = new SinkTracer(tracer, kafkaConsumerConfig.getSinkType().name() + " SINK",
-                kafkaConsumerConfig.isTraceEnable());
+                kafkaConsumerConfig.isTraceJaegarEnable());
         return new FirehoseConsumer(consumer, retrySink, clockInstance, firehoseTracer, new Instrumentation(statsDReporter, FirehoseConsumer.class));
     }
 
@@ -135,16 +135,16 @@ public class FirehoseConsumerFactory {
                 new Instrumentation(statsDReporter, ExponentialBackOffProvider.class),
                 new BackOff(new Instrumentation(statsDReporter, BackOff.class)));
 
-        if (appConfig.isRetryQueueEnable()) {
-            RetryQueueConfig retryQueueConfig = ConfigFactory.create(RetryQueueConfig.class, config);
+        if (appConfig.isDlqEnable()) {
+            DlqConfig dlqConfig = ConfigFactory.create(DlqConfig.class, config);
 
-            KafkaProducer<byte[], byte[]> kafkaProducer = genericKafkaFactory.getKafkaProducer(retryQueueConfig);
+            KafkaProducer<byte[], byte[]> kafkaProducer = genericKafkaFactory.getKafkaProducer(dlqConfig);
             TracingKafkaProducer<byte[], byte[]> tracingProducer = new TracingKafkaProducer<>(kafkaProducer, tracer);
 
-            return SinkWithRetryQueue.withInstrumentationFactory(
+            return SinkWithDlq.withInstrumentationFactory(
                     new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class),
-                            retryQueueConfig.getRetryQueueAttemptsToTrigger(), parser),
-                    tracingProducer, retryQueueConfig.getRetryQueueKafkaTopic(), statsDReporter, backOffProvider);
+                            dlqConfig.getDlqAttemptsToTrigger(), parser),
+                    tracingProducer, dlqConfig.getDlqKafkaTopic(), statsDReporter, backOffProvider);
         } else {
             return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), parser);
         }

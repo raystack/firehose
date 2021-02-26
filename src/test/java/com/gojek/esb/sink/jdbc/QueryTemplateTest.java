@@ -42,7 +42,7 @@ public class QueryTemplateTest {
         properties.put("1", "order_number");
         properties.put("2", "event_timestamp");
         properties.put("3", "feedback_rating");
-        when(jdbcSinkConfig.getInputOutputMapping()).thenReturn(properties);
+        when(jdbcSinkConfig.getInputSchemaProtoToColumnMapping()).thenReturn(properties);
 
         Map<String, Object> columnToValues = new HashMap<>();
         columnToValues.put("order_number", "order_1");
@@ -117,7 +117,7 @@ public class QueryTemplateTest {
 
         properties2.put("4", nestedProperties);
         properties2.put("3", "feedback_rating");
-        when(jdbcSinkConfig.getInputOutputMapping()).thenReturn(properties2);
+        when(jdbcSinkConfig.getInputSchemaProtoToColumnMapping()).thenReturn(properties2);
 
         Map<String, Object> columnToValues = new HashMap<>();
         columnToValues.put("order_number", "order_1");

@@ -68,7 +68,7 @@ public class GrpcClientTest {
         config.put("sink.grpc.service.host", "localhost");
         config.put("sink.grpc.service.port", "5000");
         config.put("sink.grpc.method.url", "com.gojek.esb.consumer.TestServer/TestRpcMethod");
-        config.put("sink.grpc.response.proto.schema", "com.gojek.esb.consumer.TestGrpcResponse");
+        config.put("sink.grpc.response.schema.proto.class", "com.gojek.esb.consumer.TestGrpcResponse");
 
         grpcSinkConfig = ConfigFactory.create(GrpcSinkConfig.class, config);
         stencilClient = StencilClientFactory.getClient();

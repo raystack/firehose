@@ -39,7 +39,7 @@ public class EsSinkFactory implements SinkFactory {
         instrumentation.logDebug(esConfig);
         EsRequestHandler esRequestHandler = new EsRequestHandlerFactory(esSinkConfig, new Instrumentation(statsDReporter, EsRequestHandlerFactory.class),
                 esSinkConfig.getSinkEsIdField(), esSinkConfig.getSinkEsInputMessageType(),
-                new MessageToJson(new ProtoParser(stencilClient, esSinkConfig.getProtoSchema()), esSinkConfig.isSinkEsPreserveProtoFieldNamesEnable(), false),
+                new MessageToJson(new ProtoParser(stencilClient, esSinkConfig.getInputSchemaProtoClass()), esSinkConfig.isSinkEsPreserveProtoFieldNamesEnable(), false),
                 esSinkConfig.getSinkEsTypeName(),
                 esSinkConfig.getSinkEsIndexName(),
                 esSinkConfig.getSinkEsRoutingKeyName())
