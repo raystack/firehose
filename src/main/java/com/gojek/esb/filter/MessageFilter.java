@@ -21,7 +21,7 @@ import java.util.List;
  * <p>
  * The filter expression is obtained from the {@link KafkaConsumerConfig#getFilterJexlExpression()}
  * along with configurations for {@link KafkaConsumerConfig#getFilterJexlDataSource()} - [key|message]
- * and {@link KafkaConsumerConfig#getFilterJexlProtoSchema()} - FQCN of the protobuf schema.
+ * and {@link KafkaConsumerConfig#getFilterJexlSchemaProtoClass()} - FQCN of the protobuf schema.
  */
 public class MessageFilter implements Filter {
 
@@ -38,7 +38,7 @@ public class MessageFilter implements Filter {
 
         this.instrumentation = instrumentation;
         this.filterType = consumerConfig.getFilterJexlDataSource();
-        this.protoSchema = consumerConfig.getFilterJexlProtoSchema();
+        this.protoSchema = consumerConfig.getFilterJexlSchemaProtoClass();
 
         this.instrumentation.logInfo("\n\tFilter type: {}", this.filterType);
         if (isNotNone(consumerConfig.getFilterJexlDataSource())) {

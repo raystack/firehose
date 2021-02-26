@@ -40,7 +40,7 @@ public class MessageFilterTest {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("filter.jexl.data.source", "message");
         filterConfigs.put("filter.jexl.expression", "testMessage.getOrderNumber() == 123");
-        filterConfigs.put("filter.jexl.proto.schema", TestMessage.class.getName());
+        filterConfigs.put("filter.jexl.schema.proto.class", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
@@ -63,7 +63,7 @@ public class MessageFilterTest {
         HashMap<String, String> bookingFilterConfigs = new HashMap<>();
         bookingFilterConfigs.put("filter.jexl.data.source", "message");
         bookingFilterConfigs.put("filter.jexl.expression", "testBookingLogMessage.getCustomerDynamicSurgeEnabled() == false");
-        bookingFilterConfigs.put("filter.jexl.proto.schema", TestBookingLogMessage.class.getName());
+        bookingFilterConfigs.put("filter.jexl.schema.proto.class", TestBookingLogMessage.class.getName());
         KafkaConsumerConfig bookingConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, bookingFilterConfigs);
         MessageFilter bookingFilter = new MessageFilter(bookingConsumerConfig, instrumentation);
         List<Message> filteredMessages = bookingFilter.filter(Arrays.asList(message));
@@ -75,7 +75,7 @@ public class MessageFilterTest {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("filter.jexl.data.source", "message");
         filterConfigs.put("filter.jexl.expression", "1+2");
-        filterConfigs.put("filter.jexl.proto.schema", TestMessage.class.getName());
+        filterConfigs.put("filter.jexl.schema.proto.class", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         filter = new MessageFilter(kafkaConsumerConfig, instrumentation);
@@ -90,7 +90,7 @@ public class MessageFilterTest {
     public void shouldNotApplyFilterOnEmptyFilterType() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("filter.jexl.expression", "testMessage.getOrderNumber() == 123");
-        filterConfigs.put("filter.jexl.proto.schema", TestMessage.class.getName());
+        filterConfigs.put("filter.jexl.schema.proto.class", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         filter = new MessageFilter(kafkaConsumerConfig, instrumentation);
@@ -107,7 +107,7 @@ public class MessageFilterTest {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("filter.jexl.data.source", "message");
         filterConfigs.put("filter.jexl.expression", "testMessage.getOrderNumber() == 123");
-        filterConfigs.put("filter.jexl.proto.schema", TestMessage.class.getName());
+        filterConfigs.put("filter.jexl.schema.proto.class", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         new MessageFilter(kafkaConsumerConfig, instrumentation);

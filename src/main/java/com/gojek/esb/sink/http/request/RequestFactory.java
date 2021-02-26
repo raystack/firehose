@@ -62,7 +62,7 @@ public class RequestFactory {
     }
 
     private ProtoToFieldMapper getProtoToFieldMapper() {
-        ProtoParser protoParser = new ProtoParser(stencilClient, httpSinkConfig.getSinkHttpParameterProtoSchema());
+        ProtoParser protoParser = new ProtoParser(stencilClient, httpSinkConfig.getSinkHttpParameterSchemaProtoClass());
         return new ProtoToFieldMapper(protoParser, httpSinkConfig.getInputSchemaProtoToColumnMapping());
     }
 

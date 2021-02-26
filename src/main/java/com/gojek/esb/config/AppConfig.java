@@ -61,8 +61,8 @@ public interface AppConfig extends Config {
     @Key("filter.jexl.expression")
     String getFilterJexlExpression();
 
-    @Key("filter.jexl.proto.schema")
-    String getFilterJexlProtoSchema();
+    @Key("filter.jexl.schema.proto.class")
+    String getFilterJexlSchemaProtoClass();
 
     @Key("trace.jaegar.enable")
     @DefaultValue("false")
