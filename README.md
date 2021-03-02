@@ -1,4 +1,7 @@
 # Firehose
+![build workflow](https://github.com/odpf/firehose/actions/workflows/build.yml/badge.svg)
+![publish workflow](https://github.com/odpf/firehose/actions/workflows/publish.yml/badge.svg)
+
 Firehose allows smooth and effortless consumption of data from Kafka. This data can then be used for different downstream applications like an HTTP service or database to create data driven applications, deliver crucial business insights in real time and monitor critical application flows.
 
 <p align="center"><img src="./docs/assets/overview.svg" /></p>
