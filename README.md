@@ -1,6 +1,8 @@
 # Firehose
 Firehose allows smooth and effortless consumption of data from Kafka. This data can then be used for different downstream applications like an HTTP service or database to create data driven applications, deliver crucial business insights in real time and monitor critical application flows.
 
+<p align="center"><img src="./docs/assets/overview.svg" /></p>
+
 ## Key Features
 * **Sinks:** Firehose supports multipls sinks inlcuding HTTP, GRPC, JDBC, Redis, Elastic Search, Influx and more. 
 * **Filters:** Firehose allows applying [filters]() on the input stream based on any field in the suported schema.
@@ -62,6 +64,13 @@ proto.schema                        # Fully qualified name of the proto schema f
 This is an active open-source project. We are always open to people who want to use the system or contribute to it. You can raise a PR for any feature/possible bugs or help us with documentation. To contribute follow the instructions [here]()
 
 Reach out to us on our mailing list <mailing-list>.
+
+## Contributing
+
+Development of Firehose happens in the open on GitHub, and we are grateful to the community for contributing bugfixes and improvements. Read below to learn how you can take part in improving Firehose.
+
+- Read our [contributing guide](CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Jest.
+- To help you get your feet wet and get you familiar with our contribution process, we have a list of [good first issues](https://github.com/odpf/firehose/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started.
 
 ## Credits
 
