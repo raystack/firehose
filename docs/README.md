@@ -6,10 +6,10 @@ Firehose is a cloud native service for delivering real-time streaming data to de
 ## Key Features
 Discover why users choose Firehose as their main Kafka Consumer
 
-**Support for Multiple Sinks**  Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB, InfluxDB, ElasticSearch, Redis & Clevertap
-**Self-serve** Configure, deploy, validate, scale, monitor, alert, debug, audit and so on. Every action is DIY
-**Elastic Scaling** Cloud-native & leverages horizontal scaling and high-performance streaming to sink data in near real-time & zero data drops
-**Metrics for Monitoring Performance** Exposes critical metrics through the consoles to monitor the health of your delivery streams, take any necessary actions
+* **Support for multiple sinks**  Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB, InfluxDB, ElasticSearch, Redis & Clevertap
+* **Self-serve** Configure, deploy, validate, scale, monitor, alert, debug, audit and so on. Every action is DIY
+* **Elastic scaling** Cloud-native & leverages horizontal scaling and high-performance streaming to sink data in near real-time & zero data drops
+* **Metrics for performance monitoring** Exposes critical metrics through the consoles to monitor the health of your delivery streams, take any necessary actions
 
 ## Supported Sinks:
 Following sinks are supported in firehose
@@ -22,32 +22,13 @@ Following sinks are supported in firehose
 * [GRPC](https://en.wikipedia.org/wiki/GRPC)
 * [Prometheus](https://en.wikipedia.org/wiki/Prometheus_(software)) - `Coming soon`
 
-## How is Firhose different from Kafka-connect?
-#### Kafka-Connect
-PROS
-* Can consume from Kafka as well as many other sources
-* Easier to integrate if working with confluent-platform
-* Provides a bunch of transformation options as part of Single Message Transformations(SMTs)
-
-CONS
-* When using in distributed mode across multiple nodes, need to install all the connectors across all the workers within your kafka connect cluster
-* Available connectors may have some limitations. Its usually rare to find all the required features in a single connector and so is to find a documentation for the same
-* Separation of commercial and open-source features is very poor
-* For monitoring and many other features confluent control center asks for an enterprise subscription
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#### Firehose
-PROS
-* Easier to install and use different sinks by tweaking only a couple of configurations
-* Comes with tons of exclusive features for each sink. e.g. JSON body template, Parameterised header/request, OAuth2 for HTTP sink
-* Value based filtering is much easier to implement as compared to Kafka-Connect. Requires no additional plugins/schema-registry to be installed
-* Provides a comprehensible Abstract sink contract which makes it Easier to add a new sink in Firehose
-* Don't need to think about converters and serializers, Firehose comes with an inbuilt serialization/deserialization
-* Comes with Firehose health dashboard (Grafana) for effortless monitoring free of cost
-
-CONS
-* Can consume from Kafka but not from any other data source
-* Supports only protobuf format as of now
-* Doesn't support Kafka Sink yet
+## How is Firehose different from Kafka-connect?
+* **Ease of use:** Firehose is easier to install and using different sink only requires chnaging few configurations. Kafka connect whhen used in distributed mode across multiple nodes, requires connectors to be installed across all the workers within your kafka connect cluster.
+* **Filtering:** Value based filtering is much easier to implement as compared to Kafka-Connect. Requires no additional plugins/schema-registry to be installed.
+* **Extensible:** Provides a comprehensible abstract sink contract which makes it easier to add a new sink in Firehose. Fireose also comes an inbuilt serialization/deserialization and doesn't require any converters and serializers when implementing new sink. 
+* **Easy monitoring:** Firehose provides a detailed health dashboard (Grafana) for effortless monitoring.
+* **Connectors:** Some of the Kafks connect available connectors usually have limitations. Its usually rare to find all the required features in a single connector and so is to find a documentation for the same
+* **Fully open-source:** Firehose is completely open source while separation of commercial and open-source features is not very structured in Kafka Connect and for monitoring and advanced features confluent control center requires an enterprise subscription
 
 ## How can I get started?
 

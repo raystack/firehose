@@ -24,7 +24,7 @@ To know more, follow the detailed [documentation]()
 ```
 docker run -e source.kafka.brokers=127.0.0.1:6667 -e source.kafka.consumer.group.id=kafka-consumer-group-id -e source.kafka.topic=sample-topic -e sink.type=log -e source.kafka.consumer.config.auto.offset.reset=latest -e proto.schema=com.github.firehose.sampleLogProto.SampleLogMessage odpf/firehose:latest
 ```
-NOTE: Make sure your protos (.jar file) are located in `work-dir`, this is required for Filter functionality to work.
+**Note:** Make sure your protos (.jar file) are located in `work-dir`, this is required for Filter functionality to work.
 
 ## Run with Kubernetes
 * Create a firehose deployment using the helm chart available [here]()
@@ -34,21 +34,8 @@ NOTE: Make sure your protos (.jar file) are located in `work-dir`, this is requi
 * Clone the repo `git clone https://github.com/odpf/firehose.git`
 * Build the jar `./gradlew clean build`
 * Configure the environment variables in `env/local.properties`
+* Sample configuration for other sinks along with some advanced configurations can be found [here](/docs/reference/configuration.md)
 * Run the firehose `./gradlew runConsumer` 
-#### Sample Configuration for Log Sink Firehose
-* To run firehose in any of the available sinks, the following variables need to be set
-
-```
-source.kafka.brokers                # The url/IP of the Kafka broker to which this consumer should connect to
-source.kafka.consumer.group.id      # The Kafka consumer group id
-source.kafka.topic                  # The Kafka topic(s) this consumer should subscribe to
-sink.type                           # Sink mode for the firehose
-proto.schema                        # Fully qualified name of the proto schema for log message
-```
-
-* The value of `source.kafka.topic` variable could even be a regex. e.g. `sample-topic-1|sample-topic-2`.
-* To subscribe to all smaple topics, the value of this config could be set to `sample-topic.*`.
-* Sample configuration for other sinks along with some advanced configurations can be found [here]()
 
 ## Running tests 
 ```sh
@@ -77,4 +64,4 @@ This project exists thanks to all the people who [contribute](CONTRIBUTING.md).
 <a href="https://github.com/odpf/firehose/graphs/contributors"><img src="https://opencollective.com/firehose/contributors.svg?width=890&button=false" /></a>
 
 ## License
-Firehose is Apache 2.0 licensed.
+Firehose is [Apache 2.0](LICENSE) licensed.
