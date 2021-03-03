@@ -1,13 +1,49 @@
-# Configuration Reference
+# Configurations
 
-This page contains reference for all the configurations for Firehose.
+This page contains reference for all the application configurations for Firehose.
 
-| VARIABLE NAME                    | DESCRIPTION                                       | NECESSITY | SAMPLE VALUE            |
-|----------------------------------|---------------------------------------------------|-----------|-------------------------|
-| `source.kafka.brokers`           | list of kafka brokers to consume from             | Mandatory | `localhost:9092`        |
-| `source.kafka.topic`             | list of kafka topics to consume from              | Mandatory | `test-topic`            |
-| `source.kafka.consumer.group.id` | Kafka consumer group ID                           | Mandatory | `sample-group-id`       |
-| `kafka.record.parcer.mode`       | Decides whether to parse key or message           | Mandatory | `message`               |
-| `sink.type`                      | Firehose sink type                                | Mandatory | `log`                   |
-| `input.schema.proto.class`       | The fully qualified name of the input proto class | Mandatory | `com.tests.TestMessage` |
+### <a name="Generic" /> Generic
+A log sink firehose requires the following variables to be set
+
+#### <a name="source.kafka.brokers" /> `source.kafka.brokers` 
+
+Example value: `localhost:9092`\
+Type: `required`
+
+Sets the bootstrap server of kafka brokers to consume from.
+
+#### <a name="source.kafka.topic" /> `source.kafka.topic` 
+
+Example value: `test-topic`\
+Type: `required`
+
+List of kafka topics to consume from    
+
+#### <a name="source.kafka.consumer.group.id" /> `source.kafka.consumer.group.id` 
+
+Example value: `sample-group-id`\
+Type: `required`
+
+Kafka consumer group ID .
+
+#### <a name="kafka.record.parser.mode" /> `kafka.record.parser.mode` 
+
+Example value: `message`\
+Type: `required`
+
+Decides whether to parse key or message
+
+#### <a name="sink.type" /> `sink.type` 
+
+Example value: `'localhost:9092'`\
+Type: `required`
+
+Firehose sink type 
+
+#### <a name="input.schema.proto.class" /> `input.schema.proto.class` 
+
+Example value: `com.tests.TestMessage`\
+Type: `required`
+
+The fully qualified name of the input proto class 
 
