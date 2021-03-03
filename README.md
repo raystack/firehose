@@ -53,20 +53,15 @@ proto.schema                        # Fully qualified name of the proto schema f
 ## Running tests 
 ```sh
 # Running unit tests
-`./gradlew test`
+./gradlew test
 
 # Run code quality checks
-`./gradlew checkstyleMain checkstyleTest`
+./gradlew checkstyleMain checkstyleTest
 
 #Cleaning the build
-`./gradlew clean`
+./gradlew clean
 
 ```
-
-## Contribute
-This is an active open-source project. We are always open to people who want to use the system or contribute to it. You can raise a PR for any feature/possible bugs or help us with documentation. To contribute follow the instructions [here]()
-
-Reach out to us on our mailing list <mailing-list>.
 
 ## Contributing
 

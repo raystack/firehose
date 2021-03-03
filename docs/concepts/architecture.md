@@ -1,5 +1,6 @@
-## Concepts
-#### Architecture
+# Architecture
+![Firehose Architecture](../assets/architecture.png)
+
 Firehose has the capability to run parallelly on threads. Each thread does the following:
 * Get messages from Kafka
 * Filter the messages (optional)
@@ -9,8 +10,6 @@ Firehose has the capability to run parallelly on threads. Each thread does the f
     * disabled: Firehose keeps on retrying until it receives a success code
 * Captures telemetry and success/failure events and send them to Telegraf
 * Repeat the process
-
-![Firehose Architecture](https://github.com/odpf/firehose/tree/main/docs/images/architecture.png)
 
 #### System Design
 **Components**
@@ -47,7 +46,7 @@ Schema Caching, dynamic schema updates are features of the stencil client librar
 #### Firehose Integration
 The section details all integrating systems for Firehose deployment. These are external systems that Firehose connects to.
 
-![Firehose Integration](https://github.com/odpf/firehose/tree/main/docs/images/integration.png)
+![Firehose Integration](../assets/integration.png)
 
 **Kafka**
 * The Kafka topic(s) where Firehose reads from. The `source.kafka.topic` config can be set in Firehose
