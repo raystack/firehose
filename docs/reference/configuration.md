@@ -35,7 +35,7 @@ Decides whether to parse key or message
 
 #### <a name="sink.type" /> `sink.type` 
 
-Example value: `'localhost:9092'`\
+Example value: `log`\
 Type: `required`
 
 Firehose sink type 
@@ -48,7 +48,7 @@ Type: `required`
 The fully qualified name of the input proto class 
 
 ### <a name="HTTP Sink" /> HTTP Sink
-An Http sink firehose requires the following variables to be set along with Generic ones
+An Http sink firehose (`sink.type`=`http`) requires the following variables to be set along with Generic ones.
 
 #### <a name="sink.http.service.url" /> `sink.http.service.url` 
 
@@ -165,7 +165,7 @@ Type: `optional`
 Space-delimited scope overrides. If scope override is not provided, no scopes will be granted to the token.
 
 ### <a name="JDBC Sink" /> JDBC Sink
-A JDBC sink firehose requires the following variables to be set along with Generic ones
+A JDBC sink firehose (`sink.type`=`jdbc`) requires the following variables to be set along with Generic ones
 
 #### <a name="sink.jdbc.url" /> `sink.jdbc.url`
 Example value: `jdbc:postgresql://localhost:5432/postgres`\
@@ -232,7 +232,7 @@ Default value: `10`
 Maximum size for the database connection pool.
 
 ### <a name="Influx Sink" /> Influx Sink
-An Influx sink firehose requires the following variables to be set along with Generic ones
+An Influx sink firehose (`sink.type`=`influxdb`) requires the following variables to be set along with Generic ones
 
 #### <a name="sink.influx.url" /> `sink.influx.url`
 Example value: `http://localhost:8086`\
@@ -291,7 +291,7 @@ Type: `required`
 This field is used to give away the name of the measurement that needs to be used by the sink. Measurement is another name for tables and it will be auto-created if does not exist at the time Firehose pushes the data to the influx.
 
 ### <a name="Redis Sink" /> Redis Sink
-A Redis sink firehose requires the following variables to be set along with Generic ones
+A Redis sink firehose (`sink.type`=`redis`) requires the following variables to be set along with Generic ones
 
 #### <a name="sink.redis.urls" /> `sink.redis.urls`
 Example value: `localhos:6379,localhost:6380`\
@@ -350,7 +350,7 @@ Default value: `Standalone`
 The Redis deployment you are using. At present, we support `Standalone` and `Cluster` types.
 
 ### <a name="ElasticSearch Sink" /> ElasticSearch Sink
-An ES sink firehose requires the following variables to be set along with Generic ones
+An ES sink firehose (`sink.type`=`elasticsearch`) requires the following variables to be set along with Generic ones
 
 #### <a name="sink.es.connection.urls" /> `sink.es.connection.urls`
 Example value: `localhost1:9200`\
@@ -426,7 +426,7 @@ Type: `optional`
 The proto field whose value will be used for routing documents to a particular shard in Elasticsearch. If empty, Elasticsearch uses the ID field of the doc by default.
 
 ### <a name="GRPC Sink" /> GRPC Sink
-A GRPC sink firehose requires the following variables to be set along with Generic ones
+A GRPC sink firehose (`sink.type`=`grpc`) requires the following variables to be set along with Generic ones
 
 #### <a name="sink.grpc.service.host" /> `sink.grpc.service.host`
 Example value: `http://grpc-service.sample.io`\

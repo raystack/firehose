@@ -30,7 +30,7 @@ Limitations:
 
 ***Note: Schema (Table, Columns, and Any Constraints) being used in firehose configuration must exist in the Database already.***
 
-#### Create an Influx Sink
+#### Create an InfluxDB Sink
 * Data read from Kafka is written to the InfluxDB time-series database and it requires the following [variables](../reference/configuration.md#a-nameinflux-sink--influx-sink) to be set.
 
 ***Note: [DATABASE](../reference/configuration.md#a-namesinkinfluxdbname--sinkinfluxdbname) and [RETENTION POLICY](../reference/configuration.md#a-namesinkinfluxretentionpolicy--sinkinfluxretentionpolicy) being used in firehose configuration must exist already in the Influx, It’s outside the scope of a firehose and won’t be generated automatically.***
