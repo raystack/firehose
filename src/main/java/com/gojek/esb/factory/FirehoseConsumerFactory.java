@@ -21,6 +21,8 @@ import com.gojek.esb.sink.http.HttpSinkFactory;
 import com.gojek.esb.sink.influxdb.InfluxSinkFactory;
 import com.gojek.esb.sink.log.KeyOrMessageParser;
 import com.gojek.esb.sink.log.LogSinkFactory;
+//import com.gojek.esb.sink.prometheus.PrometheusSinkFactory;
+import com.gojek.esb.sink.prometheus.PromSinkFactory;
 import com.gojek.esb.sink.redis.RedisSinkFactory;
 import com.gojek.esb.sinkdecorator.BackOff;
 import com.gojek.esb.sinkdecorator.BackOffProvider;
@@ -112,6 +114,8 @@ public class FirehoseConsumerFactory {
                 return new RedisSinkFactory().create(config, statsDReporter, stencilClient);
             case GRPC:
                 return new GrpcSinkFactory().create(config, statsDReporter, stencilClient);
+            case PROMETHEUS:
+                return new PromSinkFactory().create(config, statsDReporter, stencilClient);
             default:
                 throw new EglcConfigurationException("Invalid Firehose sink.type");
 
