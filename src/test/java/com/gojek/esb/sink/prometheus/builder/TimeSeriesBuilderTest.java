@@ -1,0 +1,295 @@
+package com.gojek.esb.sink.prometheus.builder;
+
+import com.gojek.esb.config.PrometheusSinkConfig;
+import com.gojek.esb.consumer.TestDurationMessage;
+import com.gojek.esb.consumer.TestFeedbackLogMessage;
+import com.gojek.esb.exception.EglcConfigurationException;
+import com.google.protobuf.Duration;
+import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Timestamp;
+import cortexpb.Cortex;
+import org.aeonbits.owner.ConfigFactory;
+import org.junit.Test;
+
+import java.util.List;
+import java.util.Properties;
+
+public class TimeSeriesBuilderTest {
+
+    @Test
+    public void testMessageWithSingleMetric() throws InvalidProtocolBufferException {
+        Properties promConfigProps = new Properties();
+
+        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
+        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
+        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{\"7\": \"tip_amount\"}");
+        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", "{ \"4\": \"customer_id\", \"13\": \"support_ticket_created\" }");
+
+        TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
+                .setCustomerId("CUSTOMER")
+                .setTipAmount(10000)
+                .setSupportTicketCreated(true)
+                .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000000)).build();
+
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
+
+        PrometheusSinkConfig prometheusSinkConfig = ConfigFactory.create(PrometheusSinkConfig.class, promConfigProps);
+
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(prometheusSinkConfig)
+                .buildTimeSeries(dynamicMessage, 2);
+
+        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"support_ticket_created\"\n  value: \"true\"\n}\nlabels {\n  name: \"customer_id\"\n  value: \"CUSTOMER\"\n}\nsamples {\n  value: 10000.0\n  timestamp_ms: 1000000000\n}\n]";
+
+        assert timeSeries.toString().equals(expectedResult);
+    }
+
+    @Test
+    public void testMessageWithMultipleMetric() throws InvalidProtocolBufferException {
+        Properties promConfigProps = new Properties();
+        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
+        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
+        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", " {\"7\": \"tip_amount\", \"5\": \"feedback_ratings\" }");
+        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", " {\"3\": \"driver_id\" }");
+
+        TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
+                .setDriverId("DRIVER")
+                .setTipAmount(10000)
+                .setFeedbackRating(5)
+                .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000000)).build();
+
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
+
+        PrometheusSinkConfig prometheusSinkConfig = ConfigFactory.create(PrometheusSinkConfig.class, promConfigProps);
+
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(prometheusSinkConfig)
+                .buildTimeSeries(dynamicMessage, 2);
+
+        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"feedback_ratings\"\n}\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 5.0\n  timestamp_ms: 1000000000\n}\n, labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 10000.0\n  timestamp_ms: 1000000000\n}\n]";
+
+        assert timeSeries.toString().equals(expectedResult);
+    }
+
+    @Test
+    public void testMessageWithTimestampIsBuiltIntoMillis() throws InvalidProtocolBufferException {
+        Properties promConfigProps = new Properties();
+        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
+        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
+        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{ \"7\": \"tip_amount\" }");
+        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", "{ \"2\": \"event_timestamp\", \"3\": \"driver_id\" }");
+
+        TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
+                .setDriverId("DRIVER")
+                .setTipAmount(10000)
+                .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000000)).build();
+
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
+
+        PrometheusSinkConfig prometheusSinkConfig = ConfigFactory.create(PrometheusSinkConfig.class, promConfigProps);
+
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(prometheusSinkConfig)
+                .buildTimeSeries(dynamicMessage, 2);
+
+        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"event_timestamp\"\n  value: \"1000000000\"\n}\nsamples {\n  value: 10000.0\n  timestamp_ms: 1000000000\n}\n]";
+
+        assert timeSeries.toString().equals(expectedResult);
+
+    }
+
+    @Test
+    public void testMessageWithDurationIsBuiltIntoMillis() throws InvalidProtocolBufferException {
+        Properties promConfigProps = new Properties();
+        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "4");
+        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
+        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{ \"1\": \"order_number\" }");
+
+        TestDurationMessage testDurationMessage = TestDurationMessage.newBuilder()
+                .setOrderNumber("100")
+                .setDuration(Duration.newBuilder().setSeconds(1000))
+                .build();
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestDurationMessage.getDescriptor(), testDurationMessage.toByteArray());
+
+        PrometheusSinkConfig prometheusSinkConfig = ConfigFactory.create(PrometheusSinkConfig.class, promConfigProps);
+
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(prometheusSinkConfig)
+                .buildTimeSeries(dynamicMessage, 2);
+
+        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"order_number\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 100.0\n  timestamp_ms: 1000000\n}\n]";
+
+        assert timeSeries.toString().equals(expectedResult);
+    }
+
+    @Test
+    public void testMessageWithEnum() throws InvalidProtocolBufferException {
+        Properties promConfigProps = new Properties();
+        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
+        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
+        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{ \"7\": \"tip_amount\" }");
+        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", "{ \"10\": \"feedback_source\" }");
+
+        TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
+                .setTipAmount(10000)
+                .setFeedbackSource(com.gojek.esb.consumer.TestFeedbackSource.Enum.DRIVER)
+                .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000000))
+                .build();
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
+
+        PrometheusSinkConfig prometheusSinkConfig = ConfigFactory.create(PrometheusSinkConfig.class, promConfigProps);
+
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(prometheusSinkConfig)
+                .buildTimeSeries(dynamicMessage, 2);
+
+        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"feedback_source\"\n  value: \"DRIVER\"\n}\nsamples {\n  value: 10000.0\n  timestamp_ms: 1000000000\n}\n]";
+
+        assert timeSeries.toString().equals(expectedResult);
+    }
+
+    @Test
+    public void testMessageWithNestedSchemaForMetrics() throws InvalidProtocolBufferException {
+        Properties promConfigProps = new Properties();
+        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
+        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
+        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{ \"15\": { \"1\": \"order_completion_time_seconds\" },  \"7\": \"tip_amount\"}");
+        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", "{ \"3\": \"driver_id\" }");
+
+        TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
+                .setTipAmount(100)
+                .setDriverId("DRIVER")
+                .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000000))
+                .setOrderCompletionTime(Timestamp.newBuilder().setSeconds(12345))
+                .build();
+
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
+
+        PrometheusSinkConfig prometheusSinkConfig = ConfigFactory.create(PrometheusSinkConfig.class, promConfigProps);
+
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(prometheusSinkConfig)
+                .buildTimeSeries(dynamicMessage, 2);
+
+        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"order_completion_time_seconds\"\n}\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 12345.0\n  timestamp_ms: 1000000000\n}\n]";
+
+        assert timeSeries.toString().equals(expectedResult);
+    }
+
+    @Test
+    public void testMessageWithNestedSchemaForLabels() throws InvalidProtocolBufferException {
+        Properties promConfigProps = new Properties();
+        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
+        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
+        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{ \"7\": \"tip_amount\" }");
+        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", "{ \"15\": { \"1\": \"order_completion_time_seconds\" } }");
+
+        TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
+                .setTipAmount(10000)
+                .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000000))
+                .setOrderCompletionTime(Timestamp.newBuilder().setSeconds(12345))
+                .build();
+
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
+
+        PrometheusSinkConfig prometheusSinkConfig = ConfigFactory.create(PrometheusSinkConfig.class, promConfigProps);
+
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(prometheusSinkConfig)
+                .buildTimeSeries(dynamicMessage, 2);
+
+        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"order_completion_time_seconds\"\n  value: \"12345\"\n}\nsamples {\n  value: 10000.0\n  timestamp_ms: 1000000000\n}\n]";
+
+        assert timeSeries.toString().equals(expectedResult);
+    }
+
+    @Test
+    public void testMessageWithMetricTimestampUsingIngestionTimestamp() throws InvalidProtocolBufferException {
+        Properties promConfigProps = new Properties();
+        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
+        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("sink.prom.with.event.timestamp", "false");
+        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{ \"1\": \"order_number\" }");
+        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", "{ \"3\": \"driver_id\" }");
+
+        TestFeedbackLogMessage testFeedbackLogMessage = TestFeedbackLogMessage.newBuilder()
+                .setOrderNumber("100")
+                .setDriverId("DRIVER")
+                .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000))
+                .build();
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), testFeedbackLogMessage.toByteArray());
+
+        PrometheusSinkConfig prometheusSinkConfig = ConfigFactory.create(PrometheusSinkConfig.class, promConfigProps);
+
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(prometheusSinkConfig)
+                .buildTimeSeries(dynamicMessage, 2);
+
+        String eventTimestampResult = "[labels {\n  name: \"__name__\"\n  value: \"order_number\"\n}\n\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}labels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 100.0\n  timestamp_ms: 1000000\n}\n]";
+        assert !(timeSeries.toString().equals(eventTimestampResult));
+    }
+
+    @Test(expected = EglcConfigurationException.class)
+    public void testMessageWithEmptyMetricProtoMappingConfig() throws InvalidProtocolBufferException {
+        Properties promConfigProps = new Properties();
+        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
+        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("sink.prom.with.event.timestamp", "false");
+        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", "{ \"3\": \"driver_id\" }");
+
+        TestFeedbackLogMessage testFeedbackLogMessage = TestFeedbackLogMessage.newBuilder()
+                .setOrderNumber("100")
+                .setDriverId("DRIVER")
+                .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000))
+                .build();
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), testFeedbackLogMessage.toByteArray());
+
+        PrometheusSinkConfig prometheusSinkConfig = ConfigFactory.create(PrometheusSinkConfig.class, promConfigProps);
+
+        TimeSeriesBuilder timeSeries = new TimeSeriesBuilder(prometheusSinkConfig);
+        timeSeries.buildTimeSeries(dynamicMessage, 2);
+    }
+
+    @Test
+    public void testMessageWithEmptyLabelProtoMappingConfig() throws InvalidProtocolBufferException {
+        Properties promConfigProps = new Properties();
+        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
+        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
+        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{ \"7\": \"tip_amount\" }");
+
+        TestFeedbackLogMessage testFeedbackLogMessage = TestFeedbackLogMessage.newBuilder()
+                .setTipAmount(12345)
+                .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000))
+                .build();
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), testFeedbackLogMessage.toByteArray());
+
+        PrometheusSinkConfig prometheusSinkConfig = ConfigFactory.create(PrometheusSinkConfig.class, promConfigProps);
+
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(prometheusSinkConfig)
+                .buildTimeSeries(dynamicMessage, 2);
+
+        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 12345.0\n  timestamp_ms: 1000000\n}\n]";
+        assert timeSeries.toString().equals(expectedResult);
+    }
+
+    @Test(expected = EglcConfigurationException.class)
+    public void testMessageWithEmptyFieldIndex() throws InvalidProtocolBufferException {
+        Properties promConfigProps = new Properties();
+        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
+        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("sink.prom.with.event.timestamp", "false");
+        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{}");
+
+        TestFeedbackLogMessage testFeedbackLogMessage = TestFeedbackLogMessage.newBuilder()
+                .setDriverId("DRIVER")
+                .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000))
+                .build();
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), testFeedbackLogMessage.toByteArray());
+
+        PrometheusSinkConfig prometheusSinkConfig = ConfigFactory.create(PrometheusSinkConfig.class, promConfigProps);
+
+        TimeSeriesBuilder timeSeries = new TimeSeriesBuilder(prometheusSinkConfig);
+        timeSeries.buildTimeSeries(dynamicMessage, 2);
+    }
+}
