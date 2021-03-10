@@ -6,35 +6,35 @@ Firehose is a cloud native service for delivering real-time streaming data to de
 ## Key Features
 Discover why users choose Firehose as their main Kafka Consumer
 
-* **Support for multiple sinks**  Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB, InfluxDB, ElasticSearch, Redis & Clevertap
+* **Support for multiple sinks**  Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB, InfluxDB, ElasticSearch & Redis
 * **Self-serve** Configure, deploy, validate, scale, monitor, alert, debug, audit and so on. Every action is DIY
 * **Elastic scaling** Cloud-native & leverages horizontal scaling and high-performance streaming to sink data in near real-time & zero data drops
 * **Metrics for performance monitoring** Exposes critical metrics through the consoles to monitor the health of your delivery streams, take any necessary actions
 
 ## Supported Sinks:
 Following sinks are supported in firehose
-* [Log](https://en.wikipedia.org/wiki/Log_file)
-* [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol)
-* [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity)
-* [InfluxDB](https://en.wikipedia.org/wiki/InfluxDB)
-* [Redis](https://en.wikipedia.org/wiki/Redis)
-* [ElasticSearch](https://en.wikipedia.org/wiki/Elasticsearch)
-* [GRPC](https://en.wikipedia.org/wiki/GRPC)
-* [Prometheus](https://en.wikipedia.org/wiki/Prometheus_(software) - `Coming soon`
+* [Log](guides/overview.md#create-a-log-sink)
+* [HTTP](guides/overview.md#create-an-http-sink)
+* [JDBC](guides/overview.md#create-a-jdbc-sink)
+* [InfluxDB](guides/overview.md#create-an-influx-sink)
+* [Redis](guides/overview.md#create-a-redis-sink)
+* [ElasticSearch](guides/overview.md#create-an-elasticsearch-sink)
+* [GRPC](guides/overview.md#create-a-grpc-sink)
+* [Prometheus](https://prometheus.io/docs/introduction/overview/) - `Coming soon`
 
 ## How is Firehose different from Kafka-connect?
 * **Ease of use:** Firehose is easier to install and using different sink only requires chnaging few configurations. Kafka connect whhen used in distributed mode across multiple nodes, requires connectors to be installed across all the workers within your kafka connect cluster.
 * **Filtering:** Value based filtering is much easier to implement as compared to Kafka-Connect. Requires no additional plugins/schema-registry to be installed.
 * **Extensible:** Provides a comprehensible abstract sink contract which makes it easier to add a new sink in Firehose. Fireose also comes with an inbuilt serialization/deserialization and doesn't require any converters and serializers when implementing new sink. 
 * **Easy monitoring:** Firehose provides a detailed health dashboard (Grafana) for effortless monitoring.
-* **Connectors:** Some of the Kafks connect available connectors usually have limitations. Its usually rare to find all the required features in a single connector and so is to find a documentation for the same
-* **Fully open-source:** Firehose is completely open source while separation of commercial and open-source features is not very structured in Kafka Connect and for monitoring and advanced features confluent control center requires an enterprise subscription
+* **Connectors:** Some of the Kafka connect available connectors usually have limitations. Its usually rare to find all the required features in a single connector and so is to find a documentation for the same.
+* **Fully open-source:** Firehose is completely open source while separation of commercial and open-source features is not very structured in Kafka Connect and for monitoring and advanced features confluent control center requires an enterprise subscription.
 
 ## How can I get started?
 
 Explore the following resources to get started with Firehose:
 
-* [Guides](guides/overview.md) provides guidance on creating Firehose with different sinks.
-* [Concepts](concepts/overview.md) describes all important Firehose concepts.
+* [Guides](guides/) provides guidance on [creating Firehose](guides/overview.md) with different sinks and [managing](guides/manage.md) them effectively.
+* [Concepts](concepts/) describes all important Firehose concepts.
 * [Reference](reference/) contains details about configurations, metrics and other aspects of Firehose.
 * [Contribute](contribute/contribution.md) contains resources for anyone who wants to contribute to Firehose.
