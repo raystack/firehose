@@ -15,7 +15,7 @@ Firehose has the capability to run parallelly on threads. Each thread does the f
 **Components**
 
 ***Consumer***
-* Firehose Consumer consumes messages from the configured Kafka in batches, [`source.kafka.consumer.config.max.poll.records`](../reference/configuration.md#a-namesourcekafkaconsumerconfigmaxpollrecords--sourcekafkaconsumerconfigmaxpollrecords) can be configured which decides this batch size.
+* Firehose Consumer consumes messages from the configured Kafka in batches, [`SOURCE_KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS`](../reference/configuration.md#a-namesource_kafka_consumer_config_max_poll_records--source_kafka_consumer_config_max_poll_records) can be configured which decides this batch size.
 * The consumer then processes each message and sends the messages’ list to Filter.
 
 ***Filter***
@@ -49,7 +49,7 @@ The section details all integrating systems for Firehose deployment. These are e
 ![Firehose Integration](../assets/integration.png)
 
 **Kafka**
-* The Kafka topic(s) where Firehose reads from. The [`source.kafka.topic`](../reference/configuration.md#a-namesourcekafkatopic--sourcekafkatopic) config can be set in Firehose.
+* The Kafka topic(s) where Firehose reads from. The [`SOURCE_KAFKA_TOPIC`](../reference/configuration.md#a-namesource_kafka_topic--source_kafka_topic) config can be set in Firehose.
 
 **ProtoDescriptors**
 * Generated protobuf descriptors which are hosted behind an artifactory/HTTP endpoint. This endpoint URL and the proto that the firehose deployment should use to deserialize data with is configured in firehose.

@@ -5,10 +5,10 @@
 #### Create an HTTP Sink
 **Data read from Kafka is written to an HTTP endpoint and it requires the following [variables](../reference/configuration.md#a-namehttp-sink--http-sink) to be set. You need to create your own HTTP endpoint so that the Firehose can send data to it.**
 
-**Usage of [`sink.http.json.body.template`](../reference/configuration.md#a-namesinkhttpjsonbodytemplate--sinkhttpjsonbodytemplate) is explained here.**
+**Usage of [`SINK_HTTP_JSON_BODY_TEMPLATE`](../reference/configuration.md#a-namesink_http_json_body_template--sink_http_json_body_template) is explained below.**
 
 ***Templating Body In Firehose***
-We are using: https://github.com/json-path/JsonPath - for creating Templates which is a DSL for basic JSON parsing. Playground for this: https://jsonpath.com/, where users can play around with a given JSON to extract out the elements as required and validate the jsonpath. The template works only when the output data format `sink.http.data.format` is JSON.
+We are using: https://github.com/json-path/JsonPath - for creating Templates which is a DSL for basic JSON parsing. Playground for this: https://jsonpath.com/, where users can play around with a given JSON to extract out the elements as required and validate the jsonpath. The template works only when the output data format [`SINK_HTTP_DATA_FORMAT`](../reference/configuration.md#a-namesink_http_data_format--sink_http_data_format) is JSON.
 
 ***Creating Templates:***
 
@@ -33,13 +33,13 @@ Limitations:
 #### Create an InfluxDB Sink
 * Data read from Kafka is written to the InfluxDB time-series database and it requires the following [variables](../reference/configuration.md#a-nameinflux-sink--influx-sink) to be set.
 
-***Note: [DATABASE](../reference/configuration.md#a-namesinkinfluxdbname--sinkinfluxdbname) and [RETENTION POLICY](../reference/configuration.md#a-namesinkinfluxretentionpolicy--sinkinfluxretentionpolicy) being used in firehose configuration must exist already in the Influx, It’s outside the scope of a firehose and won’t be generated automatically.***
+***Note: [DATABASE](../reference/configuration.md#a-namesink_influx_db_name--sink_influx_db_name) and [RETENTION POLICY](../reference/configuration.md#a-namesink_influx_retention_policy--sink_influx_retention_policy) being used in firehose configuration must exist already in the Influx, It’s outside the scope of a firehose and won’t be generated automatically.***
 
 #### Create a Redis Sink
 
-* Redis sink can be created in 2 different modes based on the value of [`sink.redis.data.type`](../reference/configuration.md#a-namesinkredisdatatype--sinkredisdatatype): Hashset or List
-    * Hashset: For each message, an entry of the format ‘key : field : value’ is generated and pushed to Redis. field and value are generated on the basis of the config [`input.schema.proto.to.column.mapping`](https://github.com/odpf/firehose/blob/documentation/docs/reference/configuration.md#-inputschemaprototocolumnmapping-2)
-    * List: For each message entry of the format ‘key : value’ is generated and pushed to Redis. Value is fetched for the proto index provided in the config [`sink.redis.list.data.proto.index`](../reference/configuration.md#a-namesinkredislistdataprotoindex--sinkredislistdataprotoindex)
+* Redis sink can be created in 2 different modes based on the value of [`SINK_REDIS_DATA_TYPE`](../reference/configuration.md#a-namesink_redis_data_type--sink_redis_data_type): Hashset or List
+    * Hashset: For each message, an entry of the format ‘key : field : value’ is generated and pushed to Redis. field and value are generated on the basis of the config [`INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING`](https://github.com/odpf/firehose/blob/documentation/docs/reference/configuration.md#-input_schema_proto_to_column_mapping-2)
+    * List: For each message entry of the format ‘key : value’ is generated and pushed to Redis. Value is fetched for the proto index provided in the config [`SINK_REDIS_LIST_DATA_PROTO_INDEX`](../reference/configuration.md#a-namesink_redis_list_data_proto_index--sink_redis_list_data_proto_index)
 * The ‘key’ is picked up from a field in the message itself.
 * Limitation: Firehose Redis sink only supports HashSet and List entries as of now.
 * it requires the following variables to be set.
@@ -118,4 +118,4 @@ gcm_key: "abc123"
 * `sampleLogMessage.getDriverId()=="abcde12345"&&sampleLogMessage.getDriverLocation().getLatitude()>0.6487193703651428`
 * `sampleLogMessage.getDriverLocation().getAltitudeInMeters>0.9949166178703308`
 
-**Note: Use `sink.type=log` for testing the applied filtering** 
+**Note: Use `log` sink for testing the applied filtering**
