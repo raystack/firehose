@@ -3,36 +3,45 @@ package com.gojek.esb.sink.prometheus.request;
 import com.gojek.esb.consumer.Message;
 import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.metrics.Instrumentation;
-import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.http.request.header.HeaderBuilder;
 import com.gojek.esb.sink.http.request.uri.UriBuilder;
 import com.gojek.esb.sink.prometheus.builder.RequestEntityBuilder;
 import com.gojek.esb.sink.prometheus.builder.WriteRequestBuilder;
+import cortexpb.Cortex;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpPost;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 
 public class PromRequest {
-    private WriteRequestBuilder body;
-    private StatsDReporter statsDReporter;
+    private Instrumentation instrumentation;
+    private WriteRequestBuilder writeRequestBuilder;
+    private UriBuilder uriBuilder;
     private RequestEntityBuilder requestEntityBuilder;
-    private PromRequestCreator requestCreator;
+    private HeaderBuilder headerBuilder;
 
 
-    public PromRequest(StatsDReporter statsDReporter, WriteRequestBuilder body) {
-        this.body = body;
-        this.statsDReporter = statsDReporter;
+    public PromRequest(Instrumentation instrumentation, HeaderBuilder headerBuilder, UriBuilder uriBuilder,
+                       RequestEntityBuilder requestEntityBuilder, WriteRequestBuilder writeRequestBuilder) {
+        this.instrumentation = instrumentation;
+        this.writeRequestBuilder = writeRequestBuilder;
+        this.headerBuilder = headerBuilder;
+        this.uriBuilder = uriBuilder;
+        this.requestEntityBuilder = requestEntityBuilder;
     }
 
     public HttpEntityEnclosingRequestBase build(List<Message> messages) throws DeserializerException, URISyntaxException, IOException {
-        return requestCreator.create(messages, requestEntityBuilder);
-    }
-
-    public PromRequest setRequest(HeaderBuilder headerBuilder, UriBuilder uriBuilder, RequestEntityBuilder requestEntitybuilder) {
-        this.requestCreator = new PromRequestCreator(new Instrumentation(statsDReporter, PromRequestCreator.class), uriBuilder, headerBuilder, body);
-        this.requestEntityBuilder = requestEntitybuilder;
-        return this;
+        Cortex.WriteRequest writeRequest = writeRequestBuilder.buildWriteRequest(messages);
+        URI uri = uriBuilder.build();
+        HttpEntityEnclosingRequestBase request = new HttpPost(uri);
+        Map<String, String> headerMap = headerBuilder.build();
+        headerMap.forEach(request::addHeader);
+        request.setEntity(requestEntityBuilder.buildHttpEntity(writeRequest));
+        instrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}", uri, headerMap, writeRequest.toString());
+        return request;
     }
 }

@@ -3,7 +3,6 @@ package com.gojek.esb.sink.prometheus.builder;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.gojek.esb.consumer.Message;
 import com.gojek.esb.consumer.TestFeedbackLogMessage;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
@@ -17,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class WriteRequestBuilderTest {
@@ -59,9 +58,9 @@ public class WriteRequestBuilderTest {
 
         dynamicMessage1 = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage1.toByteArray());
         dynamicMessage2 = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage2.toByteArray());
-        labelPair1 = Cortex.LabelPair.newBuilder().setName(ByteString.copyFromUtf8("__name__")).setValue(ByteString.copyFromUtf8("tip_amount")).build();
-        labelPair2 = Cortex.LabelPair.newBuilder().setName(ByteString.copyFromUtf8("kafka_partition")).setValue(ByteString.copyFromUtf8("0")).build();
-        labelPair3 = Cortex.LabelPair.newBuilder().setName(ByteString.copyFromUtf8("kafka_partition")).setValue(ByteString.copyFromUtf8("1")).build();
+        labelPair1 = Cortex.LabelPair.newBuilder().setName("__name__").setValue("tip_amount").build();
+        labelPair2 = Cortex.LabelPair.newBuilder().setName("kafka_partition").setValue("0").build();
+        labelPair3 = Cortex.LabelPair.newBuilder().setName("kafka_partition").setValue("1").build();
         sample1 = Cortex.Sample.newBuilder().setTimestampMs(10000).setValue(100).build();
         sample2 = Cortex.Sample.newBuilder().setTimestampMs(8000).setValue(200).build();
     }

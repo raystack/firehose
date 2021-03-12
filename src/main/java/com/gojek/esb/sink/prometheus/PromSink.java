@@ -6,26 +6,27 @@ import com.gojek.esb.exception.DeserializerException;
 import com.gojek.esb.exception.NeedToRetry;
 import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.sink.AbstractSink;
+import com.gojek.esb.sink.prometheus.request.PromRequest;
+import com.google.protobuf.DynamicMessage;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Trace;
-import com.gojek.esb.sink.prometheus.request.PromRequest;
+import cortexpb.Cortex;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.util.EntityUtils;
+import org.xerial.snappy.Snappy;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static com.gojek.esb.metrics.Metrics.HTTP_RESPONSE_CODE;
 import static com.gojek.esb.metrics.Metrics.MESSAGES_DROPPED_COUNT;
@@ -94,11 +95,12 @@ public class PromSink extends AbstractSink {
 
     private void consumeResponse(HttpResponse response) throws IOException {
         if (response != null) {
-//            String entireResponse = String.format("\nResponse Code: %s\nResponse Headers: %s\nResponse Body: %s",
-//                    response.getStatusLine().getStatusCode(),
-//                    Arrays.asList(response.getAllHeaders()),
-//                    new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")));
-//            getInstrumentation().logDebug(entireResponse);
+            InputStream inputStream = getResponseContent(response);
+            String entireResponse = String.format("\nResponse Code: %s\nResponse Headers: %s\nResponse Body: %s",
+                    response.getStatusLine().getStatusCode(),
+                    Arrays.toString(response.getAllHeaders()),
+                    readContent(inputStream));
+            getInstrumentation().logDebug(entireResponse);
             EntityUtils.consumeQuietly(response.getEntity());
         }
     }
@@ -129,27 +131,41 @@ public class PromSink extends AbstractSink {
     }
 
     private void printRequest(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
-        InputStream inputStream = getContent(httpRequest);
+        InputStream inputStream = getRequestContent(httpRequest);
         String entireRequest = String.format("\nRequest Method: %s\nRequest Url: %s\nRequest Headers: %s\nRequest Body: %s",
                 httpRequest.getMethod(),
                 httpRequest.getURI(),
                 Arrays.asList(httpRequest.getAllHeaders()),
-                new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")));
+                readContent(inputStream));
         getInstrumentation().logInfo(entireRequest);
         inputStream.reset();
     }
 
-    private InputStream getContent(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
+    private InputStream getRequestContent(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
         return httpRequest.getEntity().getContent();
     }
 
-    private void captureMessageDropCount(HttpResponse response, HttpEntityEnclosingRequestBase httpRequest) throws IOException {
-        InputStream inputStream = getContent(httpRequest);
-        String requestBody = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
+    private InputStream getResponseContent(HttpResponse response) throws IOException {
+        return response.getEntity().getContent();
+    }
 
-        List<String> result = Arrays.asList(requestBody.replaceAll("^\\[|]$", "").split("},\\s*\\{"));
+    private void captureMessageDropCount(HttpResponse response, HttpEntityEnclosingRequestBase httpRequest) throws IOException {
+        InputStream inputStream = getRequestContent(httpRequest);
+        List<String> result = readContent(inputStream);
 
         getInstrumentation().captureCountWithTags(MESSAGES_DROPPED_COUNT, result.size(), "cause= " + statusCode(response));
         getInstrumentation().logInfo("Message dropped because of status code: " + statusCode(response));
+    }
+
+    private List<String> readContent(InputStream inputStream) throws IOException {
+        byte[] byteArrayIs = IOUtils.toByteArray(inputStream);
+        if (ArrayUtils.isEmpty(byteArrayIs)) {
+            return new ArrayList<>();
+        } else {
+            byte[] uncompressedSnappy = Snappy.uncompress(byteArrayIs);
+            String requestBody = DynamicMessage.parseFrom(Cortex.WriteRequest.getDescriptor(), uncompressedSnappy).toString();
+            return Arrays.asList(requestBody.split("\n(?=timeseries)"));
+        }
+
     }
 }

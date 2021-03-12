@@ -10,7 +10,7 @@ import com.gojek.esb.sink.SinkFactory;
 import com.gojek.esb.sink.http.auth.OAuth2Credential;
 import com.gojek.esb.sink.http.request.uri.UriParser;
 import com.gojek.esb.sink.prometheus.request.PromRequest;
-import com.gojek.esb.sink.prometheus.request.PromRequestFactory;
+import com.gojek.esb.sink.prometheus.request.PromRequestCreator;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -36,7 +36,7 @@ public class PromSinkFactory implements SinkFactory {
 
         UriParser uriParser = new UriParser(protoParser, promSinkConfig.getKafkaRecordParserMode());
 
-        PromRequest request = new PromRequestFactory(statsDReporter, promSinkConfig, protoParser, uriParser).createRequest();
+        PromRequest request = new PromRequestCreator(statsDReporter, promSinkConfig, protoParser, uriParser).createRequest();
 
         return new PromSink(new Instrumentation(statsDReporter, PromSink.class),
                 request,

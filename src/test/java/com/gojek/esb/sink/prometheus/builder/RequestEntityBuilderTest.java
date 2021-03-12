@@ -1,6 +1,5 @@
 package com.gojek.esb.sink.prometheus.builder;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.DynamicMessage;
 import cortexpb.Cortex;
 import org.apache.commons.io.IOUtils;
@@ -16,7 +15,7 @@ public class RequestEntityBuilderTest {
     @Test
     public void shouldCreateSnappyCompressedByteArrayEntity() throws IOException {
         Cortex.Sample sample = Cortex.Sample.newBuilder().setValue(10).setTimestampMs(System.currentTimeMillis()).build();
-        Cortex.LabelPair labelPair = Cortex.LabelPair.newBuilder().setName(ByteString.copyFromUtf8("__name__")).setValue(ByteString.copyFromUtf8("test_metric")).build();
+        Cortex.LabelPair labelPair = Cortex.LabelPair.newBuilder().setName("__name__").setValue("test_metric").build();
         Cortex.TimeSeries timeSeries = Cortex.TimeSeries.newBuilder()
                 .addSamples(sample).addLabels(labelPair)
                 .build();
