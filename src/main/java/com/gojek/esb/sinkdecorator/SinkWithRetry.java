@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.gojek.esb.metrics.Metrics.REQUEST_RETRY;
+import static com.gojek.esb.metrics.Metrics.RETRY_COUNT;
 
 public class SinkWithRetry extends SinkDecorator {
 
@@ -51,7 +51,7 @@ public class SinkWithRetry extends SinkDecorator {
         while ((attemptCount < maxRetryAttempts && !failedMessages.isEmpty())
                 || (maxRetryAttempts == Integer.MAX_VALUE && !failedMessages.isEmpty())) {
             attemptCount++;
-            instrumentation.incrementCounter(REQUEST_RETRY);
+            instrumentation.incrementCounter(RETRY_COUNT);
             instrumentation.logWarn("Retrying messages attempt count: {}, Number of messages: {}", attemptCount, failedMessages.size());
 
             List<DynamicMessage> serializedBody = new ArrayList<>();

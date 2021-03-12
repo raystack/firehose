@@ -73,14 +73,14 @@ public class InstrumentationTest {
     @Test
     public void shouldCapturePulledMessageHistogram() {
         instrumentation.capturePulledMessageHistogram(1);
-        verify(statsDReporter, times(1)).captureHistogram(PULLED_BATCH_SIZE, 1);
+        verify(statsDReporter, times(1)).captureHistogram(SOURCE_KAFKA_PULL_BATCH_SIZE, 1);
     }
 
     @Test
     public void shouldCaptureFilteredMessageCount() {
         String filterExpression = testMessage;
         instrumentation.captureFilteredMessageCount(1, filterExpression);
-        verify(statsDReporter, times(1)).captureCount(KAFKA_FILTERED_MESSAGE, 1, "expr=" + filterExpression);
+        verify(statsDReporter, times(1)).captureCount(SOURCE_KAFKA_MESSAGES_FILTER_COUNT, 1, "expr=" + filterExpression);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class InstrumentationTest {
         instrumentation.captureNonFatalError(e, testMessage);
         verify(logger, times(1)).warn(testMessage);
         verify(logger, times(1)).warn(e.getMessage(), e);
-        verify(statsDReporter, times(1)).recordEvent(ERROR_EVENT, NON_FATAL_ERROR, ERROR_MESSAGE_TAG + "=" + e.getClass().getName() + ",type=" + NON_FATAL_ERROR);
+        verify(statsDReporter, times(1)).recordEvent(ERROR_EVENT, NON_FATAL_ERROR, ERROR_MESSAGE_CLASS_TAG + "=" + e.getClass().getName() + ",type=" + NON_FATAL_ERROR);
     }
 
     @Test
@@ -96,7 +96,7 @@ public class InstrumentationTest {
         instrumentation.captureNonFatalError(e, testTemplate, 1, 2, 3);
         verify(logger, times(1)).warn(testTemplate, 1, 2, 3);
         verify(logger, times(1)).warn(e.getMessage(), e);
-        verify(statsDReporter, times(1)).recordEvent(ERROR_EVENT, NON_FATAL_ERROR, ERROR_MESSAGE_TAG + "=" + e.getClass().getName() + ",type=" + NON_FATAL_ERROR);
+        verify(statsDReporter, times(1)).recordEvent(ERROR_EVENT, NON_FATAL_ERROR, ERROR_MESSAGE_CLASS_TAG + "=" + e.getClass().getName() + ",type=" + NON_FATAL_ERROR);
     }
 
     @Test
@@ -104,7 +104,7 @@ public class InstrumentationTest {
         instrumentation.captureFatalError(e, testMessage);
         verify(logger, times(1)).error(testMessage);
         verify(logger, times(1)).error(e.getMessage(), e);
-        verify(statsDReporter, times(1)).recordEvent(ERROR_EVENT, FATAL_ERROR, ERROR_MESSAGE_TAG + "=" + e.getClass().getName() + ",type=" + FATAL_ERROR);
+        verify(statsDReporter, times(1)).recordEvent(ERROR_EVENT, FATAL_ERROR, ERROR_MESSAGE_CLASS_TAG + "=" + e.getClass().getName() + ",type=" + FATAL_ERROR);
     }
 
     @Test
@@ -112,7 +112,7 @@ public class InstrumentationTest {
         instrumentation.captureFatalError(e, testTemplate, 1, 2, 3);
         verify(logger, times(1)).error(testTemplate, 1, 2, 3);
         verify(logger, times(1)).error(e.getMessage(), e);
-        verify(statsDReporter, times(1)).recordEvent(ERROR_EVENT, FATAL_ERROR, ERROR_MESSAGE_TAG + "=" + e.getClass().getName() + ",type=" + FATAL_ERROR);
+        verify(statsDReporter, times(1)).recordEvent(ERROR_EVENT, FATAL_ERROR, ERROR_MESSAGE_CLASS_TAG + "=" + e.getClass().getName() + ",type=" + FATAL_ERROR);
     }
 
     @Test
@@ -128,35 +128,35 @@ public class InstrumentationTest {
         List<Message> messages = Collections.singletonList(message);
         instrumentation.captureSuccessExecutionTelemetry("test", messages.size());
         verify(logger, times(1)).info("Pushed {} messages to {}.", messages.size(), "test");
-        verify(statsDReporter, times(1)).captureDurationSince("sink.response.time", instrumentation.getStartExecutionTime());
-        verify(statsDReporter, times(1)).captureCount("messages.count", messages.size(), SUCCESS_TAG);
-        verify(statsDReporter, times(1)).captureHistogramWithTags(PUSHED_BATCH_SIZE, messages.size(), SUCCESS_TAG);
+        verify(statsDReporter, times(1)).captureDurationSince("sink_response_time", instrumentation.getStartExecutionTime());
+        verify(statsDReporter, times(1)).captureCount("sink_messages_count", messages.size(), SUCCESS_TAG);
+        verify(statsDReporter, times(1)).captureHistogramWithTags(SINK_PUSH_BATCH_SIZE, messages.size(), SUCCESS_TAG);
     }
 
     @Test
     public void shouldCaptureFailedExecutionTelemetry() {
         List<Message> messages = Collections.singletonList(message);
         instrumentation.captureFailedExecutionTelemetry(e, messages.size());
-        verify(statsDReporter, times(1)).captureCount("messages.count", messages.size(), FAILURE_TAG);
-        verify(statsDReporter, times(1)).captureHistogramWithTags(PUSHED_BATCH_SIZE, messages.size(), FAILURE_TAG);
+        verify(statsDReporter, times(1)).captureCount("sink_messages_count", messages.size(), FAILURE_TAG);
+        verify(statsDReporter, times(1)).captureHistogramWithTags(SINK_PUSH_BATCH_SIZE, messages.size(), FAILURE_TAG);
     }
 
     @Test
     public void shouldIncrementMessageSucceedCount() {
         instrumentation.incrementMessageSucceedCount();
-        verify(statsDReporter, times(1)).increment(DLQ_MESSAGE_COUNT, SUCCESS_TAG);
+        verify(statsDReporter, times(1)).increment(DLQ_MESSAGES_COUNT, SUCCESS_TAG);
     }
 
     @Test
     public void shouldCaptureRetryAttempts() {
         instrumentation.captureRetryAttempts();
-        verify(statsDReporter, times(1)).increment(RETRY_ATTEMPTS);
+        verify(statsDReporter, times(1)).increment(DQL_RETRY_COUNT);
     }
 
     @Test
     public void shouldIncrementMessageFailCount() {
         instrumentation.incrementMessageFailCount(message, e);
-        verify(statsDReporter, times(1)).increment(DLQ_MESSAGE_COUNT, FAILURE_TAG);
+        verify(statsDReporter, times(1)).increment(DLQ_MESSAGES_COUNT, FAILURE_TAG);
         verify(logger, times(1)).warn(e.getMessage(), e);
     }
 
@@ -164,14 +164,14 @@ public class InstrumentationTest {
     public void shouldCaptureLifetimeTillSink() {
         List<Message> messages = Collections.singletonList(message);
         instrumentation.capturePreExecutionLatencies(messages);
-        verify(statsDReporter, times(messages.size())).captureDurationSince("lifetime.till.execution", Instant.ofEpochSecond(message.getTimestamp()));
+        verify(statsDReporter, times(messages.size())).captureDurationSince("pipeline_execution_lifetime", Instant.ofEpochSecond(message.getTimestamp()));
     }
 
     @Test
     public void shouldCaptureLatencyAcrossFirehose() {
         List<Message> messages = Collections.singletonList(message);
         instrumentation.capturePreExecutionLatencies(messages);
-        verify(statsDReporter, times(messages.size())).captureDurationSince("latency", Instant.ofEpochSecond(message.getConsumeTimestamp()));
+        verify(statsDReporter, times(messages.size())).captureDurationSince("pipeline_end_latency", Instant.ofEpochSecond(message.getConsumeTimestamp()));
     }
 
     @Test

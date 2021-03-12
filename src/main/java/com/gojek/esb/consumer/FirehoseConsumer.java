@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
-import static com.gojek.esb.metrics.Metrics.PARTITION_PROCESS_TIME;
+import static com.gojek.esb.metrics.Metrics.SOURCE_KAFKA_PARTITIONS_PROCESS_TIME;
 
 @AllArgsConstructor
 public class FirehoseConsumer implements Closeable {
@@ -38,7 +38,7 @@ public class FirehoseConsumer implements Closeable {
             instrumentation.logInfo("Execution successful for {} records", messages.size());
             tracer.finishTrace(spans);
         } finally {
-            instrumentation.captureDurationSince(PARTITION_PROCESS_TIME, beforeCall);
+            instrumentation.captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME, beforeCall);
         }
     }
 

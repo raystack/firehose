@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.gojek.esb.metrics.Metrics.HTTP_RESPONSE_CODE;
-import static com.gojek.esb.metrics.Metrics.MESSAGES_DROPPED_COUNT;
+import static com.gojek.esb.metrics.Metrics.SINK_HTTP_RESPONSE_CODE;
+import static com.gojek.esb.metrics.Metrics.SINK_MESSAGES_DROP_COUNT;
 
 
 /**
@@ -131,7 +131,7 @@ public class HttpSink extends AbstractSink {
         if (response != null) {
             httpCodeTag = "status_code=" + response.getStatusLine().getStatusCode();
         }
-        getInstrumentation().captureCountWithTags(HTTP_RESPONSE_CODE, 1, httpCodeTag, urlTag);
+        getInstrumentation().captureCountWithTags(SINK_HTTP_RESPONSE_CODE, 1, httpCodeTag, urlTag);
     }
 
     private void printRequest(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
@@ -155,7 +155,7 @@ public class HttpSink extends AbstractSink {
 
         List<String> result = Arrays.asList(requestBody.replaceAll("^\\[|]$", "").split("},\\s*\\{"));
 
-        getInstrumentation().captureCountWithTags(MESSAGES_DROPPED_COUNT, result.size(), "cause= " + statusCode(response));
+        getInstrumentation().captureCountWithTags(SINK_MESSAGES_DROP_COUNT, result.size(), "cause= " + statusCode(response));
         getInstrumentation().logInfo("Message dropped because of status code: " + statusCode(response));
     }
 }
