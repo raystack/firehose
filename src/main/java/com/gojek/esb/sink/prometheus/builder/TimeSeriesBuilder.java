@@ -2,7 +2,6 @@ package com.gojek.esb.sink.prometheus.builder;
 
 import com.gojek.esb.config.PrometheusSinkConfig;
 import com.gojek.esb.exception.EglcConfigurationException;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -44,7 +43,7 @@ public class TimeSeriesBuilder {
         Map<String, Object> labelPair = getLabelMessage(message, labelNameProtoIndexMapping, partition);
         List<Map<String, Object>> metricList = getMetricMessage(message, metricNameProtoIndexMapping);
         List<Cortex.TimeSeries> timeSeriesList = new ArrayList<>();
-        Long metricTimestamp = getMetricTimestamp(message, timestampIndex);
+        Long metricTimestamp = getMetricTimestamp(message);
         for (Map<String, Object> metricName : metricList) {
             buildMetric((String) metricName.get("metric_name"));
             for (Map.Entry<String, Object> entry : labelPair.entrySet()) {
@@ -58,13 +57,13 @@ public class TimeSeriesBuilder {
     }
 
     private void buildMetric(String metricName) {
-        Cortex.LabelPair metric = labelBuilder.setName(ByteString.copyFromUtf8("__name__")).setValue(ByteString.copyFromUtf8(metricName)).build();
+        Cortex.LabelPair metric = labelBuilder.setName("__name__").setValue(metricName).build();
         timeSeriesBuilder.addLabels(metric);
         labelBuilder.clear();
     }
 
     private void buildLabels(String labelName, Object labelValue) {
-        Cortex.LabelPair label = labelBuilder.setName(ByteString.copyFromUtf8(labelName)).setValue(ByteString.copyFromUtf8(labelValue.toString())).build();
+        Cortex.LabelPair label = labelBuilder.setName(labelName).setValue(labelValue.toString()).build();
         timeSeriesBuilder.addLabels(label);
         labelBuilder.clear();
     }
@@ -75,8 +74,8 @@ public class TimeSeriesBuilder {
         sampleBuilder.clear();
     }
 
-    private Long getMetricTimestamp(Message message, int fieldIndex) throws InvalidProtocolBufferException {
-        return (isEventTimestampEnabled) ? getMillisFromTimestamp(getTimestamp(message, fieldIndex)) : System.currentTimeMillis();
+    private Long getMetricTimestamp(Message message) throws InvalidProtocolBufferException {
+        return (isEventTimestampEnabled) ? getMillisFromTimestamp(getTimestamp(message, timestampIndex)) : System.currentTimeMillis();
     }
 
     private List<Map<String, Object>> getMetricMessage(Message message, Properties protoIndexMapping) {
