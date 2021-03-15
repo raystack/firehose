@@ -65,7 +65,7 @@ public class Instrumentation {
     }
 
     public void captureFilteredMessageCount(int filteredMessageCount, String filterExpression) {
-        statsDReporter.captureCount(SOURCE_KAFKA_MESSAGES_FILTER_COUNT, filteredMessageCount, "expr=" + filterExpression);
+        statsDReporter.captureCount(SOURCE_KAFKA_MESSAGES_FILTER_TOTAL, filteredMessageCount, "expr=" + filterExpression);
     }
 
     // =================== ERROR ===================
@@ -113,29 +113,29 @@ public class Instrumentation {
     public void captureSuccessExecutionTelemetry(String sinkType, Integer messageListSize) {
         logger.info("Pushed {} messages to {}.", messageListSize, sinkType);
         statsDReporter.captureDurationSince(SINK_RESPONSE_TIME, this.startExecutionTime);
-        statsDReporter.captureCount(SINK_MESSAGES_COUNT, messageListSize, SUCCESS_TAG);
+        statsDReporter.captureCount(SINK_MESSAGES_TOTAL, messageListSize, SUCCESS_TAG);
         statsDReporter.captureHistogramWithTags(SINK_PUSH_BATCH_SIZE, messageListSize, SUCCESS_TAG);
     }
 
     public void captureFailedExecutionTelemetry(Exception e, Integer messageListSize) {
 
         captureNonFatalError(e, "caught {} {}", e.getClass(), e.getMessage());
-        statsDReporter.captureCount(SINK_MESSAGES_COUNT, messageListSize, FAILURE_TAG);
+        statsDReporter.captureCount(SINK_MESSAGES_TOTAL, messageListSize, FAILURE_TAG);
         statsDReporter.captureHistogramWithTags(SINK_PUSH_BATCH_SIZE, messageListSize, FAILURE_TAG);
     }
 
     // =================== RetryTelemetry ======================
 
     public void incrementMessageSucceedCount() {
-        statsDReporter.increment(DLQ_MESSAGES_COUNT, SUCCESS_TAG);
+        statsDReporter.increment(DLQ_MESSAGES_TOTAL, SUCCESS_TAG);
     }
 
     public void captureRetryAttempts() {
-        statsDReporter.increment(DQL_RETRY_COUNT);
+        statsDReporter.increment(DQL_RETRY_TOTAL);
     }
 
     public void incrementMessageFailCount(Message message, Exception e) {
-        statsDReporter.increment(DLQ_MESSAGES_COUNT, FAILURE_TAG);
+        statsDReporter.increment(DLQ_MESSAGES_TOTAL, FAILURE_TAG);
         captureNonFatalError(e, "Unable to send record with key {} and message {} ", message.getLogKey(), message.getLogMessage());
     }
 

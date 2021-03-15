@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.gojek.esb.metrics.Metrics.SINK_MESSAGES_DROP_COUNT;
+import static com.gojek.esb.metrics.Metrics.SINK_MESSAGES_DROP_TOTAL;
 
 public class EsSink extends AbstractSink {
     private RestHighLevelClient client;
@@ -71,7 +71,7 @@ public class EsSink extends AbstractSink {
                 String responseStatus = String.valueOf(response.status().getStatus());
                 if (esRetryStatusCodeBlacklist.contains(responseStatus)) {
                     getInstrumentation().logInfo("Not retrying due to response status: {} is under blacklisted status code", responseStatus);
-                    getInstrumentation().incrementCounterWithTags(SINK_MESSAGES_DROP_COUNT, "cause=" + response.status().name());
+                    getInstrumentation().incrementCounterWithTags(SINK_MESSAGES_DROP_TOTAL, "cause=" + response.status().name());
                     getInstrumentation().logInfo("Message dropped because of status code: " + responseStatus);
                 } else {
                     throw new NeedToRetry(bulkResponse.buildFailureMessage());

@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 
-import static com.gojek.esb.metrics.Metrics.SOURCE_KAFKA_MESSAGES_COMMIT_COUNT;
+import static com.gojek.esb.metrics.Metrics.SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL;
 import static com.gojek.esb.metrics.Metrics.FAILURE_TAG;
 import static com.gojek.esb.metrics.Metrics.SUCCESS_TAG;
 
@@ -29,9 +29,9 @@ public class TopicOffsets implements Offsets {
     private void commitAsync() {
         kafkaConsumer.commitAsync((offsets, exception) -> {
             if (exception != null) {
-                instrumentation.incrementCounterWithTags(SOURCE_KAFKA_MESSAGES_COMMIT_COUNT, FAILURE_TAG);
+                instrumentation.incrementCounterWithTags(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, FAILURE_TAG);
             } else {
-                instrumentation.incrementCounterWithTags(SOURCE_KAFKA_MESSAGES_COMMIT_COUNT, SUCCESS_TAG);
+                instrumentation.incrementCounterWithTags(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, SUCCESS_TAG);
             }
         });
     }

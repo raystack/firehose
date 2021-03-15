@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.gojek.esb.metrics.Metrics.SINK_HTTP_RESPONSE_CODE;
-import static com.gojek.esb.metrics.Metrics.SINK_MESSAGES_DROP_COUNT;
+import static com.gojek.esb.metrics.Metrics.SINK_HTTP_RESPONSE_CODE_TOTAL;
+import static com.gojek.esb.metrics.Metrics.SINK_MESSAGES_DROP_TOTAL;
 
 
 /**
@@ -100,11 +100,6 @@ public class HttpSink extends AbstractSink {
 
     private void consumeResponse(HttpResponse response) throws IOException {
         if (response != null) {
-//            String entireResponse = String.format("\nResponse Code: %s\nResponse Headers: %s\nResponse Body: %s",
-//                    response.getStatusLine().getStatusCode(),
-//                    Arrays.asList(response.getAllHeaders()),
-//                    new BufferedReader(new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n")));
-//            getInstrumentation().logDebug(entireResponse);
             EntityUtils.consumeQuietly(response.getEntity());
         }
     }
@@ -131,7 +126,7 @@ public class HttpSink extends AbstractSink {
         if (response != null) {
             httpCodeTag = "status_code=" + response.getStatusLine().getStatusCode();
         }
-        getInstrumentation().captureCountWithTags(SINK_HTTP_RESPONSE_CODE, 1, httpCodeTag, urlTag);
+        getInstrumentation().captureCountWithTags(SINK_HTTP_RESPONSE_CODE_TOTAL, 1, httpCodeTag, urlTag);
     }
 
     private void printRequest(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
@@ -155,7 +150,7 @@ public class HttpSink extends AbstractSink {
 
         List<String> result = Arrays.asList(requestBody.replaceAll("^\\[|]$", "").split("},\\s*\\{"));
 
-        getInstrumentation().captureCountWithTags(SINK_MESSAGES_DROP_COUNT, result.size(), "cause= " + statusCode(response));
+        getInstrumentation().captureCountWithTags(SINK_MESSAGES_DROP_TOTAL, result.size(), "cause= " + statusCode(response));
         getInstrumentation().logInfo("Message dropped because of status code: " + statusCode(response));
     }
 }

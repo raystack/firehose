@@ -80,7 +80,7 @@ public class InstrumentationTest {
     public void shouldCaptureFilteredMessageCount() {
         String filterExpression = testMessage;
         instrumentation.captureFilteredMessageCount(1, filterExpression);
-        verify(statsDReporter, times(1)).captureCount(SOURCE_KAFKA_MESSAGES_FILTER_COUNT, 1, "expr=" + filterExpression);
+        verify(statsDReporter, times(1)).captureCount(SOURCE_KAFKA_MESSAGES_FILTER_TOTAL, 1, "expr=" + filterExpression);
     }
 
     @Test
@@ -128,8 +128,8 @@ public class InstrumentationTest {
         List<Message> messages = Collections.singletonList(message);
         instrumentation.captureSuccessExecutionTelemetry("test", messages.size());
         verify(logger, times(1)).info("Pushed {} messages to {}.", messages.size(), "test");
-        verify(statsDReporter, times(1)).captureDurationSince("sink_response_time", instrumentation.getStartExecutionTime());
-        verify(statsDReporter, times(1)).captureCount("sink_messages_count", messages.size(), SUCCESS_TAG);
+        verify(statsDReporter, times(1)).captureDurationSince("firehose_sink_response_time_milliseconds", instrumentation.getStartExecutionTime());
+        verify(statsDReporter, times(1)).captureCount("firehose_sink_messages_total", messages.size(), SUCCESS_TAG);
         verify(statsDReporter, times(1)).captureHistogramWithTags(SINK_PUSH_BATCH_SIZE, messages.size(), SUCCESS_TAG);
     }
 
@@ -137,26 +137,26 @@ public class InstrumentationTest {
     public void shouldCaptureFailedExecutionTelemetry() {
         List<Message> messages = Collections.singletonList(message);
         instrumentation.captureFailedExecutionTelemetry(e, messages.size());
-        verify(statsDReporter, times(1)).captureCount("sink_messages_count", messages.size(), FAILURE_TAG);
+        verify(statsDReporter, times(1)).captureCount("firehose_sink_messages_total", messages.size(), FAILURE_TAG);
         verify(statsDReporter, times(1)).captureHistogramWithTags(SINK_PUSH_BATCH_SIZE, messages.size(), FAILURE_TAG);
     }
 
     @Test
     public void shouldIncrementMessageSucceedCount() {
         instrumentation.incrementMessageSucceedCount();
-        verify(statsDReporter, times(1)).increment(DLQ_MESSAGES_COUNT, SUCCESS_TAG);
+        verify(statsDReporter, times(1)).increment(DLQ_MESSAGES_TOTAL, SUCCESS_TAG);
     }
 
     @Test
     public void shouldCaptureRetryAttempts() {
         instrumentation.captureRetryAttempts();
-        verify(statsDReporter, times(1)).increment(DQL_RETRY_COUNT);
+        verify(statsDReporter, times(1)).increment(DQL_RETRY_TOTAL);
     }
 
     @Test
     public void shouldIncrementMessageFailCount() {
         instrumentation.incrementMessageFailCount(message, e);
-        verify(statsDReporter, times(1)).increment(DLQ_MESSAGES_COUNT, FAILURE_TAG);
+        verify(statsDReporter, times(1)).increment(DLQ_MESSAGES_TOTAL, FAILURE_TAG);
         verify(logger, times(1)).warn(e.getMessage(), e);
     }
 
@@ -164,33 +164,33 @@ public class InstrumentationTest {
     public void shouldCaptureLifetimeTillSink() {
         List<Message> messages = Collections.singletonList(message);
         instrumentation.capturePreExecutionLatencies(messages);
-        verify(statsDReporter, times(messages.size())).captureDurationSince("pipeline_execution_lifetime", Instant.ofEpochSecond(message.getTimestamp()));
+        verify(statsDReporter, times(messages.size())).captureDurationSince("firehose_pipeline_execution_lifetime_milliseconds", Instant.ofEpochSecond(message.getTimestamp()));
     }
 
     @Test
     public void shouldCaptureLatencyAcrossFirehose() {
         List<Message> messages = Collections.singletonList(message);
         instrumentation.capturePreExecutionLatencies(messages);
-        verify(statsDReporter, times(messages.size())).captureDurationSince("pipeline_end_latency", Instant.ofEpochSecond(message.getConsumeTimestamp()));
+        verify(statsDReporter, times(messages.size())).captureDurationSince("firehose_pipeline_end_latency_milliseconds", Instant.ofEpochSecond(message.getConsumeTimestamp()));
     }
 
     @Test
     public void shouldCapturePartitionProcessTime() {
         Instant instant = Instant.now();
-        instrumentation.captureDurationSince("kafka_process_partitions_time", instant);
-        verify(statsDReporter, times(1)).captureDurationSince("kafka_process_partitions_time", instant);
+        instrumentation.captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME, instant);
+        verify(statsDReporter, times(1)).captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME, instant);
     }
 
     @Test
     public void shouldCaptureBackoffSleepTime() {
-        String metric = "backoff_sleep_time";
+        String metric = "firehose_retry_backoff_sleep_milliseconds";
         int sleepTime = 10000;
         instrumentation.captureSleepTime(metric, sleepTime);
         verify(statsDReporter, times(1)).gauge(metric, sleepTime);
     }
     @Test
     public void shouldCaptureCountWithTags() {
-        String metric = "test.metric";
+        String metric = "test_metric";
         String urlTag = "url=test";
         String httpCodeTag = "status_code=200";
         instrumentation.captureCountWithTags(metric, 1, httpCodeTag, urlTag);
@@ -199,7 +199,7 @@ public class InstrumentationTest {
 
     @Test
     public void shouldIncrementCounterWithTags() {
-        String metric = "test.metric";
+        String metric = "test_metric";
         String httpCodeTag = "status_code=200";
         instrumentation.incrementCounterWithTags(metric, httpCodeTag);
         verify(statsDReporter, times(1)).increment(metric, httpCodeTag);
@@ -207,7 +207,7 @@ public class InstrumentationTest {
 
     @Test
     public void shouldIncrementCounter() {
-        String metric = "test.metric";
+        String metric = "test_metric";
         instrumentation.incrementCounter(metric);
         verify(statsDReporter, times(1)).increment(metric);
     }
