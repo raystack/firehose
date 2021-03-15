@@ -27,5 +27,4 @@ Please follow these practices for you change to get merged fast and smoothly:
 * If you are introducing a completely new feature or making any major changes in an existing one, we recommend to start with an RFC and get consensus on the basic design first.
 * Make sure your local build is running with all the tests and checkstyle passing.
 * If your change is related to user-facing protocols / configurations, you need to make the corresponding change in the documentation as well.
-    * You may need to contact us to get the permission first if it is your first time to edit the documentation.
-    * Docs live in the code repo under `docs` so that changes to that can be done in the same PR as changes to the code.
+* Docs live in the code repo under `docs` so that changes to that can be done in the same PR as changes to the code.

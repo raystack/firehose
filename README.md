@@ -2,14 +2,14 @@
 ![build workflow](https://github.com/odpf/firehose/actions/workflows/build.yml/badge.svg)
 ![publish workflow](https://github.com/odpf/firehose/actions/workflows/publish.yml/badge.svg)
 
-Firehose is a cloud native service for delivering real-time streaming data to destinations such as service endpoints (HTTP or GRPC) & managed databases (Postgres, InfluxDB,  Redis, & ElasticSearch). With Firehose, you don't need to write applications or manage resources. It automatically scales to match the throughput of your data and requires no ongoing administration. If your data is present in Kafka, Firehose delivers it to the destination(SINK) that you specified.
+Firehose is a cloud native service for delivering real-time streaming data to destinations such as service endpoints (HTTP or GRPC) & managed databases (Postgres, InfluxDB,  Redis, & Elasticsearch). With Firehose, you don't need to write applications or manage resources. It can be scaled up to match the throughput of your data. If your data is present in Kafka, Firehose delivers it to the destination(SINK) that you specified.
 
 <p align="center"><img src="./docs/assets/overview.svg" /></p>
 
 ## Key Features
 Discover why users choose Firehose as their main Kafka Consumer
 
-* **Support for multiple sinks** Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB(JDBC), InfluxDB, ElasticSearch & Redis
+* **Support for multiple sinks** Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB(JDBC), InfluxDB, Elasticsearch & Redis
 * **Self-serve** Configure, deploy, validate, scale, monitor, alert, debug, audit and so on. Every action is DIY
 * **Elastic scaling** Cloud-native & leverages horizontal scaling and high-performance streaming to sink data in near real-time & zero data drops
 * **Metrics for performance monitoring** Exposes critical metrics through the consoles to monitor the health of your delivery streams, take any necessary actions
@@ -24,7 +24,7 @@ Following sinks are supported in firehose
 * [JDBC](docs/guides/overview.md#create-a-jdbc-sink)
 * [InfluxDB](docs/guides/overview.md#create-an-influxdb-sink)
 * [Redis](docs/guides/overview.md#create-a-redis-sink)
-* [ElasticSearch](docs/guides/overview.md#create-an-elasticsearch-sink)
+* [Elasticsearch](docs/guides/overview.md#create-an-elasticsearch-sink)
 * [GRPC](docs/guides/overview.md#create-a-grpc-sink)
 * [Prometheus](https://prometheus.io/docs/introduction/overview/) - `Coming soon`
 
@@ -86,9 +86,7 @@ Development of Firehose happens in the open on GitHub, and we are grateful to th
 
 ## Credits
 
-This project exists thanks to all the people who [contribute](docs/contribute/contribution.md).
-
-<a href="https://github.com/odpf/firehose/graphs/contributors"><img src="https://opencollective.com/firehose/contributors.svg?width=890&button=false" /></a>
+This project exists thanks to all the [Contributors](https://github.com/odpf/firehose/graphs/contributors).
 
 ## License
 Firehose is [Apache 2.0](LICENSE) licensed.

@@ -39,18 +39,20 @@ Limitations:
 
 ## Create a Redis Sink
 
+* it requires the following [variables](../reference/configuration.md#-redis-sink) to be set.
 * Redis sink can be created in 2 different modes based on the value of [`SINK_REDIS_DATA_TYPE`](../reference/configuration.md#-sink_redis_data_type): Hashset or List
-    * Hashset: For each message, an entry of the format ‘key : field : value’ is generated and pushed to Redis. field and value are generated on the basis of the config [`INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING`](https://github.com/odpf/firehose/blob/documentation/docs/reference/configuration.md#-input_schema_proto_to_column_mapping-2)
-    * List: For each message entry of the format ‘key : value’ is generated and pushed to Redis. Value is fetched for the proto index provided in the config [`SINK_REDIS_LIST_DATA_PROTO_INDEX`](../reference/configuration.md#-sink_redis_list_data_proto_index)
-* The ‘key’ is picked up from a field in the message itself.
+    * `Hashset`: For each message, an entry of the format ‘key : field : value’ is generated and pushed to Redis. field and value are generated on the basis of the config [`INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING`](https://github.com/odpf/firehose/blob/documentation/docs/reference/configuration.md#-input_schema_proto_to_column_mapping-2)
+    * `List`: For each message entry of the format ‘key : value’ is generated and pushed to Redis. Value is fetched for the proto index provided in the config [`SINK_REDIS_LIST_DATA_PROTO_INDEX`](../reference/configuration.md#-sink_redis_list_data_proto_index)
+* The `key` is picked up from a field in the message itself.
+* Redis sink also supports different [Deployment Types](../reference/configuration.md#-sink_redis_deployment_type) `Standalone` and `Cluster`.
 * Limitation: Firehose Redis sink only supports HashSet and List entries as of now.
-* it requires the following variables to be set.
 
-## Create an ElasticSearch Sink
+## Create an Elasticsearch Sink
 
-* In the ElasticSearch sink, each message is converted into a document in the specified index with the Document type and ID as specified by the user.
-* ElasticSearch sink supports reading messages in both JSON and Protobuf formats.
 * it requires the following [variables](../reference/configuration.md#-elasticsearch-sink) to be set.
+* In the Elasticsearch sink, each message is converted into a document in the specified index with the Document type and ID as specified by the user.
+* Elasticsearch sink supports reading messages in both JSON and Protobuf formats.
+* Using [Routing Key](../reference/configuration.md#-sink_es_routing_key_name) one can route documents to a particular shard in Elasticsearch.
 
 ## Create a GRPC Sink
 

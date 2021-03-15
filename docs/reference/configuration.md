@@ -8,7 +8,7 @@ This page contains reference for all the application configurations for Firehose
 - [JDBC Sink](#-jdbc-sink)
 - [Influx Sink](#-influx-sink)
 - [Redis Sink](#-redis-sink)
-- [ElasticSearch Sink](#-elasticsearch-sink)
+- [Elasticsearch Sink](#-elasticsearch-sink)
 - [GRPC Sink](#-grpc-sink)
 - [Standard](#-standard)
 
@@ -351,7 +351,7 @@ This will get the value of the field with index 6 in your proto and push that to
 
 * The Redis deployment you are using. At present, we support `Standalone` and `Cluster` types.
 
-## <a name="ElasticSearch Sink" /> ElasticSearch Sink
+## <a name="Elasticsearch Sink" /> Elasticsearch Sink
 An ES sink firehose (`SINK_TYPE`=`elasticsearch`) requires the following variables to be set along with Generic ones
 
 #### <a name="SINK_ES_CONNECTION_URLS" /> `SINK_ES_CONNECTION_URLS`
@@ -370,13 +370,13 @@ An ES sink firehose (`SINK_TYPE`=`elasticsearch`) requires the following variabl
 * Example value: `Customer`
 * Type: `required`
 
-* The type name of the Document in ElasticSearch.
+* The type name of the Document in Elasticsearch.
 
 #### <a name="SINK_ES_ID_FIELD" /> `SINK_ES_ID_FIELD`
 * Example value: `customer_id`
 * Type: `required`
 
-* The identifier field of the document in ElasticSearch. This should be the key of the field present in the message (JSON or Protobuf) and it has to be a unique, non-null field. So the value of this field in the message will be used as the ID of the document in ElasticSearch while writing the document.
+* The identifier field of the document in Elasticsearch. This should be the key of the field present in the message (JSON or Protobuf) and it has to be a unique, non-null field. So the value of this field in the message will be used as the ID of the document in Elasticsearch while writing the document.
 
 #### <a name="SINK_ES_MODE_UPDATE_ONLY_ENABLE" /> `SINK_ES_MODE_UPDATE_ONLY_ENABLE`
 * Example value: `TRUE`
@@ -384,7 +384,7 @@ An ES sink firehose (`SINK_TYPE`=`elasticsearch`) requires the following variabl
 * Default value: `FALSE`
 
 * Elasticsearch sink can be created in 2 modes: Upsert mode or UpdateOnly mode. If this config is set:\
-    - `TRUE`: Firehose will run on UpdateOnly mode which will only UPDATE the already existing documents in the ElasticSearch index.
+    - `TRUE`: Firehose will run on UpdateOnly mode which will only UPDATE the already existing documents in the Elasticsearch index.
     - `FALSE`: Firehose will run on Upsert mode, UPDATING the existing documents and also INSERTING any new ones.
 
 #### <a name="SINK_ES_INPUT_MESSAGE_TYPE" /> `SINK_ES_INPUT_MESSAGE_TYPE`
@@ -399,7 +399,7 @@ An ES sink firehose (`SINK_TYPE`=`elasticsearch`) requires the following variabl
 * Type: `required`
 * Default value: `TRUE`
 
-* Whether or not the protobuf field names should be preserved in the ElasticSearch document. If false the fields will be converted to camel case.
+* Whether or not the protobuf field names should be preserved in the Elasticsearch document. If false the fields will be converted to camel case.
 
 #### <a name="SINK_ES_REQUEST_TIMEOUT_MS" /> `SINK_ES_REQUEST_TIMEOUT_MS`
 * Example value: `60000`
