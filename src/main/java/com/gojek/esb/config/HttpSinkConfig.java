@@ -14,76 +14,76 @@ import java.util.Map;
 
 public interface HttpSinkConfig extends AppConfig {
 
-    @Key("sink.http.retry.status.code.ranges")
+    @Key("SINK_HTTP_RETRY_STATUS_CODE_RANGES")
     @DefaultValue("400-600")
     @ConverterClass(RangeToHashMapConverter.class)
     Map<Integer, Boolean> getSinkHttpRetryStatusCodeRanges();
 
-    @Key("sink.http.request.log.status.code.ranges")
+    @Key("SINK_HTTP_REQUEST_LOG_STATUS_CODE_RANGES")
     @DefaultValue("400-499")
     @ConverterClass(RangeToHashMapConverter.class)
     Map<Integer, Boolean> getSinkHttpRequestLogStatusCodeRanges();
 
-    @Key("sink.http.request.timeout.ms")
+    @Key("SINK_HTTP_REQUEST_TIMEOUT_MS")
     @DefaultValue("10000")
     Integer getSinkHttpRequestTimeoutMs();
 
-    @Key("sink.http.request.method")
+    @Key("SINK_HTTP_REQUEST_METHOD")
     @DefaultValue("put")
     @ConverterClass(HttpSinkRequestMethodConverter.class)
     HttpSinkRequestMethodType getSinkHttpRequestMethod();
 
-    @Key("sink.http.max.connections")
+    @Key("SINK_HTTP_MAX_CONNECTIONS")
     @DefaultValue("10")
     Integer getSinkHttpMaxConnections();
 
-    @Key("sink.http.service.url")
+    @Key("SINK_HTTP_SERVICE_URL")
     String getSinkHttpServiceUrl();
 
-    @Key("sink.http.headers")
+    @Key("SINK_HTTP_HEADERS")
     @DefaultValue("")
     String getSinkHttpHeaders();
 
-    @Key("sink.http.parameter.source")
+    @Key("SINK_HTTP_PARAMETER_SOURCE")
     @DefaultValue("disabled")
     @ConverterClass(HttpSinkParameterSourceTypeConverter.class)
     HttpSinkParameterSourceType getSinkHttpParameterSource();
 
-    @Key("sink.http.data.format")
+    @Key("SINK_HTTP_DATA_FORMAT")
     @DefaultValue("proto")
     @ConverterClass(HttpSinkParameterDataFormatConverter.class)
     HttpSinkDataFormatType getSinkHttpDataFormat();
 
-    @Key("sink.http.oauth2.enable")
+    @Key("SINK_HTTP_OAUTH2_ENABLE")
     @DefaultValue("false")
     Boolean isSinkHttpOAuth2Enable();
 
-    @Key("sink.http.oauth2.access.token.url")
+    @Key("SINK_HTTP_OAUTH2_ACCESS_TOKEN_URL")
     @DefaultValue("https://localhost:8888")
     String getSinkHttpOAuth2AccessTokenUrl();
 
-    @Key("sink.http.oauth2.client.name")
+    @Key("SINK_HTTP_OAUTH2_CLIENT_NAME")
     @DefaultValue("client_name")
     String getSinkHttpOAuth2ClientName();
 
-    @Key("sink.http.oauth2.client.secret")
+    @Key("SINK_HTTP_OAUTH2_CLIENT_SECRET")
     @DefaultValue("client_secret")
     String getSinkHttpOAuth2ClientSecret();
 
-    @Key("sink.http.oauth2.scope")
+    @Key("SINK_HTTP_OAUTH2_SCOPE")
     @DefaultValue("scope")
     String getSinkHttpOAuth2Scope();
 
-    @Key("sink.http.json.body.template")
+    @Key("SINK_HTTP_JSON_BODY_TEMPLATE")
     @DefaultValue("")
     String getSinkHttpJsonBodyTemplate();
 
-    @Key("sink.http.parameter.placement")
+    @Key("SINK_HTTP_PARAMETER_PLACEMENT")
     @DefaultValue("header")
     @ConverterClass(HttpSinkParameterPlacementTypeConverter.class)
     HttpSinkParameterPlacementType getSinkHttpParameterPlacement();
 
-    @Key("sink.http.parameter.schema.proto.class")
+    @Key("SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS")
     String getSinkHttpParameterSchemaProtoClass();
 
 }

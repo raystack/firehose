@@ -11,76 +11,76 @@ import java.util.Properties;
 
 public interface AppConfig extends Config {
 
-    @Key("metric.statsd.host")
+    @Key("METRIC_STATSD_HOST")
     @DefaultValue("localhost")
     String getMetricStatsDHost();
 
-    @Key("metric.statsd.port")
+    @Key("METRIC_STATSD_PORT")
     @DefaultValue("8125")
     Integer getMetricStatsDPort();
 
-    @Key("metric.statsd.tags")
+    @Key("METRIC_STATSD_TAGS")
     @DefaultValue("")
     String getMetricStatsDTags();
 
-    @Key("sink.type")
+    @Key("SINK_TYPE")
     @ConverterClass(SinkTypeConverter.class)
     SinkType getSinkType();
 
-    @Key("application.thread.count")
+    @Key("APPLICATION_THREAD_COUNT")
     @DefaultValue("1")
     Integer getApplicationThreadCount();
 
-    @Key("application.thread.cleanup.delay")
+    @Key("APPLICATION_THREAD_CLEANUP_DELAY")
     @DefaultValue("2000")
     Integer getApplicationThreadCleanupDelay();
 
-    @Key("schema.registry.stencil.enable")
+    @Key("SCHEMA_REGISTRY_STENCIL_ENABLE")
     @DefaultValue("false")
     Boolean isSchemaRegistryStencilEnable();
 
-    @Key("schema.registry.stencil.urls")
+    @Key("SCHEMA_REGISTRY_STENCIL_URLS")
     String getSchemaRegistryStencilUrls();
 
-    @Key("input.schema.proto.class")
+    @Key("INPUT_SCHEMA_PROTO_CLASS")
     String getInputSchemaProtoClass();
 
-    @Key("input.schema.proto.to.column.mapping")
+    @Key("INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING")
     @ConverterClass(ProtoIndexToFieldMapConverter.class)
     Properties getInputSchemaProtoToColumnMapping();
 
-    @Key("kafka.record.parser.mode")
+    @Key("KAFKA_RECORD_PARSER_MODE")
     @DefaultValue("message")
     String getKafkaRecordParserMode();
 
-    @Key("filter.jexl.data.source")
+    @Key("FILTER_JEXL_DATA_SOURCE")
     @ConverterClass(FilterTypeConverter.class)
     @DefaultValue("NONE")
     FilterType getFilterJexlDataSource();
 
-    @Key("filter.jexl.expression")
+    @Key("FILTER_JEXL_EXPRESSION")
     String getFilterJexlExpression();
 
-    @Key("filter.jexl.schema.proto.class")
+    @Key("FILTER_JEXL_SCHEMA_PROTO_CLASS")
     String getFilterJexlSchemaProtoClass();
 
-    @Key("trace.jaegar.enable")
+    @Key("TRACER_JAEGAR_ENABLE")
     @DefaultValue("false")
     Boolean isTraceJaegarEnable();
 
-    @Key("retry.exponential.backoff.initial.ms")
+    @Key("RETRY_EXPONENTIAL_BACKOFF_INITIAL_MS")
     @DefaultValue("10")
     Integer getRetryExponentialBackoffInitialMs();
 
-    @Key("retry.exponential.backoff.rate")
+    @Key("RETRY_EXPONENTIAL_BACKOFF_RATE")
     @DefaultValue("2")
     Integer getRetryExponentialBackoffRate();
 
-    @Key("retry.exponential.backoff.max.ms")
+    @Key("RETRY_EXPONENTIAL_BACKOFF_MAX_MS")
     @DefaultValue("60000")
     Integer getRetryExponentialBackoffMaxMs();
 
-    @Key("dlq.enable")
+    @Key("DLQ_ENABLE")
     @DefaultValue("false")
     Boolean isDlqEnable();
 }
