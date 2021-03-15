@@ -1,4 +1,3 @@
-
 ## CONTRIBUTION GUIDELINES
 #### BECOME A COMMITOR & CONTRIBUTE
 
@@ -11,7 +10,7 @@ We are always interested in adding new contributors. What we look for is a serie
 
 
 #### WHAT CAN YOU DO?
-* You can report a bug or suggest a feature enhancement on our [Jira Board](link to create a new issue). If you have a question or are simply not sure if it is really an issue or not, please [contact us](E-mail) first before you create a new JIRA ticket.
+* You can report a bug or suggest a feature enhancement or can just ask questions. Reach out on Github discussions for this purpose.
 * You can modify the code
     * Add any new feature
     * Add a new Sink

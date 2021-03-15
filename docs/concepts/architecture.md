@@ -11,11 +11,11 @@ Firehose has the capability to run parallelly on threads. Each thread does the f
 * Captures telemetry and success/failure events and send them to Telegraf
 * Repeat the process
 
-#### System Design
-**Components**
+## System Design
+### Components
 
 ***Consumer***
-* Firehose Consumer consumes messages from the configured Kafka in batches, [`SOURCE_KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS`](../reference/configuration.md#a-namesource_kafka_consumer_config_max_poll_records--source_kafka_consumer_config_max_poll_records) can be configured which decides this batch size.
+* Firehose Consumer consumes messages from the configured Kafka in batches, [`SOURCE_KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS`](../reference/configuration.md#-source_kafka_consumer_config_max_poll_records) can be configured which decides this batch size.
 * The consumer then processes each message and sends the messages’ list to Filter.
 
 ***Filter***
@@ -37,30 +37,30 @@ Firehose has the capability to run parallelly on threads. Each thread does the f
 ***Commit***
 * After the messages are sent successfully, Firehose commits the offset, and the consumer polls another batch from Kafka.
 
-**Schema Handling**
+### Schema Handling
 * Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data. Data streams on Kafka topics are bound to a protobuf schema.
 * Firehose deserializes the data consumed from the topics using the Protobuf descriptors generated out of the artifacts. The schema handling ie., find the mapped schema for the topic, downloading the descriptors, and dynamically being notified of/updating with the latest schema is abstracted through the Stencil library.
 The stencil is a proprietary library that provides an abstraction layer, for schema handling.
 Schema Caching, dynamic schema updates are features of the stencil client library.
 
-#### Firehose Integration
+## Firehose Integration
 The section details all integrating systems for Firehose deployment. These are external systems that Firehose connects to.
 
 ![Firehose Integration](../assets/integration.png)
 
-**Kafka**
-* The Kafka topic(s) where Firehose reads from. The [`SOURCE_KAFKA_TOPIC`](../reference/configuration.md#a-namesource_kafka_topic--source_kafka_topic) config can be set in Firehose.
+### Kafka
+* The Kafka topic(s) where Firehose reads from. The [`SOURCE_KAFKA_TOPIC`](../reference/configuration.md#-source_kafka_topic) config can be set in Firehose.
 
-**ProtoDescriptors**
+### ProtoDescriptors
 * Generated protobuf descriptors which are hosted behind an artifactory/HTTP endpoint. This endpoint URL and the proto that the firehose deployment should use to deserialize data with is configured in firehose.
 
-**Telegraf**
+### Telegraf
 * Telegraf is run as a process beside Firehose to export metrics to InfluxDB. Firehose internally uses statsd, a java library to export metrics to telegraf. Configured with statsd host parameter that Firehose points. 
 
-**Sink**
+### Sink
 * The storage where Firehose eventually pushes the data. Can be an HTTP/GRPC Endpoint or one of the Databases mentioned in the Architecture section. Sink Type and each sink-specific configuration are relevant to this integration point.
 
-**InfluxDB**
+### InfluxDB
 * InfluxDB - time-series database where all firehose metrics are stored. Integration through the Telegraf component.
 
 For a complete set of configuration please refer to the sink-specific [configuration](../reference/configuration.md).
