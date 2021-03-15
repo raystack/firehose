@@ -383,7 +383,7 @@ An ES sink firehose (`SINK_TYPE`=`elasticsearch`) requires the following variabl
 * Type: `required`
 * Default value: `FALSE`
 
-* Elasticsearch sink can be created in 2 modes: Upsert mode or UpdateOnly mode. If this config is set:\
+* Elasticsearch sink can be created in 2 modes: `Upsert mode` or `UpdateOnly mode`. If this config is set:
     - `TRUE`: Firehose will run on UpdateOnly mode which will only UPDATE the already existing documents in the Elasticsearch index.
     - `FALSE`: Firehose will run on Upsert mode, UPDATING the existing documents and also INSERTING any new ones.
 
