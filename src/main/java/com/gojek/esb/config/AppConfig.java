@@ -64,7 +64,7 @@ public interface AppConfig extends Config {
     @Key("FILTER_JEXL_SCHEMA_PROTO_CLASS")
     String getFilterJexlSchemaProtoClass();
 
-    @Key("TRACER_JAEGAR_ENABLE")
+    @Key("TRACE_JAEGAR_ENABLE")
     @DefaultValue("false")
     Boolean isTraceJaegarEnable();
 
