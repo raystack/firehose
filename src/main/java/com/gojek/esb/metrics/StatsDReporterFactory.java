@@ -44,7 +44,7 @@ public class StatsDReporterFactory {
   private StatsDClient buildStatsDClient() {
     StatsDClient statsDClient;
     try {
-      statsDClient = new NonBlockingStatsDClient("firehose", statsDHost, statsDPort);
+      statsDClient = new NonBlockingStatsDClient("", statsDHost, statsDPort);
       LOGGER.info("NonBlocking StatsD client connection established");
     } catch (Exception e) {
       LOGGER.warn("Exception on creating StatsD client, disabling StatsD and Audit client", e);
