@@ -34,26 +34,6 @@ public interface PrometheusSinkConfig extends AppConfig {
     @DefaultValue("")
     String getSinkPromHeaders();
 
-    @Key("sink.prom.oauth2.enable")
-    @DefaultValue("false")
-    Boolean isSinkPromOAuth2Enable();
-
-    @Key("sink.prom.oauth2.access.token.url")
-    @DefaultValue("https://localhost:8888")
-    String getSinkPromOAuth2AccessTokenUrl();
-
-    @Key("sink.prom.oauth2.client.name")
-    @DefaultValue("client_name")
-    String getSinkPromOAuth2ClientName();
-
-    @Key("sink.prom.oauth2.client.secret")
-    @DefaultValue("client_secret")
-    String getSinkPromOAuth2ClientSecret();
-
-    @Key("sink.prom.oauth2.scope")
-    @DefaultValue("scope")
-    String getSinkPromOAuth2Scope();
-
     @Config.Key("sink.prom.metric.name.proto.index.mapping")
     @Config.ConverterClass(ProtoIndexToFieldMapConverter.class)
     Properties getSinkPromMetricNameProtoIndexMapping();
