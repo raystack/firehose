@@ -1,6 +1,6 @@
 # Firehose
 ![build workflow](https://github.com/odpf/firehose/actions/workflows/build.yml/badge.svg)
-![publish workflow](https://github.com/odpf/firehose/actions/workflows/publish.yml/badge.svg)
+![package workflow](https://github.com/odpf/firehose/actions/workflows/package.yml/badge.svg)
 
 Firehose is a cloud native service for delivering real-time streaming data to destinations such as service endpoints (HTTP or GRPC) & managed databases (Postgres, InfluxDB,  Redis, & Elasticsearch). With Firehose, you don't need to write applications or manage resources. It can be scaled up to match the throughput of your data. If your data is present in Kafka, Firehose delivers it to the destination(SINK) that you specified.
 
@@ -10,31 +10,12 @@ Firehose is a cloud native service for delivering real-time streaming data to de
 Discover why users choose Firehose as their main Kafka Consumer
 
 * **Support for multiple sinks** Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB(JDBC), InfluxDB, Elasticsearch & Redis
-* **Self-serve** Configure, deploy, validate, scale, monitor, alert, debug, audit and so on. Every action is DIY
+* **Self-serve** Configure, deploy, validate, scale, monitor, alert, debug, audit and so on.
 * **Elastic scaling** Cloud-native & leverages horizontal scaling and high-performance streaming to sink data in near real-time & zero data drops
 * **Metrics for performance monitoring** Exposes critical metrics through the consoles to monitor the health of your delivery streams, take any necessary actions
 * **Easy Deployment:** Firehose can be easily deployed on VMs or Kubernetes clusters.
 
 To know more, follow the detailed [documentation](docs) 
-
-## Supported Sinks:
-Following sinks are supported in firehose
-* [Log](docs/guides/overview.md#create-a-log-sink)
-* [HTTP](docs/guides/overview.md#create-an-http-sink)
-* [JDBC](docs/guides/overview.md#create-a-jdbc-sink)
-* [InfluxDB](docs/guides/overview.md#create-an-influxdb-sink)
-* [Redis](docs/guides/overview.md#create-a-redis-sink)
-* [Elasticsearch](docs/guides/overview.md#create-an-elasticsearch-sink)
-* [GRPC](docs/guides/overview.md#create-a-grpc-sink)
-* [Prometheus](https://prometheus.io/docs/introduction/overview/) - `Coming soon`
-
-## How is Firehose different from Kafka-connect?
-* **Ease of use:** Firehose is easier to install and using different sink only requires chnaging few configurations. Kafka connect whhen used in distributed mode across multiple nodes, requires connectors to be installed across all the workers within your kafka connect cluster.
-* **Filtering:** Value based filtering is much easier to implement as compared to Kafka-Connect. Requires no additional plugins/schema-registry to be installed.
-* **Extensible:** Provides a comprehensible abstract sink contract which makes it easier to add a new sink in Firehose. Fireose also comes with an inbuilt serialization/deserialization and doesn't require any converters and serializers when implementing new sink. 
-* **Easy monitoring:** Firehose provides a detailed health dashboard (Grafana) for effortless monitoring.
-* **Connectors:** Some of the Kafka connect available connectors usually have limitations. Its usually rare to find all the required features in a single connector and so is to find a documentation for the same.
-* **Fully open-source:** Firehose is completely open source while separation of commercial and open-source features is not very structured in Kafka Connect and for monitoring and advanced features confluent control center requires an enterprise subscription.
 
 ## How can I get started?
 
@@ -86,7 +67,7 @@ Development of Firehose happens in the open on GitHub, and we are grateful to th
 
 ## Credits
 
-This project exists thanks to all the [Contributors](https://github.com/odpf/firehose/graphs/contributors).
+This project exists thanks to all the [contributors](https://github.com/odpf/firehose/graphs/contributors).
 
 ## License
 Firehose is [Apache 2.0](LICENSE) licensed.
