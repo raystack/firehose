@@ -7,7 +7,6 @@ import com.gojek.esb.metrics.Instrumentation;
 import com.gojek.esb.metrics.StatsDReporter;
 import com.gojek.esb.sink.AbstractSink;
 import com.gojek.esb.sink.SinkFactory;
-import com.gojek.esb.sink.http.auth.OAuth2Credential;
 import com.gojek.esb.sink.http.request.uri.UriParser;
 import com.gojek.esb.sink.prometheus.request.PromRequest;
 import com.gojek.esb.sink.prometheus.request.PromRequestCreator;
@@ -29,7 +28,7 @@ public class PromSinkFactory implements SinkFactory {
 
         Instrumentation instrumentation = new Instrumentation(statsDReporter, PromSinkFactory.class);
 
-        CloseableHttpClient closeableHttpClient = newHttpClient(promSinkConfig, statsDReporter);
+        CloseableHttpClient closeableHttpClient = newHttpClient(promSinkConfig);
         instrumentation.logInfo("HTTP connection established");
 
         ProtoParser protoParser = new ProtoParser(stencilClient, promSchemaProtoClass);
@@ -47,7 +46,7 @@ public class PromSinkFactory implements SinkFactory {
         );
     }
 
-    private CloseableHttpClient newHttpClient(PrometheusSinkConfig prometheusSinkConfig, StatsDReporter statsDReporter) {
+    private CloseableHttpClient newHttpClient(PrometheusSinkConfig prometheusSinkConfig) {
         Integer maxHttpConnections = prometheusSinkConfig.getSinkPromMaxConnections();
         RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(prometheusSinkConfig.getSinkPromRequestTimeoutMs())
                 .setConnectionRequestTimeout(prometheusSinkConfig.getSinkPromRequestTimeoutMs())
@@ -56,15 +55,7 @@ public class PromSinkFactory implements SinkFactory {
         connectionManager.setMaxTotal(maxHttpConnections);
         connectionManager.setDefaultMaxPerRoute(maxHttpConnections);
         HttpClientBuilder builder = HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig);
-        if (prometheusSinkConfig.isSinkPromOAuth2Enable()) {
-            OAuth2Credential oauth2 = new OAuth2Credential(
-                    new Instrumentation(statsDReporter, OAuth2Credential.class),
-                    prometheusSinkConfig.getSinkPromOAuth2ClientName(),
-                    prometheusSinkConfig.getSinkPromOAuth2ClientSecret(),
-                    prometheusSinkConfig.getSinkPromOAuth2Scope(),
-                    prometheusSinkConfig.getSinkPromOAuth2AccessTokenUrl());
-            builder = oauth2.initialize(builder);
-        }
+
         return builder.build();
     }
 }
