@@ -28,7 +28,7 @@ public class RedisListParser extends RedisParser {
         String redisKey = parseTemplate(parsedMessage, redisSinkConfig.getSinkRedisKeyTemplate());
         String protoIndex = redisSinkConfig.getSinkRedisListDataProtoIndex();
         if (protoIndex == null) {
-            throw new IllegalArgumentException("Please provide sink.redis.list.data.proto.index in list sink");
+            throw new IllegalArgumentException("Please provide SINK_REDIS_LIST_DATA_PROTO_INDEX in list sink");
         }
         List<RedisDataEntry> messageEntries = new ArrayList<>();
         messageEntries.add(new RedisListEntry(redisKey, getDataByFieldNumber(parsedMessage, protoIndex).toString(), new Instrumentation(statsDReporter, RedisListEntry.class)));

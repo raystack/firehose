@@ -6,34 +6,34 @@ import org.aeonbits.owner.Config;
 import java.util.Properties;
 
 public interface InfluxSinkConfig extends AppConfig {
-    @Config.Key("sink.influx.field.name.proto.index.mapping")
+    @Config.Key("SINK_INFLUX_FIELD_NAME_PROTO_INDEX_MAPPING")
     @Config.ConverterClass(ProtoIndexToFieldMapConverter.class)
     Properties getSinkInfluxFieldNameProtoIndexMapping();
 
-    @Config.Key("sink.influx.tag.name.proto.index.mapping")
+    @Config.Key("SINK_INFLUX_TAG_NAME_PROTO_INDEX_MAPPING")
     @Config.ConverterClass(ProtoIndexToFieldMapConverter.class)
     Properties getSinkInfluxTagNameProtoIndexMapping();
 
-    @Config.Key("sink.influx.measurement.name")
+    @Config.Key("SINK_INFLUX_MEASUREMENT_NAME")
     String getSinkInfluxMeasurementName();
 
-    @Config.Key("sink.influx.proto.event.timestamp.index")
+    @Config.Key("SINK_INFLUX_PROTO_EVENT_TIMESTAMP_INDEX")
     Integer getSinkInfluxProtoEventTimestampIndex();
 
-    @Config.Key("sink.influx.db.name")
+    @Config.Key("SINK_INFLUX_DB_NAME")
     String getSinkInfluxDbName();
 
-    @Config.Key("sink.influx.retention.policy")
+    @Config.Key("SINK_INFLUX_RETENTION_POLICY")
     @DefaultValue("autogen")
     String getSinkInfluxRetentionPolicy();
 
-    @Config.Key("sink.influx.url")
+    @Config.Key("SINK_INFLUX_URL")
     String getSinkInfluxUrl();
 
-    @Config.Key("sink.influx.username")
+    @Config.Key("SINK_INFLUX_USERNAME")
     String getSinkInfluxUsername();
 
-    @Config.Key("sink.influx.password")
+    @Config.Key("SINK_INFLUX_PASSWORD")
     String getSinkInfluxPassword();
 }
 

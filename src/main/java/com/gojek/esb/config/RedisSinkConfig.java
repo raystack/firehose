@@ -8,30 +8,30 @@ import com.gojek.esb.config.enums.RedisSinkTtlType;
 import com.gojek.esb.config.enums.RedisSinkDeploymentType;
 
 public interface RedisSinkConfig extends AppConfig {
-    @Key("sink.redis.urls")
+    @Key("SINK_REDIS_URLS")
     String getSinkRedisUrls();
 
-    @Key("sink.redis.key.template")
+    @Key("SINK_REDIS_KEY_TEMPLATE")
     String getSinkRedisKeyTemplate();
 
-    @Key("sink.redis.data.type")
+    @Key("SINK_REDIS_DATA_TYPE")
     @DefaultValue("HASHSET")
     @ConverterClass(RedisSinkDataTypeConverter.class)
     RedisSinkDataType getSinkRedisDataType();
 
-    @Key("sink.redis.list.data.proto.index")
+    @Key("SINK_REDIS_LIST_DATA_PROTO_INDEX")
     String getSinkRedisListDataProtoIndex();
 
-    @Key("sink.redis.ttl.type")
+    @Key("SINK_REDIS_TTL_TYPE")
     @DefaultValue("DISABLE")
     @ConverterClass(RedisSinkTtlTypeConverter.class)
     RedisSinkTtlType getSinkRedisTtlType();
 
-    @Key("sink.redis.ttl.value")
+    @Key("SINK_REDIS_TTL_VALUE")
     @DefaultValue("0")
     long getSinkRedisTtlValue();
 
-    @Key("sink.redis.deployment.type")
+    @Key("SINK_REDIS_DEPLOYMENT_TYPE")
     @DefaultValue("Standalone")
     @ConverterClass(RedisSinkDeploymentTypeConverter.class)
     RedisSinkDeploymentType getSinkRedisDeploymentType();

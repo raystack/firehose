@@ -4,40 +4,40 @@ package com.gojek.esb.config;
  * The interface for configurations required to instantiate a consumer.
  */
 public interface KafkaConsumerConfig extends AppConfig {
-    @Key("source.kafka.async.commit.enable")
+    @Key("SOURCE_KAFKA_ASYNC_COMMIT_ENABLE")
     @DefaultValue("true")
     boolean isSourceKafkaAsyncCommitEnable();
 
-    @Key("source.kafka.commit.only.current.partitions.enable")
+    @Key("SOURCE_KAFKA_COMMIT_ONLY_CURRENT_PARTITIONS_ENABLE")
     @DefaultValue("true")
     boolean isSourceKafkaCommitOnlyCurrentPartitionsEnable();
 
-    @Key("source.kafka.topic")
+    @Key("SOURCE_KAFKA_TOPIC")
     String getSourceKafkaTopic();
 
-    @Key("source.kafka.brokers")
+    @Key("SOURCE_KAFKA_BROKERS")
     String getSourceKafkaBrokers();
 
-    @Key("source.kafka.consumer.group.id")
+    @Key("SOURCE_KAFKA_CONSUMER_GROUP_ID")
     String getSourceKafkaConsumerGroupId();
 
-    @Key("source.kafka.consumer.config.auto.commit.enable")
+    @Key("SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_COMMIT_ENABLE")
     @DefaultValue("false")
     boolean isSourceKafkaConsumerConfigAutoCommitEnable();
 
-    @Key("source.kafka.consumer.config.metadata.max.age.ms")
+    @Key("SOURCE_KAFKA_CONSUMER_CONFIG_METADATA_MAX_AGE_MS")
     @DefaultValue("500")
     int getSourceKafkaConsumerConfigMetadataMaxAgeMs();
 
-    @Key("source.kafka.consumer.config.max.poll.records")
+    @Key("SOURCE_KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS")
     @DefaultValue("500")
     int getSourceKafkaConsumerConfigMaxPollRecords();
 
-    @Key("source.kafka.consumer.config.session.timeout.ms")
+    @Key("SOURCE_KAFKA_CONSUMER_CONFIG_SESSION_TIMEOUT_MS")
     @DefaultValue("10000")
     int getSourceKafkaConsumerConfigSessionTimeoutMs();
 
-    @Key("source.kafka.poll.timeout.ms")
+    @Key("SOURCE_KAFKA_POLL_TIMEOUT_MS")
     @DefaultValue("9223372036854775807")
     Long getSourceKafkaPollTimeoutMs();
 
