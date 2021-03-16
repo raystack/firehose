@@ -65,10 +65,10 @@ public class GrpcClientTest {
                 .build()
                 .start();
         Map<String, String> config = new HashMap<>();
-        config.put("sink.grpc.service.host", "localhost");
-        config.put("sink.grpc.service.port", "5000");
-        config.put("sink.grpc.method.url", "com.gojek.esb.consumer.TestServer/TestRpcMethod");
-        config.put("sink.grpc.response.schema.proto.class", "com.gojek.esb.consumer.TestGrpcResponse");
+        config.put("SINK_GRPC_SERVICE_HOST", "localhost");
+        config.put("SINK_GRPC_SERVICE_PORT", "5000");
+        config.put("SINK_GRPC_METHOD_URL", "com.gojek.esb.consumer.TestServer/TestRpcMethod");
+        config.put("SINK_GRPC_RESPONSE_SCHEMA_PROTO_CLASS", "com.gojek.esb.consumer.TestGrpcResponse");
 
         grpcSinkConfig = ConfigFactory.create(GrpcSinkConfig.class, config);
         stencilClient = StencilClientFactory.getClient();

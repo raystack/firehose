@@ -2,42 +2,42 @@ package com.gojek.esb.config;
 
 public interface DlqConfig extends AppConfig {
 
-    @Key("dlq.attempts.to.trigger")
+    @Key("DLQ_ATTEMPTS_TO_TRIGGER")
     @DefaultValue("1")
     Integer getDlqAttemptsToTrigger();
 
-    @Key("dlq.kafka.acks")
+    @Key("DLQ_KAFKA_ACKS")
     @DefaultValue("all")
     String getDlqKafkaAcks();
 
-    @Key("dlq.kafka.retries")
+    @Key("DLQ_KAFKA_RETRIES")
     @DefaultValue("2147483647")
     String getDlqKafkaRetries();
 
-    @Key("dlq.kafka.batch.size")
+    @Key("DLQ_KAFKA_BATCH_SIZE")
     @DefaultValue("16384")
     String getDlqKafkaBatchSize();
 
-    @Key("dlq.kafka.linger.ms")
+    @Key("DLQ_KAFKA_LINGER_MS")
     @DefaultValue("0")
     String getDlqKafkaLingerMs();
 
-    @Key("dlq.kafka.buffer.memory")
+    @Key("DLQ_KAFKA_BUFFER_MEMORY")
     @DefaultValue("33554432")
     String getDlqKafkaBufferMemory();
 
-    @Key("dlq.kafka.key.serializer")
+    @Key("DLQ_KAFKA_KEY_SERIALIZER")
     @DefaultValue("org.apache.kafka.common.serialization.ByteArraySerializer")
     String getDlqKafkaKeySerializer();
 
-    @Key("dlq.kafka.value.serializer")
+    @Key("DLQ_KAFKA_VALUE_SERIALIZER")
     @DefaultValue("org.apache.kafka.common.serialization.ByteArraySerializer")
     String getDlqKafkaValueSerializer();
 
-    @Key("dlq.kafka.brokers")
+    @Key("DLQ_KAFKA_BROKERS")
     String getDlqKafkaBrokers();
 
-    @Key("dlq.kafka.topic")
+    @Key("DLQ_KAFKA_TOPIC")
     @DefaultValue("firehose-retry-topic")
     String getDlqKafkaTopic();
 }

@@ -39,7 +39,7 @@ public class RequestFactoryTest {
 
     @Test
     public void shouldReturnBatchRequestWhenPrameterSourceIsDisabledAndServiceUrlIsConstant() {
-        configuration.put("sink.http.service.url", "http://127.0.0.1:1080/api");
+        configuration.put("SINK_HTTP_SERVICE_URL", "http://127.0.0.1:1080/api");
         httpSinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();
@@ -49,7 +49,7 @@ public class RequestFactoryTest {
 
     @Test
     public void shouldReturnDynamicUrlRequestWhenPrameterSourceIsDisabledAndServiceUrlIsNotParametrised() {
-        configuration.put("sink.http.service.url", "http://127.0.0.1:1080/api,%s");
+        configuration.put("SINK_HTTP_SERVICE_URL", "http://127.0.0.1:1080/api,%s");
         httpSinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();
@@ -59,9 +59,9 @@ public class RequestFactoryTest {
 
     @Test
     public void shouldReturnParameterizedRequstWhenParameterSourceIsNotDisableAndPlacementTypeIsHeader() {
-        configuration.put("sink.http.parameter.source", "key");
-        configuration.put("sink.http.parameter.placement", "header");
-        configuration.put("sink.http.service.url", "http://127.0.0.1:1080/api,%s");
+        configuration.put("SINK_HTTP_PARAMETER_SOURCE", "key");
+        configuration.put("SINK_HTTP_PARAMETER_PLACEMENT", "header");
+        configuration.put("SINK_HTTP_SERVICE_URL", "http://127.0.0.1:1080/api,%s");
         httpSinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();
@@ -71,9 +71,9 @@ public class RequestFactoryTest {
 
     @Test
     public void shouldReturnParameterizedRequstWhenParameterSourceIsNotDisableAndPlacementTypeIsQuery() {
-        configuration.put("sink.http.parameter.source", "key");
-        configuration.put("sink.http.parameter.placement", "query");
-        configuration.put("sink.http.service.url", "http://127.0.0.1:1080/api,%s");
+        configuration.put("SINK_HTTP_PARAMETER_SOURCE", "key");
+        configuration.put("SINK_HTTP_PARAMETER_PLACEMENT", "query");
+        configuration.put("SINK_HTTP_SERVICE_URL", "http://127.0.0.1:1080/api,%s");
         httpSinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();

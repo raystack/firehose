@@ -98,7 +98,7 @@ public class RedisListParserTest {
         setRedisSinkConfig("message", "Test-%s,1", RedisSinkDataType.LIST);
         when(redisSinkConfig.getSinkRedisListDataProtoIndex()).thenReturn(null);
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Please provide sink.redis.list.data.proto.index in list sink");
+        expectedException.expectMessage("Please provide SINK_REDIS_LIST_DATA_PROTO_INDEX in list sink");
 
         RedisParser redisParser = new RedisListParser(bookingMessageProtoParser, redisSinkConfig, statsDReporter);
 

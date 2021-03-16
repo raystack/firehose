@@ -5,16 +5,16 @@ import org.aeonbits.owner.Config;
 
 public interface GrpcSinkConfig extends AppConfig {
 
-    @Config.Key("sink.grpc.service.host")
+    @Config.Key("SINK_GRPC_SERVICE_HOST")
     String getSinkGrpcServiceHost();
 
-    @Config.Key("sink.grpc.service.port")
+    @Config.Key("SINK_GRPC_SERVICE_PORT")
     Integer getSinkGrpcServicePort();
 
-    @Config.Key("sink.grpc.method.url")
+    @Config.Key("SINK_GRPC_METHOD_URL")
     String getSinkGrpcMethodUrl();
 
-    @Config.Key("sink.grpc.response.schema.proto.class")
+    @Config.Key("SINK_GRPC_RESPONSE_SCHEMA_PROTO_CLASS")
     String getSinkGrpcResponseSchemaProtoClass();
 
 }

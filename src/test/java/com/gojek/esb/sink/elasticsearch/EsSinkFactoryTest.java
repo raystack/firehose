@@ -37,7 +37,7 @@ public class EsSinkFactoryTest {
 
     @Test
     public void shouldCreateESSink() {
-        configuration.put("sink.es.connection.urls", "localhost:9200 , localhost:9200 ");
+        configuration.put("SINK_ES_CONNECTION_URLS", "localhost:9200 , localhost:9200 ");
         EsSinkFactory esSinkFactory = new EsSinkFactory();
         Sink sink = esSinkFactory.create(configuration, statsDReporter, stencilClient);
         assertEquals(EsSink.class, sink.getClass());
@@ -50,7 +50,7 @@ public class EsSinkFactoryTest {
             esSinkFactory.getHttpHosts("", instrumentation);
         } catch (Exception e) {
             assertEquals(IllegalArgumentException.class, e.getClass());
-            assertEquals("sink.es.connection.urls is empty or null", e.getMessage());
+            assertEquals("SINK_ES_CONNECTION_URLS is empty or null", e.getMessage());
         }
     }
 
@@ -61,7 +61,7 @@ public class EsSinkFactoryTest {
             esSinkFactory.getHttpHosts(null, instrumentation);
         } catch (Exception e) {
             assertEquals(IllegalArgumentException.class, e.getClass());
-            assertEquals("sink.es.connection.urls is empty or null", e.getMessage());
+            assertEquals("SINK_ES_CONNECTION_URLS is empty or null", e.getMessage());
         }
     }
 
@@ -129,7 +129,7 @@ public class EsSinkFactoryTest {
             esSinkFactory.getHttpHosts(esConnectionURLs, instrumentation);
         } catch (Exception e) {
             assertEquals(IllegalArgumentException.class, e.getClass());
-            assertEquals("sink.es.connection.urls should contain host and port both", e.getMessage());
+            assertEquals("SINK_ES_CONNECTION_URLS should contain host and port both", e.getMessage());
         }
     }
 

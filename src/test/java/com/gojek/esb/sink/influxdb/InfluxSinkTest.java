@@ -71,10 +71,10 @@ public class InfluxSinkTest {
 
     @Before
     public void setUp() {
-        props.setProperty("sink.influx.measurement.name", measurementName);
-        props.setProperty("sink.influx.proto.event.timestamp.index", "2");
-        props.setProperty("sink.influx.db.name", databaseName);
-        props.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
+        props.setProperty("SINK_INFLUX_MEASUREMENT_NAME", measurementName);
+        props.setProperty("SINK_INFLUX_PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        props.setProperty("SINK_INFLUX_DB_NAME", databaseName);
+        props.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
 
         TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder().setDriverId(driverId).setOrderNumber(orderNumber)
                 .setFeedbackComment(feedbackComment).setTipAmount(tipAmount).setEventTimestamp(
@@ -93,7 +93,7 @@ public class InfluxSinkTest {
     public void shouldPrepareBatchPoints() throws IOException, DeserializerException {
         setupFieldNameIndexMappingProperties();
         setupTagNameIndexMappingProperties();
-        props.setProperty("sink.influx.proto.event.timestamp.index", "5");
+        props.setProperty("SINK_INFLUX_PROTO_EVENT_TIMESTAMP_INDEX", "5");
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
 
         DynamicMessage dynamicMessage = DynamicMessage.newBuilder(TestBookingLogMessage.getDescriptor()).build();
@@ -124,8 +124,8 @@ public class InfluxSinkTest {
 
     @Test
     public void shouldThrowExceptionOnEmptyFieldNameIndexMapping() throws IOException, DeserializerException {
-        props.setProperty("sink.influx.field.name.proto.index.mapping", emptyFieldNameIndex);
-        props.setProperty("sink.influx.tag.name.proto.index.mapping", emptyTagNameIndexMapping);
+        props.setProperty("SINK_INFLUX_FIELD_NAME_PROTO_INDEX_MAPPING", emptyFieldNameIndex);
+        props.setProperty("SINK_INFLUX_TAG_NAME_PROTO_INDEX_MAPPING", emptyTagNameIndexMapping);
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
         sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getInputSchemaProtoClass()), client, stencilClient);
 
@@ -157,7 +157,7 @@ public class InfluxSinkTest {
     public void shouldPushMessagesWithType() throws DeserializerException, IOException {
         expectedPoint = pointBuilder.build();
         setupFieldNameIndexMappingProperties();
-        props.setProperty("sink.influx.tag.name.proto.index.mapping", emptyTagNameIndexMapping);
+        props.setProperty("SINK_INFLUX_TAG_NAME_PROTO_INDEX_MAPPING", emptyTagNameIndexMapping);
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
         sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getInputSchemaProtoClass()), client, stencilClient);
         ArgumentCaptor<BatchPoints> batchPointsArgumentCaptor = ArgumentCaptor.forClass(BatchPoints.class);
@@ -211,11 +211,11 @@ public class InfluxSinkTest {
     }
 
     private void setupFieldNameIndexMappingProperties() {
-        props.setProperty("sink.influx.field.name.proto.index.mapping", String.format("{\"%d\":\"feedbackOrderNumber\", \"%d\":\"comment\" , \"%d\":\"tipAmount\"}", feedbackOrderNumberIndex, feedbackCommentIndex, tipAmountIndex));
+        props.setProperty("SINK_INFLUX_FIELD_NAME_PROTO_INDEX_MAPPING", String.format("{\"%d\":\"feedbackOrderNumber\", \"%d\":\"comment\" , \"%d\":\"tipAmount\"}", feedbackOrderNumberIndex, feedbackCommentIndex, tipAmountIndex));
     }
 
     private void setupTagNameIndexMappingProperties() {
-        props.setProperty("sink.influx.tag.name.proto.index.mapping", String.format("{\"%d\":\"driver_id\"}", driverIdIndex));
+        props.setProperty("SINK_INFLUX_TAG_NAME_PROTO_INDEX_MAPPING", String.format("{\"%d\":\"driver_id\"}", driverIdIndex));
     }
 
     public class InfluxSinkStub extends InfluxSink {

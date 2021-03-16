@@ -30,9 +30,9 @@ public class RedisSinkFactoryTest {
 
     @Test
     public void shouldCreateRedisSink() {
-        configuration.put("sink.redis.urls", "localhost:6379");
-        configuration.put("sink.redis.key.template", "test_%%s,6");
-        configuration.put("sink.redis.list.data.proto.index", "3");
+        configuration.put("SINK_REDIS_URLS", "localhost:6379");
+        configuration.put("SINK_REDIS_KEY_TEMPLATE", "test_%%s,6");
+        configuration.put("SINK_REDIS_LIST_DATA_PROTO_INDEX", "3");
 
         RedisSinkFactory redisSinkFactory = new RedisSinkFactory();
         AbstractSink sink = redisSinkFactory.create(configuration, statsDReporter, stencilClient);
