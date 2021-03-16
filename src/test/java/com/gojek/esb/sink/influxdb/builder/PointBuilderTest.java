@@ -18,12 +18,12 @@ public class PointBuilderTest {
     @Test
     public void testMessageWithTimestampIsBuiltIntoMillis() throws InvalidProtocolBufferException {
         Properties influxConfigProps = new Properties();
-        influxConfigProps.setProperty("sink.influx.measurement.name", "test_point_builder");
-        influxConfigProps.setProperty("sink.influx.proto.event.timestamp.index", "2");
-        influxConfigProps.setProperty("sink.influx.db.name", "test");
-        influxConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        influxConfigProps.setProperty("sink.influx.field.name.proto.index.mapping", "{ \"2\": \"event_timestamp\", \"7\": \"tip_amount\" }");
-        influxConfigProps.setProperty("sink.influx.tag.name.proto.index.mapping", "{ \"4\": \"customer_id\", \"3\": \"driver_id\" }");
+        influxConfigProps.setProperty("SINK_INFLUX_MEASUREMENT_NAME", "test_point_builder");
+        influxConfigProps.setProperty("SINK_INFLUX_PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        influxConfigProps.setProperty("SINK_INFLUX_DB_NAME", "test");
+        influxConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("SINK_INFLUX_FIELD_NAME_PROTO_INDEX_MAPPING", "{ \"2\": \"event_timestamp\", \"7\": \"tip_amount\" }");
+        influxConfigProps.setProperty("SINK_INFLUX_TAG_NAME_PROTO_INDEX_MAPPING", "{ \"4\": \"customer_id\", \"3\": \"driver_id\" }");
 
         TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setCustomerId("CUSTOMER")
@@ -44,12 +44,12 @@ public class PointBuilderTest {
     @Test
     public void testMessageWithEnum() throws InvalidProtocolBufferException {
         Properties influxConfigProps = new Properties();
-        influxConfigProps.setProperty("sink.influx.measurement.name", "test_point_builder");
-        influxConfigProps.setProperty("sink.influx.proto.event.timestamp.index", "2");
-        influxConfigProps.setProperty("sink.influx.db.name", "test");
-        influxConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        influxConfigProps.setProperty("sink.influx.field.name.proto.index.mapping", "{ \"10\": \"feedback_source\"}");
-        influxConfigProps.setProperty("sink.influx.tag.name.proto.index.mapping", "{ \"1\": \"order_number\" }");
+        influxConfigProps.setProperty("SINK_INFLUX_MEASUREMENT_NAME", "test_point_builder");
+        influxConfigProps.setProperty("SINK_INFLUX_PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        influxConfigProps.setProperty("SINK_INFLUX_DB_NAME", "test");
+        influxConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("SINK_INFLUX_FIELD_NAME_PROTO_INDEX_MAPPING", "{ \"10\": \"feedback_source\"}");
+        influxConfigProps.setProperty("SINK_INFLUX_TAG_NAME_PROTO_INDEX_MAPPING", "{ \"1\": \"order_number\" }");
 
         TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setOrderNumber("ORDER")
@@ -69,12 +69,12 @@ public class PointBuilderTest {
     @Test
     public void testMessageWithDurationIsBuiltIntoMillis() throws InvalidProtocolBufferException {
         Properties influxConfigProps = new Properties();
-        influxConfigProps.setProperty("sink.influx.measurement.name", "test_point_builder");
-        influxConfigProps.setProperty("sink.influx.proto.event.timestamp.index", "5");
-        influxConfigProps.setProperty("sink.influx.db.name", "test");
-        influxConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        influxConfigProps.setProperty("sink.influx.field.name.proto.index.mapping", "{ \"4\": \"duration\" }");
-        influxConfigProps.setProperty("sink.influx.tag.name.proto.index.mapping", "{ \"1\": \"order_number\" }");
+        influxConfigProps.setProperty("SINK_INFLUX_MEASUREMENT_NAME", "test_point_builder");
+        influxConfigProps.setProperty("SINK_INFLUX_PROTO_EVENT_TIMESTAMP_INDEX", "5");
+        influxConfigProps.setProperty("SINK_INFLUX_DB_NAME", "test");
+        influxConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("SINK_INFLUX_FIELD_NAME_PROTO_INDEX_MAPPING", "{ \"4\": \"duration\" }");
+        influxConfigProps.setProperty("SINK_INFLUX_TAG_NAME_PROTO_INDEX_MAPPING", "{ \"1\": \"order_number\" }");
 
         TestDurationMessage testDurationMessage = TestDurationMessage.newBuilder()
                 .setOrderNumber("ORDER")
@@ -94,12 +94,12 @@ public class PointBuilderTest {
     @Test
     public void testMessageWithNestedSchemaForFields() throws InvalidProtocolBufferException {
         Properties influxConfigProps = new Properties();
-        influxConfigProps.setProperty("sink.influx.measurement.name", "test_point_builder");
-        influxConfigProps.setProperty("sink.influx.proto.event.timestamp.index", "2");
-        influxConfigProps.setProperty("sink.influx.db.name", "test");
-        influxConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        influxConfigProps.setProperty("sink.influx.field.name.proto.index.mapping", "{ \"2\": \"event_timestamp\", \"7\": \"tip_amount\", \"15\": { \"1\": \"order_completion_time_seconds\" } }");
-        influxConfigProps.setProperty("sink.influx.tag.name.proto.index.mapping", "{ \"4\": \"customer_id\", \"3\": \"driver_id\" }");
+        influxConfigProps.setProperty("SINK_INFLUX_MEASUREMENT_NAME", "test_point_builder");
+        influxConfigProps.setProperty("SINK_INFLUX_PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        influxConfigProps.setProperty("SINK_INFLUX_DB_NAME", "test");
+        influxConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("SINK_INFLUX_FIELD_NAME_PROTO_INDEX_MAPPING", "{ \"2\": \"event_timestamp\", \"7\": \"tip_amount\", \"15\": { \"1\": \"order_completion_time_seconds\" } }");
+        influxConfigProps.setProperty("SINK_INFLUX_TAG_NAME_PROTO_INDEX_MAPPING", "{ \"4\": \"customer_id\", \"3\": \"driver_id\" }");
 
         TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setCustomerId("CUSTOMER")
@@ -122,12 +122,12 @@ public class PointBuilderTest {
     @Test
     public void testMessageWithNestedSchemaForTags() throws InvalidProtocolBufferException {
         Properties influxConfigProps = new Properties();
-        influxConfigProps.setProperty("sink.influx.measurement.name", "test_point_builder");
-        influxConfigProps.setProperty("sink.influx.proto.event.timestamp.index", "2");
-        influxConfigProps.setProperty("sink.influx.db.name", "test");
-        influxConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        influxConfigProps.setProperty("sink.influx.field.name.proto.index.mapping", "{ \"2\": \"event_timestamp\", \"7\": \"tip_amount\" }");
-        influxConfigProps.setProperty("sink.influx.tag.name.proto.index.mapping", "{ \"4\": \"customer_id\", \"3\": \"driver_id\", \"15\": \"order_completion_time_seconds\" }");
+        influxConfigProps.setProperty("SINK_INFLUX_MEASUREMENT_NAME", "test_point_builder");
+        influxConfigProps.setProperty("SINK_INFLUX_PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        influxConfigProps.setProperty("SINK_INFLUX_DB_NAME", "test");
+        influxConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        influxConfigProps.setProperty("SINK_INFLUX_FIELD_NAME_PROTO_INDEX_MAPPING", "{ \"2\": \"event_timestamp\", \"7\": \"tip_amount\" }");
+        influxConfigProps.setProperty("SINK_INFLUX_TAG_NAME_PROTO_INDEX_MAPPING", "{ \"4\": \"customer_id\", \"3\": \"driver_id\", \"15\": \"order_completion_time_seconds\" }");
 
         TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setCustomerId("CUSTOMER")

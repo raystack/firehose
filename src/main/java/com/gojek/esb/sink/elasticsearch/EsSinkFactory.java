@@ -59,14 +59,14 @@ public class EsSinkFactory implements SinkFactory {
             for (int i = 0; i < esNodes.length; i++) {
                 String[] node = esNodes[i].trim().split(":");
                 if (node.length <= 1) {
-                    throw new IllegalArgumentException("sink.es.connection.urls should contain host and port both");
+                    throw new IllegalArgumentException("SINK_ES_CONNECTION_URLS should contain host and port both");
                 }
                 httpHosts[i] = new HttpHost(node[0].trim(), Integer.parseInt(node[1].trim()));
             }
             return httpHosts;
         } else {
             instrumentation.logError("No connection URL found");
-            throw new IllegalArgumentException("sink.es.connection.urls is empty or null");
+            throw new IllegalArgumentException("SINK_ES_CONNECTION_URLS is empty or null");
         }
     }
 

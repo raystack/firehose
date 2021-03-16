@@ -113,7 +113,7 @@ public class FirehoseConsumerFactory {
             case GRPC:
                 return new GrpcSinkFactory().create(config, statsDReporter, stencilClient);
             default:
-                throw new EglcConfigurationException("Invalid Firehose sink.type");
+                throw new EglcConfigurationException("Invalid Firehose SINK_TYPE");
 
         }
     }

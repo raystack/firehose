@@ -6,43 +6,43 @@ import com.gojek.esb.config.enums.EsSinkMessageType;
 
 public interface EsSinkConfig extends AppConfig {
 
-    @Key("sink.es.shards.active.wait.count")
+    @Key("SINK_ES_SHARDS_ACTIVE_WAIT_COUNT")
     @DefaultValue("1")
     Integer getSinkEsShardsActiveWaitCount();
 
-    @Key("sink.es.request.timeout.ms")
+    @Key("SINK_ES_REQUEST_TIMEOUT_MS")
     @DefaultValue("60000")
     Long getSinkEsRequestTimeoutMs();
 
-    @Key("sink.es.retry.status.code.blacklist")
+    @Key("SINK_ES_RETRY_STATUS_CODE_BLACKLIST")
     @DefaultValue("404")
     String getSinkEsRetryStatusCodeBlacklist();
 
-    @Key("sink.es.connection.urls")
+    @Key("SINK_ES_CONNECTION_URLS")
     String getSinkEsConnectionUrls();
 
-    @Key("sink.es.index.name")
+    @Key("SINK_ES_INDEX_NAME")
     String getSinkEsIndexName();
 
-    @Key("sink.es.type.name")
+    @Key("SINK_ES_TYPE_NAME")
     String getSinkEsTypeName();
 
-    @Key("sink.es.id.field")
+    @Key("SINK_ES_ID_FIELD")
     String getSinkEsIdField();
 
-    @Key("sink.es.mode.update.only.enable")
+    @Key("SINK_ES_MODE_UPDATE_ONLY_ENABLE")
     @DefaultValue("false")
     Boolean isSinkEsModeUpdateOnlyEnable();
 
-    @Key("sink.es.input.message.type")
+    @Key("SINK_ES_INPUT_MESSAGE_TYPE")
     @ConverterClass(EsSinkMessageTypeConverter.class)
     @DefaultValue("JSON")
     EsSinkMessageType getSinkEsInputMessageType();
 
-    @Key("sink.es.preserve.proto.field.names.enable")
+    @Key("SINK_ES_PRESERVE_PROTO_FIELD_NAMES_ENABLE")
     @DefaultValue("true")
     Boolean isSinkEsPreserveProtoFieldNamesEnable();
 
-    @Key("sink.es.routing.key.name")
+    @Key("SINK_ES_ROUTING_KEY_NAME")
     String getSinkEsRoutingKeyName();
 }

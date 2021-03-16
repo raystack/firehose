@@ -2,31 +2,31 @@ package com.gojek.esb.config;
 
 public interface JdbcSinkConfig extends AppConfig {
 
-    @Key("sink.jdbc.url")
+    @Key("SINK_JDBC_URL")
     String getSinkJdbcUrl();
 
-    @Key("sink.jdbc.username")
+    @Key("SINK_JDBC_USERNAME")
     String getSinkJdbcUsername();
 
-    @Key("sink.jdbc.password")
+    @Key("SINK_JDBC_PASSWORD")
     String getSinkJdbcPassword();
 
-    @Key("sink.jdbc.table.name")
+    @Key("SINK_JDBC_TABLE_NAME")
     String getSinkJdbcTableName();
 
-    @Key("sink.jdbc.unique.keys")
+    @Key("SINK_JDBC_UNIQUE_KEYS")
     @DefaultValue("")
     String getSinkJdbcUniqueKeys();
 
-    @Key("sink.jdbc.connection.pool.max.size")
+    @Key("SINK_JDBC_CONNECTION_POOL_MAX_SIZE")
     Integer getSinkJdbcConnectionPoolMaxSize();
 
-    @Key("sink.jdbc.connection.pool.timeout.ms")
+    @Key("SINK_JDBC_CONNECTION_POOL_TIMEOUT_MS")
     Integer getSinkJdbcConnectionPoolTimeoutMs();
 
-    @Key("sink.jdbc.connection.pool.idle.timeout.ms")
+    @Key("SINK_JDBC_CONNECTION_POOL_IDLE_TIMEOUT_MS")
     Integer getSinkJdbcConnectionPoolIdleTimeoutMs();
 
-    @Key("sink.jdbc.connection.pool.min.idle")
+    @Key("SINK_JDBC_CONNECTION_POOL_MIN_IDLE")
     Integer getSinkJdbcConnectionPoolMinIdle();
 }

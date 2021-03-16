@@ -67,9 +67,9 @@ public class HttpSinkFactoryTest {
     @Test(expected = Test.None.class)
     public void shouldNotEmbedAccessTokenIfGoAuthDisabled() throws IOException, DeserializerException {
         Map<String, String> configuration = new HashMap<>();
-        configuration.put("sink.http.oauth2.enable", "false");
-        configuration.put("sink.http.oauth2.access.token.url", "http://127.0.0.1:1080/oauth2/token");
-        configuration.put("sink.http.service.url", "http://127.0.0.1:1080/api");
+        configuration.put("SINK_HTTP_OAUTH2_ENABLE", "false");
+        configuration.put("SINK_HTTP_OAUTH2_ACCESS_TOKEN_URL", "http://127.0.0.1:1080/oauth2/token");
+        configuration.put("SINK_HTTP_SERVICE_URL", "http://127.0.0.1:1080/api");
         AbstractSink sink = new HttpSinkFactory().create(configuration, statsDReporter, stencilClient);
 
         when(statsDReporter.getClock()).thenReturn(new Clock());
@@ -81,9 +81,9 @@ public class HttpSinkFactoryTest {
     @Test(expected = Test.None.class)
     public void shouldEmbedAccessTokenIfGoAuthEnabled() throws IOException, DeserializerException {
         Map<String, String> configuration = new HashMap<>();
-        configuration.put("sink.http.oauth2.enable", "true");
-        configuration.put("sink.http.oauth2.access.token.url", "http://127.0.0.1:1080/oauth2/token");
-        configuration.put("sink.http.service.url", "http://127.0.0.1:1080/api");
+        configuration.put("SINK_HTTP_OAUTH2_ENABLE", "true");
+        configuration.put("SINK_HTTP_OAUTH2_ACCESS_TOKEN_URL", "http://127.0.0.1:1080/oauth2/token");
+        configuration.put("SINK_HTTP_SERVICE_URL", "http://127.0.0.1:1080/api");
         AbstractSink sink = new HttpSinkFactory().create(configuration, statsDReporter, stencilClient);
 
         when(statsDReporter.getClock()).thenReturn(new Clock());
