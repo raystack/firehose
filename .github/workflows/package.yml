@@ -1,4 +1,4 @@
-name: Firehose Publish Jar
+name: Package
 
 on:
   release:
