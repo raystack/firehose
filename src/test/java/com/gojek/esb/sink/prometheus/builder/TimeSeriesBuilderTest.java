@@ -21,11 +21,11 @@ public class TimeSeriesBuilderTest {
     public void testMessageWithSingleMetric() throws InvalidProtocolBufferException {
         Properties promConfigProps = new Properties();
 
-        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
-        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
-        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{\"7\": \"tip_amount\"}");
-        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", "{ \"4\": \"customer_id\", \"13\": \"support_ticket_created\" }");
+        promConfigProps.setProperty("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        promConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("SINK_PROM_WITH_EVENT_TIMESTAMP", "true");
+        promConfigProps.setProperty("SINK_PROM_METRIC_NAME_PROTO_INDEX_MAPPING", "{\"7\": \"tip_amount\"}");
+        promConfigProps.setProperty("SINK_PROM_LABEL_NAME_PROTO_INDEX_MAPPING", "{ \"4\": \"customer_id\", \"13\": \"support_ticket_created\" }");
 
         TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setCustomerId("CUSTOMER")
@@ -48,11 +48,11 @@ public class TimeSeriesBuilderTest {
     @Test
     public void testMessageWithMultipleMetric() throws InvalidProtocolBufferException {
         Properties promConfigProps = new Properties();
-        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
-        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
-        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", " {\"7\": \"tip_amount\", \"5\": \"feedback_ratings\" }");
-        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", " {\"3\": \"driver_id\" }");
+        promConfigProps.setProperty("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        promConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("SINK_PROM_WITH_EVENT_TIMESTAMP", "true");
+        promConfigProps.setProperty("SINK_PROM_METRIC_NAME_PROTO_INDEX_MAPPING", " {\"7\": \"tip_amount\", \"5\": \"feedback_ratings\" }");
+        promConfigProps.setProperty("SINK_PROM_LABEL_NAME_PROTO_INDEX_MAPPING", " {\"3\": \"driver_id\" }");
 
         TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setDriverId("DRIVER")
@@ -75,11 +75,11 @@ public class TimeSeriesBuilderTest {
     @Test
     public void testMessageWithTimestampIsBuiltIntoMillis() throws InvalidProtocolBufferException {
         Properties promConfigProps = new Properties();
-        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
-        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
-        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{ \"7\": \"tip_amount\" }");
-        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", "{ \"2\": \"event_timestamp\", \"3\": \"driver_id\" }");
+        promConfigProps.setProperty("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        promConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("SINK_PROM_WITH_EVENT_TIMESTAMP", "true");
+        promConfigProps.setProperty("SINK_PROM_METRIC_NAME_PROTO_INDEX_MAPPING", "{ \"7\": \"tip_amount\" }");
+        promConfigProps.setProperty("SINK_PROM_LABEL_NAME_PROTO_INDEX_MAPPING", "{ \"2\": \"event_timestamp\", \"3\": \"driver_id\" }");
 
         TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setDriverId("DRIVER")
@@ -102,10 +102,10 @@ public class TimeSeriesBuilderTest {
     @Test
     public void testMessageWithDurationIsBuiltIntoMillis() throws InvalidProtocolBufferException {
         Properties promConfigProps = new Properties();
-        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "4");
-        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
-        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{ \"1\": \"order_number\" }");
+        promConfigProps.setProperty("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX", "4");
+        promConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("SINK_PROM_WITH_EVENT_TIMESTAMP", "true");
+        promConfigProps.setProperty("SINK_PROM_METRIC_NAME_PROTO_INDEX_MAPPING", "{ \"1\": \"order_number\" }");
 
         TestDurationMessage testDurationMessage = TestDurationMessage.newBuilder()
                 .setOrderNumber("100")
@@ -126,11 +126,11 @@ public class TimeSeriesBuilderTest {
     @Test
     public void testMessageWithEnum() throws InvalidProtocolBufferException {
         Properties promConfigProps = new Properties();
-        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
-        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
-        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{ \"7\": \"tip_amount\" }");
-        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", "{ \"10\": \"feedback_source\" }");
+        promConfigProps.setProperty("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        promConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("SINK_PROM_WITH_EVENT_TIMESTAMP", "true");
+        promConfigProps.setProperty("SINK_PROM_METRIC_NAME_PROTO_INDEX_MAPPING", "{ \"7\": \"tip_amount\" }");
+        promConfigProps.setProperty("SINK_PROM_LABEL_NAME_PROTO_INDEX_MAPPING", "{ \"10\": \"feedback_source\" }");
 
         TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setTipAmount(10000)
@@ -152,11 +152,11 @@ public class TimeSeriesBuilderTest {
     @Test
     public void testMessageWithNestedSchemaForMetrics() throws InvalidProtocolBufferException {
         Properties promConfigProps = new Properties();
-        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
-        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
-        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{ \"15\": { \"1\": \"order_completion_time_seconds\" },  \"7\": \"tip_amount\"}");
-        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", "{ \"3\": \"driver_id\" }");
+        promConfigProps.setProperty("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        promConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("SINK_PROM_WITH_EVENT_TIMESTAMP", "true");
+        promConfigProps.setProperty("SINK_PROM_METRIC_NAME_PROTO_INDEX_MAPPING", "{ \"15\": { \"1\": \"order_completion_time_seconds\" },  \"7\": \"tip_amount\"}");
+        promConfigProps.setProperty("SINK_PROM_LABEL_NAME_PROTO_INDEX_MAPPING", "{ \"3\": \"driver_id\" }");
 
         TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setTipAmount(100)
@@ -180,11 +180,11 @@ public class TimeSeriesBuilderTest {
     @Test
     public void testMessageWithNestedSchemaForLabels() throws InvalidProtocolBufferException {
         Properties promConfigProps = new Properties();
-        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
-        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
-        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{ \"7\": \"tip_amount\" }");
-        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", "{ \"15\": { \"1\": \"order_completion_time_seconds\" } }");
+        promConfigProps.setProperty("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        promConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("SINK_PROM_WITH_EVENT_TIMESTAMP", "true");
+        promConfigProps.setProperty("SINK_PROM_METRIC_NAME_PROTO_INDEX_MAPPING", "{ \"7\": \"tip_amount\" }");
+        promConfigProps.setProperty("SINK_PROM_LABEL_NAME_PROTO_INDEX_MAPPING", "{ \"15\": { \"1\": \"order_completion_time_seconds\" } }");
 
         TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setTipAmount(10000)
@@ -207,11 +207,11 @@ public class TimeSeriesBuilderTest {
     @Test
     public void testMessageWithMetricTimestampUsingIngestionTimestamp() throws InvalidProtocolBufferException {
         Properties promConfigProps = new Properties();
-        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
-        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        promConfigProps.setProperty("sink.prom.with.event.timestamp", "false");
-        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{ \"1\": \"order_number\" }");
-        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", "{ \"3\": \"driver_id\" }");
+        promConfigProps.setProperty("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        promConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("SINK_PROM_WITH_EVENT_TIMESTAMP", "false");
+        promConfigProps.setProperty("SINK_PROM_METRIC_NAME_PROTO_INDEX_MAPPING", "{ \"1\": \"order_number\" }");
+        promConfigProps.setProperty("SINK_PROM_LABEL_NAME_PROTO_INDEX_MAPPING", "{ \"3\": \"driver_id\" }");
 
         TestFeedbackLogMessage testFeedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setOrderNumber("100")
@@ -232,10 +232,10 @@ public class TimeSeriesBuilderTest {
     @Test(expected = EglcConfigurationException.class)
     public void testMessageWithEmptyMetricProtoMappingConfig() throws InvalidProtocolBufferException {
         Properties promConfigProps = new Properties();
-        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
-        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        promConfigProps.setProperty("sink.prom.with.event.timestamp", "false");
-        promConfigProps.setProperty("sink.prom.label.name.proto.index.mapping", "{ \"3\": \"driver_id\" }");
+        promConfigProps.setProperty("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        promConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("SINK_PROM_WITH_EVENT_TIMESTAMP", "false");
+        promConfigProps.setProperty("SINK_PROM_LABEL_NAME_PROTO_INDEX_MAPPING", "{ \"3\": \"driver_id\" }");
 
         TestFeedbackLogMessage testFeedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setOrderNumber("100")
@@ -253,10 +253,10 @@ public class TimeSeriesBuilderTest {
     @Test
     public void testMessageWithEmptyLabelProtoMappingConfig() throws InvalidProtocolBufferException {
         Properties promConfigProps = new Properties();
-        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
-        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        promConfigProps.setProperty("sink.prom.with.event.timestamp", "true");
-        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{ \"7\": \"tip_amount\" }");
+        promConfigProps.setProperty("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        promConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("SINK_PROM_WITH_EVENT_TIMESTAMP", "true");
+        promConfigProps.setProperty("SINK_PROM_METRIC_NAME_PROTO_INDEX_MAPPING", "{ \"7\": \"tip_amount\" }");
 
         TestFeedbackLogMessage testFeedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setTipAmount(12345)
@@ -276,10 +276,10 @@ public class TimeSeriesBuilderTest {
     @Test(expected = EglcConfigurationException.class)
     public void testMessageWithEmptyFieldIndex() throws InvalidProtocolBufferException {
         Properties promConfigProps = new Properties();
-        promConfigProps.setProperty("sink.prom.proto.event.timestamp.index", "2");
-        promConfigProps.setProperty("input.schema.proto.class", TestFeedbackLogMessage.class.getName());
-        promConfigProps.setProperty("sink.prom.with.event.timestamp", "false");
-        promConfigProps.setProperty("sink.prom.metric.name.proto.index.mapping", "{}");
+        promConfigProps.setProperty("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX", "2");
+        promConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
+        promConfigProps.setProperty("SINK_PROM_WITH_EVENT_TIMESTAMP", "false");
+        promConfigProps.setProperty("SINK_PROM_METRIC_NAME_PROTO_INDEX_MAPPING", "{}");
 
         TestFeedbackLogMessage testFeedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setDriverId("DRIVER")
