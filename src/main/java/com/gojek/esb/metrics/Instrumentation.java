@@ -112,7 +112,7 @@ public class Instrumentation {
 
     public void captureSuccessExecutionTelemetry(String sinkType, Integer messageListSize) {
         logger.info("Pushed {} messages to {}.", messageListSize, sinkType);
-        statsDReporter.captureDurationSince(SINK_RESPONSE_TIME, this.startExecutionTime);
+        statsDReporter.captureDurationSince(SINK_RESPONSE_TIME_MILLISECONDS, this.startExecutionTime);
         statsDReporter.captureCount(SINK_MESSAGES_TOTAL, messageListSize, SUCCESS_TAG);
         statsDReporter.captureHistogramWithTags(SINK_PUSH_BATCH_SIZE, messageListSize, SUCCESS_TAG);
     }
@@ -143,8 +143,8 @@ public class Instrumentation {
 
     public void capturePreExecutionLatencies(List<Message> messages) {
         messages.forEach(message -> {
-            statsDReporter.captureDurationSince(PIPELINE_END_LATENCY, Instant.ofEpochMilli(message.getTimestamp()));
-            statsDReporter.captureDurationSince(PIPELINE_EXECUTION_LIFETIME, Instant.ofEpochMilli(message.getConsumeTimestamp()));
+            statsDReporter.captureDurationSince(PIPELINE_END_LATENCY_MILLISECONDS, Instant.ofEpochMilli(message.getTimestamp()));
+            statsDReporter.captureDurationSince(PIPELINE_EXECUTION_LIFETIME_MILLISECONDS, Instant.ofEpochMilli(message.getConsumeTimestamp()));
         });
     }
 

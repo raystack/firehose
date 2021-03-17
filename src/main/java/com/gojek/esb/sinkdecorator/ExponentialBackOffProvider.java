@@ -2,7 +2,7 @@ package com.gojek.esb.sinkdecorator;
 
 import com.gojek.esb.metrics.Instrumentation;
 
-import static com.gojek.esb.metrics.Metrics.RETRY_SLEEP_TIME;
+import static com.gojek.esb.metrics.Metrics.RETRY_SLEEP_TIME_MILLISECONDS;
 import static java.lang.Math.toIntExact;
 
 /**
@@ -33,7 +33,7 @@ public class ExponentialBackOffProvider implements BackOffProvider {
     public void backOff(int attemptCount) {
         long sleepTime = this.calculateDelay(attemptCount);
         instrumentation.logWarn("backing off for {} milliseconds ", sleepTime);
-        instrumentation.captureSleepTime(RETRY_SLEEP_TIME, toIntExact(sleepTime));
+        instrumentation.captureSleepTime(RETRY_SLEEP_TIME_MILLISECONDS, toIntExact(sleepTime));
         backOff.inMilliSeconds(sleepTime);
     }
 

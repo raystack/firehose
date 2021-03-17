@@ -27,27 +27,27 @@ public class Metrics {
     // SOURCE MEASUREMENTS
     public static final String SOURCE_KAFKA_MESSAGES_FILTER_TOTAL = APPLICATION_PREFIX + SOURCE_PREFIX + KAFKA_PREFIX + "messages_filter_total";
     public static final String SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL = APPLICATION_PREFIX + SOURCE_PREFIX + KAFKA_PREFIX + "messages_commit_total";
-    public static final String SOURCE_KAFKA_PARTITIONS_PROCESS_TIME = APPLICATION_PREFIX + SOURCE_PREFIX + KAFKA_PREFIX + "partitions_process_milliseconds";
+    public static final String SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS = APPLICATION_PREFIX + SOURCE_PREFIX + KAFKA_PREFIX + "partitions_process_milliseconds";
     public static final String SOURCE_KAFKA_PULL_BATCH_SIZE = APPLICATION_PREFIX + SOURCE_PREFIX + KAFKA_PREFIX + "pull_batch_size";
 
     // SINK MEASUREMENTS
     public static final String SINK_MESSAGES_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + "messages_total";
-    public static final String SINK_RESPONSE_TIME = APPLICATION_PREFIX + SINK_PREFIX + "response_time_milliseconds";
+    public static final String SINK_RESPONSE_TIME_MILLISECONDS = APPLICATION_PREFIX + SINK_PREFIX + "response_time_milliseconds";
     public static final String SINK_MESSAGES_DROP_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + "messages_drop_total";
     public static final String SINK_HTTP_RESPONSE_CODE_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + HTTP_SINK_PREFIX + "response_code_total";
     public static final String SINK_PUSH_BATCH_SIZE = APPLICATION_PREFIX + SINK_PREFIX + "push_batch_size";
 
     // RETRY MEASUREMENT
     public static final String RETRY_TOTAL = APPLICATION_PREFIX + RETRY_PREFIX + "total";
-    public static final String RETRY_SLEEP_TIME = APPLICATION_PREFIX + RETRY_PREFIX + "backoff_sleep_milliseconds";
+    public static final String RETRY_SLEEP_TIME_MILLISECONDS = APPLICATION_PREFIX + RETRY_PREFIX + "backoff_sleep_milliseconds";
 
     // DLQ MEASUREMENTS
     public static final String DQL_RETRY_TOTAL = APPLICATION_PREFIX + DLQ_PREFIX + "retry_total";
     public static final String DLQ_MESSAGES_TOTAL = APPLICATION_PREFIX + DLQ_PREFIX + "messages_total";
 
     // PIPELINE DURATION MEASUREMENTS
-    public static final String PIPELINE_END_LATENCY = APPLICATION_PREFIX + PIPELINE_PREFIX + "end_latency_milliseconds";
-    public static final String PIPELINE_EXECUTION_LIFETIME = APPLICATION_PREFIX + PIPELINE_PREFIX + "execution_lifetime_milliseconds";
+    public static final String PIPELINE_END_LATENCY_MILLISECONDS = APPLICATION_PREFIX + PIPELINE_PREFIX + "end_latency_milliseconds";
+    public static final String PIPELINE_EXECUTION_LIFETIME_MILLISECONDS = APPLICATION_PREFIX + PIPELINE_PREFIX + "execution_lifetime_milliseconds";
 
     // ERROR MEASUREMENT
     public static final String ERROR_EVENT = APPLICATION_PREFIX + ERROR_PREFIX + "event";

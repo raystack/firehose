@@ -177,8 +177,8 @@ public class InstrumentationTest {
     @Test
     public void shouldCapturePartitionProcessTime() {
         Instant instant = Instant.now();
-        instrumentation.captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME, instant);
-        verify(statsDReporter, times(1)).captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME, instant);
+        instrumentation.captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS, instant);
+        verify(statsDReporter, times(1)).captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS, instant);
     }
 
     @Test
