@@ -82,7 +82,7 @@ public class FirehoseConsumerTest {
         Instant afterCall = beforeCall.plusSeconds(1);
         when(clock.now()).thenReturn(beforeCall).thenReturn(afterCall);
         firehoseConsumer.processPartitions();
-        verify(instrumentation).captureDurationSince("kafka.process_partitions_time", beforeCall);
+        verify(instrumentation).captureDurationSince("firehose_source_kafka_partitions_process_milliseconds", beforeCall);
     }
 
     @Test

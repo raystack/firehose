@@ -1,36 +1,63 @@
 package com.gojek.esb.metrics;
 
 public class Metrics {
+    //APPLICATION PREFIX
+    public static final String APPLICATION_PREFIX = "firehose_";
 
-    //KAFKA
-    public static final String KAFKA_PREFIX = "kafka.";
-    public static final String KAFKA_FILTERED_MESSAGE = KAFKA_PREFIX + "filtered";
-    public static final String PARTITION_PROCESS_TIME = KAFKA_PREFIX + "process_partitions_time";
-    public static final String KAFKA_COMMIT_COUNT = KAFKA_PREFIX + "commit.async.count";
+    //SOURCE PREFIXES
+    public static final String SOURCE_PREFIX = "source_";
+    public static final String KAFKA_PREFIX = "kafka_";
 
-    //TELEMETRY MEASUREMENTS
-    public static final String LIFETIME_TILL_EXECUTION = "lifetime.till.execution";
-    public static final String SINK_RESPONSE_TIME = "sink.response.time";
-    public static final String MESSAGE_COUNT = "messages.count";
-    public static final String MESSAGES_DROPPED_COUNT = "messages.dropped.count";
-    public static final String LATENCY_ACROSS_FIREHOSE = "latency";
-    public static final String HTTP_RESPONSE_CODE = "http.response.code";
-    public static final String PULLED_BATCH_SIZE = "pulled.batch.size";
-    public static final String PUSHED_BATCH_SIZE = "pushed.batch.size";
+    //SINK PREFIXES
+    public static final String SINK_PREFIX = "sink_";
+    public static final String HTTP_SINK_PREFIX = "http_";
 
-    //DLQ
-    public static final String DLQ_PREFIX = "dlq.";
-    public static final String RETRY_ATTEMPTS = DLQ_PREFIX + "attempts";
-    public static final String DLQ_MESSAGE_COUNT = DLQ_PREFIX + "messages.count";
-    public static final String REQUEST_RETRY = "request_retries";
+    //RETRY PREFIX
+    public static final String RETRY_PREFIX = "retry_";
 
-    //TAGS
+    //DLQ PREFIX
+    public static final String DLQ_PREFIX = "dlq_";
+
+    //PIPELINE PREFIX
+    public static final String PIPELINE_PREFIX = "pipeline_";
+
+    //ERROR PREFIX
+    public static final String ERROR_PREFIX = "error_";
+
+    // SOURCE MEASUREMENTS
+    public static final String SOURCE_KAFKA_MESSAGES_FILTER_TOTAL = APPLICATION_PREFIX + SOURCE_PREFIX + KAFKA_PREFIX + "messages_filter_total";
+    public static final String SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL = APPLICATION_PREFIX + SOURCE_PREFIX + KAFKA_PREFIX + "messages_commit_total";
+    public static final String SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS = APPLICATION_PREFIX + SOURCE_PREFIX + KAFKA_PREFIX + "partitions_process_milliseconds";
+    public static final String SOURCE_KAFKA_PULL_BATCH_SIZE_TOTAL = APPLICATION_PREFIX + SOURCE_PREFIX + KAFKA_PREFIX + "pull_batch_size_total";
+
+    // SINK MEASUREMENTS
+    public static final String SINK_MESSAGES_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + "messages_total";
+    public static final String SINK_RESPONSE_TIME_MILLISECONDS = APPLICATION_PREFIX + SINK_PREFIX + "response_time_milliseconds";
+    public static final String SINK_MESSAGES_DROP_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + "messages_drop_total";
+    public static final String SINK_HTTP_RESPONSE_CODE_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + HTTP_SINK_PREFIX + "response_code_total";
+    public static final String SINK_PUSH_BATCH_SIZE_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + "push_batch_size_total";
+
+    // RETRY MEASUREMENT
+    public static final String RETRY_TOTAL = APPLICATION_PREFIX + RETRY_PREFIX + "total";
+    public static final String RETRY_SLEEP_TIME_MILLISECONDS = APPLICATION_PREFIX + RETRY_PREFIX + "backoff_sleep_milliseconds";
+
+    // DLQ MEASUREMENTS
+    public static final String DQL_RETRY_TOTAL = APPLICATION_PREFIX + DLQ_PREFIX + "retry_total";
+    public static final String DLQ_MESSAGES_TOTAL = APPLICATION_PREFIX + DLQ_PREFIX + "messages_total";
+
+    // PIPELINE DURATION MEASUREMENTS
+    public static final String PIPELINE_END_LATENCY_MILLISECONDS = APPLICATION_PREFIX + PIPELINE_PREFIX + "end_latency_milliseconds";
+    public static final String PIPELINE_EXECUTION_LIFETIME_MILLISECONDS = APPLICATION_PREFIX + PIPELINE_PREFIX + "execution_lifetime_milliseconds";
+
+    // ERROR MEASUREMENT
+    public static final String ERROR_EVENT = APPLICATION_PREFIX + ERROR_PREFIX + "event";
+
+    // EXECUTION TAGS
     public static final String SUCCESS_TAG = "success=true";
     public static final String FAILURE_TAG = "success=false";
 
-    // ERROR
-    public static final String ERROR_MESSAGE_TAG = "class";
-    public static final String ERROR_EVENT = "error.event";
-    public static final String NON_FATAL_ERROR = "NON_FATAL_ERROR";
-    public static final String FATAL_ERROR = "FATAL_ERROR";
+    // ERROR TAGS
+    public static final String ERROR_MESSAGE_CLASS_TAG = "class";
+    public static final String NON_FATAL_ERROR = "nonfatal";
+    public static final String FATAL_ERROR = "fatal";
 }
