@@ -73,7 +73,7 @@ public class InstrumentationTest {
     @Test
     public void shouldCapturePulledMessageHistogram() {
         instrumentation.capturePulledMessageHistogram(1);
-        verify(statsDReporter, times(1)).captureHistogram(SOURCE_KAFKA_PULL_BATCH_SIZE, 1);
+        verify(statsDReporter, times(1)).captureHistogram(SOURCE_KAFKA_PULL_BATCH_SIZE_TOTAL, 1);
     }
 
     @Test
@@ -130,7 +130,7 @@ public class InstrumentationTest {
         verify(logger, times(1)).info("Pushed {} messages to {}.", messages.size(), "test");
         verify(statsDReporter, times(1)).captureDurationSince("firehose_sink_response_time_milliseconds", instrumentation.getStartExecutionTime());
         verify(statsDReporter, times(1)).captureCount("firehose_sink_messages_total", messages.size(), SUCCESS_TAG);
-        verify(statsDReporter, times(1)).captureHistogramWithTags(SINK_PUSH_BATCH_SIZE, messages.size(), SUCCESS_TAG);
+        verify(statsDReporter, times(1)).captureHistogramWithTags(SINK_PUSH_BATCH_SIZE_TOTAL, messages.size(), SUCCESS_TAG);
     }
 
     @Test
@@ -138,7 +138,7 @@ public class InstrumentationTest {
         List<Message> messages = Collections.singletonList(message);
         instrumentation.captureFailedExecutionTelemetry(e, messages.size());
         verify(statsDReporter, times(1)).captureCount("firehose_sink_messages_total", messages.size(), FAILURE_TAG);
-        verify(statsDReporter, times(1)).captureHistogramWithTags(SINK_PUSH_BATCH_SIZE, messages.size(), FAILURE_TAG);
+        verify(statsDReporter, times(1)).captureHistogramWithTags(SINK_PUSH_BATCH_SIZE_TOTAL, messages.size(), FAILURE_TAG);
     }
 
     @Test

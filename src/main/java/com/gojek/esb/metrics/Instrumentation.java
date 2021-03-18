@@ -61,7 +61,7 @@ public class Instrumentation {
     // ============== FILTER MESSAGES ==============
 
     public void capturePulledMessageHistogram(long pulledMessageCount) {
-        statsDReporter.captureHistogram(SOURCE_KAFKA_PULL_BATCH_SIZE, pulledMessageCount);
+        statsDReporter.captureHistogram(SOURCE_KAFKA_PULL_BATCH_SIZE_TOTAL, pulledMessageCount);
     }
 
     public void captureFilteredMessageCount(int filteredMessageCount, String filterExpression) {
@@ -114,14 +114,14 @@ public class Instrumentation {
         logger.info("Pushed {} messages to {}.", messageListSize, sinkType);
         statsDReporter.captureDurationSince(SINK_RESPONSE_TIME_MILLISECONDS, this.startExecutionTime);
         statsDReporter.captureCount(SINK_MESSAGES_TOTAL, messageListSize, SUCCESS_TAG);
-        statsDReporter.captureHistogramWithTags(SINK_PUSH_BATCH_SIZE, messageListSize, SUCCESS_TAG);
+        statsDReporter.captureHistogramWithTags(SINK_PUSH_BATCH_SIZE_TOTAL, messageListSize, SUCCESS_TAG);
     }
 
     public void captureFailedExecutionTelemetry(Exception e, Integer messageListSize) {
 
         captureNonFatalError(e, "caught {} {}", e.getClass(), e.getMessage());
         statsDReporter.captureCount(SINK_MESSAGES_TOTAL, messageListSize, FAILURE_TAG);
-        statsDReporter.captureHistogramWithTags(SINK_PUSH_BATCH_SIZE, messageListSize, FAILURE_TAG);
+        statsDReporter.captureHistogramWithTags(SINK_PUSH_BATCH_SIZE_TOTAL, messageListSize, FAILURE_TAG);
     }
 
     // =================== RetryTelemetry ======================

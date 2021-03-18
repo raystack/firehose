@@ -28,14 +28,14 @@ public class Metrics {
     public static final String SOURCE_KAFKA_MESSAGES_FILTER_TOTAL = APPLICATION_PREFIX + SOURCE_PREFIX + KAFKA_PREFIX + "messages_filter_total";
     public static final String SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL = APPLICATION_PREFIX + SOURCE_PREFIX + KAFKA_PREFIX + "messages_commit_total";
     public static final String SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS = APPLICATION_PREFIX + SOURCE_PREFIX + KAFKA_PREFIX + "partitions_process_milliseconds";
-    public static final String SOURCE_KAFKA_PULL_BATCH_SIZE = APPLICATION_PREFIX + SOURCE_PREFIX + KAFKA_PREFIX + "pull_batch_size";
+    public static final String SOURCE_KAFKA_PULL_BATCH_SIZE_TOTAL = APPLICATION_PREFIX + SOURCE_PREFIX + KAFKA_PREFIX + "pull_batch_size_total";
 
     // SINK MEASUREMENTS
     public static final String SINK_MESSAGES_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + "messages_total";
     public static final String SINK_RESPONSE_TIME_MILLISECONDS = APPLICATION_PREFIX + SINK_PREFIX + "response_time_milliseconds";
     public static final String SINK_MESSAGES_DROP_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + "messages_drop_total";
     public static final String SINK_HTTP_RESPONSE_CODE_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + HTTP_SINK_PREFIX + "response_code_total";
-    public static final String SINK_PUSH_BATCH_SIZE = APPLICATION_PREFIX + SINK_PREFIX + "push_batch_size";
+    public static final String SINK_PUSH_BATCH_SIZE_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + "push_batch_size_total";
 
     // RETRY MEASUREMENT
     public static final String RETRY_TOTAL = APPLICATION_PREFIX + RETRY_PREFIX + "total";
