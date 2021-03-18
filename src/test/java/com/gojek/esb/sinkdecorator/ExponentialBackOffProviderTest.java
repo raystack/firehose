@@ -41,7 +41,7 @@ public class ExponentialBackOffProviderTest {
         verify(backOff).inMilliSeconds(maximumBackoffTimeInMS);
 
         verify(instrumentation, times(1)).logWarn("backing off for {} milliseconds ", (long) maximumBackoffTimeInMS);
-        verify(instrumentation, times(1)).captureSleepTime("backoff_sleep_time", toIntExact(maximumBackoffTimeInMS));
+        verify(instrumentation, times(1)).captureSleepTime("firehose_retry_backoff_sleep_milliseconds", toIntExact(maximumBackoffTimeInMS));
     }
 
     @Test
@@ -51,14 +51,14 @@ public class ExponentialBackOffProviderTest {
         verify(backOff).inMilliSeconds(sleepTime1);
 
         verify(instrumentation, times(1)).logWarn("backing off for {} milliseconds ", sleepTime1);
-        verify(instrumentation, times(1)).captureSleepTime("backoff_sleep_time", toIntExact(sleepTime1));
+        verify(instrumentation, times(1)).captureSleepTime("firehose_retry_backoff_sleep_milliseconds", toIntExact(sleepTime1));
 
         exponentialBackOffProvider.backOff(4);
         long sleepTime2 = 160;
         verify(backOff).inMilliSeconds(sleepTime2);
 
         verify(instrumentation, times(1)).logWarn("backing off for {} milliseconds ", sleepTime2);
-        verify(instrumentation, times(1)).captureSleepTime("backoff_sleep_time", toIntExact(sleepTime2));
+        verify(instrumentation, times(1)).captureSleepTime("firehose_retry_backoff_sleep_milliseconds", toIntExact(sleepTime2));
     }
 
     @Test
@@ -73,6 +73,6 @@ public class ExponentialBackOffProviderTest {
         exponentialBackOffProvider.backOff(0);
 
         verify(instrumentation, times(1)).logWarn("backing off for {} milliseconds ", (long) initialExpiryTimeInMS);
-        verify(instrumentation).captureSleepTime("backoff_sleep_time", initialExpiryTimeInMS);
+        verify(instrumentation).captureSleepTime("firehose_retry_backoff_sleep_milliseconds", initialExpiryTimeInMS);
     }
 }

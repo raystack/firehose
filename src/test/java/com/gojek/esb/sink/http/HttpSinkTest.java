@@ -200,7 +200,7 @@ public class HttpSinkTest {
                     + "\nRequest Headers: [Accept: text/plain]"
                     + "\nRequest Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]");
         verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCountWithTags("messages.dropped.count", 2, "cause= 500");
+        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_messages_drop_total", 2, "cause= 500");
     }
 
     @Test
@@ -231,7 +231,7 @@ public class HttpSinkTest {
                         + "\nRequest Headers: [Accept: text/plain]"
                         + "\nRequest Body: [{\"key\":\"value\"}]");
         verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCountWithTags("messages.dropped.count", 1, "cause= 500");
+        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_messages_drop_total", 1, "cause= 500");
     }
 
     @Test
@@ -262,7 +262,7 @@ public class HttpSinkTest {
                         + "\nRequest Headers: [Accept: text/plain]"
                         + "\nRequest Body: [{\"key\":\"value\"}]");
         verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCountWithTags("messages.dropped.count", 1, "cause= 500");
+        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_messages_drop_total", 1, "cause= 500");
     }
 
     @Test
@@ -313,7 +313,7 @@ public class HttpSinkTest {
         httpSink.prepare(messages);
         httpSink.execute();
         verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCountWithTags("messages.dropped.count", 2, "cause= 500");
+        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_messages_drop_total", 2, "cause= 500");
     }
 
     @Test(expected = NeedToRetry.class)
@@ -385,36 +385,6 @@ public class HttpSinkTest {
         verify(instrumentation, times(0)).captureCountWithTags("messages.dropped.count", 1, "201");
     }
 
-//    @Test
-//    public void shouldLogResponseAfterExecution() throws Exception {
-//        when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
-//        when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
-//        when(response.getStatusLine()).thenReturn(statusLine, statusLine);
-//        when(statusLine.getStatusCode()).thenReturn(200, 200);
-//
-//        List<HttpEntityEnclosingRequestBase> httpRequests = Arrays.asList(httpPut, httpPost);
-//        when(request.build(esbMessages)).thenReturn(httpRequests);
-//        when(httpClient.execute(httpPut)).thenReturn(response, response);
-//        when(httpClient.execute(httpPost)).thenReturn(response, response);
-//        when(response.getAllHeaders()).thenReturn(
-//                new Header[]{new BasicHeader("Accept", "text/plain")},
-//                new Header[]{new BasicHeader("Accept", "text/plain")});
-//        when(response.getEntity()).thenReturn(httpEntity, httpEntity);
-//        when(httpEntity.getContent()).thenReturn(
-//                new StringInputStream("[{\"key\":\"value1\"}, {\"key\":\"value2\"}]"),
-//                new StringInputStream("[{\"key\":\"value1\"}, {\"key\":\"value2\"}]"));
-//
-//        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
-//        httpSink.prepare(esbMessages);
-//        httpSink.execute();
-//
-//        verify(instrumentation, times(2)).logInfo("Response Status: {}", "200");
-//        verify(instrumentation, times(2)).logDebug(
-//                "\nResponse Code: 200"
-//                        + "\nResponse Headers: [Accept: text/plain]"
-//                        + "\nResponse Body: [{\"key\":\"value1\"}, {\"key\":\"value2\"}]");
-//    }
-
     @Test
     public void shouldCaptureResponseStatusCount() throws Exception {
         when(response.getStatusLine()).thenReturn(statusLine);
@@ -435,6 +405,6 @@ public class HttpSinkTest {
         httpSink.prepare(messages);
         httpSink.execute();
 
-        verify(instrumentation, times(1)).captureCountWithTags("http.response.code", 1, "status_code=" + statusLine.getStatusCode(), "url=" + uri.getPath());
+        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_http_response_code_total", 1, "status_code=" + statusLine.getStatusCode(), "url=" + uri.getPath());
     }
 }
