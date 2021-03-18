@@ -61,11 +61,11 @@ public class Instrumentation {
     // ============== FILTER MESSAGES ==============
 
     public void capturePulledMessageHistogram(long pulledMessageCount) {
-        statsDReporter.captureHistogram(PULLED_BATCH_SIZE, pulledMessageCount);
+        statsDReporter.captureHistogram(SOURCE_KAFKA_PULL_BATCH_SIZE_TOTAL, pulledMessageCount);
     }
 
     public void captureFilteredMessageCount(int filteredMessageCount, String filterExpression) {
-        statsDReporter.captureCount(KAFKA_FILTERED_MESSAGE, filteredMessageCount, "expr=" + filterExpression);
+        statsDReporter.captureCount(SOURCE_KAFKA_MESSAGES_FILTER_TOTAL, filteredMessageCount, "expr=" + filterExpression);
     }
 
     // =================== ERROR ===================
@@ -101,7 +101,7 @@ public class Instrumentation {
     }
 
     private String errorTag(Exception e, String errorType) {
-        return ERROR_MESSAGE_TAG + "=" + e.getClass().getName() + ",type=" + errorType;
+        return ERROR_MESSAGE_CLASS_TAG + "=" + e.getClass().getName() + ",type=" + errorType;
     }
 
     // ================ SinkExecutionTelemetry ================
@@ -112,30 +112,30 @@ public class Instrumentation {
 
     public void captureSuccessExecutionTelemetry(String sinkType, Integer messageListSize) {
         logger.info("Pushed {} messages to {}.", messageListSize, sinkType);
-        statsDReporter.captureDurationSince(SINK_RESPONSE_TIME, this.startExecutionTime);
-        statsDReporter.captureCount(MESSAGE_COUNT, messageListSize, SUCCESS_TAG);
-        statsDReporter.captureHistogramWithTags(PUSHED_BATCH_SIZE, messageListSize, SUCCESS_TAG);
+        statsDReporter.captureDurationSince(SINK_RESPONSE_TIME_MILLISECONDS, this.startExecutionTime);
+        statsDReporter.captureCount(SINK_MESSAGES_TOTAL, messageListSize, SUCCESS_TAG);
+        statsDReporter.captureHistogramWithTags(SINK_PUSH_BATCH_SIZE_TOTAL, messageListSize, SUCCESS_TAG);
     }
 
     public void captureFailedExecutionTelemetry(Exception e, Integer messageListSize) {
 
         captureNonFatalError(e, "caught {} {}", e.getClass(), e.getMessage());
-        statsDReporter.captureCount(MESSAGE_COUNT, messageListSize, FAILURE_TAG);
-        statsDReporter.captureHistogramWithTags(PUSHED_BATCH_SIZE, messageListSize, FAILURE_TAG);
+        statsDReporter.captureCount(SINK_MESSAGES_TOTAL, messageListSize, FAILURE_TAG);
+        statsDReporter.captureHistogramWithTags(SINK_PUSH_BATCH_SIZE_TOTAL, messageListSize, FAILURE_TAG);
     }
 
     // =================== RetryTelemetry ======================
 
     public void incrementMessageSucceedCount() {
-        statsDReporter.increment(DLQ_MESSAGE_COUNT, SUCCESS_TAG);
+        statsDReporter.increment(DLQ_MESSAGES_TOTAL, SUCCESS_TAG);
     }
 
     public void captureRetryAttempts() {
-        statsDReporter.increment(RETRY_ATTEMPTS);
+        statsDReporter.increment(DQL_RETRY_TOTAL);
     }
 
     public void incrementMessageFailCount(Message message, Exception e) {
-        statsDReporter.increment(DLQ_MESSAGE_COUNT, FAILURE_TAG);
+        statsDReporter.increment(DLQ_MESSAGES_TOTAL, FAILURE_TAG);
         captureNonFatalError(e, "Unable to send record with key {} and message {} ", message.getLogKey(), message.getLogMessage());
     }
 
@@ -143,8 +143,8 @@ public class Instrumentation {
 
     public void capturePreExecutionLatencies(List<Message> messages) {
         messages.forEach(message -> {
-            statsDReporter.captureDurationSince(LIFETIME_TILL_EXECUTION, Instant.ofEpochMilli(message.getTimestamp()));
-            statsDReporter.captureDurationSince(LATENCY_ACROSS_FIREHOSE, Instant.ofEpochMilli(message.getConsumeTimestamp()));
+            statsDReporter.captureDurationSince(PIPELINE_END_LATENCY_MILLISECONDS, Instant.ofEpochMilli(message.getTimestamp()));
+            statsDReporter.captureDurationSince(PIPELINE_EXECUTION_LIFETIME_MILLISECONDS, Instant.ofEpochMilli(message.getConsumeTimestamp()));
         });
     }
 
