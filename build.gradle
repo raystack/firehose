@@ -49,7 +49,7 @@ private Properties loadEnv() {
     properties
 }
 
-def mainClassName = "com.gojek.esb.launch.Main"
+def mainClassName = "io.odpf.firehose.launch.Main"
 
 dependencies {
     compile group: 'com.google.protobuf', name: 'protobuf-java', version: '3.1.0'
@@ -117,7 +117,7 @@ test {
         events "passed", "skipped", "failed"
     }
     useJUnit {
-        excludeCategories 'com.gojek.esb.test.categories.IntegrationTest'
+        excludeCategories 'io.odpf.firehose.test.categories.IntegrationTest'
     }
 }
 
@@ -128,7 +128,7 @@ jar {
         }
     }
     manifest {
-        attributes 'Main-Class': 'com.gojek.esb.launch.Main'
+        attributes 'Main-Class': 'io.odpf.firehose.launch.Main'
     }
 }
 
