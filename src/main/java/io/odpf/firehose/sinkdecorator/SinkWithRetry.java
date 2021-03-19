@@ -39,10 +39,10 @@ public class SinkWithRetry extends SinkDecorator {
     }
 
     @Override
-    public List<Message> pushMessage(List<Message> esbMessage) throws IOException, DeserializerException {
+    public List<Message> pushMessage(List<Message> messages) throws IOException, DeserializerException {
         int attemptCount = 0;
         List<Message> failedMessages;
-        failedMessages = super.pushMessage(esbMessage);
+        failedMessages = super.pushMessage(messages);
         if (failedMessages.isEmpty()) {
             return failedMessages;
         }

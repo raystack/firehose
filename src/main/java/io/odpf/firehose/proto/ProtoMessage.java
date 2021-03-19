@@ -12,10 +12,10 @@ public class ProtoMessage {
     public static final String CLASS_NAME_NOT_FOUND = "proto class provided in the configuration was not found";
     public static final String INVALID_PROTOCOL_CLASS_MESSAGE = "Invalid proto class provided in the configuration";
     public static final String DESERIALIZE_ERROR_MESSAGE = "Esb message could not be parsed";
-    private Method esbMessageParser;
+    private Method messageParser;
 
     public ProtoMessage(String protoClassName) {
-        this.esbMessageParser = parserMethod(protoClassName);
+        this.messageParser = parserMethod(protoClassName);
     }
 
     public Object get(Message message, int protoIndex) throws DeserializerException {
@@ -27,7 +27,7 @@ public class ProtoMessage {
 
     public Object parseProtobuf(Message message) throws DeserializerException {
         try {
-            return esbMessageParser.invoke(null, message.getLogMessage());
+            return messageParser.invoke(null, message.getLogMessage());
         } catch (ReflectiveOperationException e) {
             throw new DeserializerException(DESERIALIZE_ERROR_MESSAGE, e);
         }

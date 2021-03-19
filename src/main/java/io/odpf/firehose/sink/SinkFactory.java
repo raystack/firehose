@@ -9,7 +9,7 @@ import java.util.Map;
  * Interface to create the sink.
  *
  * Any sink {@see Sink} can be created by a class implementing this interface.
- * The esb-log-consumer framework would reflectively instantiate this factory
+ * The consumer framework would reflectively instantiate this factory
  * using the configurations supplied and invoke {@see #create(Map<String, String> configuration, StatsDClient client)}
  * to obtain the sink implementation.
  *

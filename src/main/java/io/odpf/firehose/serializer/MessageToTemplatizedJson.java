@@ -31,14 +31,14 @@ public class MessageToTemplatizedJson implements MessageSerializer {
     private Instrumentation instrumentation;
 
     public static MessageToTemplatizedJson create(Instrumentation instrumentation, String httpSinkJsonBodyTemplate, ProtoParser protoParser) {
-        MessageToTemplatizedJson esbMessageToTemplatizedJson = new MessageToTemplatizedJson(instrumentation, httpSinkJsonBodyTemplate, protoParser);
-        if (esbMessageToTemplatizedJson.isInvalidJson()) {
+        MessageToTemplatizedJson messageToTemplatizedJson = new MessageToTemplatizedJson(instrumentation, httpSinkJsonBodyTemplate, protoParser);
+        if (messageToTemplatizedJson.isInvalidJson()) {
             throw new EglcConfigurationException("Given HTTPSink JSON body template :"
                     + httpSinkJsonBodyTemplate
                     + ", must be a valid JSON.");
         }
-        esbMessageToTemplatizedJson.setPathsFromTemplate();
-        return esbMessageToTemplatizedJson;
+        messageToTemplatizedJson.setPathsFromTemplate();
+        return messageToTemplatizedJson;
     }
 
     public MessageToTemplatizedJson(Instrumentation instrumentation, String httpSinkJsonBodyTemplate, ProtoParser protoParser) {

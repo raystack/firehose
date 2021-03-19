@@ -59,11 +59,11 @@ public class SinkWithDlqTest {
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(new ArrayList<>());
         SinkWithDlq sinkWithDlq = SinkWithDlq.withInstrumentationFactory(sinkWithRetry, kafkaProducer, "test-topic",
                 statsDReporter, backOffProvider);
-        ArrayList<Message> esbMessages = new ArrayList<>();
-        esbMessages.add(message);
-        List<Message> messages = sinkWithDlq.pushMessage(esbMessages);
+        ArrayList<Message> messages = new ArrayList<>();
+        messages.add(message);
+        List<Message> messageList = sinkWithDlq.pushMessage(messages);
 
-        assertTrue(messages.isEmpty());
+        assertTrue(messageList.isEmpty());
         verifyZeroInteractions(kafkaProducer);
     }
 

@@ -63,9 +63,9 @@ public class SinkWithRetryTest {
                 .thenReturn(messages);
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, 3, parser);
 
-        List<Message> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(message));
+        List<Message> messageList = sinkWithRetry.pushMessage(Collections.singletonList(message));
 
-        assertFalse(esbMessages.isEmpty());
+        assertFalse(messageList.isEmpty());
         verify(sinkDecorator, Mockito.times(4)).pushMessage(anyList());
     }
 
@@ -78,9 +78,9 @@ public class SinkWithRetryTest {
                 .thenReturn(new ArrayList<>());
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, 3, parser);
 
-        List<Message> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(message));
+        List<Message> messageList = sinkWithRetry.pushMessage(Collections.singletonList(message));
 
-        assertTrue(esbMessages.isEmpty());
+        assertTrue(messageList.isEmpty());
         verify(sinkDecorator, Mockito.times(3)).pushMessage(anyList());
     }
 
@@ -93,9 +93,9 @@ public class SinkWithRetryTest {
                 .thenReturn(messages).thenReturn(messages).thenReturn(new ArrayList<>());
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, parser);
 
-        List<Message> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(message));
+        List<Message> messageList = sinkWithRetry.pushMessage(Collections.singletonList(message));
 
-        assertTrue(esbMessages.isEmpty());
+        assertTrue(messageList.isEmpty());
         verify(sinkDecorator, Mockito.times(6)).pushMessage(anyList());
     }
 
@@ -109,8 +109,8 @@ public class SinkWithRetryTest {
                 .thenReturn(messages).thenReturn(messages).thenReturn(new ArrayList<>());
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, maxRetryAttempts, parser);
 
-        List<Message> esbMessages = sinkWithRetry.pushMessage(Collections.singletonList(message));
-        assertTrue(esbMessages.isEmpty());
+        List<Message> messageList = sinkWithRetry.pushMessage(Collections.singletonList(message));
+        assertTrue(messageList.isEmpty());
         verify(instrumentation, times(1)).logWarn("Maximum retry attemps: {}", 10);
         verify(instrumentation, times(5)).incrementCounter("firehose_retry_total");
         verify(instrumentation, times(1)).logWarn("Retrying messages attempt count: {}, Number of messages: {}", 1, 2);

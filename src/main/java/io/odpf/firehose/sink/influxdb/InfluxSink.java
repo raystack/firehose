@@ -38,9 +38,9 @@ public class InfluxSink extends AbstractSink {
     @Override
     protected void prepare(List<Message> messages) throws IOException {
         batchPoints = BatchPoints.database(config.getSinkInfluxDbName()).retentionPolicy(config.getSinkInfluxRetentionPolicy()).build();
-        for (Message esbMessage : messages) {
-            DynamicMessage message = protoParser.parse(esbMessage.getLogMessage());
-            Point point = pointBuilder.buildPoint(message);
+        for (Message message : messages) {
+            DynamicMessage dynamicMessage = protoParser.parse(message.getLogMessage());
+            Point point = pointBuilder.buildPoint(dynamicMessage);
             getInstrumentation().logDebug("Data point: {}", point.toString());
             batchPoints.point(point);
         }

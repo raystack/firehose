@@ -22,7 +22,7 @@ import java.util.Map;
 
 /**
  * Factory class to create the HTTP Sink.
- * The esb-log-consumer framework would reflectively instantiate this factory
+ * The consumer framework would reflectively instantiate this factory
  * using the configurations supplied and invoke {@see #create(Map < String, String > configuration, StatsDClient client)}
  * to obtain the HTTPSink sink implementation. {@see ParameterizedHTTPSinkConfig}
  */

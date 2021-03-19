@@ -32,12 +32,12 @@ public class EsUpdateRequestHandler extends EsRequestHandler {
     }
 
     public DocWriteRequest getRequest(Message message) {
-        String esbLogMessage = extractPayload(message);
-        UpdateRequest request = new UpdateRequest(esIndexName, esTypeName, getFieldFromJSON(esbLogMessage, esIdFieldName));
+        String logMessage = extractPayload(message);
+        UpdateRequest request = new UpdateRequest(esIndexName, esTypeName, getFieldFromJSON(logMessage, esIdFieldName));
         if (StringUtils.isNotEmpty(esRoutingKeyName)) {
-            request.routing(getFieldFromJSON(esbLogMessage, esRoutingKeyName));
+            request.routing(getFieldFromJSON(logMessage, esRoutingKeyName));
         }
-        request.doc(esbLogMessage, XContentType.JSON);
+        request.doc(logMessage, XContentType.JSON);
         return request;
     }
 }

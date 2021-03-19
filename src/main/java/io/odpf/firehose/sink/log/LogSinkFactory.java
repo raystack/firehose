@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Factory class to create the LogSink.
  * <p>
- * The esb-log-consumer framework would reflectively instantiate this factory
+ * The consumer framework would reflectively instantiate this factory
  * using the configurations supplied and invoke {@see #create(Map<String, String> configuration, StatsDClient client)}
  * to obtain the LogSink sink implementation.
  */

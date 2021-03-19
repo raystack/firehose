@@ -31,12 +31,12 @@ public class EsUpsertRequestHandler extends EsRequestHandler {
     }
 
     public DocWriteRequest getRequest(Message message) {
-        String esbLogMessage = extractPayload(message);
-        IndexRequest request = new IndexRequest(esIndexName, esTypeName, getFieldFromJSON(esbLogMessage, esIdFieldName));
+        String logMessage = extractPayload(message);
+        IndexRequest request = new IndexRequest(esIndexName, esTypeName, getFieldFromJSON(logMessage, esIdFieldName));
         if (StringUtils.isNotEmpty(esRoutingKeyName)) {
-            request.routing(getFieldFromJSON(esbLogMessage, esRoutingKeyName));
+            request.routing(getFieldFromJSON(logMessage, esRoutingKeyName));
         }
-        request.source(esbLogMessage, XContentType.JSON);
+        request.source(logMessage, XContentType.JSON);
         return request;
     }
 }

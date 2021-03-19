@@ -40,9 +40,9 @@ public class BatchRequestCreator implements RequestCreator {
 
         Map<String, String> headerMap = headerBuilder.build();
         headerMap.forEach(request::addHeader);
-        String esbMessagesString = jsonBody.serialize(messages).toString();
+        String messagesString = jsonBody.serialize(messages).toString();
 
-        request.setEntity(requestEntityBuilder.buildHttpEntity(esbMessagesString));
+        request.setEntity(requestEntityBuilder.buildHttpEntity(messagesString));
         instrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
                 uri, headerMap, jsonBody.serialize(messages), method);
         return Collections.singletonList(request);

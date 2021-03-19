@@ -40,7 +40,7 @@ public class EsSink extends AbstractSink {
         bulkRequest = new BulkRequest();
         bulkRequest.timeout(TimeValue.timeValueMillis(esRequestTimeoutInMs));
         bulkRequest.waitForActiveShards(esWaitForActiveShardsCount);
-        messages.forEach(esbMessage -> bulkRequest.add(esRequestHandler.getRequest(esbMessage)));
+        messages.forEach(message -> bulkRequest.add(esRequestHandler.getRequest(message)));
     }
 
     @Override
