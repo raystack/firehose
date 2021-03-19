@@ -30,7 +30,7 @@ Explore the following resources to get started with Firehose:
 * Firehose Docker image is available on [ODPF docker hub](https://hub.docker.com/r/odpf/firehose/)
 * Command to run simple Log Sink
 ```
-docker run -e SOURCE_KAFKA_BROKERS=127.0.0.1:6667 -e SOURCE_KAFKA_CONSUMER_GROUP_ID=kafka-consumer-group-id -e SOURCE_KAFKA_TOPIC=sample-topic -e SINK_TYPE=log -e SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_OFFSET_RESET=latest -e PROTO_SCHEMA=com.github.firehose.sampleLogProto.SampleLogMessage odpf/firehose:latest
+docker run -e SOURCE_KAFKA_BROKERS=127.0.0.1:6667 -e SOURCE_KAFKA_CONSUMER_GROUP_ID=kafka-consumer-group-id -e SOURCE_KAFKA_TOPIC=sample-topic -e SINK_TYPE=log -e SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_OFFSET_RESET=latest -e INPUT_SCHEMA_PROTO_CLASS=com.github.firehose.sampleLogProto.SampleLogMessage odpf/firehose:latest
 ```
 **Note:** Make sure your protos (.jar file) are located in `work-dir`, this is required for Filter functionality to work.
 
