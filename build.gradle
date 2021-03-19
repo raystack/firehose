@@ -25,7 +25,7 @@ lombok {
     sha256 = ""
 }
 
-group 'com.gojek.esb'
+group 'io.odpf.firehose'
 version '1.1.0'
 
 
