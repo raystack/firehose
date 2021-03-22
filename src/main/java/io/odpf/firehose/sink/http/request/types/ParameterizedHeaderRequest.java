@@ -35,6 +35,15 @@ public class ParameterizedHeaderRequest implements Request {
     private ProtoToFieldMapper protoToFieldMapper;
     private RequestCreator requestCreator;
 
+    /**
+     * Instantiates a new Parameterized header request.
+     *
+     * @param statsDReporter     the stats d reporter
+     * @param httpSinkConfig     the http sink config
+     * @param body               the body
+     * @param method             the method
+     * @param protoToFieldMapper the proto to field mapper
+     */
     public ParameterizedHeaderRequest(StatsDReporter statsDReporter,
                                       HttpSinkConfig httpSinkConfig,
                                       JsonBody body,
@@ -52,6 +61,14 @@ public class ParameterizedHeaderRequest implements Request {
         return requestCreator.create(messages, requestEntityBuilder.setWrapping(!isTemplateBody(httpSinkConfig)));
     }
 
+    /**
+     * Sets request strategy.
+     *
+     * @param headerBuilder        the header builder
+     * @param uriBuilder           the uri builder
+     * @param requestEntitybuilder the request entitybuilder
+     * @return the request strategy
+     */
     @Override
     public Request setRequestStrategy(HeaderBuilder headerBuilder, UriBuilder uriBuilder, RequestEntityBuilder requestEntitybuilder) {
         this.requestCreator = new IndividualRequestCreator(

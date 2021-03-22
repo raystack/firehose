@@ -20,6 +20,12 @@ public class ProtoToFieldMapper {
     private ProtoParser protoParser;
     private Properties protoIndexToFieldMapping;
 
+    /**
+     * Instantiates a new Proto to field mapper.
+     *
+     * @param protoParser              the proto parser
+     * @param protoIndexToFieldMapping the proto index to field mapping
+     */
     public ProtoToFieldMapper(ProtoParser protoParser, Properties protoIndexToFieldMapping) {
         this.protoParser = protoParser;
         this.protoIndexToFieldMapping = protoIndexToFieldMapping;

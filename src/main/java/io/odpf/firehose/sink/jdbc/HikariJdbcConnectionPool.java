@@ -16,6 +16,17 @@ public class HikariJdbcConnectionPool implements JdbcConnectionPool {
 
     private HikariPool hikariPool;
 
+    /**
+     * Instantiates a new Hikari jdbc connection pool.
+     *
+     * @param jdbcUrl           the jdbc url
+     * @param username          the username
+     * @param password          the password
+     * @param maximumPoolSize   the maximum pool size
+     * @param connectionTimeout the connection timeout
+     * @param idleTimeout       the idle timeout
+     * @param minimumIdle       the minimum idle
+     */
     public HikariJdbcConnectionPool(String jdbcUrl, String username, String password, int maximumPoolSize,
                                     long connectionTimeout, long idleTimeout, int minimumIdle) {
         HikariConfig config = new HikariConfig();

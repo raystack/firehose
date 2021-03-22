@@ -45,6 +45,16 @@ public class HttpSink extends AbstractSink {
     private Map<Integer, Boolean> retryStatusCodeRanges;
     private Map<Integer, Boolean> requestLogStatusCodeRanges;
 
+    /**
+     * Instantiates a new Http sink.
+     *
+     * @param instrumentation            the instrumentation
+     * @param request                    the request
+     * @param httpClient                 the http client
+     * @param stencilClient              the stencil client
+     * @param retryStatusCodeRanges      the retry status code ranges
+     * @param requestLogStatusCodeRanges the request log status code ranges
+     */
     public HttpSink(Instrumentation instrumentation, Request request, HttpClient httpClient, StencilClient stencilClient, Map<Integer, Boolean> retryStatusCodeRanges, Map<Integer, Boolean> requestLogStatusCodeRanges) {
         super(instrumentation, "http");
         this.request = request;

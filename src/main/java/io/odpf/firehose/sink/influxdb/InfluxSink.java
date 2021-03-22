@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Influx sink for firehose.
+ */
 public class InfluxSink extends AbstractSink {
     public static final String FIELD_NAME_MAPPING_ERROR_MESSAGE = "field index mapping cannot be empty; at least one field value is required";
 
@@ -26,6 +29,16 @@ public class InfluxSink extends AbstractSink {
     private BatchPoints batchPoints;
     private StencilClient stencilClient;
 
+    /**
+     * Instantiates a new Influx sink.
+     *
+     * @param instrumentation the instrumentation
+     * @param sinkType        the sink type
+     * @param config          the config
+     * @param protoParser     the proto parser
+     * @param client          the client
+     * @param stencilClient   the stencil client
+     */
     public InfluxSink(Instrumentation instrumentation, String sinkType, InfluxSinkConfig config, ProtoParser protoParser, InfluxDB client, StencilClient stencilClient) {
         super(instrumentation, sinkType);
         this.config = config;

@@ -12,10 +12,20 @@ import com.google.protobuf.DynamicMessage;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Redis list parser.
+ */
 public class RedisListParser extends RedisParser {
     private RedisSinkConfig redisSinkConfig;
     private StatsDReporter statsDReporter;
 
+    /**
+     * Instantiates a new Redis list parser.
+     *
+     * @param protoParser     the proto parser
+     * @param redisSinkConfig the redis sink config
+     * @param statsDReporter  the stats d reporter
+     */
     public RedisListParser(ProtoParser protoParser, RedisSinkConfig redisSinkConfig, StatsDReporter statsDReporter) {
         super(protoParser, redisSinkConfig);
         this.redisSinkConfig = redisSinkConfig;

@@ -12,6 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+/**
+ * Utility methods for configuration.
+ */
 public class FactoryUtil {
 
     private static final String BOOTSTRAP_SERVERS = "bootstrap.servers";
@@ -24,6 +27,13 @@ public class FactoryUtil {
     private static final String SESSION_TIMEOUT_MS = "session.timeout.ms";
 
 
+    /**
+     * Subscribe to all topics matching specified pattern to get dynamically assigned partitions.
+     *
+     * @param config         the config
+     * @param kafkaConsumer  the kafka consumer
+     * @param statsdReporter the statsd reporter
+     */
     public static void configureSubscription(KafkaConsumerConfig config, KafkaConsumer kafkaConsumer, StatsDReporter statsdReporter) {
         Instrumentation instrumentation = new Instrumentation(statsdReporter, FactoryUtil.class);
         Pattern subscriptionTopicPattern = Pattern.compile(config.getSourceKafkaTopic());

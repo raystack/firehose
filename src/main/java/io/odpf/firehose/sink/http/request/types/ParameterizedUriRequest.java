@@ -21,6 +21,9 @@ import java.util.List;
 
 import static io.odpf.firehose.config.enums.HttpSinkParameterPlacementType.QUERY;
 
+/**
+ * The type Parameterized uri request.
+ */
 public class ParameterizedUriRequest implements Request {
 
     private StatsDReporter statsDReporter;
@@ -31,6 +34,15 @@ public class ParameterizedUriRequest implements Request {
     private RequestCreator requestCreator;
     private ProtoToFieldMapper protoToFieldMapper;
 
+    /**
+     * Instantiates a new Parameterized uri request.
+     *
+     * @param statsDReporter     the stats d reporter
+     * @param httpSinkConfig     the http sink config
+     * @param body               the body
+     * @param method             the method
+     * @param protoToFieldMapper the proto to field mapper
+     */
     public ParameterizedUriRequest(StatsDReporter statsDReporter,
                                    HttpSinkConfig httpSinkConfig,
                                    JsonBody body,
@@ -48,6 +60,14 @@ public class ParameterizedUriRequest implements Request {
         return requestCreator.create(messages, requestEntityBuilder.setWrapping(!isTemplateBody(httpSinkConfig)));
     }
 
+    /**
+     * Sets request strategy.
+     *
+     * @param headerBuilder        the header builder
+     * @param uriBuilder           the uri builder
+     * @param requestEntitybuilder the request entitybuilder
+     * @return the request strategy
+     */
     @Override
     public Request setRequestStrategy(HeaderBuilder headerBuilder, UriBuilder uriBuilder, RequestEntityBuilder requestEntitybuilder) {
         this.requestCreator = new IndividualRequestCreator(

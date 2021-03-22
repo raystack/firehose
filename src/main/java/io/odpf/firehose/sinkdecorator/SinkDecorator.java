@@ -7,10 +7,18 @@ import io.odpf.firehose.sink.Sink;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Sink decorator provides internal processing on the use provided sink type.
+ */
 public class SinkDecorator implements Sink {
 
     private final Sink sink;
 
+    /**
+     * Instantiates a new Sink decorator.
+     *
+     * @param sink wrapped sink object
+     */
     public SinkDecorator(Sink sink) {
         this.sink = sink;
     }

@@ -24,6 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 
+/**
+ * Custom GRPC client for all GRPC communication.
+ */
 public class GrpcClient {
 
     private Instrumentation instrumentation;
