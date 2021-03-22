@@ -165,7 +165,7 @@ Listing some of the Kafka consumer metrics here.
 
 #### <a name="Rebalance Rate /hour" /> `Rebalance Rate /hour`
 
-- Rate of rebalance the consumer. More details here : [kafka-consumer rebalancing] (https://cwiki.apache.org/confluence/display/KAFKA/KIP-429%3A+Kafka+Consumer+Incremental+Rebalance+Protocol) 
+- Rate of rebalance the consumer.  
 
 #### <a name="Average Commit latency" /> `Average Commit latency`
 
