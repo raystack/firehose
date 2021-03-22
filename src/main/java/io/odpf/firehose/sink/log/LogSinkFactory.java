@@ -20,6 +20,14 @@ import java.util.Map;
  */
 public class LogSinkFactory implements SinkFactory {
 
+    /**
+     * Creates the LogSink.
+     *
+     * @param configuration  the configuration
+     * @param statsDReporter the stats d reporter
+     * @param stencilClient  the stencil client
+     * @return the sink
+     */
     public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         AppConfig appConfig = ConfigFactory.create(AppConfig.class, configuration);
         KeyOrMessageParser parser = new KeyOrMessageParser(new ProtoParser(stencilClient, appConfig.getInputSchemaProtoClass()), appConfig);

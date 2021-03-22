@@ -10,6 +10,9 @@ import java.util.function.Consumer;
 
 import io.odpf.firehose.metrics.Instrumentation;
 
+/**
+ * The Task with parallelism.
+ */
 public class Task {
 
     private final ExecutorService executorService;
@@ -21,6 +24,14 @@ public class Task {
     private final List<Future<?>> fnFutures;
     private Instrumentation instrumentation;
 
+    /**
+     * Instantiates a new Task.
+     *
+     * @param parallelism        the parallelism
+     * @param threadCleanupDelay the thread cleanup delay
+     * @param instrumentation    the instrumentation
+     * @param task               the task
+     */
     public Task(int parallelism, int threadCleanupDelay, Instrumentation instrumentation, Consumer<Runnable> task) {
         executorService = Executors.newFixedThreadPool(parallelism);
         this.parallelism = parallelism;

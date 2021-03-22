@@ -10,6 +10,9 @@ import redis.clients.jedis.JedisCluster;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Redis cluster client.
+ */
 public class RedisClusterClient implements RedisClient {
 
     private Instrumentation instrumentation;
@@ -18,6 +21,14 @@ public class RedisClusterClient implements RedisClient {
     private JedisCluster jedisCluster;
     private List<RedisDataEntry> redisDataEntries;
 
+    /**
+     * Instantiates a new Redis cluster client.
+     *
+     * @param instrumentation the instrumentation
+     * @param redisParser     the redis parser
+     * @param redisTTL        the redis ttl
+     * @param jedisCluster    the jedis cluster
+     */
     public RedisClusterClient(Instrumentation instrumentation, RedisParser redisParser, RedisTtl redisTTL, JedisCluster jedisCluster) {
         this.instrumentation = instrumentation;
         this.redisParser = redisParser;

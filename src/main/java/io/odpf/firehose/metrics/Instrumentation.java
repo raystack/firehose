@@ -11,7 +11,7 @@ import java.util.List;
 import static io.odpf.firehose.metrics.Metrics.*;
 
 /**
- * Instrumentation
+ * Instrumentation.
  * <p>
  * Handle logging and metric capturing.
  */
@@ -21,17 +21,34 @@ public class Instrumentation {
     private Logger logger;
 
 
+    /**
+     * Gets start execution time.
+     *
+     * @return the start execution time
+     */
     public Instant getStartExecutionTime() {
         return startExecutionTime;
     }
 
     private Instant startExecutionTime;
 
+    /**
+     * Instantiates a new Instrumentation.
+     *
+     * @param statsDReporter the stats d reporter
+     * @param logger         the logger
+     */
     public Instrumentation(StatsDReporter statsDReporter, Logger logger) {
         this.statsDReporter = statsDReporter;
         this.logger = logger;
     }
 
+    /**
+     * Instantiates a new Instrumentation.
+     *
+     * @param statsDReporter the stats d reporter
+     * @param clazz          the clazz
+     */
     public Instrumentation(StatsDReporter statsDReporter, Class clazz) {
         this.statsDReporter = statsDReporter;
         this.logger = LoggerFactory.getLogger(clazz);
@@ -60,10 +77,21 @@ public class Instrumentation {
 
     // ============== FILTER MESSAGES ==============
 
+    /**
+     * Captures batch message histogram.
+     *
+     * @param pulledMessageCount the pulled message count
+     */
     public void capturePulledMessageHistogram(long pulledMessageCount) {
         statsDReporter.captureHistogram(SOURCE_KAFKA_PULL_BATCH_SIZE_TOTAL, pulledMessageCount);
     }
 
+    /**
+     * Captures filtered message count.
+     *
+     * @param filteredMessageCount the filtered message count
+     * @param filterExpression     the filter expression
+     */
     public void captureFilteredMessageCount(int filteredMessageCount, String filterExpression) {
         statsDReporter.captureCount(SOURCE_KAFKA_MESSAGES_FILTER_TOTAL, filteredMessageCount, "expr=" + filterExpression);
     }
@@ -110,6 +138,12 @@ public class Instrumentation {
         startExecutionTime = statsDReporter.getClock().now();
     }
 
+    /**
+     * Captures successful executions.
+     *
+     * @param sinkType        the sink type
+     * @param messageListSize the message list size
+     */
     public void captureSuccessExecutionTelemetry(String sinkType, Integer messageListSize) {
         logger.info("Pushed {} messages to {}.", messageListSize, sinkType);
         statsDReporter.captureDurationSince(SINK_RESPONSE_TIME_MILLISECONDS, this.startExecutionTime);
@@ -117,9 +151,15 @@ public class Instrumentation {
         statsDReporter.captureHistogramWithTags(SINK_PUSH_BATCH_SIZE_TOTAL, messageListSize, SUCCESS_TAG);
     }
 
-    public void captureFailedExecutionTelemetry(Exception e, Integer messageListSize) {
+    /**
+     * Captures failed executions.
+     *
+     * @param exception       the reported exception
+     * @param messageListSize the message list size
+     */
+    public void captureFailedExecutionTelemetry(Exception exception, Integer messageListSize) {
 
-        captureNonFatalError(e, "caught {} {}", e.getClass(), e.getMessage());
+        captureNonFatalError(exception, "caught {} {}", exception.getClass(), exception.getMessage());
         statsDReporter.captureCount(SINK_MESSAGES_TOTAL, messageListSize, FAILURE_TAG);
         statsDReporter.captureHistogramWithTags(SINK_PUSH_BATCH_SIZE_TOTAL, messageListSize, FAILURE_TAG);
     }

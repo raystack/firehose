@@ -16,6 +16,9 @@ import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_MESSAGES_COMMIT_TOTA
 import static io.odpf.firehose.metrics.Metrics.FAILURE_TAG;
 import static io.odpf.firehose.metrics.Metrics.SUCCESS_TAG;
 
+/**
+ * Commit offsets for individual Topic partitions.
+ */
 @AllArgsConstructor
 public class TopicPartitionOffsets implements Offsets {
 
@@ -44,6 +47,12 @@ public class TopicPartitionOffsets implements Offsets {
         });
     }
 
+    /**
+     * Create offsets and metadata map.
+     *
+     * @param records the records
+     * @return the map
+     */
     public Map<TopicPartition, OffsetAndMetadata> createOffsetsAndMetadata(ConsumerRecords<byte[], byte[]> records) {
         Map<TopicPartition, OffsetAndMetadata> topicPartitionAndOffset = new HashMap<>();
 

@@ -10,6 +10,9 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 
+/**
+ * Statsd reporter for firehose.
+ */
 public class StatsDReporter implements Closeable {
 
     private StatsDClient client;

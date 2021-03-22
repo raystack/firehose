@@ -21,8 +21,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Sink factory to configuration and create Elastic search sink.
+ */
 public class EsSinkFactory implements SinkFactory {
 
+    /**
+     * Creates Elastic search sink.
+     *
+     * @param configuration  the configuration
+     * @param statsDReporter the stats d reporter
+     * @param stencilClient  the stencil client
+     * @return created sink
+     */
     @Override
     public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         EsSinkConfig esSinkConfig = ConfigFactory.create(EsSinkConfig.class, configuration);
