@@ -1,15 +1,15 @@
-package com.gojek.esb.sink.prometheus.request;
+package io.odpf.firehose.sink.prometheus.request;
 
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.config.PrometheusSinkConfig;
-import com.gojek.esb.metrics.Instrumentation;
-import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.sink.http.request.header.HeaderBuilder;
-import com.gojek.esb.sink.http.request.uri.UriBuilder;
-import com.gojek.esb.sink.http.request.uri.UriParser;
-import com.gojek.esb.sink.prometheus.builder.RequestEntityBuilder;
-import com.gojek.esb.sink.prometheus.builder.TimeSeriesBuilder;
-import com.gojek.esb.sink.prometheus.builder.WriteRequestBuilder;
+import io.odpf.firehose.config.PrometheusSinkConfig;
+import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.sink.http.request.uri.UriBuilder;
+import io.odpf.firehose.sink.http.request.uri.UriParser;
+import io.odpf.firehose.sink.prometheus.builder.HeaderBuilder;
+import io.odpf.firehose.sink.prometheus.builder.RequestEntityBuilder;
+import io.odpf.firehose.sink.prometheus.builder.TimeSeriesBuilder;
+import io.odpf.firehose.sink.prometheus.builder.WriteRequestBuilder;
 
 
 public class PromRequestCreator {

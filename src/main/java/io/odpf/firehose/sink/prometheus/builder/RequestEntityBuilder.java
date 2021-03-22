@@ -1,4 +1,4 @@
-package com.gojek.esb.sink.prometheus.builder;
+package io.odpf.firehose.sink.prometheus.builder;
 
 import cortexpb.Cortex;
 import org.apache.http.entity.ByteArrayEntity;

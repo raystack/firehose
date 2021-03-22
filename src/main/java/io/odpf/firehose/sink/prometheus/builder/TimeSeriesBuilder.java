@@ -1,7 +1,7 @@
-package com.gojek.esb.sink.prometheus.builder;
+package io.odpf.firehose.sink.prometheus.builder;
 
-import com.gojek.esb.config.PrometheusSinkConfig;
-import com.gojek.esb.exception.EglcConfigurationException;
+import io.odpf.firehose.config.PrometheusSinkConfig;
+import io.odpf.firehose.exception.EglcConfigurationException;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;

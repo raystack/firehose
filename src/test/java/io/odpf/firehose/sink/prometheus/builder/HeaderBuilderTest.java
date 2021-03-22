@@ -1,4 +1,4 @@
-package com.gojek.esb.sink.prometheus.builder;
+package io.odpf.firehose.sink.prometheus.builder;
 
 import org.junit.Test;
 

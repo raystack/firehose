@@ -1,12 +1,12 @@
-package com.gojek.esb.sink.prometheus;
+package io.odpf.firehose.sink.prometheus;
 
 import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.esb.config.converter.RangeToHashMapConverter;
-import com.gojek.esb.consumer.Message;
-import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.exception.NeedToRetry;
-import com.gojek.esb.metrics.Instrumentation;
-import com.gojek.esb.sink.prometheus.request.PromRequest;
+import io.odpf.firehose.config.converter.RangeToHashMapConverter;
+import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.exception.NeedToRetry;
+import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.sink.prometheus.request.PromRequest;
 import cortexpb.Cortex;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -193,7 +193,7 @@ public class PromSinkTest {
                         + "\nRequest Headers: [Accept: text/plain]"
                         + "\nRequest Body: " + body);
         verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCountWithTags("messages.dropped.count", 1, "cause= 500");
+        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_messages_drop_total", 1, "cause= 500");
     }
 
     @Test
@@ -238,7 +238,7 @@ public class PromSinkTest {
         promSink.prepare(messages);
         promSink.execute();
         verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCountWithTags("messages.dropped.count", 1, "cause= 500");
+        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_messages_drop_total", 1, "cause= 500");
     }
 
     @Test(expected = NeedToRetry.class)
@@ -275,7 +275,7 @@ public class PromSinkTest {
         promSink.prepare(messages);
         promSink.execute();
         verify(instrumentation, times(0)).logInfo("Message dropped because of status code: 200");
-        verify(instrumentation, times(0)).captureCountWithTags("messages.dropped.count", 1, "200");
+        verify(instrumentation, times(0)).captureCountWithTags("firehose_sink_messages_drop_total", 1, "200");
     }
 
     @Test
@@ -294,7 +294,7 @@ public class PromSinkTest {
         promSink.prepare(messages);
         promSink.execute();
         verify(instrumentation, times(0)).logInfo("Message dropped because of status code: 201");
-        verify(instrumentation, times(0)).captureCountWithTags("messages.dropped.count", 1, "201");
+        verify(instrumentation, times(0)).captureCountWithTags("firehose_sink_messages_drop_total", 1, "201");
     }
 
     @Test
@@ -314,7 +314,7 @@ public class PromSinkTest {
         promSink.prepare(messages);
         promSink.execute();
 
-        verify(instrumentation, times(1)).captureCountWithTags("http.response.code", 1, "status_code=" + statusLine.getStatusCode(), "url=" + uri.getPath());
+        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_http_response_code_total", 1, "status_code=" + statusLine.getStatusCode(), "url=" + uri.getPath());
     }
 
     @Test

@@ -1,9 +1,9 @@
-package com.gojek.esb.sink.prometheus;
+package io.odpf.firehose.sink.prometheus;
 
 import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.sink.AbstractSink;
+import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.sink.AbstractSink;
 import org.gradle.internal.impldep.org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

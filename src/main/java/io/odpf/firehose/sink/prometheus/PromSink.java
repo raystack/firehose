@@ -1,16 +1,16 @@
-package com.gojek.esb.sink.prometheus;
+package io.odpf.firehose.sink.prometheus;
 
 import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.esb.consumer.Message;
-import com.gojek.esb.exception.DeserializerException;
-import com.gojek.esb.exception.NeedToRetry;
-import com.gojek.esb.metrics.Instrumentation;
-import com.gojek.esb.sink.AbstractSink;
-import com.gojek.esb.sink.prometheus.request.PromRequest;
+import io.odpf.firehose.sink.prometheus.request.PromRequest;
 import com.google.protobuf.DynamicMessage;
 import com.newrelic.api.agent.NewRelic;
 import com.newrelic.api.agent.Trace;
 import cortexpb.Cortex;
+import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.exception.NeedToRetry;
+import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.sink.AbstractSink;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.http.HttpResponse;
@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static com.gojek.esb.metrics.Metrics.HTTP_RESPONSE_CODE;
-import static com.gojek.esb.metrics.Metrics.MESSAGES_DROPPED_COUNT;
+import static io.odpf.firehose.metrics.Metrics.SINK_HTTP_RESPONSE_CODE_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_DROP_TOTAL;
 
 public class PromSink extends AbstractSink {
 
@@ -127,7 +127,7 @@ public class PromSink extends AbstractSink {
         if (response != null) {
             httpCodeTag = "status_code=" + response.getStatusLine().getStatusCode();
         }
-        getInstrumentation().captureCountWithTags(HTTP_RESPONSE_CODE, 1, httpCodeTag, urlTag);
+        getInstrumentation().captureCountWithTags(SINK_HTTP_RESPONSE_CODE_TOTAL, 1, httpCodeTag, urlTag);
     }
 
     private void printRequest(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
@@ -153,7 +153,7 @@ public class PromSink extends AbstractSink {
         InputStream inputStream = getRequestContent(httpRequest);
         List<String> result = readContent(inputStream);
 
-        getInstrumentation().captureCountWithTags(MESSAGES_DROPPED_COUNT, result.size(), "cause= " + statusCode(response));
+        getInstrumentation().captureCountWithTags(SINK_MESSAGES_DROP_TOTAL, result.size(), "cause= " + statusCode(response));
         getInstrumentation().logInfo("Message dropped because of status code: " + statusCode(response));
     }
 

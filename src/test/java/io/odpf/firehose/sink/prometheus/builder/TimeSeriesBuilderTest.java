@@ -1,9 +1,9 @@
-package com.gojek.esb.sink.prometheus.builder;
+package io.odpf.firehose.sink.prometheus.builder;
 
-import com.gojek.esb.config.PrometheusSinkConfig;
-import com.gojek.esb.consumer.TestDurationMessage;
-import com.gojek.esb.consumer.TestFeedbackLogMessage;
-import com.gojek.esb.exception.EglcConfigurationException;
+import io.odpf.firehose.config.PrometheusSinkConfig;
+import io.odpf.firehose.consumer.TestDurationMessage;
+import io.odpf.firehose.consumer.TestFeedbackLogMessage;
+import io.odpf.firehose.exception.EglcConfigurationException;
 import com.google.protobuf.Duration;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -134,7 +134,7 @@ public class TimeSeriesBuilderTest {
 
         TestFeedbackLogMessage feedbackLogMessage = TestFeedbackLogMessage.newBuilder()
                 .setTipAmount(10000)
-                .setFeedbackSource(com.gojek.esb.consumer.TestFeedbackSource.Enum.DRIVER)
+                .setFeedbackSource(io.odpf.firehose.consumer.TestFeedbackSource.Enum.DRIVER)
                 .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000000))
                 .build();
         DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());

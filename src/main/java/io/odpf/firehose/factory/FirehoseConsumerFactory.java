@@ -21,6 +21,7 @@ import io.odpf.firehose.sink.http.HttpSinkFactory;
 import io.odpf.firehose.sink.influxdb.InfluxSinkFactory;
 import io.odpf.firehose.sink.log.KeyOrMessageParser;
 import io.odpf.firehose.sink.log.LogSinkFactory;
+import io.odpf.firehose.sink.prometheus.PromSinkFactory;
 import io.odpf.firehose.sink.redis.RedisSinkFactory;
 import io.odpf.firehose.sinkdecorator.BackOff;
 import io.odpf.firehose.sinkdecorator.BackOffProvider;

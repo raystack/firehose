@@ -1,15 +1,15 @@
-package com.gojek.esb.sink.prometheus;
+package io.odpf.firehose.sink.prometheus;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.config.PrometheusSinkConfig;
-import com.gojek.esb.metrics.Instrumentation;
-import com.gojek.esb.metrics.StatsDReporter;
-import com.gojek.esb.sink.AbstractSink;
-import com.gojek.esb.sink.SinkFactory;
-import com.gojek.esb.sink.http.request.uri.UriParser;
-import com.gojek.esb.sink.prometheus.request.PromRequest;
-import com.gojek.esb.sink.prometheus.request.PromRequestCreator;
+import io.odpf.firehose.sink.prometheus.request.PromRequest;
+import io.odpf.firehose.sink.prometheus.request.PromRequestCreator;
+import io.odpf.firehose.config.PrometheusSinkConfig;
+import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.sink.AbstractSink;
+import io.odpf.firehose.sink.SinkFactory;
+import io.odpf.firehose.sink.http.request.uri.UriParser;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;

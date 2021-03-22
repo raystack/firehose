@@ -1,8 +1,8 @@
-package com.gojek.esb.sink.prometheus.builder;
+package io.odpf.firehose.sink.prometheus.builder;
 
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.esb.consumer.Message;
-import com.gojek.esb.consumer.TestFeedbackLogMessage;
+import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.consumer.TestFeedbackLogMessage;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;

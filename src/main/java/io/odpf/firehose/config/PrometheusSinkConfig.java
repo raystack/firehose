@@ -1,7 +1,7 @@
-package com.gojek.esb.config;
+package io.odpf.firehose.config;
 
-import com.gojek.esb.config.converter.RangeToHashMapConverter;
-import com.gojek.esb.config.converter.ProtoIndexToFieldMapConverter;
+import io.odpf.firehose.config.converter.ProtoIndexToFieldMapConverter;
+import io.odpf.firehose.config.converter.RangeToHashMapConverter;
 import org.aeonbits.owner.Config;
 
 import java.util.Map;

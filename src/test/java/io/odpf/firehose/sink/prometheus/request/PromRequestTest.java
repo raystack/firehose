@@ -1,11 +1,11 @@
-package com.gojek.esb.sink.prometheus.request;
+package io.odpf.firehose.sink.prometheus.request;
 
-import com.gojek.esb.consumer.Message;
-import com.gojek.esb.metrics.Instrumentation;
-import com.gojek.esb.sink.http.request.header.HeaderBuilder;
-import com.gojek.esb.sink.http.request.uri.UriBuilder;
-import com.gojek.esb.sink.prometheus.builder.RequestEntityBuilder;
-import com.gojek.esb.sink.prometheus.builder.WriteRequestBuilder;
+import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.sink.http.request.uri.UriBuilder;
+import io.odpf.firehose.sink.prometheus.builder.HeaderBuilder;
+import io.odpf.firehose.sink.prometheus.builder.RequestEntityBuilder;
+import io.odpf.firehose.sink.prometheus.builder.WriteRequestBuilder;
 import cortexpb.Cortex;
 import org.junit.Before;
 import org.junit.Test;
