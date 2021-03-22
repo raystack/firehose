@@ -17,11 +17,11 @@
     "gnetId": null,
     "graphTooltip": 1,
     "id": 223,
-    "iteration": 1616385284764,
+    "iteration": 1616416456704,
     "links": [],
     "panels": [
         {
-            "collapsed": false,
+            "collapsed": true,
             "datasource": null,
             "gridPos": {
                 "h": 1,
@@ -30,637 +30,638 @@
                 "y": 0
             },
             "id": 77,
-            "panels": [],
+            "panels": [
+                {
+                    "cacheTimeout": null,
+                    "colorBackground": true,
+                    "colorPostfix": false,
+                    "colorPrefix": false,
+                    "colorValue": false,
+                    "colors": [
+                        "#d44a3a",
+                        "#3f6833",
+                        "#299c46"
+                    ],
+                    "datasource": "$datasource",
+                    "description": "The type of sink of the firehose. It could be 'log', 'HTTP', 'DB', 'redis', 'influx' or 'Elasticsearch'",
+                    "fieldConfig": {
+                        "defaults": {
+                            "custom": {}
+                        },
+                        "overrides": []
+                    },
+                    "format": "none",
+                    "gauge": {
+                        "maxValue": 100,
+                        "minValue": 0,
+                        "show": false,
+                        "thresholdLabels": false,
+                        "thresholdMarkers": true
+                    },
+                    "gridPos": {
+                        "h": 3,
+                        "w": 2,
+                        "x": 0,
+                        "y": 1
+                    },
+                    "id": 79,
+                    "interval": null,
+                    "links": [],
+                    "mappingType": 1,
+                    "mappingTypes": [
+                        {
+                            "name": "value to text",
+                            "value": 1
+                        },
+                        {
+                            "name": "range to text",
+                            "value": 2
+                        }
+                    ],
+                    "maxDataPoints": 100,
+                    "nullPointMode": "connected",
+                    "nullText": null,
+                    "pluginVersion": "6.6.0",
+                    "postfix": "",
+                    "postfixFontSize": "50%",
+                    "prefix": "",
+                    "prefixFontSize": "50%",
+                    "rangeMaps": [
+                        {
+                            "from": "null",
+                            "text": "N/A",
+                            "to": "null"
+                        }
+                    ],
+                    "sparkline": {
+                        "fillColor": "rgba(31, 118, 189, 0.18)",
+                        "full": false,
+                        "lineColor": "rgb(31, 120, 193)",
+                        "show": false
+                    },
+                    "tableColumn": "",
+                    "targets": [
+                        {
+                            "groupBy": [
+                                {
+                                    "params": [
+                                        "$__interval"
+                                    ],
+                                    "type": "time"
+                                },
+                                {
+                                    "params": [
+                                        "null"
+                                    ],
+                                    "type": "fill"
+                                }
+                            ],
+                            "hide": true,
+                            "measurement": "firehose.kafka.process_partitions_time",
+                            "orderByTime": "ASC",
+                            "policy": "default",
+                            "query": "SELECT last(\"sink\") as output_sink from (SELECT \"sink\", \"value\" from \"firehose.messages.count\"  where $timeFilter AND app=~/$firehose/ )",
+                            "rawQuery": true,
+                            "refId": "A",
+                            "resultFormat": "table",
+                            "select": [
+                                [
+                                    {
+                                        "params": [
+                                            "/^$consumer_group$/"
+                                        ],
+                                        "type": "field"
+                                    },
+                                    {
+                                        "params": [],
+                                        "type": "mean"
+                                    }
+                                ]
+                            ],
+                            "tags": []
+                        },
+                        {
+                            "groupBy": [
+                                {
+                                    "params": [
+                                        "$__interval"
+                                    ],
+                                    "type": "time"
+                                },
+                                {
+                                    "params": [
+                                        "null"
+                                    ],
+                                    "type": "fill"
+                                }
+                            ],
+                            "measurement": "firehose.kafka.process_partitions_time",
+                            "orderByTime": "ASC",
+                            "policy": "default",
+                            "query": "SELECT last(\"sink-metrics\") as filter from (SELECT \"sink-metrics\", \"value\" from \"firehose_sink_messages_total\"  where $timeFilter AND host=~/^$firehose.*$/ )",
+                            "rawQuery": true,
+                            "refId": "B",
+                            "resultFormat": "table",
+                            "select": [
+                                [
+                                    {
+                                        "params": [
+                                            "/^$consumer_group$/"
+                                        ],
+                                        "type": "field"
+                                    },
+                                    {
+                                        "params": [],
+                                        "type": "mean"
+                                    }
+                                ]
+                            ],
+                            "tags": []
+                        }
+                    ],
+                    "thresholds": "",
+                    "title": "Sink",
+                    "type": "singlestat",
+                    "valueFontSize": "100%",
+                    "valueMaps": [
+                        {
+                            "op": "=",
+                            "text": "N/A",
+                            "value": "null"
+                        }
+                    ],
+                    "valueName": "first"
+                },
+                {
+                    "cacheTimeout": null,
+                    "colorBackground": true,
+                    "colorValue": false,
+                    "colors": [
+                        "#299c46",
+                        "#3f6833",
+                        "#d44a3a"
+                    ],
+                    "datasource": "$datasource",
+                    "fieldConfig": {
+                        "defaults": {
+                            "custom": {}
+                        },
+                        "overrides": []
+                    },
+                    "format": "none",
+                    "gauge": {
+                        "maxValue": 100,
+                        "minValue": 0,
+                        "show": false,
+                        "thresholdLabels": false,
+                        "thresholdMarkers": true
+                    },
+                    "gridPos": {
+                        "h": 3,
+                        "w": 4,
+                        "x": 2,
+                        "y": 1
+                    },
+                    "id": 211,
+                    "interval": null,
+                    "links": [],
+                    "mappingType": 1,
+                    "mappingTypes": [
+                        {
+                            "name": "value to text",
+                            "value": 1
+                        },
+                        {
+                            "name": "range to text",
+                            "value": 2
+                        }
+                    ],
+                    "maxDataPoints": 100,
+                    "nullPointMode": "connected",
+                    "nullText": null,
+                    "postfix": "",
+                    "postfixFontSize": "50%",
+                    "prefix": "",
+                    "prefixFontSize": "50%",
+                    "rangeMaps": [
+                        {
+                            "from": "null",
+                            "text": "N/A",
+                            "to": "null"
+                        }
+                    ],
+                    "sparkline": {
+                        "fillColor": "rgba(31, 118, 189, 0.18)",
+                        "full": false,
+                        "lineColor": "rgb(31, 120, 193)",
+                        "show": false
+                    },
+                    "tableColumn": "",
+                    "targets": [
+                        {
+                            "groupBy": [
+                                {
+                                    "params": [
+                                        "$__interval"
+                                    ],
+                                    "type": "time"
+                                },
+                                {
+                                    "params": [
+                                        "null"
+                                    ],
+                                    "type": "fill"
+                                }
+                            ],
+                            "hide": true,
+                            "orderByTime": "ASC",
+                            "policy": "default",
+                            "query": "SELECT last(\"team\") as output_sink from (SELECT \"team\", \"value\" from \"firehose.messages.count\"  where $timeFilter AND app=~/$firehose/ )",
+                            "rawQuery": true,
+                            "refId": "A",
+                            "resultFormat": "table",
+                            "select": [
+                                [
+                                    {
+                                        "params": [
+                                            "value"
+                                        ],
+                                        "type": "field"
+                                    },
+                                    {
+                                        "params": [],
+                                        "type": "mean"
+                                    }
+                                ]
+                            ],
+                            "tags": []
+                        },
+                        {
+                            "groupBy": [
+                                {
+                                    "params": [
+                                        "$__interval"
+                                    ],
+                                    "type": "time"
+                                },
+                                {
+                                    "params": [
+                                        "null"
+                                    ],
+                                    "type": "fill"
+                                }
+                            ],
+                            "hide": false,
+                            "orderByTime": "ASC",
+                            "policy": "default",
+                            "query": "SELECT last(\"team\") as filter from (SELECT \"team\", \"value\" from \"firehose_sink_messages_total\"  where $timeFilter AND host=~/^$firehose.*$/ )",
+                            "rawQuery": true,
+                            "refId": "B",
+                            "resultFormat": "table",
+                            "select": [
+                                [
+                                    {
+                                        "params": [
+                                            "value"
+                                        ],
+                                        "type": "field"
+                                    },
+                                    {
+                                        "params": [],
+                                        "type": "mean"
+                                    }
+                                ]
+                            ],
+                            "tags": []
+                        }
+                    ],
+                    "thresholds": "",
+                    "title": "Team",
+                    "type": "singlestat",
+                    "valueFontSize": "100%",
+                    "valueMaps": [
+                        {
+                            "op": "=",
+                            "text": "N/A",
+                            "value": "null"
+                        }
+                    ],
+                    "valueName": "first"
+                },
+                {
+                    "cacheTimeout": null,
+                    "colorBackground": true,
+                    "colorValue": false,
+                    "colors": [
+                        "#299c46",
+                        "#3f6833",
+                        "#d44a3a"
+                    ],
+                    "datasource": "$datasource",
+                    "description": "The proto class used for creating the firehose.",
+                    "fieldConfig": {
+                        "defaults": {
+                            "custom": {}
+                        },
+                        "overrides": []
+                    },
+                    "format": "none",
+                    "gauge": {
+                        "maxValue": 100,
+                        "minValue": 0,
+                        "show": false,
+                        "thresholdLabels": false,
+                        "thresholdMarkers": true
+                    },
+                    "gridPos": {
+                        "h": 3,
+                        "w": 12,
+                        "x": 6,
+                        "y": 1
+                    },
+                    "id": 81,
+                    "interval": null,
+                    "links": [],
+                    "mappingType": 1,
+                    "mappingTypes": [
+                        {
+                            "name": "value to text",
+                            "value": 1
+                        },
+                        {
+                            "name": "range to text",
+                            "value": 2
+                        }
+                    ],
+                    "maxDataPoints": 100,
+                    "nullPointMode": "connected",
+                    "nullText": null,
+                    "postfix": "",
+                    "postfixFontSize": "50%",
+                    "prefix": "",
+                    "prefixFontSize": "50%",
+                    "rangeMaps": [
+                        {
+                            "from": "null",
+                            "text": "N/A",
+                            "to": "null"
+                        }
+                    ],
+                    "sparkline": {
+                        "fillColor": "rgba(31, 118, 189, 0.18)",
+                        "full": false,
+                        "lineColor": "rgb(31, 120, 193)",
+                        "show": false
+                    },
+                    "tableColumn": "",
+                    "targets": [
+                        {
+                            "groupBy": [
+                                {
+                                    "params": [
+                                        "$__interval"
+                                    ],
+                                    "type": "time"
+                                },
+                                {
+                                    "params": [
+                                        "null"
+                                    ],
+                                    "type": "fill"
+                                }
+                            ],
+                            "hide": true,
+                            "orderByTime": "ASC",
+                            "policy": "default",
+                            "query": "SELECT last(\"proto\") as output_sink from (SELECT \"proto\", \"value\" from \"firehose.messages.count\"  where $timeFilter AND app=~/$firehose/ )",
+                            "rawQuery": true,
+                            "refId": "A",
+                            "resultFormat": "table",
+                            "select": [
+                                [
+                                    {
+                                        "params": [
+                                            "value"
+                                        ],
+                                        "type": "field"
+                                    },
+                                    {
+                                        "params": [],
+                                        "type": "mean"
+                                    }
+                                ]
+                            ],
+                            "tags": []
+                        },
+                        {
+                            "groupBy": [
+                                {
+                                    "params": [
+                                        "$__interval"
+                                    ],
+                                    "type": "time"
+                                },
+                                {
+                                    "params": [
+                                        "null"
+                                    ],
+                                    "type": "fill"
+                                }
+                            ],
+                            "orderByTime": "ASC",
+                            "policy": "default",
+                            "query": "SELECT last(\"proto\") as filter from (SELECT \"proto\", \"value\" from \"firehose_sink_messages_total\"  where $timeFilter AND host=~/^$firehose.*$/ )",
+                            "rawQuery": true,
+                            "refId": "B",
+                            "resultFormat": "table",
+                            "select": [
+                                [
+                                    {
+                                        "params": [
+                                            "value"
+                                        ],
+                                        "type": "field"
+                                    },
+                                    {
+                                        "params": [],
+                                        "type": "mean"
+                                    }
+                                ]
+                            ],
+                            "tags": []
+                        }
+                    ],
+                    "thresholds": "",
+                    "title": "Proto Schema",
+                    "type": "singlestat",
+                    "valueFontSize": "100%",
+                    "valueMaps": [
+                        {
+                            "op": "=",
+                            "text": "N/A",
+                            "value": "null"
+                        }
+                    ],
+                    "valueName": "first"
+                },
+                {
+                    "cacheTimeout": null,
+                    "colorBackground": true,
+                    "colorValue": false,
+                    "colors": [
+                        "#299c46",
+                        "#3f6833",
+                        "#d44a3a"
+                    ],
+                    "datasource": "$datasource",
+                    "description": "The stream where the input topic is read from",
+                    "fieldConfig": {
+                        "defaults": {
+                            "custom": {}
+                        },
+                        "overrides": []
+                    },
+                    "format": "none",
+                    "gauge": {
+                        "maxValue": 100,
+                        "minValue": 0,
+                        "show": false,
+                        "thresholdLabels": false,
+                        "thresholdMarkers": true
+                    },
+                    "gridPos": {
+                        "h": 3,
+                        "w": 6,
+                        "x": 18,
+                        "y": 1
+                    },
+                    "id": 83,
+                    "interval": null,
+                    "links": [],
+                    "mappingType": 1,
+                    "mappingTypes": [
+                        {
+                            "name": "value to text",
+                            "value": 1
+                        },
+                        {
+                            "name": "range to text",
+                            "value": 2
+                        }
+                    ],
+                    "maxDataPoints": 100,
+                    "nullPointMode": "connected",
+                    "nullText": null,
+                    "postfix": "",
+                    "postfixFontSize": "50%",
+                    "prefix": "",
+                    "prefixFontSize": "50%",
+                    "rangeMaps": [
+                        {
+                            "from": "null",
+                            "text": "N/A",
+                            "to": "null"
+                        }
+                    ],
+                    "sparkline": {
+                        "fillColor": "rgba(31, 118, 189, 0.18)",
+                        "full": false,
+                        "lineColor": "rgb(31, 120, 193)",
+                        "show": false
+                    },
+                    "tableColumn": "",
+                    "targets": [
+                        {
+                            "groupBy": [
+                                {
+                                    "params": [
+                                        "$__interval"
+                                    ],
+                                    "type": "time"
+                                },
+                                {
+                                    "params": [
+                                        "null"
+                                    ],
+                                    "type": "fill"
+                                }
+                            ],
+                            "orderByTime": "ASC",
+                            "policy": "default",
+                            "query": "SELECT last(\"stream\") as output_sink from (SELECT \"stream\", \"value\" from \"firehose.messages.count\" where $timeFilter AND app=~/$firehose/ )",
+                            "rawQuery": true,
+                            "refId": "A",
+                            "resultFormat": "table",
+                            "select": [
+                                [
+                                    {
+                                        "params": [
+                                            "value"
+                                        ],
+                                        "type": "field"
+                                    },
+                                    {
+                                        "params": [],
+                                        "type": "mean"
+                                    }
+                                ]
+                            ],
+                            "tags": []
+                        },
+                        {
+                            "groupBy": [
+                                {
+                                    "params": [
+                                        "$__interval"
+                                    ],
+                                    "type": "time"
+                                },
+                                {
+                                    "params": [
+                                        "null"
+                                    ],
+                                    "type": "fill"
+                                }
+                            ],
+                            "orderByTime": "ASC",
+                            "policy": "default",
+                            "query": "SELECT last(\"stream\") as filter from (SELECT \"stream\", \"value\" from \"firehose_sink_messages_total\"  where $timeFilter AND host=~/^$firehose.*$/ )",
+                            "rawQuery": true,
+                            "refId": "B",
+                            "resultFormat": "table",
+                            "select": [
+                                [
+                                    {
+                                        "params": [
+                                            "value"
+                                        ],
+                                        "type": "field"
+                                    },
+                                    {
+                                        "params": [],
+                                        "type": "mean"
+                                    }
+                                ]
+                            ],
+                            "tags": []
+                        }
+                    ],
+                    "thresholds": "",
+                    "title": "Stream",
+                    "type": "singlestat",
+                    "valueFontSize": "100%",
+                    "valueMaps": [
+                        {
+                            "op": "=",
+                            "text": "N/A",
+                            "value": "null"
+                        }
+                    ],
+                    "valueName": "first"
+                }
+            ],
             "title": "Type Details",
             "type": "row"
-        },
-        {
-            "cacheTimeout": null,
-            "colorBackground": true,
-            "colorPostfix": false,
-            "colorPrefix": false,
-            "colorValue": false,
-            "colors": [
-                "#d44a3a",
-                "#3f6833",
-                "#299c46"
-            ],
-            "datasource": "$datasource",
-            "description": "The type of sink of the firehose. It could be 'log', 'HTTP', 'DB', 'redis', 'influx' or 'Elasticsearch'",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "format": "none",
-            "gauge": {
-                "maxValue": 100,
-                "minValue": 0,
-                "show": false,
-                "thresholdLabels": false,
-                "thresholdMarkers": true
-            },
-            "gridPos": {
-                "h": 3,
-                "w": 2,
-                "x": 0,
-                "y": 1
-            },
-            "id": 79,
-            "interval": null,
-            "links": [],
-            "mappingType": 1,
-            "mappingTypes": [
-                {
-                    "name": "value to text",
-                    "value": 1
-                },
-                {
-                    "name": "range to text",
-                    "value": 2
-                }
-            ],
-            "maxDataPoints": 100,
-            "nullPointMode": "connected",
-            "nullText": null,
-            "pluginVersion": "6.6.0",
-            "postfix": "",
-            "postfixFontSize": "50%",
-            "prefix": "",
-            "prefixFontSize": "50%",
-            "rangeMaps": [
-                {
-                    "from": "null",
-                    "text": "N/A",
-                    "to": "null"
-                }
-            ],
-            "sparkline": {
-                "fillColor": "rgba(31, 118, 189, 0.18)",
-                "full": false,
-                "lineColor": "rgb(31, 120, 193)",
-                "show": false
-            },
-            "tableColumn": "",
-            "targets": [
-                {
-                    "groupBy": [
-                        {
-                            "params": [
-                                "$__interval"
-                            ],
-                            "type": "time"
-                        },
-                        {
-                            "params": [
-                                "null"
-                            ],
-                            "type": "fill"
-                        }
-                    ],
-                    "hide": true,
-                    "measurement": "firehose.kafka.process_partitions_time",
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "query": "SELECT last(\"sink\") as output_sink from (SELECT \"sink\", \"value\" from \"firehose.messages.count\"  where $timeFilter AND app=~/$firehose/ )",
-                    "rawQuery": true,
-                    "refId": "A",
-                    "resultFormat": "table",
-                    "select": [
-                        [
-                            {
-                                "params": [
-                                    "/^$consumer_group$/"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "mean"
-                            }
-                        ]
-                    ],
-                    "tags": []
-                },
-                {
-                    "groupBy": [
-                        {
-                            "params": [
-                                "$__interval"
-                            ],
-                            "type": "time"
-                        },
-                        {
-                            "params": [
-                                "null"
-                            ],
-                            "type": "fill"
-                        }
-                    ],
-                    "measurement": "firehose.kafka.process_partitions_time",
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "query": "SELECT last(\"sink-metrics\") as filter from (SELECT \"sink-metrics\", \"value\" from \"firehose_sink_messages_total\"  where $timeFilter AND host=~/^$firehose.*$/ )",
-                    "rawQuery": true,
-                    "refId": "B",
-                    "resultFormat": "table",
-                    "select": [
-                        [
-                            {
-                                "params": [
-                                    "/^$consumer_group$/"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "mean"
-                            }
-                        ]
-                    ],
-                    "tags": []
-                }
-            ],
-            "thresholds": "",
-            "title": "Sink",
-            "type": "singlestat",
-            "valueFontSize": "100%",
-            "valueMaps": [
-                {
-                    "op": "=",
-                    "text": "N/A",
-                    "value": "null"
-                }
-            ],
-            "valueName": "first"
-        },
-        {
-            "cacheTimeout": null,
-            "colorBackground": true,
-            "colorValue": false,
-            "colors": [
-                "#299c46",
-                "#3f6833",
-                "#d44a3a"
-            ],
-            "datasource": "$datasource",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "format": "none",
-            "gauge": {
-                "maxValue": 100,
-                "minValue": 0,
-                "show": false,
-                "thresholdLabels": false,
-                "thresholdMarkers": true
-            },
-            "gridPos": {
-                "h": 3,
-                "w": 4,
-                "x": 2,
-                "y": 1
-            },
-            "id": 211,
-            "interval": null,
-            "links": [],
-            "mappingType": 1,
-            "mappingTypes": [
-                {
-                    "name": "value to text",
-                    "value": 1
-                },
-                {
-                    "name": "range to text",
-                    "value": 2
-                }
-            ],
-            "maxDataPoints": 100,
-            "nullPointMode": "connected",
-            "nullText": null,
-            "postfix": "",
-            "postfixFontSize": "50%",
-            "prefix": "",
-            "prefixFontSize": "50%",
-            "rangeMaps": [
-                {
-                    "from": "null",
-                    "text": "N/A",
-                    "to": "null"
-                }
-            ],
-            "sparkline": {
-                "fillColor": "rgba(31, 118, 189, 0.18)",
-                "full": false,
-                "lineColor": "rgb(31, 120, 193)",
-                "show": false
-            },
-            "tableColumn": "",
-            "targets": [
-                {
-                    "groupBy": [
-                        {
-                            "params": [
-                                "$__interval"
-                            ],
-                            "type": "time"
-                        },
-                        {
-                            "params": [
-                                "null"
-                            ],
-                            "type": "fill"
-                        }
-                    ],
-                    "hide": true,
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "query": "SELECT last(\"team\") as output_sink from (SELECT \"team\", \"value\" from \"firehose.messages.count\"  where $timeFilter AND app=~/$firehose/ )",
-                    "rawQuery": true,
-                    "refId": "A",
-                    "resultFormat": "table",
-                    "select": [
-                        [
-                            {
-                                "params": [
-                                    "value"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "mean"
-                            }
-                        ]
-                    ],
-                    "tags": []
-                },
-                {
-                    "groupBy": [
-                        {
-                            "params": [
-                                "$__interval"
-                            ],
-                            "type": "time"
-                        },
-                        {
-                            "params": [
-                                "null"
-                            ],
-                            "type": "fill"
-                        }
-                    ],
-                    "hide": false,
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "query": "SELECT last(\"team\") as filter from (SELECT \"team\", \"value\" from \"firehose_sink_messages_total\"  where $timeFilter AND host=~/^$firehose.*$/ )",
-                    "rawQuery": true,
-                    "refId": "B",
-                    "resultFormat": "table",
-                    "select": [
-                        [
-                            {
-                                "params": [
-                                    "value"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "mean"
-                            }
-                        ]
-                    ],
-                    "tags": []
-                }
-            ],
-            "thresholds": "",
-            "title": "Team",
-            "type": "singlestat",
-            "valueFontSize": "100%",
-            "valueMaps": [
-                {
-                    "op": "=",
-                    "text": "N/A",
-                    "value": "null"
-                }
-            ],
-            "valueName": "first"
-        },
-        {
-            "cacheTimeout": null,
-            "colorBackground": true,
-            "colorValue": false,
-            "colors": [
-                "#299c46",
-                "#3f6833",
-                "#d44a3a"
-            ],
-            "datasource": "$datasource",
-            "description": "The proto class used for creating the firehose.",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "format": "none",
-            "gauge": {
-                "maxValue": 100,
-                "minValue": 0,
-                "show": false,
-                "thresholdLabels": false,
-                "thresholdMarkers": true
-            },
-            "gridPos": {
-                "h": 3,
-                "w": 12,
-                "x": 6,
-                "y": 1
-            },
-            "id": 81,
-            "interval": null,
-            "links": [],
-            "mappingType": 1,
-            "mappingTypes": [
-                {
-                    "name": "value to text",
-                    "value": 1
-                },
-                {
-                    "name": "range to text",
-                    "value": 2
-                }
-            ],
-            "maxDataPoints": 100,
-            "nullPointMode": "connected",
-            "nullText": null,
-            "postfix": "",
-            "postfixFontSize": "50%",
-            "prefix": "",
-            "prefixFontSize": "50%",
-            "rangeMaps": [
-                {
-                    "from": "null",
-                    "text": "N/A",
-                    "to": "null"
-                }
-            ],
-            "sparkline": {
-                "fillColor": "rgba(31, 118, 189, 0.18)",
-                "full": false,
-                "lineColor": "rgb(31, 120, 193)",
-                "show": false
-            },
-            "tableColumn": "",
-            "targets": [
-                {
-                    "groupBy": [
-                        {
-                            "params": [
-                                "$__interval"
-                            ],
-                            "type": "time"
-                        },
-                        {
-                            "params": [
-                                "null"
-                            ],
-                            "type": "fill"
-                        }
-                    ],
-                    "hide": true,
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "query": "SELECT last(\"proto\") as output_sink from (SELECT \"proto\", \"value\" from \"firehose.messages.count\"  where $timeFilter AND app=~/$firehose/ )",
-                    "rawQuery": true,
-                    "refId": "A",
-                    "resultFormat": "table",
-                    "select": [
-                        [
-                            {
-                                "params": [
-                                    "value"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "mean"
-                            }
-                        ]
-                    ],
-                    "tags": []
-                },
-                {
-                    "groupBy": [
-                        {
-                            "params": [
-                                "$__interval"
-                            ],
-                            "type": "time"
-                        },
-                        {
-                            "params": [
-                                "null"
-                            ],
-                            "type": "fill"
-                        }
-                    ],
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "query": "SELECT last(\"proto\") as filter from (SELECT \"proto\", \"value\" from \"firehose_sink_messages_total\"  where $timeFilter AND host=~/^$firehose.*$/ )",
-                    "rawQuery": true,
-                    "refId": "B",
-                    "resultFormat": "table",
-                    "select": [
-                        [
-                            {
-                                "params": [
-                                    "value"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "mean"
-                            }
-                        ]
-                    ],
-                    "tags": []
-                }
-            ],
-            "thresholds": "",
-            "title": "Proto Schema",
-            "type": "singlestat",
-            "valueFontSize": "100%",
-            "valueMaps": [
-                {
-                    "op": "=",
-                    "text": "N/A",
-                    "value": "null"
-                }
-            ],
-            "valueName": "first"
-        },
-        {
-            "cacheTimeout": null,
-            "colorBackground": true,
-            "colorValue": false,
-            "colors": [
-                "#299c46",
-                "#3f6833",
-                "#d44a3a"
-            ],
-            "datasource": "$datasource",
-            "description": "The stream where the input topic is read from",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "format": "none",
-            "gauge": {
-                "maxValue": 100,
-                "minValue": 0,
-                "show": false,
-                "thresholdLabels": false,
-                "thresholdMarkers": true
-            },
-            "gridPos": {
-                "h": 3,
-                "w": 6,
-                "x": 18,
-                "y": 1
-            },
-            "id": 83,
-            "interval": null,
-            "links": [],
-            "mappingType": 1,
-            "mappingTypes": [
-                {
-                    "name": "value to text",
-                    "value": 1
-                },
-                {
-                    "name": "range to text",
-                    "value": 2
-                }
-            ],
-            "maxDataPoints": 100,
-            "nullPointMode": "connected",
-            "nullText": null,
-            "postfix": "",
-            "postfixFontSize": "50%",
-            "prefix": "",
-            "prefixFontSize": "50%",
-            "rangeMaps": [
-                {
-                    "from": "null",
-                    "text": "N/A",
-                    "to": "null"
-                }
-            ],
-            "sparkline": {
-                "fillColor": "rgba(31, 118, 189, 0.18)",
-                "full": false,
-                "lineColor": "rgb(31, 120, 193)",
-                "show": false
-            },
-            "tableColumn": "",
-            "targets": [
-                {
-                    "groupBy": [
-                        {
-                            "params": [
-                                "$__interval"
-                            ],
-                            "type": "time"
-                        },
-                        {
-                            "params": [
-                                "null"
-                            ],
-                            "type": "fill"
-                        }
-                    ],
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "query": "SELECT last(\"stream\") as output_sink from (SELECT \"stream\", \"value\" from \"firehose.messages.count\" where $timeFilter AND app=~/$firehose/ )",
-                    "rawQuery": true,
-                    "refId": "A",
-                    "resultFormat": "table",
-                    "select": [
-                        [
-                            {
-                                "params": [
-                                    "value"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "mean"
-                            }
-                        ]
-                    ],
-                    "tags": []
-                },
-                {
-                    "groupBy": [
-                        {
-                            "params": [
-                                "$__interval"
-                            ],
-                            "type": "time"
-                        },
-                        {
-                            "params": [
-                                "null"
-                            ],
-                            "type": "fill"
-                        }
-                    ],
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "query": "SELECT last(\"stream\") as filter from (SELECT \"stream\", \"value\" from \"firehose_sink_messages_total\"  where $timeFilter AND host=~/^$firehose.*$/ )",
-                    "rawQuery": true,
-                    "refId": "B",
-                    "resultFormat": "table",
-                    "select": [
-                        [
-                            {
-                                "params": [
-                                    "value"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "mean"
-                            }
-                        ]
-                    ],
-                    "tags": []
-                }
-            ],
-            "thresholds": "",
-            "title": "Stream",
-            "type": "singlestat",
-            "valueFontSize": "100%",
-            "valueMaps": [
-                {
-                    "op": "=",
-                    "text": "N/A",
-                    "value": "null"
-                }
-            ],
-            "valueName": "first"
         },
         {
             "collapsed": false,
@@ -669,7 +670,7 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 4
+                "y": 1
             },
             "id": 188,
             "panels": [],
@@ -692,10 +693,10 @@
             "fill": 1,
             "fillGradient": 0,
             "gridPos": {
-                "h": 7,
-                "w": 24,
+                "h": 8,
+                "w": 8,
                 "x": 0,
-                "y": 5
+                "y": 2
             },
             "hiddenSeries": false,
             "id": 120,
@@ -823,871 +824,6 @@
             "dashLength": 10,
             "dashes": false,
             "datasource": "$datasource",
-            "description": "Sum of all messages received from Kafka per pod",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 7,
-                "w": 6,
-                "x": 0,
-                "y": 12
-            },
-            "hiddenSeries": false,
-            "id": 219,
-            "legend": {
-                "alignAsTable": true,
-                "avg": true,
-                "current": false,
-                "max": true,
-                "min": true,
-                "show": true,
-                "total": false,
-                "values": true
-            },
-            "lines": true,
-            "linewidth": 1,
-            "links": [],
-            "nullPointMode": "null",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "alias": "$tag_host",
-                    "groupBy": [
-                        {
-                            "params": [
-                                "$__interval"
-                            ],
-                            "type": "time"
-                        },
-                        {
-                            "params": [
-                                "host"
-                            ],
-                            "type": "tag"
-                        },
-                        {
-                            "params": [
-                                "none"
-                            ],
-                            "type": "fill"
-                        }
-                    ],
-                    "measurement": "firehose_kafka_consumer_",
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "query": "SELECT last(\"kafka.consumer.consumer-fetch-manager-metrics-records-consumed-total\") FROM \"v2_jolokia\" WHERE (\"app\" =~ /^$firehose$/) AND $timeFilter GROUP BY time($__interval), \"host\" fill(none)",
-                    "rawQuery": false,
-                    "refId": "B",
-                    "resultFormat": "time_series",
-                    "select": [
-                        [
-                            {
-                                "params": [
-                                    "fetch_manager_records-consumed-total"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "last"
-                            },
-                            {
-                                "params": [
-                                    "10s"
-                                ],
-                                "type": "non_negative_derivative"
-                            }
-                        ]
-                    ],
-                    "tags": [
-                        {
-                            "key": "app",
-                            "operator": "=~",
-                            "value": "/^$firehose.*$/"
-                        }
-                    ]
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Total Message Received",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "$datasource",
-            "description": "Messages sent successfully to the sink per batch per pod",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 7,
-                "w": 6,
-                "x": 6,
-                "y": 12
-            },
-            "hiddenSeries": false,
-            "id": 195,
-            "legend": {
-                "alignAsTable": true,
-                "avg": true,
-                "current": false,
-                "max": true,
-                "min": true,
-                "show": true,
-                "total": false,
-                "values": true
-            },
-            "lines": true,
-            "linewidth": 1,
-            "links": [],
-            "nullPointMode": "null",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "alias": "$tag_host",
-                    "groupBy": [
-                        {
-                            "params": [
-                                "$__interval"
-                            ],
-                            "type": "time"
-                        },
-                        {
-                            "params": [
-                                "host"
-                            ],
-                            "type": "tag"
-                        },
-                        {
-                            "params": [
-                                "none"
-                            ],
-                            "type": "fill"
-                        }
-                    ],
-                    "measurement": "firehose_sink_messages_total",
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "query": "SELECT sum(\"value\") FROM \"firehose.messages.count\" WHERE (\"app\" =~ /^$firehose$/ AND \"success\" = 'true') AND $timeFilter GROUP BY time($__interval), \"host\" fill(none)",
-                    "rawQuery": false,
-                    "refId": "B",
-                    "resultFormat": "time_series",
-                    "select": [
-                        [
-                            {
-                                "params": [
-                                    "value"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "sum"
-                            }
-                        ]
-                    ],
-                    "tags": [
-                        {
-                            "key": "host",
-                            "operator": "=~",
-                            "value": "/^$firehose.*$/"
-                        },
-                        {
-                            "condition": "AND",
-                            "key": "success",
-                            "operator": "=",
-                            "value": "true"
-                        }
-                    ]
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Message Sent Successfully",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "$datasource",
-            "description": "Messages failed to be pushed into the sink per batch per pod. \nIn case of HTTP sink, if status code is not in retry codes configured, the records will be dropped.",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 7,
-                "w": 6,
-                "x": 12,
-                "y": 12
-            },
-            "hiddenSeries": false,
-            "id": 220,
-            "legend": {
-                "alignAsTable": true,
-                "avg": true,
-                "current": false,
-                "max": true,
-                "min": true,
-                "show": true,
-                "total": false,
-                "values": true
-            },
-            "lines": true,
-            "linewidth": 1,
-            "links": [],
-            "nullPointMode": "null",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "alias": "$tag_host",
-                    "groupBy": [
-                        {
-                            "params": [
-                                "$__interval"
-                            ],
-                            "type": "time"
-                        },
-                        {
-                            "params": [
-                                "host"
-                            ],
-                            "type": "tag"
-                        },
-                        {
-                            "params": [
-                                "none"
-                            ],
-                            "type": "fill"
-                        }
-                    ],
-                    "measurement": "firehose_sink_messages_total",
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "query": "SELECT sum(\"value\") FROM \"firehose.messages.count\" WHERE (\"app\" =~ /^$firehose$/ AND \"success\" = 'false') AND $timeFilter GROUP BY time($__interval), \"host\" fill(none)",
-                    "rawQuery": false,
-                    "refId": "B",
-                    "resultFormat": "time_series",
-                    "select": [
-                        [
-                            {
-                                "params": [
-                                    "value"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "sum"
-                            }
-                        ]
-                    ],
-                    "tags": [
-                        {
-                            "key": "host",
-                            "operator": "=~",
-                            "value": "/^$firehose.*$/"
-                        },
-                        {
-                            "condition": "AND",
-                            "key": "success",
-                            "operator": "=",
-                            "value": "false"
-                        }
-                    ]
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Message Sent Failed",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "$datasource",
-            "description": "In case of HTTP sink, when status code is not in retry codes configured, the records are dropped. This metric captures the dropped messages count.",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 7,
-                "w": 6,
-                "x": 18,
-                "y": 12
-            },
-            "hiddenSeries": false,
-            "id": 224,
-            "legend": {
-                "alignAsTable": true,
-                "avg": true,
-                "current": false,
-                "max": true,
-                "min": true,
-                "show": true,
-                "total": false,
-                "values": true
-            },
-            "lines": true,
-            "linewidth": 1,
-            "links": [],
-            "nullPointMode": "null",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "alias": "$tag_host: $tag_cause",
-                    "groupBy": [
-                        {
-                            "params": [
-                                "$__interval"
-                            ],
-                            "type": "time"
-                        },
-                        {
-                            "params": [
-                                "cause"
-                            ],
-                            "type": "tag"
-                        },
-                        {
-                            "params": [
-                                "none"
-                            ],
-                            "type": "fill"
-                        }
-                    ],
-                    "measurement": "firehose_sink_messages_drop_total",
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "query": "SELECT sum(\"value\") FROM \"firehose.messages.dropped.count\" WHERE (\"app\" =~ /^$firehose$/ AND \"success\" = 'false') AND $timeFilter GROUP BY time($__interval), \"host\" fill(none)",
-                    "rawQuery": false,
-                    "refId": "A",
-                    "resultFormat": "time_series",
-                    "select": [
-                        [
-                            {
-                                "params": [
-                                    "value"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "sum"
-                            }
-                        ]
-                    ],
-                    "tags": [
-                        {
-                            "key": "host",
-                            "operator": "=~",
-                            "value": "/^$firehose.*$/"
-                        }
-                    ]
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Message Dropped",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "$datasource",
-            "description": "99p of batch size distribution for pulled and pushed messages per pod",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 8,
-                "w": 6,
-                "x": 0,
-                "y": 19
-            },
-            "hiddenSeries": false,
-            "id": 223,
-            "legend": {
-                "alignAsTable": true,
-                "avg": true,
-                "current": false,
-                "max": true,
-                "min": true,
-                "show": true,
-                "total": false,
-                "values": true
-            },
-            "lines": true,
-            "linewidth": 1,
-            "links": [],
-            "nullPointMode": "null",
-            "options": {
-                "dataLinks": []
-            },
-            "percentage": false,
-            "pointradius": 5,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
-            "targets": [
-                {
-                    "alias": "Pulled Batch Size (99p)",
-                    "groupBy": [
-                        {
-                            "params": [
-                                "1m"
-                            ],
-                            "type": "time"
-                        },
-                        {
-                            "params": [
-                                "host"
-                            ],
-                            "type": "tag"
-                        },
-                        {
-                            "params": [
-                                "none"
-                            ],
-                            "type": "fill"
-                        }
-                    ],
-                    "hide": false,
-                    "measurement": "firehose_source_kafka_pull_batch_size_total",
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "query": "SELECT max(\"99_percentile\") AS \"99P\", max(\"95_percentile\") AS \"95P\", max(\"50_percentile\") AS \"50P\" FROM \"firehose_b\" WHERE (\"host\" =~ /^$pods$/) AND $timeFilter GROUP BY time(1m), \"host\" fill(none)",
-                    "rawQuery": false,
-                    "refId": "A",
-                    "resultFormat": "time_series",
-                    "select": [
-                        [
-                            {
-                                "params": [
-                                    "99_percentile"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "max"
-                            },
-                            {
-                                "params": [
-                                    "99P"
-                                ],
-                                "type": "alias"
-                            }
-                        ],
-                        [
-                            {
-                                "params": [
-                                    "95_percentile"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "max"
-                            },
-                            {
-                                "params": [
-                                    "95P"
-                                ],
-                                "type": "alias"
-                            }
-                        ],
-                        [
-                            {
-                                "params": [
-                                    "50_percentile"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "max"
-                            },
-                            {
-                                "params": [
-                                    "50P"
-                                ],
-                                "type": "alias"
-                            }
-                        ]
-                    ],
-                    "tags": [
-                        {
-                            "key": "host",
-                            "operator": "=~",
-                            "value": "/^$firehose.*$/"
-                        }
-                    ]
-                },
-                {
-                    "alias": "Pushed Batch Size (99p)",
-                    "groupBy": [
-                        {
-                            "params": [
-                                "1m"
-                            ],
-                            "type": "time"
-                        },
-                        {
-                            "params": [
-                                "host"
-                            ],
-                            "type": "tag"
-                        },
-                        {
-                            "params": [
-                                "none"
-                            ],
-                            "type": "fill"
-                        }
-                    ],
-                    "hide": false,
-                    "measurement": "firehose_sink_push_batch_size_total",
-                    "orderByTime": "ASC",
-                    "policy": "default",
-                    "query": "SELECT max(\"99_percentile\") AS \"99P\" FROM \"firehose.pushed.batch.size\" WHERE (\"app\" =~ /^$firehose$/) AND $timeFilter GROUP BY time(1m), \"host\" fill(none)",
-                    "rawQuery": false,
-                    "refId": "B",
-                    "resultFormat": "time_series",
-                    "select": [
-                        [
-                            {
-                                "params": [
-                                    "99_percentile"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "max"
-                            },
-                            {
-                                "params": [
-                                    "99p"
-                                ],
-                                "type": "alias"
-                            }
-                        ],
-                        [
-                            {
-                                "params": [
-                                    "95_percentile"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "max"
-                            },
-                            {
-                                "params": [
-                                    "95p"
-                                ],
-                                "type": "alias"
-                            }
-                        ],
-                        [
-                            {
-                                "params": [
-                                    "50_percentile"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "max"
-                            },
-                            {
-                                "params": [
-                                    "50p"
-                                ],
-                                "type": "alias"
-                            }
-                        ]
-                    ],
-                    "tags": [
-                        {
-                            "key": "host",
-                            "operator": "=~",
-                            "value": "/^$firehose.*$/"
-                        }
-                    ]
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Batch size Distribution",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
-            }
-        },
-        {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "$datasource",
             "description": "Latency introduced by firehose (time before sending to sink - time when reading from Kafka).\nNote: It could be high if the response time of the sink is higher as subsequent batches could be delayed",
             "fieldConfig": {
                 "defaults": {
@@ -1699,9 +835,9 @@
             "fillGradient": 0,
             "gridPos": {
                 "h": 8,
-                "w": 6,
-                "x": 6,
-                "y": 19
+                "w": 8,
+                "x": 8,
+                "y": 2
             },
             "hiddenSeries": false,
             "id": 90,
@@ -1884,9 +1020,9 @@
             "fillGradient": 0,
             "gridPos": {
                 "h": 8,
-                "w": 6,
-                "x": 12,
-                "y": 19
+                "w": 8,
+                "x": 16,
+                "y": 2
             },
             "hiddenSeries": false,
             "id": 191,
@@ -2058,6 +1194,213 @@
             "dashLength": 10,
             "dashes": false,
             "datasource": "$datasource",
+            "description": "99p of batch size distribution for pulled and pushed messages per pod",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {}
+                },
+                "overrides": []
+            },
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 7,
+                "w": 8,
+                "x": 0,
+                "y": 10
+            },
+            "hiddenSeries": false,
+            "id": 223,
+            "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": false,
+                "max": true,
+                "min": true,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": true,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "alias": "Pulled: $tag_host",
+                    "groupBy": [
+                        {
+                            "params": [
+                                "1m"
+                            ],
+                            "type": "time"
+                        },
+                        {
+                            "params": [
+                                "host"
+                            ],
+                            "type": "tag"
+                        },
+                        {
+                            "params": [
+                                "none"
+                            ],
+                            "type": "fill"
+                        }
+                    ],
+                    "hide": false,
+                    "measurement": "firehose_source_kafka_pull_batch_size_total",
+                    "orderByTime": "ASC",
+                    "policy": "default",
+                    "query": "SELECT max(\"99_percentile\") AS \"99P\", max(\"95_percentile\") AS \"95P\", max(\"50_percentile\") AS \"50P\" FROM \"firehose_b\" WHERE (\"host\" =~ /^$pods$/) AND $timeFilter GROUP BY time(1m), \"host\" fill(none)",
+                    "rawQuery": false,
+                    "refId": "A",
+                    "resultFormat": "time_series",
+                    "select": [
+                        [
+                            {
+                                "params": [
+                                    "99_percentile"
+                                ],
+                                "type": "field"
+                            },
+                            {
+                                "params": [],
+                                "type": "max"
+                            },
+                            {
+                                "params": [
+                                    "99P"
+                                ],
+                                "type": "alias"
+                            }
+                        ]
+                    ],
+                    "tags": [
+                        {
+                            "key": "host",
+                            "operator": "=~",
+                            "value": "/^$firehose.*$/"
+                        }
+                    ]
+                },
+                {
+                    "alias": "Pushed: $tag_host",
+                    "groupBy": [
+                        {
+                            "params": [
+                                "1m"
+                            ],
+                            "type": "time"
+                        },
+                        {
+                            "params": [
+                                "host"
+                            ],
+                            "type": "tag"
+                        },
+                        {
+                            "params": [
+                                "none"
+                            ],
+                            "type": "fill"
+                        }
+                    ],
+                    "hide": false,
+                    "measurement": "firehose_sink_push_batch_size_total",
+                    "orderByTime": "ASC",
+                    "policy": "default",
+                    "query": "SELECT max(\"99_percentile\") AS \"99P\" FROM \"firehose.pushed.batch.size\" WHERE (\"app\" =~ /^$firehose$/) AND $timeFilter GROUP BY time(1m), \"host\" fill(none)",
+                    "rawQuery": false,
+                    "refId": "B",
+                    "resultFormat": "time_series",
+                    "select": [
+                        [
+                            {
+                                "params": [
+                                    "99_percentile"
+                                ],
+                                "type": "field"
+                            },
+                            {
+                                "params": [],
+                                "type": "max"
+                            },
+                            {
+                                "params": [
+                                    "99p"
+                                ],
+                                "type": "alias"
+                            }
+                        ]
+                    ],
+                    "tags": [
+                        {
+                            "key": "host",
+                            "operator": "=~",
+                            "value": "/^$firehose.*$/"
+                        }
+                    ]
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Batch size Distribution",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "$datasource",
             "description": "Different percentile of the response time of the sink",
             "fieldConfig": {
                 "defaults": {
@@ -2068,10 +1411,10 @@
             "fill": 1,
             "fillGradient": 0,
             "gridPos": {
-                "h": 8,
-                "w": 6,
-                "x": 18,
-                "y": 19
+                "h": 7,
+                "w": 8,
+                "x": 8,
+                "y": 10
             },
             "hiddenSeries": false,
             "id": 32,
@@ -2152,24 +1495,6 @@
                         [
                             {
                                 "params": [
-                                    "95_percentile"
-                                ],
-                                "type": "field"
-                            },
-                            {
-                                "params": [],
-                                "type": "max"
-                            },
-                            {
-                                "params": [
-                                    "95P"
-                                ],
-                                "type": "alias"
-                            }
-                        ],
-                        [
-                            {
-                                "params": [
                                     "50_percentile"
                                 ],
                                 "type": "field"
@@ -2237,13 +1562,599 @@
             }
         },
         {
+            "aliasColors": {},
+            "bars": true,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "$datasource",
+            "description": "Sum of all messages received from Kafka per pod",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {}
+                },
+                "overrides": []
+            },
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 7,
+                "w": 8,
+                "x": 16,
+                "y": 10
+            },
+            "hiddenSeries": false,
+            "id": 219,
+            "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": false,
+                "max": true,
+                "min": true,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": false,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": true,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "alias": "$tag_host",
+                    "groupBy": [
+                        {
+                            "params": [
+                                "$__interval"
+                            ],
+                            "type": "time"
+                        },
+                        {
+                            "params": [
+                                "host"
+                            ],
+                            "type": "tag"
+                        },
+                        {
+                            "params": [
+                                "none"
+                            ],
+                            "type": "fill"
+                        }
+                    ],
+                    "measurement": "firehose_kafka_consumer_",
+                    "orderByTime": "ASC",
+                    "policy": "default",
+                    "query": "SELECT last(\"kafka.consumer.consumer-fetch-manager-metrics-records-consumed-total\") FROM \"v2_jolokia\" WHERE (\"app\" =~ /^$firehose$/) AND $timeFilter GROUP BY time($__interval), \"host\" fill(none)",
+                    "rawQuery": false,
+                    "refId": "B",
+                    "resultFormat": "time_series",
+                    "select": [
+                        [
+                            {
+                                "params": [
+                                    "fetch_manager_records-consumed-total"
+                                ],
+                                "type": "field"
+                            },
+                            {
+                                "params": [],
+                                "type": "last"
+                            },
+                            {
+                                "params": [
+                                    "10s"
+                                ],
+                                "type": "non_negative_derivative"
+                            }
+                        ]
+                    ],
+                    "tags": [
+                        {
+                            "key": "app",
+                            "operator": "=~",
+                            "value": "/^$firehose.*$/"
+                        }
+                    ]
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Total Message Received",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": true,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "$datasource",
+            "description": "Messages sent successfully to the sink per batch per pod",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {}
+                },
+                "overrides": []
+            },
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 7,
+                "w": 8,
+                "x": 0,
+                "y": 17
+            },
+            "hiddenSeries": false,
+            "id": 195,
+            "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": false,
+                "max": true,
+                "min": true,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": false,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": true,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "alias": "$tag_host",
+                    "groupBy": [
+                        {
+                            "params": [
+                                "$__interval"
+                            ],
+                            "type": "time"
+                        },
+                        {
+                            "params": [
+                                "host"
+                            ],
+                            "type": "tag"
+                        },
+                        {
+                            "params": [
+                                "none"
+                            ],
+                            "type": "fill"
+                        }
+                    ],
+                    "measurement": "firehose_sink_messages_total",
+                    "orderByTime": "ASC",
+                    "policy": "default",
+                    "query": "SELECT sum(\"value\") FROM \"firehose.messages.count\" WHERE (\"app\" =~ /^$firehose$/ AND \"success\" = 'true') AND $timeFilter GROUP BY time($__interval), \"host\" fill(none)",
+                    "rawQuery": false,
+                    "refId": "B",
+                    "resultFormat": "time_series",
+                    "select": [
+                        [
+                            {
+                                "params": [
+                                    "value"
+                                ],
+                                "type": "field"
+                            },
+                            {
+                                "params": [],
+                                "type": "sum"
+                            }
+                        ]
+                    ],
+                    "tags": [
+                        {
+                            "key": "host",
+                            "operator": "=~",
+                            "value": "/^$firehose.*$/"
+                        },
+                        {
+                            "condition": "AND",
+                            "key": "success",
+                            "operator": "=",
+                            "value": "true"
+                        }
+                    ]
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Message Sent Successfully",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": true,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "$datasource",
+            "description": "Messages failed to be pushed into the sink per batch per pod. \nIn case of HTTP sink, if status code is not in retry codes configured, the records will be dropped.",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {}
+                },
+                "overrides": []
+            },
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 7,
+                "w": 8,
+                "x": 8,
+                "y": 17
+            },
+            "hiddenSeries": false,
+            "id": 220,
+            "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": false,
+                "max": true,
+                "min": true,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": false,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": true,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "alias": "$tag_host",
+                    "groupBy": [
+                        {
+                            "params": [
+                                "$__interval"
+                            ],
+                            "type": "time"
+                        },
+                        {
+                            "params": [
+                                "host"
+                            ],
+                            "type": "tag"
+                        },
+                        {
+                            "params": [
+                                "none"
+                            ],
+                            "type": "fill"
+                        }
+                    ],
+                    "measurement": "firehose_sink_messages_total",
+                    "orderByTime": "ASC",
+                    "policy": "default",
+                    "query": "SELECT sum(\"value\") FROM \"firehose.messages.count\" WHERE (\"app\" =~ /^$firehose$/ AND \"success\" = 'false') AND $timeFilter GROUP BY time($__interval), \"host\" fill(none)",
+                    "rawQuery": false,
+                    "refId": "B",
+                    "resultFormat": "time_series",
+                    "select": [
+                        [
+                            {
+                                "params": [
+                                    "value"
+                                ],
+                                "type": "field"
+                            },
+                            {
+                                "params": [],
+                                "type": "sum"
+                            }
+                        ]
+                    ],
+                    "tags": [
+                        {
+                            "key": "host",
+                            "operator": "=~",
+                            "value": "/^$firehose.*$/"
+                        },
+                        {
+                            "condition": "AND",
+                            "key": "success",
+                            "operator": "=",
+                            "value": "false"
+                        }
+                    ]
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Message Sent Failed",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "$datasource",
+            "description": "In case of HTTP sink, when status code is not in retry codes configured, the records are dropped. This metric captures the dropped messages count.",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {}
+                },
+                "overrides": []
+            },
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 7,
+                "w": 8,
+                "x": 16,
+                "y": 17
+            },
+            "hiddenSeries": false,
+            "id": 224,
+            "legend": {
+                "alignAsTable": true,
+                "avg": true,
+                "current": false,
+                "max": true,
+                "min": true,
+                "show": true,
+                "total": false,
+                "values": true
+            },
+            "lines": true,
+            "linewidth": 1,
+            "links": [],
+            "nullPointMode": "null",
+            "options": {
+                "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "alias": "$tag_host: $tag_cause",
+                    "groupBy": [
+                        {
+                            "params": [
+                                "$__interval"
+                            ],
+                            "type": "time"
+                        },
+                        {
+                            "params": [
+                                "cause"
+                            ],
+                            "type": "tag"
+                        },
+                        {
+                            "params": [
+                                "none"
+                            ],
+                            "type": "fill"
+                        }
+                    ],
+                    "measurement": "firehose_sink_messages_drop_total",
+                    "orderByTime": "ASC",
+                    "policy": "default",
+                    "query": "SELECT sum(\"value\") FROM \"firehose.messages.dropped.count\" WHERE (\"app\" =~ /^$firehose$/ AND \"success\" = 'false') AND $timeFilter GROUP BY time($__interval), \"host\" fill(none)",
+                    "rawQuery": false,
+                    "refId": "A",
+                    "resultFormat": "time_series",
+                    "select": [
+                        [
+                            {
+                                "params": [
+                                    "value"
+                                ],
+                                "type": "field"
+                            },
+                            {
+                                "params": [],
+                                "type": "sum"
+                            }
+                        ]
+                    ],
+                    "tags": [
+                        {
+                            "key": "host",
+                            "operator": "=~",
+                            "value": "/^$firehose.*$/"
+                        }
+                    ]
+                }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Message Dropped",
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "buckets": null,
+                "mode": "time",
+                "name": null,
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                },
+                {
+                    "format": "short",
+                    "label": null,
+                    "logBase": 1,
+                    "max": null,
+                    "min": null,
+                    "show": true
+                }
+            ],
+            "yaxis": {
+                "align": false,
+                "alignLevel": null
+            }
+        },
+        {
             "collapsed": true,
             "datasource": null,
             "gridPos": {
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 27
+                "y": 24
             },
             "id": 137,
             "panels": [
@@ -2667,7 +2578,7 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 28
+                "y": 25
             },
             "id": 118,
             "panels": [
@@ -2690,7 +2601,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 0,
-                        "y": 29
+                        "y": 26
                     },
                     "hiddenSeries": false,
                     "id": 132,
@@ -2831,7 +2742,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 6,
-                        "y": 29
+                        "y": 26
                     },
                     "hiddenSeries": false,
                     "id": 129,
@@ -2972,7 +2883,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 12,
-                        "y": 29
+                        "y": 26
                     },
                     "hiddenSeries": false,
                     "id": 122,
@@ -3113,7 +3024,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 18,
-                        "y": 29
+                        "y": 26
                     },
                     "hiddenSeries": false,
                     "id": 121,
@@ -3254,7 +3165,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 0,
-                        "y": 36
+                        "y": 33
                     },
                     "hiddenSeries": false,
                     "id": 123,
@@ -3395,7 +3306,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 6,
-                        "y": 36
+                        "y": 33
                     },
                     "hiddenSeries": false,
                     "id": 144,
@@ -3536,7 +3447,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 12,
-                        "y": 36
+                        "y": 33
                     },
                     "hiddenSeries": false,
                     "id": 126,
@@ -3677,7 +3588,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 18,
-                        "y": 36
+                        "y": 33
                     },
                     "hiddenSeries": false,
                     "id": 145,
@@ -3818,7 +3729,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 0,
-                        "y": 43
+                        "y": 40
                     },
                     "hiddenSeries": false,
                     "id": 146,
@@ -3959,7 +3870,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 6,
-                        "y": 43
+                        "y": 40
                     },
                     "hiddenSeries": false,
                     "id": 125,
@@ -4100,7 +4011,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 12,
-                        "y": 43
+                        "y": 40
                     },
                     "hiddenSeries": false,
                     "id": 130,
@@ -4241,7 +4152,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 18,
-                        "y": 43
+                        "y": 40
                     },
                     "hiddenSeries": false,
                     "id": 147,
@@ -4382,7 +4293,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 0,
-                        "y": 50
+                        "y": 47
                     },
                     "hiddenSeries": false,
                     "id": 148,
@@ -4523,7 +4434,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 6,
-                        "y": 50
+                        "y": 47
                     },
                     "hiddenSeries": false,
                     "id": 128,
@@ -4664,7 +4575,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 12,
-                        "y": 50
+                        "y": 47
                     },
                     "hiddenSeries": false,
                     "id": 134,
@@ -4807,7 +4718,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 18,
-                        "y": 50
+                        "y": 47
                     },
                     "hiddenSeries": false,
                     "id": 149,
@@ -4950,7 +4861,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 0,
-                        "y": 57
+                        "y": 54
                     },
                     "hiddenSeries": false,
                     "id": 131,
@@ -5091,7 +5002,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 6,
-                        "y": 57
+                        "y": 54
                     },
                     "hiddenSeries": false,
                     "id": 127,
@@ -5231,7 +5142,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 12,
-                        "y": 57
+                        "y": 54
                     },
                     "hiddenSeries": false,
                     "id": 135,
@@ -5374,7 +5285,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 18,
-                        "y": 57
+                        "y": 54
                     },
                     "hiddenSeries": false,
                     "id": 124,
@@ -5515,7 +5426,7 @@
                         "h": 7,
                         "w": 9,
                         "x": 0,
-                        "y": 64
+                        "y": 61
                     },
                     "hiddenSeries": false,
                     "id": 190,
@@ -5656,7 +5567,7 @@
                         "h": 7,
                         "w": 8,
                         "x": 9,
-                        "y": 64
+                        "y": 61
                     },
                     "hiddenSeries": false,
                     "id": 133,
@@ -5799,7 +5710,7 @@
                         "h": 7,
                         "w": 7,
                         "x": 17,
-                        "y": 64
+                        "y": 61
                     },
                     "hiddenSeries": false,
                     "id": 189,
@@ -5935,99 +5846,50 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 29
+                "y": 26
             },
             "id": 88,
             "panels": [
                 {
-                    "columns": [],
                     "datasource": "$datasource",
                     "description": "Count of all the exception raised by the pods which can restart the firehose",
                     "fieldConfig": {
                         "defaults": {
-                            "custom": {}
+                            "custom": {
+                                "align": "left"
+                            },
+                            "mappings": [],
+                            "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                    {
+                                        "color": "green",
+                                        "value": null
+                                    },
+                                    {
+                                        "color": "red",
+                                        "value": 80
+                                    }
+                                ]
+                            }
                         },
                         "overrides": []
                     },
-                    "fontSize": "100%",
                     "gridPos": {
                         "h": 9,
                         "w": 12,
                         "x": 0,
-                        "y": 30
+                        "y": 27
                     },
                     "id": 85,
                     "links": [],
-                    "pageSize": null,
-                    "scroll": true,
-                    "showHeader": true,
-                    "sort": {
-                        "col": 0,
-                        "desc": true
+                    "options": {
+                        "showHeader": true
                     },
-                    "styles": [
-                        {
-                            "alias": "Time",
-                            "align": "auto",
-                            "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                            "pattern": "Time",
-                            "type": "hidden"
-                        },
-                        {
-                            "alias": "",
-                            "align": "auto",
-                            "colorMode": null,
-                            "colors": [
-                                "rgba(245, 54, 54, 0.9)",
-                                "rgba(237, 129, 40, 0.89)",
-                                "rgba(50, 172, 45, 0.97)"
-                            ],
-                            "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                            "decimals": 2,
-                            "mappingType": 1,
-                            "pattern": "/firehose\\.error\\.(event$|event\\.(app|type))/",
-                            "thresholds": [],
-                            "type": "hidden",
-                            "unit": "short"
-                        },
-                        {
-                            "alias": "Exception Class",
-                            "align": "auto",
-                            "colorMode": null,
-                            "colors": [
-                                "rgba(245, 54, 54, 0.9)",
-                                "rgba(237, 129, 40, 0.89)",
-                                "rgba(50, 172, 45, 0.97)"
-                            ],
-                            "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                            "decimals": 2,
-                            "mappingType": 1,
-                            "pattern": "Metric",
-                            "thresholds": [],
-                            "type": "number",
-                            "unit": "short"
-                        },
-                        {
-                            "alias": "Times occurred",
-                            "align": "auto",
-                            "colorMode": null,
-                            "colors": [
-                                "rgba(245, 54, 54, 0.9)",
-                                "rgba(237, 129, 40, 0.89)",
-                                "rgba(50, 172, 45, 0.97)"
-                            ],
-                            "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                            "decimals": 2,
-                            "mappingType": 1,
-                            "pattern": "Value",
-                            "thresholds": [],
-                            "type": "number",
-                            "unit": "short"
-                        }
-                    ],
+                    "pluginVersion": "7.0.3",
                     "targets": [
                         {
-                            "alias": "",
+                            "alias": "$tag_class",
                             "groupBy": [
                                 {
                                     "params": [
@@ -6045,7 +5907,7 @@
                             "measurement": "firehose.error.event",
                             "orderByTime": "ASC",
                             "policy": "default",
-                            "query": "select  class as errors, sum as count from (select sum(\"value\") from \"firehose.error.event\"  WHERE $timeFilter AND  \"app\" =~ /^$firehose$/ AND \"type\"='FATAL_ERROR'  group by \"class\")",
+                            "query": "select sum(\"value\") from \"firehose.error.event\"  WHERE $timeFilter  AND  \"app\" =~ /^$firehose$/  AND \"type\"='FATAL_ERROR'  group by \"class\"",
                             "rawQuery": true,
                             "refId": "A",
                             "resultFormat": "table",
@@ -6066,65 +5928,66 @@
                             "tags": []
                         }
                     ],
+                    "timeFrom": null,
+                    "timeShift": null,
                     "title": "FATAL ERROR",
-                    "transform": "table",
-                    "type": "table-old"
+                    "transformations": [
+                        {
+                            "id": "organize",
+                            "options": {
+                                "excludeByName": {
+                                    "Time": true
+                                },
+                                "indexByName": {},
+                                "renameByName": {
+                                    "class": "Exception Type",
+                                    "sum": "Count"
+                                }
+                            }
+                        }
+                    ],
+                    "type": "table"
                 },
                 {
-                    "columns": [],
                     "datasource": "$datasource",
                     "description": "Count of all the exception raised by the firehose which will not restart the firehose and firehose will keep retrying",
                     "fieldConfig": {
                         "defaults": {
-                            "custom": {}
+                            "custom": {
+                                "align": "left"
+                            },
+                            "mappings": [],
+                            "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                    {
+                                        "color": "green",
+                                        "value": null
+                                    },
+                                    {
+                                        "color": "red",
+                                        "value": 80
+                                    }
+                                ]
+                            }
                         },
                         "overrides": []
                     },
-                    "fontSize": "100%",
                     "gridPos": {
                         "h": 9,
                         "w": 12,
                         "x": 12,
-                        "y": 30
+                        "y": 27
                     },
                     "id": 86,
                     "links": [],
-                    "pageSize": null,
-                    "scroll": true,
-                    "showHeader": true,
-                    "sort": {
-                        "col": 0,
-                        "desc": true
+                    "options": {
+                        "showHeader": true
                     },
-                    "styles": [
-                        {
-                            "alias": "Time",
-                            "align": "auto",
-                            "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                            "pattern": "Time",
-                            "type": "hidden"
-                        },
-                        {
-                            "alias": "",
-                            "align": "auto",
-                            "colorMode": null,
-                            "colors": [
-                                "rgba(245, 54, 54, 0.9)",
-                                "rgba(237, 129, 40, 0.89)",
-                                "rgba(50, 172, 45, 0.97)"
-                            ],
-                            "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                            "decimals": 2,
-                            "mappingType": 1,
-                            "pattern": "count",
-                            "thresholds": [],
-                            "type": "number",
-                            "unit": "short"
-                        }
-                    ],
+                    "pluginVersion": "7.0.3",
                     "targets": [
                         {
-                            "alias": "",
+                            "alias": "$tag_class",
                             "groupBy": [
                                 {
                                     "params": [
@@ -6142,7 +6005,7 @@
                             "measurement": "firehose.error.event",
                             "orderByTime": "ASC",
                             "policy": "default",
-                            "query": "select  class as errors, sum as count from (select sum(\"value\") from \"firehose.error.event\"  WHERE $timeFilter AND  \"app\" =~ /^$firehose$/ AND \"type\"='NON_FATAL_ERROR'  group by \"class\")",
+                            "query": "select sum(\"value\") from \"firehose.error.event\"  WHERE $timeFilter AND  \"app\" =~ /^$firehose$/  AND  \"type\"='NON_FATAL_ERROR'  group by \"class\"",
                             "rawQuery": true,
                             "refId": "A",
                             "resultFormat": "table",
@@ -6170,8 +6033,22 @@
                         }
                     ],
                     "title": "NON FATAL ERROR",
-                    "transform": "table",
-                    "type": "table-old"
+                    "transformations": [
+                        {
+                            "id": "organize",
+                            "options": {
+                                "excludeByName": {
+                                    "Time": true
+                                },
+                                "indexByName": {},
+                                "renameByName": {
+                                    "class": "Exception Type",
+                                    "sum": "Count"
+                                }
+                            }
+                        }
+                    ],
+                    "type": "table"
                 }
             ],
             "title": "Error",
@@ -6184,7 +6061,7 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 30
+                "y": 27
             },
             "id": 139,
             "panels": [
@@ -6207,7 +6084,7 @@
                         "h": 8,
                         "w": 12,
                         "x": 0,
-                        "y": 31
+                        "y": 28
                     },
                     "hiddenSeries": false,
                     "id": 101,
@@ -6393,7 +6270,7 @@
                         "h": 8,
                         "w": 12,
                         "x": 12,
-                        "y": 31
+                        "y": 28
                     },
                     "hiddenSeries": false,
                     "id": 202,
@@ -6577,7 +6454,7 @@
                         "h": 8,
                         "w": 8,
                         "x": 0,
-                        "y": 39
+                        "y": 36
                     },
                     "hiddenSeries": false,
                     "id": 203,
@@ -6761,7 +6638,7 @@
                         "h": 8,
                         "w": 8,
                         "x": 8,
-                        "y": 39
+                        "y": 36
                     },
                     "hiddenSeries": false,
                     "id": 204,
@@ -6945,7 +6822,7 @@
                         "h": 8,
                         "w": 8,
                         "x": 16,
-                        "y": 39
+                        "y": 36
                     },
                     "hiddenSeries": false,
                     "id": 205,
@@ -7121,7 +6998,7 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 31
+                "y": 28
             },
             "id": 94,
             "panels": [
@@ -9055,7 +8932,7 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 32
+                "y": 29
             },
             "id": 48,
             "panels": [
@@ -9078,7 +8955,7 @@
                         "h": 7,
                         "w": 12,
                         "x": 0,
-                        "y": 33
+                        "y": 30
                     },
                     "hiddenSeries": false,
                     "id": 50,
@@ -9217,7 +9094,7 @@
                         "h": 7,
                         "w": 12,
                         "x": 12,
-                        "y": 33
+                        "y": 30
                     },
                     "hiddenSeries": false,
                     "id": 196,
@@ -9348,17 +9225,133 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 33
+                "y": 30
             },
             "id": 34,
             "panels": [
+                {
+                    "datasource": "$datasource",
+                    "description": "Total number of response received by firehose from the HTTP service across different status code",
+                    "fieldConfig": {
+                        "defaults": {
+                            "custom": {
+                                "align": "left"
+                            },
+                            "mappings": [],
+                            "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                    {
+                                        "color": "green",
+                                        "value": null
+                                    },
+                                    {
+                                        "color": "red",
+                                        "value": 80
+                                    }
+                                ]
+                            }
+                        },
+                        "overrides": []
+                    },
+                    "gridPos": {
+                        "h": 8,
+                        "w": 24,
+                        "x": 0,
+                        "y": 31
+                    },
+                    "id": 225,
+                    "links": [],
+                    "options": {
+                        "showHeader": true
+                    },
+                    "pluginVersion": "7.0.3",
+                    "targets": [
+                        {
+                            "alias": "$tag_status_code",
+                            "groupBy": [
+                                {
+                                    "params": [
+                                        "$__interval"
+                                    ],
+                                    "type": "time"
+                                },
+                                {
+                                    "params": [
+                                        "status_code"
+                                    ],
+                                    "type": "tag"
+                                },
+                                {
+                                    "params": [
+                                        "none"
+                                    ],
+                                    "type": "fill"
+                                }
+                            ],
+                            "measurement": "firehose_sink_http_response_code_total",
+                            "orderByTime": "ASC",
+                            "policy": "default",
+                            "query": "SELECT sum(value) as total FROM \"firehose_sink_http_response_code_total\" WHERE (\"host\" =~ /^$firehose.*$/) and $timeFilter GROUP BY \"status_code\"",
+                            "rawQuery": true,
+                            "refId": "A",
+                            "resultFormat": "table",
+                            "select": [
+                                [
+                                    {
+                                        "params": [
+                                            "value"
+                                        ],
+                                        "type": "field"
+                                    },
+                                    {
+                                        "params": [],
+                                        "type": "sum"
+                                    }
+                                ]
+                            ],
+                            "tags": [
+                                {
+                                    "key": "host",
+                                    "operator": "=~",
+                                    "value": "/^$firehose.*$/"
+                                },
+                                {
+                                    "condition": "AND",
+                                    "key": "status_code",
+                                    "operator": "=~",
+                                    "value": "/^2.*/"
+                                }
+                            ]
+                        }
+                    ],
+                    "timeFrom": null,
+                    "timeShift": null,
+                    "title": "Response Count Total",
+                    "transformations": [
+                        {
+                            "id": "organize",
+                            "options": {
+                                "excludeByName": {
+                                    "Time": true
+                                },
+                                "indexByName": {},
+                                "renameByName": {
+                                    "status_code": "Status Code",
+                                    "total": "Total Count"
+                                }
+                            }
+                        }
+                    ],
+                    "type": "table"
+                },
                 {
                     "aliasColors": {},
                     "bars": false,
                     "dashLength": 10,
                     "dashes": false,
                     "datasource": "$datasource",
-                    "description": "Total number of 2xx response received by firehose from the HTTP service",
+                    "description": "Total number of 2xx and 3xx response received by firehose from the HTTP service",
                     "fieldConfig": {
                         "defaults": {
                             "custom": {}
@@ -9368,10 +9361,10 @@
                     "fill": 1,
                     "fillGradient": 0,
                     "gridPos": {
-                        "h": 6,
-                        "w": 12,
+                        "h": 11,
+                        "w": 8,
                         "x": 0,
-                        "y": 34
+                        "y": 39
                     },
                     "hiddenSeries": false,
                     "id": 30,
@@ -9401,7 +9394,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "alias": "$tag_status_code",
+                            "alias": "Status Code: $tag_status_code",
                             "groupBy": [
                                 {
                                     "params": [
@@ -9453,7 +9446,7 @@
                                     "condition": "AND",
                                     "key": "status_code",
                                     "operator": "=~",
-                                    "value": "/^2.*/"
+                                    "value": "/^[23].*/"
                                 }
                             ]
                         }
@@ -9462,7 +9455,7 @@
                     "timeFrom": null,
                     "timeRegions": [],
                     "timeShift": null,
-                    "title": "2XX Response Count",
+                    "title": "Success Response Count",
                     "tooltip": {
                         "shared": true,
                         "sort": 0,
@@ -9505,7 +9498,7 @@
                     "dashLength": 10,
                     "dashes": false,
                     "datasource": "$datasource",
-                    "description": "Total number of 4xx response received by firehose from the HTTP service",
+                    "description": "Total number of 4xx and 5xx response received by firehose from the HTTP service",
                     "fieldConfig": {
                         "defaults": {
                             "custom": {}
@@ -9515,13 +9508,13 @@
                     "fill": 1,
                     "fillGradient": 0,
                     "gridPos": {
-                        "h": 6,
-                        "w": 12,
-                        "x": 12,
-                        "y": 34
+                        "h": 11,
+                        "w": 9,
+                        "x": 8,
+                        "y": 39
                     },
                     "hiddenSeries": false,
-                    "id": 199,
+                    "id": 226,
                     "legend": {
                         "avg": false,
                         "current": false,
@@ -9548,13 +9541,19 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "alias": "4xx",
+                            "alias": "Status code: $tag_status_code",
                             "groupBy": [
                                 {
                                     "params": [
                                         "$__interval"
                                     ],
                                     "type": "time"
+                                },
+                                {
+                                    "params": [
+                                        "status_code"
+                                    ],
+                                    "type": "tag"
                                 },
                                 {
                                     "params": [
@@ -9566,7 +9565,9 @@
                             "measurement": "firehose_sink_http_response_code_total",
                             "orderByTime": "ASC",
                             "policy": "default",
-                            "refId": "B",
+                            "query": "SELECT count(\"value\") FROM \"firehose_http_response_code\" WHERE (\"app\" =~ /^$firehose$/ AND \"status_code\" = 'select tag value') AND $timeFilter GROUP BY time($__interval) fill(null)",
+                            "rawQuery": false,
+                            "refId": "A",
                             "resultFormat": "time_series",
                             "select": [
                                 [
@@ -9592,7 +9593,7 @@
                                     "condition": "AND",
                                     "key": "status_code",
                                     "operator": "=~",
-                                    "value": "/^4.*/"
+                                    "value": "/^[45].*/"
                                 }
                             ]
                         }
@@ -9601,146 +9602,7 @@
                     "timeFrom": null,
                     "timeRegions": [],
                     "timeShift": null,
-                    "title": "4XX Response Count",
-                    "tooltip": {
-                        "shared": true,
-                        "sort": 0,
-                        "value_type": "individual"
-                    },
-                    "type": "graph",
-                    "xaxis": {
-                        "buckets": null,
-                        "mode": "time",
-                        "name": null,
-                        "show": true,
-                        "values": []
-                    },
-                    "yaxes": [
-                        {
-                            "format": "short",
-                            "label": null,
-                            "logBase": 1,
-                            "max": null,
-                            "min": null,
-                            "show": true
-                        },
-                        {
-                            "format": "short",
-                            "label": null,
-                            "logBase": 1,
-                            "max": null,
-                            "min": null,
-                            "show": true
-                        }
-                    ],
-                    "yaxis": {
-                        "align": false,
-                        "alignLevel": null
-                    }
-                },
-                {
-                    "aliasColors": {},
-                    "bars": false,
-                    "dashLength": 10,
-                    "dashes": false,
-                    "datasource": "$datasource",
-                    "description": "Total number of 5xx response received by firehose from the HTTP service",
-                    "fieldConfig": {
-                        "defaults": {
-                            "custom": {}
-                        },
-                        "overrides": []
-                    },
-                    "fill": 1,
-                    "fillGradient": 0,
-                    "gridPos": {
-                        "h": 6,
-                        "w": 12,
-                        "x": 0,
-                        "y": 40
-                    },
-                    "hiddenSeries": false,
-                    "id": 197,
-                    "legend": {
-                        "avg": false,
-                        "current": false,
-                        "max": false,
-                        "min": false,
-                        "show": true,
-                        "total": false,
-                        "values": false
-                    },
-                    "lines": true,
-                    "linewidth": 1,
-                    "links": [],
-                    "nullPointMode": "null",
-                    "options": {
-                        "dataLinks": []
-                    },
-                    "percentage": false,
-                    "pointradius": 5,
-                    "points": false,
-                    "renderer": "flot",
-                    "seriesOverrides": [],
-                    "spaceLength": 10,
-                    "stack": false,
-                    "steppedLine": false,
-                    "targets": [
-                        {
-                            "alias": "5xx",
-                            "groupBy": [
-                                {
-                                    "params": [
-                                        "$__interval"
-                                    ],
-                                    "type": "time"
-                                },
-                                {
-                                    "params": [
-                                        "none"
-                                    ],
-                                    "type": "fill"
-                                }
-                            ],
-                            "measurement": "firehose_sink_http_response_code_total",
-                            "orderByTime": "ASC",
-                            "policy": "default",
-                            "refId": "C",
-                            "resultFormat": "time_series",
-                            "select": [
-                                [
-                                    {
-                                        "params": [
-                                            "value"
-                                        ],
-                                        "type": "field"
-                                    },
-                                    {
-                                        "params": [],
-                                        "type": "sum"
-                                    }
-                                ]
-                            ],
-                            "tags": [
-                                {
-                                    "key": "status_code",
-                                    "operator": "=~",
-                                    "value": "/^5.*/"
-                                },
-                                {
-                                    "condition": "AND",
-                                    "key": "host",
-                                    "operator": "=~",
-                                    "value": "/^$firehose.*$/"
-                                }
-                            ]
-                        }
-                    ],
-                    "thresholds": [],
-                    "timeFrom": null,
-                    "timeRegions": [],
-                    "timeShift": null,
-                    "title": "5XX Response Count",
+                    "title": "Unsuccessful Response Count",
                     "tooltip": {
                         "shared": true,
                         "sort": 0,
@@ -9793,10 +9655,10 @@
                     "fill": 1,
                     "fillGradient": 0,
                     "gridPos": {
-                        "h": 6,
-                        "w": 12,
-                        "x": 12,
-                        "y": 40
+                        "h": 11,
+                        "w": 7,
+                        "x": 17,
+                        "y": 39
                     },
                     "hiddenSeries": false,
                     "id": 198,
@@ -9826,7 +9688,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "alias": "No response",
+                            "alias": "Empty status code",
                             "groupBy": [
                                 {
                                     "params": [
@@ -9929,7 +9791,7 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 34
+                "y": 31
             },
             "id": 201,
             "panels": [
@@ -10262,7 +10124,7 @@
         "list": [
             {
                 "current": {
-                    "selected": true,
+                    "selected": false,
                     "text": "test-datasource",
                     "value": "test-datasource"
                 },
@@ -10282,10 +10144,9 @@
             {
                 "allValue": null,
                 "current": {
-                    "isNone": true,
                     "selected": false,
-                    "text": "None",
-                    "value": ""
+                    "text": "test-firehose",
+                    "value": "test-firehose"
                 },
                 "datasource": "$datasource",
                 "definition": "SHOW TAG VALUES FROM \"firehose_jvm_\" WITH KEY=\"app\"",
@@ -10339,5 +10200,5 @@
     "timezone": "browser",
     "title": "Firehose Grafana",
     "uid": "52qWdIwMk",
-    "version": 5
+    "version": 18
 }
