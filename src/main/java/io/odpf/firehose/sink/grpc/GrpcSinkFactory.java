@@ -20,7 +20,6 @@ import java.util.Map;
  * using the configurations supplied and invoke {@see #create(Map < String, String > configuration, StatsDClient client)}
  * to obtain the GrpcSink sink implementation.
  */
-
 public class GrpcSinkFactory implements SinkFactory {
 
     @Override

@@ -11,8 +11,17 @@ import org.aeonbits.owner.ConfigFactory;
 
 import java.io.IOException;
 
+/**
+ * Main class to run firehose.
+ */
 public class Main {
 
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     * @throws InterruptedException the interrupted exception
+     */
     public static void main(String[] args) throws InterruptedException {
         KafkaConsumerConfig kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, System.getenv());
         multiThreadedConsumers(kafkaConsumerConfig);

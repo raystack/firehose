@@ -16,6 +16,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Convert kafka messages to RedisDataEntry.
+ */
 @AllArgsConstructor
 public abstract class RedisParser {
 
@@ -32,6 +35,12 @@ public abstract class RedisParser {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Parse esb message to protobuf.
+     *
+     * @param message parsed message
+     * @return Parsed Proto object
+     */
     DynamicMessage parseEsbMessage(Message message) {
         DynamicMessage parsedMessage;
         try {
@@ -42,6 +51,13 @@ public abstract class RedisParser {
         return parsedMessage;
     }
 
+    /**
+     * Parse template string.
+     *
+     * @param data     the data
+     * @param template the template
+     * @return parsed template
+     */
     String parseTemplate(DynamicMessage data, String template) {
         if (StringUtils.isEmpty(template)) {
             throw new IllegalArgumentException("Template '" + template + "' is invalid");
@@ -74,6 +90,13 @@ public abstract class RedisParser {
         return String.format(pattern, patternVariableData);
     }
 
+    /**
+     * Gets data by field number.
+     *
+     * @param parsedMessage the parsed message
+     * @param fieldNumber   the field number
+     * @return Data object
+     */
     Object getDataByFieldNumber(DynamicMessage parsedMessage, String fieldNumber) {
         int fieldNumberInt;
         try {
@@ -88,6 +111,12 @@ public abstract class RedisParser {
         return parsedMessage.getField(fieldDescriptor);
     }
 
+    /**
+     * Get payload bytes.
+     *
+     * @param message the message
+     * @return binary payload
+     */
     byte[] getPayload(Message message) {
         if (redisSinkConfig.getKafkaRecordParserMode().equals("key")) {
             return message.getLogKey();

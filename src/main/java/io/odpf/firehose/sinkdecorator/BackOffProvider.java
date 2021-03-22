@@ -8,6 +8,7 @@ package io.odpf.firehose.sinkdecorator;
 public interface BackOffProvider {
     /**
      * backs off for a specific duration depending on the number of attempts.
+     *
      * @param attemptCount the number of attempt.
      */
     void backOff(int attemptCount);

@@ -11,12 +11,23 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
+/**
+ * Abstract sink.
+ * All other type of sink will implement this.
+ */
 @AllArgsConstructor
 public abstract class AbstractSink implements Closeable, Sink {
 
     private Instrumentation instrumentation;
     private String sinkType;
 
+    /**
+     * Method to push messages to sink.
+     *
+     * @param messages the messages
+     * @return the list
+     * @throws DeserializerException when invalid kafka message is encountered
+     */
     public List<Message> pushMessage(List<Message> messages) throws DeserializerException {
         List<Message> failedMessages;
         try {
@@ -38,12 +49,31 @@ public abstract class AbstractSink implements Closeable, Sink {
         return failedMessages;
     }
 
+    /**
+     * Gets instrumentation.
+     *
+     * @return the instrumentation
+     */
     public Instrumentation getInstrumentation() {
         return instrumentation;
     }
 
+    /**
+     * send messages to the sink.
+     *
+     * @return the list
+     * @throws Exception the exception
+     */
     protected abstract List<Message> execute() throws Exception;
 
+    /**
+     * process the messages before sending to the sink.
+     *
+     * @param messages the messages
+     * @throws DeserializerException the deserializer exception
+     * @throws IOException           the io exception
+     * @throws SQLException          the sql exception
+     */
     protected abstract void prepare(List<Message> messages) throws DeserializerException, IOException, SQLException;
 
 

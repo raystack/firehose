@@ -14,11 +14,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Redis hash set parser.
+ */
 public class RedisHashSetParser extends RedisParser {
     private ProtoToFieldMapper protoToFieldMapper;
     private RedisSinkConfig redisSinkConfig;
     private StatsDReporter statsDReporter;
 
+    /**
+     * Instantiates a new Redis hash set parser.
+     *
+     * @param protoToFieldMapper the proto to field mapper
+     * @param protoParser        the proto parser
+     * @param redisSinkConfig    the redis sink config
+     * @param statsDReporter     the statsd reporter
+     */
     public RedisHashSetParser(ProtoToFieldMapper protoToFieldMapper, ProtoParser protoParser, RedisSinkConfig redisSinkConfig, StatsDReporter statsDReporter) {
         super(protoParser, redisSinkConfig);
         this.protoToFieldMapper = protoToFieldMapper;

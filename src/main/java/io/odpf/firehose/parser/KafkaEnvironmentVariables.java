@@ -4,10 +4,19 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Kafka environment variables for firehose.
+ */
 public class KafkaEnvironmentVariables {
 
     private static final String KAFKA_PREFIX = "source_kafka_consumer_config_";
 
+    /**
+     * Converts environment variables to hashmap.
+     *
+     * @param envVars the env vars
+     * @return the map
+     */
     public static Map<String, String> parse(Map<String, String> envVars) {
         if (envVars == null || envVars.isEmpty()) {
             return Collections.emptyMap();

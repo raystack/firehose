@@ -19,6 +19,9 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import java.net.URISyntaxException;
 import java.util.List;
 
+/**
+ * Simple request.
+ */
 public class SimpleRequest implements Request {
 
     private HttpSinkConfig httpSinkConfig;
@@ -28,6 +31,14 @@ public class SimpleRequest implements Request {
     private RequestCreator requestCreator;
     private StatsDReporter statsDReporter;
 
+    /**
+     * Instantiates a new Simple request.
+     *
+     * @param statsDReporter the stats d reporter
+     * @param config         the config
+     * @param body           the body
+     * @param method         the method
+     */
     public SimpleRequest(StatsDReporter statsDReporter, HttpSinkConfig config, JsonBody body, HttpSinkRequestMethodType method) {
         this.httpSinkConfig = config;
         this.body = body;
@@ -39,6 +50,14 @@ public class SimpleRequest implements Request {
         return requestCreator.create(messages, requestEntityBuilder);
     }
 
+    /**
+     * Sets request strategy.
+     *
+     * @param headerBuilder        the header builder
+     * @param uriBuilder           the uri builder
+     * @param requestEntitybuilder the request entitybuilder
+     * @return the request strategy
+     */
     @Override
     public Request setRequestStrategy(HeaderBuilder headerBuilder, UriBuilder uriBuilder, RequestEntityBuilder requestEntitybuilder) {
         if (isTemplateBody(httpSinkConfig)) {

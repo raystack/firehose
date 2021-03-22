@@ -23,6 +23,9 @@ import io.odpf.firehose.sink.http.request.uri.UriParser;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Request factory create requests based on configuration.
+ */
 public class RequestFactory {
 
     private HttpSinkConfig httpSinkConfig;
@@ -31,6 +34,14 @@ public class RequestFactory {
     private StatsDReporter statsDReporter;
     private Instrumentation instrumentation;
 
+    /**
+     * Instantiates a new Request factory.
+     *
+     * @param statsDReporter the statsd reporter
+     * @param httpSinkConfig the http sink config
+     * @param stencilClient  the stencil client
+     * @param uriParser      the uri parser
+     */
     public RequestFactory(StatsDReporter statsDReporter, HttpSinkConfig httpSinkConfig, StencilClient stencilClient, UriParser uriParser) {
         this.statsDReporter = statsDReporter;
         this.stencilClient = stencilClient;

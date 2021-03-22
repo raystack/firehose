@@ -1,5 +1,8 @@
 package io.odpf.firehose.exception;
 
+/**
+ * Deserializer exception is thrown when message from proto is not deserializable into the Java object.
+ */
 public class DeserializerException extends RuntimeException {
 
     public DeserializerException(String message) {

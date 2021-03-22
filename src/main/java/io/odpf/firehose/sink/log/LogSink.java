@@ -19,6 +19,13 @@ public class LogSink implements Sink {
     private KeyOrMessageParser parser;
     private Instrumentation instrumentation;
 
+    /**
+     * Push message list.
+     *
+     * @param messages the messages
+     * @return the list
+     * @throws IOException when invalid message is encountered
+     */
     @Override
     public List<Message> pushMessage(List<Message> messages) throws IOException {
         for (Message message : messages) {

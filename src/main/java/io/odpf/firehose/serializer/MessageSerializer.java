@@ -8,5 +8,12 @@ import io.odpf.firehose.exception.DeserializerException;
  */
 public interface MessageSerializer {
 
+  /**
+   * Serialize kafka message into string.
+   *
+   * @param message the message
+   * @return serialised message
+   * @throws DeserializerException the deserializer exception
+   */
   String serialize(Message message) throws DeserializerException;
 }

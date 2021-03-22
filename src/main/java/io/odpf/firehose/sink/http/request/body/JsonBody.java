@@ -15,10 +15,22 @@ public class JsonBody {
 
   private MessageSerializer jsonSerializer;
 
+  /**
+   * Instantiates a new Json body.
+   *
+   * @param jsonSerializer the json serializer
+   */
   public JsonBody(MessageSerializer jsonSerializer) {
     this.jsonSerializer = jsonSerializer;
   }
 
+  /**
+   * Serialize list.
+   *
+   * @param messages the messages
+   * @return the list
+   * @throws DeserializerException the deserializer exception
+   */
   public List<String> serialize(List<Message> messages) throws DeserializerException {
     List<String> serializedBody = new ArrayList<String>();
     for (Message message : messages) {

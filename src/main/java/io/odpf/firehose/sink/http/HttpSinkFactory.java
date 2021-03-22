@@ -28,6 +28,14 @@ import java.util.Map;
  */
 public class HttpSinkFactory implements SinkFactory {
 
+    /**
+     * Create Http sink.
+     *
+     * @param configuration  the configuration
+     * @param statsDReporter the statsd reporter
+     * @param stencilClient  the stencil client
+     * @return the http sink
+     */
     @Override
     public AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         HttpSinkConfig httpSinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
