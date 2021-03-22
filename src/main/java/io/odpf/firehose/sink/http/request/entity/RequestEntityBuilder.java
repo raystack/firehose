@@ -6,9 +6,15 @@ import org.apache.http.entity.StringEntity;
 
 import java.util.Collections;
 
+/**
+ * Request entity builder.
+ */
 public class RequestEntityBuilder {
     private boolean wrapArray;
 
+    /**
+     * Instantiates a new Request entity builder.
+     */
     public RequestEntityBuilder() {
         this.wrapArray = false;
     }
@@ -18,6 +24,13 @@ public class RequestEntityBuilder {
         return this;
     }
 
+    /**
+     * Build http entity string entity.
+     *
+     * @param bodyContent the body content
+     * @return the string entity
+     * @throws DeserializerException the deserializer exception
+     */
     public StringEntity buildHttpEntity(String bodyContent) throws DeserializerException {
         if (!wrapArray) {
             return new StringEntity(bodyContent, ContentType.APPLICATION_JSON);

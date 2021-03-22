@@ -11,6 +11,9 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.IOException;
 
+/**
+ * Interceptor to add oauth token in http request.
+ */
 public class OAuth2Credential implements Interceptor {
 
     private final OAuth2Client client;

@@ -8,8 +8,19 @@ import com.google.gson.JsonSerializer;
 
 import java.lang.reflect.Type;
 
+/**
+ * Message Json serializer serialises Kafka message to json.
+ */
 public class MessageJsonSerializer implements JsonSerializer<Message> {
 
+    /**
+     * Serialize kafka message into json element.
+     *
+     * @param message   the message
+     * @param typeOfSrc the type of src
+     * @param context   the context
+     * @return the json element
+     */
     @Override
     public JsonElement serialize(Message message, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject object = new JsonObject();

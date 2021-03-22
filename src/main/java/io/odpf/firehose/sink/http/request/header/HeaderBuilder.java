@@ -9,12 +9,20 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Header builder for http requests.
+ */
 public class HeaderBuilder {
 
     private String headerConfig;
     private ProtoToFieldMapper protoToFieldMapper;
     private HttpSinkParameterSourceType httpSinkParameterSourceType;
 
+    /**
+     * Instantiates a new Header builder.
+     *
+     * @param headerConfig the header config
+     */
     public HeaderBuilder(String headerConfig) {
         this.headerConfig = headerConfig;
     }

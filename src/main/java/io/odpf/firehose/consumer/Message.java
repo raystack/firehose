@@ -24,6 +24,15 @@ public class Message {
     private long timestamp;
     private long consumeTimestamp;
 
+    /**
+     * Instantiates a new Message.
+     *
+     * @param logKey     the log key
+     * @param logMessage the log message
+     * @param topic      the topic
+     * @param partition  the partition
+     * @param offset     the offset
+     */
     public Message(byte[] logKey, byte[] logMessage, String topic, int partition, long offset) {
         this.logKey = logKey;
         this.logMessage = logMessage;
@@ -32,10 +41,20 @@ public class Message {
         this.offset = offset;
     }
 
+    /**
+     * Gets serialized key.
+     *
+     * @return the serialized key
+     */
     public String getSerializedKey() {
         return encodedSerializedStringFrom(logKey);
     }
 
+    /**
+     * Gets serialized message.
+     *
+     * @return the serialized message
+     */
     public String getSerializedMessage() {
         return encodedSerializedStringFrom(logMessage);
     }

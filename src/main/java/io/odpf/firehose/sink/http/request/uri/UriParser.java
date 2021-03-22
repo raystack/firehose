@@ -11,6 +11,9 @@ import org.apache.kafka.common.errors.InvalidConfigurationException;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * URI parser for http requests.
+ */
 public class UriParser {
     private ProtoParser protoParser;
     private String parserMode;

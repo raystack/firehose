@@ -7,6 +7,9 @@ package io.odpf.firehose.sink.redis.exception;
  */
 public class NoResponseException extends RuntimeException {
 
+    /**
+     * Instantiates a new No response exception.
+     */
     public NoResponseException() {
         super("Redis Pipeline error: no responds received");
     }

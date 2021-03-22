@@ -13,7 +13,18 @@ import org.influxdb.InfluxDBFactory;
 
 import java.util.Map;
 
+/**
+ * Influx sink factory create influx sink.
+ */
 public class InfluxSinkFactory implements SinkFactory {
+    /**
+     * Create Influx sink.
+     *
+     * @param configProperties the config properties
+     * @param statsDReporter   the statsd reporter
+     * @param stencilClient    the stencil client
+     * @return Influx sink
+     */
     @Override
     public AbstractSink create(Map<String, String> configProperties, StatsDReporter statsDReporter, StencilClient stencilClient) {
         InfluxSinkConfig config = ConfigFactory.create(InfluxSinkConfig.class, configProperties);

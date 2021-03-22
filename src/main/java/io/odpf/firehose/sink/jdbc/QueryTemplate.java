@@ -18,6 +18,9 @@ import java.util.Properties;
 import java.util.Enumeration;
 import java.util.stream.Collectors;
 
+/**
+ * Query template.
+ */
 public class QueryTemplate {
     private static final String INSERT_QUERY = "INSERT INTO {{table}} ( {{insertColumns}} ) values ( {{insertValues}} ) ";
     private static final String UPDATE_CLAUSE = "ON CONFLICT ( {{unique}} ) DO UPDATE SET ( {{updateColumns}} ) = ({{updateValues}})";
@@ -30,6 +33,12 @@ public class QueryTemplate {
     private HashMap<String, Object> scopes;
     private String kafkaRecordParserMode;
 
+    /**
+     * Instantiates a new Query template.
+     *
+     * @param jdbcSinkConfig     the jdbc sink config
+     * @param protoToFieldMapper the proto to field mapper
+     */
     public QueryTemplate(JdbcSinkConfig jdbcSinkConfig, ProtoToFieldMapper protoToFieldMapper) {
         this.protoToFieldMapper = protoToFieldMapper;
         this.insertColumns = new ArrayList<>();

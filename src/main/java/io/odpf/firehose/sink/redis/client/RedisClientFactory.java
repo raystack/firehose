@@ -19,6 +19,9 @@ import redis.clients.jedis.JedisCluster;
 
 import java.util.HashSet;
 
+/**
+ * Redis client factory.
+ */
 public class RedisClientFactory {
 
     private static final String DELIMITER = ",";
@@ -26,6 +29,13 @@ public class RedisClientFactory {
     private RedisSinkConfig redisSinkConfig;
     private StencilClient stencilClient;
 
+    /**
+     * Instantiates a new Redis client factory.
+     *
+     * @param statsDReporter  the statsd reporter
+     * @param redisSinkConfig the redis sink config
+     * @param stencilClient   the stencil client
+     */
     public RedisClientFactory(StatsDReporter statsDReporter, RedisSinkConfig redisSinkConfig, StencilClient stencilClient) {
         this.statsDReporter = statsDReporter;
         this.redisSinkConfig = redisSinkConfig;

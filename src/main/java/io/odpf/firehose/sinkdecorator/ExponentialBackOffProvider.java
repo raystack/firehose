@@ -20,6 +20,15 @@ public class ExponentialBackOffProvider implements BackOffProvider {
     private Instrumentation instrumentation;
     private final BackOff backOff;
 
+    /**
+     * Instantiates a new Exponential back off provider.
+     *
+     * @param initialExpiryTimeInMs the initial expiry time in ms
+     * @param backoffRate           the backoff rate
+     * @param maximumExpiryTimeInMS the maximum expiry time in ms
+     * @param instrumentation       the instrumentation
+     * @param backOff               the back off
+     */
     public ExponentialBackOffProvider(int initialExpiryTimeInMs, int backoffRate, int maximumExpiryTimeInMS,
             Instrumentation instrumentation, BackOff backOff) {
         this.initialExpiryTimeInMs = initialExpiryTimeInMs;
