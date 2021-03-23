@@ -35,7 +35,7 @@ docker run -e SOURCE_KAFKA_BROKERS=127.0.0.1:6667 -e SOURCE_KAFKA_CONSUMER_GROUP
 **Note:** Make sure your protos (.jar file) are located in `work-dir`, this is required for Filter functionality to work.
 
 ## Run with Kubernetes
-* Create a firehose deployment using the helm chart available [here]() - `Coming soon`
+* Create a firehose deployment using the helm chart available [here](https://github.com/odpf/charts/tree/main/stable/firehose)
 * Deployment also includes telegraf container which pushes stats metrics
 
 ## Running locally
