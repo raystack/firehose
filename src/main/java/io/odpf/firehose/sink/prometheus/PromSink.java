@@ -31,6 +31,9 @@ import static io.odpf.firehose.metrics.Metrics.SINK_HTTP_RESPONSE_CODE_TOTAL;
 import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_DROP_TOTAL;
 import static io.odpf.firehose.sink.prometheus.PromSinkConstants.SUCCESS_CODE_PATTERN;
 
+/**
+ * the Prometheus Sink. this sink use prometheus remote write api to send data into Cortex.
+ */
 public class PromSink extends AbstractSink {
 
     private PromRequest request;
@@ -40,7 +43,16 @@ public class PromSink extends AbstractSink {
     private Map<Integer, Boolean> retryStatusCodeRanges;
     private Map<Integer, Boolean> requestLogStatusCodeRanges;
 
-
+    /**
+     * Instantiates a new Prometheus sink.
+     *
+     * @param instrumentation            the instrumentation
+     * @param request                    the request
+     * @param httpClient                 the http client
+     * @param stencilClient              the stencil client
+     * @param retryStatusCodeRanges      the retry status code ranges
+     * @param requestLogStatusCodeRanges the request log status code ranges
+     */
     public PromSink(Instrumentation instrumentation, PromRequest request, HttpClient httpClient, StencilClient stencilClient, Map<Integer, Boolean> retryStatusCodeRanges, Map<Integer, Boolean> requestLogStatusCodeRanges) {
         super(instrumentation, "prometheus");
         this.request = request;
@@ -50,6 +62,13 @@ public class PromSink extends AbstractSink {
         this.requestLogStatusCodeRanges = requestLogStatusCodeRanges;
     }
 
+    /**
+     * process messages before sending to cortex.
+     *
+     * @param messages                  the consumer messages
+     * @throws DeserializerException    the exception on deserialization
+     * @throws IOException              the io exception
+     */
     @Override
     protected void prepare(List<Message> messages) throws DeserializerException, IOException {
         try {
@@ -59,6 +78,12 @@ public class PromSink extends AbstractSink {
         }
     }
 
+    /**
+     * Send prometheus metrics to cortex.
+     *
+     * @return              the list
+     * @throws Exception    the exception
+     */
     @Override
     @Trace(dispatcher = true)
     protected List<Message> execute() throws Exception {
@@ -84,6 +109,11 @@ public class PromSink extends AbstractSink {
         return new ArrayList<>();
     }
 
+    /**
+     * closing connection.
+     *
+     * @throws IOException  the exception
+     */
     @Override
     public void close() throws IOException {
         getInstrumentation().logInfo("HTTP connection closing");
@@ -145,6 +175,13 @@ public class PromSink extends AbstractSink {
         getInstrumentation().logInfo("Message dropped because of status code: " + statusCode(response));
     }
 
+    /**
+     * read compressed request body.
+     *
+     * @param inputStream       the inputstream
+     * @return                  list of request body string
+     * @throws IOException      the io exception
+     */
     private List<String> readContent(InputStream inputStream) throws IOException {
         byte[] byteArrayIs = IOUtils.toByteArray(inputStream);
         byte[] uncompressedSnappy = Snappy.uncompress(byteArrayIs);

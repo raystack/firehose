@@ -16,6 +16,9 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Prometheus request create one HttpPost per batch messages.
+ */
 public class PromRequest {
     private Instrumentation instrumentation;
     private WriteRequestBuilder writeRequestBuilder;
@@ -24,6 +27,15 @@ public class PromRequest {
     private HeaderBuilder headerBuilder;
 
 
+    /**
+     * Instantiates a new Prometheus request.
+     *
+     * @param instrumentation       the instrumentation
+     * @param headerBuilder         the header builder
+     * @param url                   the url
+     * @param requestEntityBuilder  the request entity builder
+     * @param writeRequestBuilder   the writeRequest builder
+     */
     public PromRequest(Instrumentation instrumentation, HeaderBuilder headerBuilder, String url,
                        RequestEntityBuilder requestEntityBuilder, WriteRequestBuilder writeRequestBuilder) {
         this.instrumentation = instrumentation;
@@ -33,6 +45,15 @@ public class PromRequest {
         this.requestEntityBuilder = requestEntityBuilder;
     }
 
+    /**
+     * build Prometheus request.
+     *
+     * @param messages                  the list of consumer message
+     * @return                          HttpEntityEnclosingRequestBase
+     * @throws DeserializerException    the exception on deserialization
+     * @throws URISyntaxException       the exception on URI
+     * @throws IOException              the io exception
+     */
     public HttpEntityEnclosingRequestBase build(List<Message> messages) throws DeserializerException, URISyntaxException, IOException {
         Cortex.WriteRequest writeRequest = writeRequestBuilder.buildWriteRequest(messages);
         URI uri = new URI(url);

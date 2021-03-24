@@ -19,6 +19,9 @@ import java.util.HashMap;
 
 import static io.odpf.firehose.sink.prometheus.PromSinkConstants.*;
 
+/**
+ * Builder for Cortex TimeSeries.
+ */
 public class TimeSeriesBuilder {
 
     private Cortex.TimeSeries.Builder timeSeriesBuilder = Cortex.TimeSeries.newBuilder();
@@ -30,6 +33,11 @@ public class TimeSeriesBuilder {
     private Integer timestampIndex;
     private Boolean isEventTimestampEnabled;
 
+    /**
+     * Instantiates a new cortex time series builder.
+     *
+     * @param config    the prometheus sink config
+     */
     public TimeSeriesBuilder(PrometheusSinkConfig config) {
         metricNameProtoIndexMapping = config.getSinkPromMetricNameProtoIndexMapping();
         labelNameProtoIndexMapping = config.getSinkPromLabelNameProtoIndexMapping();
@@ -37,6 +45,14 @@ public class TimeSeriesBuilder {
         isEventTimestampEnabled = config.isEventTimestampEnabled();
     }
 
+    /**
+     * build list of sorted cortex time series object.
+     *
+     * @param message                           the protobuf message
+     * @param partition                         the kafka partition where the message is consumed
+     * @return                                  list of sorted cortex time series object
+     * @throws InvalidProtocolBufferException   the exception on invalid protobuf
+     */
     public List<Cortex.TimeSeries> buildTimeSeries(Message message, int partition) throws InvalidProtocolBufferException {
         Map<String, Object> labelPair = getLabelMessage(message, labelNameProtoIndexMapping, partition);
         List<Map<String, Object>> metricList = getMetricMessage(message, metricNameProtoIndexMapping);
@@ -72,6 +88,14 @@ public class TimeSeriesBuilder {
         sampleBuilder.clear();
     }
 
+    /**
+     * Timestamp that will be use as metric timestamp.
+     * the timestamp from message or from current timestamp base on prometheus config
+     *
+     * @param message                           the protobuf message
+     * @return                                  the unix timestamp
+     * @throws InvalidProtocolBufferException   the exception on invalid protobuf
+     */
     private Long getMetricTimestamp(Message message) throws InvalidProtocolBufferException {
         return (isEventTimestampEnabled) ? getMillisFromTimestamp(getTimestamp(message, timestampIndex)) : System.currentTimeMillis();
     }
