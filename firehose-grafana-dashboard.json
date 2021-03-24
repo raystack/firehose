@@ -17,7 +17,7 @@
     "gnetId": null,
     "graphTooltip": 1,
     "id": 223,
-    "iteration": 1616416456704,
+    "iteration": 1616562101074,
     "links": [],
     "panels": [
         {
@@ -101,45 +101,6 @@
                     },
                     "tableColumn": "",
                     "targets": [
-                        {
-                            "groupBy": [
-                                {
-                                    "params": [
-                                        "$__interval"
-                                    ],
-                                    "type": "time"
-                                },
-                                {
-                                    "params": [
-                                        "null"
-                                    ],
-                                    "type": "fill"
-                                }
-                            ],
-                            "hide": true,
-                            "measurement": "firehose.kafka.process_partitions_time",
-                            "orderByTime": "ASC",
-                            "policy": "default",
-                            "query": "SELECT last(\"sink\") as output_sink from (SELECT \"sink\", \"value\" from \"firehose.messages.count\"  where $timeFilter AND app=~/$firehose/ )",
-                            "rawQuery": true,
-                            "refId": "A",
-                            "resultFormat": "table",
-                            "select": [
-                                [
-                                    {
-                                        "params": [
-                                            "/^$consumer_group$/"
-                                        ],
-                                        "type": "field"
-                                    },
-                                    {
-                                        "params": [],
-                                        "type": "mean"
-                                    }
-                                ]
-                            ],
-                            "tags": []
-                        },
                         {
                             "groupBy": [
                                 {
@@ -258,44 +219,6 @@
                     },
                     "tableColumn": "",
                     "targets": [
-                        {
-                            "groupBy": [
-                                {
-                                    "params": [
-                                        "$__interval"
-                                    ],
-                                    "type": "time"
-                                },
-                                {
-                                    "params": [
-                                        "null"
-                                    ],
-                                    "type": "fill"
-                                }
-                            ],
-                            "hide": true,
-                            "orderByTime": "ASC",
-                            "policy": "default",
-                            "query": "SELECT last(\"team\") as output_sink from (SELECT \"team\", \"value\" from \"firehose.messages.count\"  where $timeFilter AND app=~/$firehose/ )",
-                            "rawQuery": true,
-                            "refId": "A",
-                            "resultFormat": "table",
-                            "select": [
-                                [
-                                    {
-                                        "params": [
-                                            "value"
-                                        ],
-                                        "type": "field"
-                                    },
-                                    {
-                                        "params": [],
-                                        "type": "mean"
-                                    }
-                                ]
-                            ],
-                            "tags": []
-                        },
                         {
                             "groupBy": [
                                 {
@@ -430,44 +353,6 @@
                                     "type": "fill"
                                 }
                             ],
-                            "hide": true,
-                            "orderByTime": "ASC",
-                            "policy": "default",
-                            "query": "SELECT last(\"proto\") as output_sink from (SELECT \"proto\", \"value\" from \"firehose.messages.count\"  where $timeFilter AND app=~/$firehose/ )",
-                            "rawQuery": true,
-                            "refId": "A",
-                            "resultFormat": "table",
-                            "select": [
-                                [
-                                    {
-                                        "params": [
-                                            "value"
-                                        ],
-                                        "type": "field"
-                                    },
-                                    {
-                                        "params": [],
-                                        "type": "mean"
-                                    }
-                                ]
-                            ],
-                            "tags": []
-                        },
-                        {
-                            "groupBy": [
-                                {
-                                    "params": [
-                                        "$__interval"
-                                    ],
-                                    "type": "time"
-                                },
-                                {
-                                    "params": [
-                                        "null"
-                                    ],
-                                    "type": "fill"
-                                }
-                            ],
                             "orderByTime": "ASC",
                             "policy": "default",
                             "query": "SELECT last(\"proto\") as filter from (SELECT \"proto\", \"value\" from \"firehose_sink_messages_total\"  where $timeFilter AND host=~/^$firehose.*$/ )",
@@ -571,43 +456,6 @@
                     },
                     "tableColumn": "",
                     "targets": [
-                        {
-                            "groupBy": [
-                                {
-                                    "params": [
-                                        "$__interval"
-                                    ],
-                                    "type": "time"
-                                },
-                                {
-                                    "params": [
-                                        "null"
-                                    ],
-                                    "type": "fill"
-                                }
-                            ],
-                            "orderByTime": "ASC",
-                            "policy": "default",
-                            "query": "SELECT last(\"stream\") as output_sink from (SELECT \"stream\", \"value\" from \"firehose.messages.count\" where $timeFilter AND app=~/$firehose/ )",
-                            "rawQuery": true,
-                            "refId": "A",
-                            "resultFormat": "table",
-                            "select": [
-                                [
-                                    {
-                                        "params": [
-                                            "value"
-                                        ],
-                                        "type": "field"
-                                    },
-                                    {
-                                        "params": [],
-                                        "type": "mean"
-                                    }
-                                ]
-                            ],
-                            "tags": []
-                        },
                         {
                             "groupBy": [
                                 {
@@ -1783,9 +1631,9 @@
                     "measurement": "firehose_sink_messages_total",
                     "orderByTime": "ASC",
                     "policy": "default",
-                    "query": "SELECT sum(\"value\") FROM \"firehose.messages.count\" WHERE (\"app\" =~ /^$firehose$/ AND \"success\" = 'true') AND $timeFilter GROUP BY time($__interval), \"host\" fill(none)",
+                    "query": "SELECT sum(\"value\") FROM \"firehose_sink_messages_total\" WHERE (\"host\" =~ /^$firehose.*$/ AND \"success\" = 'true') AND $timeFilter GROUP BY time($__interval), \"host\" fill(none)",
                     "rawQuery": false,
-                    "refId": "B",
+                    "refId": "A",
                     "resultFormat": "time_series",
                     "select": [
                         [
@@ -1931,9 +1779,9 @@
                     "measurement": "firehose_sink_messages_total",
                     "orderByTime": "ASC",
                     "policy": "default",
-                    "query": "SELECT sum(\"value\") FROM \"firehose.messages.count\" WHERE (\"app\" =~ /^$firehose$/ AND \"success\" = 'false') AND $timeFilter GROUP BY time($__interval), \"host\" fill(none)",
+                    "query": "SELECT sum(\"value\") FROM \"firehose_sink_messages_total\" WHERE (\"app\" =~ /^$firehose$/ AND \"success\" = 'false') AND $timeFilter GROUP BY time($__interval), \"host\" fill(none)",
                     "rawQuery": false,
-                    "refId": "B",
+                    "refId": "A",
                     "resultFormat": "time_series",
                     "select": [
                         [
@@ -2076,12 +1924,13 @@
                             "type": "fill"
                         }
                     ],
+                    "hide": false,
                     "measurement": "firehose_sink_messages_drop_total",
                     "orderByTime": "ASC",
                     "policy": "default",
-                    "query": "SELECT sum(\"value\") FROM \"firehose.messages.dropped.count\" WHERE (\"app\" =~ /^$firehose$/ AND \"success\" = 'false') AND $timeFilter GROUP BY time($__interval), \"host\" fill(none)",
+                    "query": "SELECT sum(\"value\") FROM \"firehose_sink_messages_drop_total\" WHERE (\"app\" =~ /^$firehose$/ AND \"success\" = 'false') AND $timeFilter GROUP BY time($__interval), \"host\" fill(none)",
                     "rawQuery": false,
-                    "refId": "A",
+                    "refId": "B",
                     "resultFormat": "time_series",
                     "select": [
                         [
@@ -2178,7 +2027,7 @@
                         "h": 12,
                         "w": 10,
                         "x": 0,
-                        "y": 35
+                        "y": 28
                     },
                     "id": 155,
                     "links": [],
@@ -2307,7 +2156,7 @@
                         "h": 6,
                         "w": 14,
                         "x": 10,
-                        "y": 35
+                        "y": 28
                     },
                     "hiddenSeries": false,
                     "id": 142,
@@ -2446,7 +2295,7 @@
                         "h": 6,
                         "w": 14,
                         "x": 10,
-                        "y": 41
+                        "y": 34
                     },
                     "hiddenSeries": false,
                     "id": 143,
@@ -2601,7 +2450,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 0,
-                        "y": 26
+                        "y": 29
                     },
                     "hiddenSeries": false,
                     "id": 132,
@@ -2742,7 +2591,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 6,
-                        "y": 26
+                        "y": 29
                     },
                     "hiddenSeries": false,
                     "id": 129,
@@ -2883,7 +2732,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 12,
-                        "y": 26
+                        "y": 29
                     },
                     "hiddenSeries": false,
                     "id": 122,
@@ -3024,7 +2873,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 18,
-                        "y": 26
+                        "y": 29
                     },
                     "hiddenSeries": false,
                     "id": 121,
@@ -3165,7 +3014,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 0,
-                        "y": 33
+                        "y": 36
                     },
                     "hiddenSeries": false,
                     "id": 123,
@@ -3306,7 +3155,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 6,
-                        "y": 33
+                        "y": 36
                     },
                     "hiddenSeries": false,
                     "id": 144,
@@ -3447,7 +3296,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 12,
-                        "y": 33
+                        "y": 36
                     },
                     "hiddenSeries": false,
                     "id": 126,
@@ -3588,7 +3437,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 18,
-                        "y": 33
+                        "y": 36
                     },
                     "hiddenSeries": false,
                     "id": 145,
@@ -3729,7 +3578,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 0,
-                        "y": 40
+                        "y": 43
                     },
                     "hiddenSeries": false,
                     "id": 146,
@@ -3870,7 +3719,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 6,
-                        "y": 40
+                        "y": 43
                     },
                     "hiddenSeries": false,
                     "id": 125,
@@ -4011,7 +3860,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 12,
-                        "y": 40
+                        "y": 43
                     },
                     "hiddenSeries": false,
                     "id": 130,
@@ -4152,7 +4001,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 18,
-                        "y": 40
+                        "y": 43
                     },
                     "hiddenSeries": false,
                     "id": 147,
@@ -4293,7 +4142,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 0,
-                        "y": 47
+                        "y": 50
                     },
                     "hiddenSeries": false,
                     "id": 148,
@@ -4434,7 +4283,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 6,
-                        "y": 47
+                        "y": 50
                     },
                     "hiddenSeries": false,
                     "id": 128,
@@ -4575,7 +4424,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 12,
-                        "y": 47
+                        "y": 50
                     },
                     "hiddenSeries": false,
                     "id": 134,
@@ -4718,7 +4567,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 18,
-                        "y": 47
+                        "y": 50
                     },
                     "hiddenSeries": false,
                     "id": 149,
@@ -4861,7 +4710,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 0,
-                        "y": 54
+                        "y": 57
                     },
                     "hiddenSeries": false,
                     "id": 131,
@@ -5002,7 +4851,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 6,
-                        "y": 54
+                        "y": 57
                     },
                     "hiddenSeries": false,
                     "id": 127,
@@ -5142,7 +4991,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 12,
-                        "y": 54
+                        "y": 57
                     },
                     "hiddenSeries": false,
                     "id": 135,
@@ -5285,7 +5134,7 @@
                         "h": 7,
                         "w": 6,
                         "x": 18,
-                        "y": 54
+                        "y": 57
                     },
                     "hiddenSeries": false,
                     "id": 124,
@@ -5426,7 +5275,7 @@
                         "h": 7,
                         "w": 9,
                         "x": 0,
-                        "y": 61
+                        "y": 64
                     },
                     "hiddenSeries": false,
                     "id": 190,
@@ -5567,7 +5416,7 @@
                         "h": 7,
                         "w": 8,
                         "x": 9,
-                        "y": 61
+                        "y": 64
                     },
                     "hiddenSeries": false,
                     "id": 133,
@@ -5710,7 +5559,7 @@
                         "h": 7,
                         "w": 7,
                         "x": 17,
-                        "y": 61
+                        "y": 64
                     },
                     "hiddenSeries": false,
                     "id": 189,
@@ -5879,7 +5728,7 @@
                         "h": 9,
                         "w": 12,
                         "x": 0,
-                        "y": 27
+                        "y": 30
                     },
                     "id": 85,
                     "links": [],
@@ -5907,7 +5756,7 @@
                             "measurement": "firehose.error.event",
                             "orderByTime": "ASC",
                             "policy": "default",
-                            "query": "select sum(\"value\") from \"firehose.error.event\"  WHERE $timeFilter  AND  \"app\" =~ /^$firehose$/  AND \"type\"='FATAL_ERROR'  group by \"class\"",
+                            "query": "select sum(\"value\") from \"firehose.error.event\"  WHERE $timeFilter AND  \"app\" =~ /^$firehose$/  AND \"type\"='FATAL_ERROR'  group by \"class\"",
                             "rawQuery": true,
                             "refId": "A",
                             "resultFormat": "table",
@@ -5939,10 +5788,7 @@
                                     "Time": true
                                 },
                                 "indexByName": {},
-                                "renameByName": {
-                                    "class": "Exception Type",
-                                    "sum": "Count"
-                                }
+                                "renameByName": {}
                             }
                         }
                     ],
@@ -5977,7 +5823,7 @@
                         "h": 9,
                         "w": 12,
                         "x": 12,
-                        "y": 27
+                        "y": 30
                     },
                     "id": 86,
                     "links": [],
@@ -6005,7 +5851,7 @@
                             "measurement": "firehose.error.event",
                             "orderByTime": "ASC",
                             "policy": "default",
-                            "query": "select sum(\"value\") from \"firehose.error.event\"  WHERE $timeFilter AND  \"app\" =~ /^$firehose$/  AND  \"type\"='NON_FATAL_ERROR'  group by \"class\"",
+                            "query": "select sum(\"value\") from \"firehose.error.event\"  WHERE $timeFilter  AND  \"app\" =~ /^$firehose$/ AND  \"type\"='NON_FATAL_ERROR'  group by \"class\"",
                             "rawQuery": true,
                             "refId": "A",
                             "resultFormat": "table",
@@ -6041,10 +5887,7 @@
                                     "Time": true
                                 },
                                 "indexByName": {},
-                                "renameByName": {
-                                    "class": "Exception Type",
-                                    "sum": "Count"
-                                }
+                                "renameByName": {}
                             }
                         }
                     ],
@@ -9258,7 +9101,7 @@
                         "h": 8,
                         "w": 24,
                         "x": 0,
-                        "y": 31
+                        "y": 43
                     },
                     "id": 225,
                     "links": [],
@@ -9364,7 +9207,7 @@
                         "h": 11,
                         "w": 8,
                         "x": 0,
-                        "y": 39
+                        "y": 51
                     },
                     "hiddenSeries": false,
                     "id": 30,
@@ -9511,7 +9354,7 @@
                         "h": 11,
                         "w": 9,
                         "x": 8,
-                        "y": 39
+                        "y": 51
                     },
                     "hiddenSeries": false,
                     "id": 226,
@@ -9658,7 +9501,7 @@
                         "h": 11,
                         "w": 7,
                         "x": 17,
-                        "y": 39
+                        "y": 51
                     },
                     "hiddenSeries": false,
                     "id": 198,
@@ -9824,7 +9667,7 @@
                         "h": 7,
                         "w": 4,
                         "x": 0,
-                        "y": 35
+                        "y": 47
                     },
                     "id": 207,
                     "interval": null,
@@ -9862,51 +9705,6 @@
                     },
                     "tableColumn": "",
                     "targets": [
-                        {
-                            "groupBy": [
-                                {
-                                    "params": [
-                                        "$__interval"
-                                    ],
-                                    "type": "time"
-                                },
-                                {
-                                    "params": [
-                                        "null"
-                                    ],
-                                    "type": "fill"
-                                }
-                            ],
-                            "hide": true,
-                            "measurement": "firehose.latency",
-                            "orderByTime": "ASC",
-                            "policy": "default",
-                            "query": "SELECT last(\"filter\") as filter from (SELECT \"filter\", \"value\" from \"firehose.messages.count\"  where $timeFilter AND app=~/$firehose/ )",
-                            "rawQuery": false,
-                            "refId": "A",
-                            "resultFormat": "table",
-                            "select": [
-                                [
-                                    {
-                                        "params": [
-                                            "value"
-                                        ],
-                                        "type": "field"
-                                    },
-                                    {
-                                        "params": [],
-                                        "type": "mean"
-                                    }
-                                ]
-                            ],
-                            "tags": [
-                                {
-                                    "key": "app",
-                                    "operator": "=~",
-                                    "value": "/^$firehose$/"
-                                }
-                            ]
-                        },
                         {
                             "groupBy": [
                                 {
@@ -9985,7 +9783,7 @@
                         "h": 7,
                         "w": 20,
                         "x": 4,
-                        "y": 35
+                        "y": 47
                     },
                     "hiddenSeries": false,
                     "id": 71,
@@ -10124,7 +9922,7 @@
         "list": [
             {
                 "current": {
-                    "selected": false,
+                    "selected": true,
                     "text": "test-datasource",
                     "value": "test-datasource"
                 },
@@ -10144,7 +9942,7 @@
             {
                 "allValue": null,
                 "current": {
-                    "selected": false,
+                    "selected": true,
                     "text": "test-firehose",
                     "value": "test-firehose"
                 },
@@ -10170,7 +9968,7 @@
         ]
     },
     "time": {
-        "from": "now-1h",
+        "from": "now-7d",
         "to": "now"
     },
     "timepicker": {
@@ -10200,5 +9998,5 @@
     "timezone": "browser",
     "title": "Firehose Grafana",
     "uid": "52qWdIwMk",
-    "version": 18
+    "version": 20
 }
