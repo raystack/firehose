@@ -7,6 +7,9 @@ import org.json.simple.JSONObject;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Jdbc map field.
+ */
 public class JdbcMapField implements JdbcField {
     private Object columnValue;
     private Descriptors.FieldDescriptor fieldDescriptor;

@@ -22,6 +22,14 @@ import java.util.Map;
  */
 public class JdbcSinkFactory implements SinkFactory {
 
+    /**
+     * Create JDBC sink.
+     *
+     * @param configuration  the configuration
+     * @param statsDReporter the stats d reporter
+     * @param client         the client
+     * @return the abstract sink
+     */
     public AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient client) {
         JdbcSinkConfig jdbcSinkConfig = ConfigFactory.create(JdbcSinkConfig.class, configuration);
 

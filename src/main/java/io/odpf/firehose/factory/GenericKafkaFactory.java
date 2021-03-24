@@ -50,6 +50,12 @@ public class GenericKafkaFactory {
             new Instrumentation(statsDReporter, GenericConsumer.class));
     }
 
+    /**
+     * Gets kafka producer.
+     *
+     * @param config the config
+     * @return the kafka producer
+     */
     public KafkaProducer<byte[], byte[]> getKafkaProducer(DlqConfig config) {
         Properties props = new Properties();
         props.put("bootstrap.servers", config.getDlqKafkaBrokers());

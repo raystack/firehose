@@ -10,6 +10,9 @@ import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_MESSAGES_COMMIT_TOTA
 import static io.odpf.firehose.metrics.Metrics.FAILURE_TAG;
 import static io.odpf.firehose.metrics.Metrics.SUCCESS_TAG;
 
+/**
+ * Commits offsets for consumer records.
+ */
 @AllArgsConstructor
 public class TopicOffsets implements Offsets {
 

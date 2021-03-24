@@ -39,6 +39,9 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 
 import java.util.Map;
 
+/**
+ * Factory for Firehose consumer.
+ */
 public class FirehoseConsumerFactory {
 
     private Map<String, String> config = System.getenv();
@@ -49,6 +52,12 @@ public class FirehoseConsumerFactory {
     private Instrumentation instrumentation;
     private KeyOrMessageParser parser;
 
+    /**
+     * Instantiates a new Firehose consumer factory.
+     *
+     * @param kafkaConsumerConfig the kafka consumer config
+     * @param statsDReporter      the stats d reporter
+     */
     public FirehoseConsumerFactory(KafkaConsumerConfig kafkaConsumerConfig, StatsDReporter statsDReporter) {
         this.kafkaConsumerConfig = kafkaConsumerConfig;
         this.statsDReporter = statsDReporter;
@@ -73,7 +82,7 @@ public class FirehoseConsumerFactory {
     /**
      * Helps to create consumer based on the config.
      *
-     * @return FirehoseConsumer
+     * @return FirehoseConsumer firehose consumer
      */
     public FirehoseConsumer buildConsumer() {
 

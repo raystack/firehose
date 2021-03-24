@@ -14,7 +14,7 @@ public interface Filter {
      *
      * @param messages the protobuf records in binary format that are wrapped in {@link Message}
      * @return filtered messages.
-     * @throws FilterException
+     * @throws FilterException the filter exception
      */
     List<Message> filter(List<Message> messages) throws FilterException;
 }

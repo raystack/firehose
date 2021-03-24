@@ -22,6 +22,14 @@ import java.util.Map;
  */
 public class RedisSinkFactory implements SinkFactory {
 
+    /**
+     * Creates Redis sink.
+     *
+     * @param configuration  the configuration
+     * @param statsDReporter the stats d reporter
+     * @param stencilClient  the stencil client
+     * @return the abstract sink
+     */
     public AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         RedisSinkConfig redisSinkConfig = ConfigFactory.create(RedisSinkConfig.class, configuration);
         Instrumentation instrumentation = new Instrumentation(statsDReporter, RedisSinkFactory.class);

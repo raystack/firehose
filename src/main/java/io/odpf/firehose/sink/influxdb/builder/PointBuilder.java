@@ -15,6 +15,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Point builder for influx metrics.
+ */
 public class PointBuilder {
     public static final String FIELD_NAME_MAPPING_ERROR_MESSAGE = "field index mapping cannot be empty; at least one field value is required";
     private static final long SECONDS_SCALED_TO_MILLI = 1000L;
@@ -26,6 +29,11 @@ public class PointBuilder {
     private String measurementName;
     private Integer timeStampIndex;
 
+    /**
+     * Instantiates a new Point builder.
+     *
+     * @param config the config
+     */
     public PointBuilder(InfluxSinkConfig config) {
         tagNameProtoIndexMapping = config.getSinkInfluxTagNameProtoIndexMapping();
         fieldNameProtoIndexMapping = config.getSinkInfluxFieldNameProtoIndexMapping();

@@ -26,6 +26,15 @@ public class JdbcSink extends AbstractSink {
     private Statement statement;
     private Connection connection = null;
 
+    /**
+     * Instantiates a new Jdbc sink.
+     *
+     * @param instrumentation the instrumentation
+     * @param sinkType        the sink type
+     * @param pool            the pool
+     * @param queryTemplate   the query template
+     * @param stencilClient   the stencil client
+     */
     public JdbcSink(Instrumentation instrumentation, String sinkType, JdbcConnectionPool pool, QueryTemplate queryTemplate, StencilClient stencilClient) {
         super(instrumentation, sinkType);
         this.pool = pool;

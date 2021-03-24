@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * This Sink pushes failed messages to kafka after retries are exhausted.
+ */
 public class SinkWithDlq extends SinkDecorator {
 
     private Producer<byte[], byte[]> kafkaProducer;
@@ -35,6 +38,14 @@ public class SinkWithDlq extends SinkDecorator {
         return new SinkWithDlq(sink, kafkaProducer, topic, new Instrumentation(statsDReporter, SinkWithDlq.class), backOffProvider);
     }
 
+    /**
+     * Pushes all the failed messages to kafka as DLQ.
+     *
+     * @param message list of messages to push
+     * @return list of failed messaged
+     * @throws IOException
+     * @throws DeserializerException
+     */
     @Override
     public List<Message> pushMessage(List<Message> message) throws IOException, DeserializerException {
         List<Message> retryQueueMessages = super.pushMessage(message);

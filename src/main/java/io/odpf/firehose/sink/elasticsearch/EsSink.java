@@ -17,6 +17,9 @@ import java.util.List;
 
 import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_DROP_TOTAL;
 
+/**
+ * Elastic search sink.
+ */
 public class EsSink extends AbstractSink {
     private RestHighLevelClient client;
     private EsRequestHandler esRequestHandler;
@@ -25,6 +28,17 @@ public class EsSink extends AbstractSink {
     private Integer esWaitForActiveShardsCount;
     private List<String> esRetryStatusCodeBlacklist;
 
+    /**
+     * Instantiates a new Es sink.
+     *
+     * @param instrumentation            the instrumentation
+     * @param sinkType                   the sink type
+     * @param client                     the client
+     * @param esRequestHandler           the es request handler
+     * @param esRequestTimeoutInMs       the es request timeout in ms
+     * @param esWaitForActiveShardsCount the es wait for active shards count
+     * @param esRetryStatusCodeBlacklist the es retry status code blacklist
+     */
     public EsSink(Instrumentation instrumentation, String sinkType, RestHighLevelClient client, EsRequestHandler esRequestHandler,
                   long esRequestTimeoutInMs, Integer esWaitForActiveShardsCount, List<String> esRetryStatusCodeBlacklist) {
         super(instrumentation, sinkType);

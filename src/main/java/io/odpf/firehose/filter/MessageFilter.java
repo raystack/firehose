@@ -31,6 +31,12 @@ public class MessageFilter implements Filter {
     private String protoSchema;
     private Instrumentation instrumentation;
 
+    /**
+     * Instantiates a new Message filter.
+     *
+     * @param consumerConfig  the consumer config
+     * @param instrumentation the instrumentation
+     */
     public MessageFilter(KafkaConsumerConfig consumerConfig, Instrumentation instrumentation) {
         this.engine = new JexlEngine();
         this.engine.setSilent(false);
@@ -53,9 +59,10 @@ public class MessageFilter implements Filter {
 
     /**
      * method to filter the EsbMessages.
+     *
      * @param messages the protobuf records in binary format that are wrapped in {@link Message}
      * @return {@link Message}
-     * @throws FilterException
+     * @throws FilterException the filter exception
      */
     @Override
     public List<Message> filter(List<Message> messages) throws FilterException {
