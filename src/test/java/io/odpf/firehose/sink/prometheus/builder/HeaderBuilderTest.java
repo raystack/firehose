@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import static io.odpf.firehose.sink.prometheus.PromSinkConstants.*;
 import static org.junit.Assert.assertEquals;
 
 public class HeaderBuilderTest {
@@ -35,8 +36,8 @@ public class HeaderBuilderTest {
             {
                 put("foo", "bar");
                 put("accept", "text/plain");
-                put("X-Prometheus-Remote-Write-Version", "0.1.0");
-                put("Content-Encoding", "snappy");
+                put(PROMETHEUS_REMOTE_WRITE_VERSION, PROMETHEUS_REMOTE_WRITE_VERSION_DEFAULT);
+                put(CONTENT_ENCODING, CONTENT_ENCODING_DEFAULT);
             }
         };
         assertEquals(expected, headerBuilder.build());
@@ -47,7 +48,9 @@ public class HeaderBuilderTest {
         String headerConfig = "";
         HeaderBuilder headerBuilder = new HeaderBuilder(headerConfig);
 
-        headerBuilder.build();
+        Map<String, String> header = headerBuilder.build();
+        assertEquals(PROMETHEUS_REMOTE_WRITE_VERSION_DEFAULT, header.get(PROMETHEUS_REMOTE_WRITE_VERSION));
+        assertEquals(CONTENT_ENCODING_DEFAULT, header.get(CONTENT_ENCODING));
     }
 
     @Test

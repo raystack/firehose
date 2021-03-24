@@ -10,12 +10,19 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
 import cortexpb.Cortex;
 import org.aeonbits.owner.ConfigFactory;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.List;
 import java.util.Properties;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class TimeSeriesBuilderTest {
+
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
 
     @Test
     public void testMessageWithSingleMetric() throws InvalidProtocolBufferException {
@@ -42,7 +49,7 @@ public class TimeSeriesBuilderTest {
 
         String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"support_ticket_created\"\n  value: \"true\"\n}\nlabels {\n  name: \"customer_id\"\n  value: \"CUSTOMER\"\n}\nsamples {\n  value: 10000.0\n  timestamp_ms: 1000000000\n}\n]";
 
-        assert timeSeries.toString().equals(expectedResult);
+        assertEquals(timeSeries.toString(), expectedResult);
     }
 
     @Test
@@ -69,7 +76,7 @@ public class TimeSeriesBuilderTest {
 
         String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"feedback_ratings\"\n}\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 5.0\n  timestamp_ms: 1000000000\n}\n, labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 10000.0\n  timestamp_ms: 1000000000\n}\n]";
 
-        assert timeSeries.toString().equals(expectedResult);
+        assertEquals(timeSeries.toString(), expectedResult);
     }
 
     @Test
@@ -95,7 +102,7 @@ public class TimeSeriesBuilderTest {
 
         String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"event_timestamp\"\n  value: \"1000000000\"\n}\nsamples {\n  value: 10000.0\n  timestamp_ms: 1000000000\n}\n]";
 
-        assert timeSeries.toString().equals(expectedResult);
+        assertEquals(timeSeries.toString(), expectedResult);
 
     }
 
@@ -120,7 +127,7 @@ public class TimeSeriesBuilderTest {
 
         String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"order_number\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 100.0\n  timestamp_ms: 1000000\n}\n]";
 
-        assert timeSeries.toString().equals(expectedResult);
+        assertEquals(timeSeries.toString(), expectedResult);
     }
 
     @Test
@@ -146,7 +153,7 @@ public class TimeSeriesBuilderTest {
 
         String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"feedback_source\"\n  value: \"DRIVER\"\n}\nsamples {\n  value: 10000.0\n  timestamp_ms: 1000000000\n}\n]";
 
-        assert timeSeries.toString().equals(expectedResult);
+        assertEquals(timeSeries.toString(), expectedResult);
     }
 
     @Test
@@ -174,7 +181,7 @@ public class TimeSeriesBuilderTest {
 
         String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"order_completion_time_seconds\"\n}\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 12345.0\n  timestamp_ms: 1000000000\n}\n]";
 
-        assert timeSeries.toString().equals(expectedResult);
+        assertEquals(timeSeries.toString(), expectedResult);
     }
 
     @Test
@@ -201,7 +208,7 @@ public class TimeSeriesBuilderTest {
 
         String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"order_completion_time_seconds\"\n  value: \"12345\"\n}\nsamples {\n  value: 10000.0\n  timestamp_ms: 1000000000\n}\n]";
 
-        assert timeSeries.toString().equals(expectedResult);
+        assertEquals(timeSeries.toString(), expectedResult);
     }
 
     @Test
@@ -226,11 +233,15 @@ public class TimeSeriesBuilderTest {
                 .buildTimeSeries(dynamicMessage, 2);
 
         String eventTimestampResult = "[labels {\n  name: \"__name__\"\n  value: \"order_number\"\n}\n\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}labels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 100.0\n  timestamp_ms: 1000000\n}\n]";
-        assert !(timeSeries.toString().equals(eventTimestampResult));
+
+        assertNotEquals(timeSeries.toString(), eventTimestampResult);
     }
 
-    @Test(expected = EglcConfigurationException.class)
+    @Test
     public void testMessageWithEmptyMetricProtoMappingConfig() throws InvalidProtocolBufferException {
+        expectedEx.expect(EglcConfigurationException.class);
+        expectedEx.expectMessage("field index mapping cannot be empty; at least one field value is required");
+
         Properties promConfigProps = new Properties();
         promConfigProps.setProperty("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX", "2");
         promConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
@@ -248,6 +259,7 @@ public class TimeSeriesBuilderTest {
 
         TimeSeriesBuilder timeSeries = new TimeSeriesBuilder(prometheusSinkConfig);
         timeSeries.buildTimeSeries(dynamicMessage, 2);
+
     }
 
     @Test
@@ -270,11 +282,16 @@ public class TimeSeriesBuilderTest {
                 .buildTimeSeries(dynamicMessage, 2);
 
         String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 12345.0\n  timestamp_ms: 1000000\n}\n]";
-        assert timeSeries.toString().equals(expectedResult);
+
+        assertEquals(timeSeries.toString(), expectedResult);
+
     }
 
-    @Test(expected = EglcConfigurationException.class)
+    @Test
     public void testMessageWithEmptyFieldIndex() throws InvalidProtocolBufferException {
+        expectedEx.expect(EglcConfigurationException.class);
+        expectedEx.expectMessage("field index mapping cannot be empty; at least one field value is required");
+
         Properties promConfigProps = new Properties();
         promConfigProps.setProperty("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX", "2");
         promConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());

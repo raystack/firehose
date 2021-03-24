@@ -59,6 +59,10 @@ Limitations:
 * Data read from Kafka is written to a GRPC endpoint and it requires the following [variables](../reference/configuration.md#-grpc-sink) to be set.
 * You need to create your own GRPC endpoint so that the Firehose can send data to it. The response proto should have a field “success” with value as true or false.
 
+## Create a Prometheus Sink
+* Data read from Kafka is written to an HTTP/Cortex endpoint and it requires the following [variables](../reference/configuration.md#-prometheus-sink) to be set. 
+* You need to create your own Cortex endpoint so that the Firehose can send data to it.
+
 ## Define Standard Configurations
 
 * These are the configurations that remain common across all the Sink Types.

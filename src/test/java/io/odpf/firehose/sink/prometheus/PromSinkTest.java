@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static io.odpf.firehose.sink.prometheus.PromSinkConstants.DEFAULT_LABEL_NAME;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
@@ -52,8 +53,6 @@ public class PromSinkTest {
     @Mock
     private HttpEntity httpEntity;
     @Mock
-    private HttpEntity httpEntityResponse;
-    @Mock
     private StatusLine statusLine;
     @Mock
     private Map<Integer, Boolean> retryStatusCodeRange;
@@ -68,7 +67,7 @@ public class PromSinkTest {
         initMocks(this);
 
         Cortex.Sample sample = Cortex.Sample.newBuilder().setValue(10).setTimestampMs(1000000).build();
-        Cortex.LabelPair labelPair = Cortex.LabelPair.newBuilder().setName("__name__").setValue("test_metric").build();
+        Cortex.LabelPair labelPair = Cortex.LabelPair.newBuilder().setName(DEFAULT_LABEL_NAME).setValue("test_metric").build();
         Cortex.TimeSeries timeSeries = Cortex.TimeSeries.newBuilder()
                 .addSamples(sample).addLabels(labelPair)
                 .build();
@@ -87,9 +86,6 @@ public class PromSinkTest {
         when(statusLine.getStatusCode()).thenReturn(200);
         when(request.build(messages)).thenReturn(httpPost);
         when(httpClient.execute(httpPost)).thenReturn(response);
-        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
-        when(response.getEntity()).thenReturn(httpEntity);
-        when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         promSink.prepare(messages);
@@ -106,9 +102,6 @@ public class PromSinkTest {
         when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
         when(request.build(messages)).thenReturn(httpPost);
         when(httpClient.execute(httpPost)).thenReturn(response);
-        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
-        when(response.getEntity()).thenReturn(httpEntity);
-        when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-505"), requestLogStatusCodeRanges);
@@ -124,7 +117,6 @@ public class PromSinkTest {
         when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
         when(request.build(messages)).thenReturn(httpPost);
         when(httpClient.execute(httpPost)).thenReturn(null);
-
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         promSink.prepare(messages);
@@ -179,9 +171,6 @@ public class PromSinkTest {
         when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
         when(request.build(messages)).thenReturn(httpPost);
         when(httpClient.execute(httpPost)).thenReturn(response);
-        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
-        when(response.getEntity()).thenReturn(httpEntityResponse);
-        when(httpEntityResponse.getContent()).thenReturn(new ByteArrayInputStream(new byte[]{}));
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-505"));
@@ -207,8 +196,6 @@ public class PromSinkTest {
         when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
         when(request.build(messages)).thenReturn(httpPost);
         when(httpClient.execute(httpPost)).thenReturn(response);
-        when(response.getEntity()).thenReturn(httpEntityResponse);
-        when(httpEntityResponse.getContent()).thenReturn(new ByteArrayInputStream(new byte[]{}));
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-499"));
@@ -230,8 +217,6 @@ public class PromSinkTest {
         when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
         when(request.build(messages)).thenReturn(httpPost);
         when(httpClient.execute(httpPost)).thenReturn(response);
-        when(response.getEntity()).thenReturn(httpEntityResponse);
-        when(httpEntityResponse.getContent()).thenReturn(new ByteArrayInputStream(new byte[]{}));
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-499"), requestLogStatusCodeRanges);
@@ -248,9 +233,6 @@ public class PromSinkTest {
         when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
         when(request.build(messages)).thenReturn(httpPost);
         when(httpClient.execute(httpPost)).thenReturn(response);
-        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
-        when(response.getEntity()).thenReturn(httpEntity);
-        when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-600"), requestLogStatusCodeRanges);
@@ -266,9 +248,6 @@ public class PromSinkTest {
         when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
         when(request.build(messages)).thenReturn(httpPost);
         when(httpClient.execute(httpPost)).thenReturn(response);
-        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
-        when(response.getEntity()).thenReturn(httpEntity);
-        when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
@@ -285,9 +264,6 @@ public class PromSinkTest {
         when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
         when(request.build(messages)).thenReturn(httpPost);
         when(httpClient.execute(httpPost)).thenReturn(response);
-        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
-        when(response.getEntity()).thenReturn(httpEntity);
-        when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
@@ -305,9 +281,6 @@ public class PromSinkTest {
         when(httpPost.getURI()).thenReturn(uri);
         when(request.build(messages)).thenReturn(httpPost);
         when(httpClient.execute(httpPost)).thenReturn(response);
-        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
-        when(response.getEntity()).thenReturn(httpEntity);
-        when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
@@ -315,29 +288,5 @@ public class PromSinkTest {
         promSink.execute();
 
         verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_http_response_code_total", 1, "status_code=" + statusLine.getStatusCode(), "url=" + uri.getPath());
-    }
-
-    @Test
-    public void shouldLogResponseAfterExecution() throws Exception {
-        String body = "[timeseries {\n  labels {\n    name: \"__name__\"\n    value: \"test_metric\"\n  }\n  samples {\n    value: 10.0\n    timestamp_ms: 1000000\n  }\n}\n]";
-
-        when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
-        when(response.getStatusLine()).thenReturn(statusLine, statusLine);
-        when(statusLine.getStatusCode()).thenReturn(200);
-        when(request.build(messages)).thenReturn(httpPost);
-        when(httpClient.execute(httpPost)).thenReturn(response);
-        when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
-        when(response.getEntity()).thenReturn(httpEntity);
-        when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
-
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
-        promSink.prepare(messages);
-        promSink.execute();
-
-        verify(instrumentation, times(1)).logInfo("Response Status: {}", "200");
-        verify(instrumentation, times(1)).logDebug(
-                "\nResponse Code: 200"
-                        + "\nResponse Headers: [Accept: text/plain]"
-                        + "\nResponse Body: " + body);
     }
 }

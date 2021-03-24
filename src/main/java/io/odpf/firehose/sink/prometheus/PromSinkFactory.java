@@ -2,20 +2,19 @@ package io.odpf.firehose.sink.prometheus;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
-import io.odpf.firehose.sink.prometheus.request.PromRequest;
-import io.odpf.firehose.sink.prometheus.request.PromRequestCreator;
 import io.odpf.firehose.config.PrometheusSinkConfig;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.SinkFactory;
-import io.odpf.firehose.sink.http.request.uri.UriParser;
+import io.odpf.firehose.sink.prometheus.request.PromRequest;
+import io.odpf.firehose.sink.prometheus.request.PromRequestCreator;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 
 import java.util.Map;
 
@@ -33,9 +32,7 @@ public class PromSinkFactory implements SinkFactory {
 
         ProtoParser protoParser = new ProtoParser(stencilClient, promSchemaProtoClass);
 
-        UriParser uriParser = new UriParser(protoParser, promSinkConfig.getKafkaRecordParserMode());
-
-        PromRequest request = new PromRequestCreator(statsDReporter, promSinkConfig, protoParser, uriParser).createRequest();
+        PromRequest request = new PromRequestCreator(statsDReporter, promSinkConfig, protoParser).createRequest();
 
         return new PromSink(new Instrumentation(statsDReporter, PromSink.class),
                 request,
@@ -47,13 +44,10 @@ public class PromSinkFactory implements SinkFactory {
     }
 
     private CloseableHttpClient newHttpClient(PrometheusSinkConfig prometheusSinkConfig) {
-        Integer maxHttpConnections = prometheusSinkConfig.getSinkPromMaxConnections();
         RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(prometheusSinkConfig.getSinkPromRequestTimeoutMs())
                 .setConnectionRequestTimeout(prometheusSinkConfig.getSinkPromRequestTimeoutMs())
                 .setConnectTimeout(prometheusSinkConfig.getSinkPromRequestTimeoutMs()).build();
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        connectionManager.setMaxTotal(maxHttpConnections);
-        connectionManager.setDefaultMaxPerRoute(maxHttpConnections);
+        BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
         HttpClientBuilder builder = HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig);
 
         return builder.build();

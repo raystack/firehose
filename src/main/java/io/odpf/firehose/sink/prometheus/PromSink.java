@@ -12,7 +12,6 @@ import io.odpf.firehose.exception.NeedToRetry;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -30,10 +29,9 @@ import java.util.regex.Pattern;
 
 import static io.odpf.firehose.metrics.Metrics.SINK_HTTP_RESPONSE_CODE_TOTAL;
 import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_DROP_TOTAL;
+import static io.odpf.firehose.sink.prometheus.PromSinkConstants.SUCCESS_CODE_PATTERN;
 
 public class PromSink extends AbstractSink {
-
-    private static final String SUCCESS_CODE_PATTERN = "^2.*";
 
     private PromRequest request;
     private HttpEntityEnclosingRequestBase httpRequests;
@@ -93,14 +91,8 @@ public class PromSink extends AbstractSink {
         stencilClient.close();
     }
 
-    private void consumeResponse(HttpResponse response) throws IOException {
+    private void consumeResponse(HttpResponse response) {
         if (response != null) {
-            InputStream inputStream = getResponseContent(response);
-            String entireResponse = String.format("\nResponse Code: %s\nResponse Headers: %s\nResponse Body: %s",
-                    response.getStatusLine().getStatusCode(),
-                    Arrays.toString(response.getAllHeaders()),
-                    readContent(inputStream));
-            getInstrumentation().logDebug(entireResponse);
             EntityUtils.consumeQuietly(response.getEntity());
         }
     }
@@ -145,10 +137,6 @@ public class PromSink extends AbstractSink {
         return httpRequest.getEntity().getContent();
     }
 
-    private InputStream getResponseContent(HttpResponse response) throws IOException {
-        return response.getEntity().getContent();
-    }
-
     private void captureMessageDropCount(HttpResponse response, HttpEntityEnclosingRequestBase httpRequest) throws IOException {
         InputStream inputStream = getRequestContent(httpRequest);
         List<String> result = readContent(inputStream);
@@ -159,13 +147,8 @@ public class PromSink extends AbstractSink {
 
     private List<String> readContent(InputStream inputStream) throws IOException {
         byte[] byteArrayIs = IOUtils.toByteArray(inputStream);
-        if (ArrayUtils.isEmpty(byteArrayIs)) {
-            return new ArrayList<>();
-        } else {
-            byte[] uncompressedSnappy = Snappy.uncompress(byteArrayIs);
-            String requestBody = DynamicMessage.parseFrom(Cortex.WriteRequest.getDescriptor(), uncompressedSnappy).toString();
-            return Arrays.asList(requestBody.split("\n(?=timeseries)"));
-        }
-
+        byte[] uncompressedSnappy = Snappy.uncompress(byteArrayIs);
+        String requestBody = DynamicMessage.parseFrom(Cortex.WriteRequest.getDescriptor(), uncompressedSnappy).toString();
+        return Arrays.asList(requestBody.split("\\s(?=timeseries)"));
     }
 }

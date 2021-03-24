@@ -23,10 +23,6 @@ public interface PrometheusSinkConfig extends AppConfig {
     @DefaultValue("10000")
     Integer getSinkPromRequestTimeoutMs();
 
-    @Key("SINK_PROM_MAX_CONNECTIONS")
-    @DefaultValue("10")
-    Integer getSinkPromMaxConnections();
-
     @Key("SINK_PROM_SERVICE_URL")
     String getSinkPromServiceUrl();
 

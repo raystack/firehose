@@ -17,11 +17,9 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class TimeSeriesBuilder {
+import static io.odpf.firehose.sink.prometheus.PromSinkConstants.*;
 
-    private static final String FIELD_NAME_MAPPING_ERROR_MESSAGE = "field index mapping cannot be empty; at least one field value is required";
-    private static final long SECONDS_SCALED_TO_MILLI = 1000L;
-    private static final long MILLIS_SCALED_TO_NANOS = 1000000L;
+public class TimeSeriesBuilder {
 
     private Cortex.TimeSeries.Builder timeSeriesBuilder = Cortex.TimeSeries.newBuilder();
     private Cortex.LabelPair.Builder labelBuilder = Cortex.LabelPair.newBuilder();
@@ -45,11 +43,11 @@ public class TimeSeriesBuilder {
         List<Cortex.TimeSeries> timeSeriesList = new ArrayList<>();
         Long metricTimestamp = getMetricTimestamp(message);
         for (Map<String, Object> metricName : metricList) {
-            buildMetric((String) metricName.get("metric_name"));
+            buildMetric((String) metricName.get(METRIC_NAME));
             for (Map.Entry<String, Object> entry : labelPair.entrySet()) {
                 buildLabels(entry.getKey(), entry.getValue());
             }
-            buildSample(metricTimestamp, Double.parseDouble(metricName.get("metric_value").toString()));
+            buildSample(metricTimestamp, Double.parseDouble(metricName.get(METRIC_VALUE).toString()));
             timeSeriesList.add(timeSeriesBuilder.build());
             timeSeriesBuilder.clear();
         }
@@ -57,7 +55,7 @@ public class TimeSeriesBuilder {
     }
 
     private void buildMetric(String metricName) {
-        Cortex.LabelPair metric = labelBuilder.setName("__name__").setValue(metricName).build();
+        Cortex.LabelPair metric = labelBuilder.setName(DEFAULT_LABEL_NAME).setValue(metricName).build();
         timeSeriesBuilder.addLabels(metric);
         labelBuilder.clear();
     }
@@ -89,8 +87,8 @@ public class TimeSeriesBuilder {
             Object tagValue = getField(message, fieldIndex);
             Object tag = protoIndexMapping.get(protoFieldIndex);
             if (tag instanceof String) {
-                labelPair.put("metric_name", tag);
-                labelPair.put("metric_value", tagValue);
+                labelPair.put(METRIC_NAME, tag);
+                labelPair.put(METRIC_VALUE, tagValue);
             } else if (tag instanceof Properties) {
                 return getMetricMessage((Message) tagValue, (Properties) tag);
             }
@@ -102,7 +100,7 @@ public class TimeSeriesBuilder {
     private Map<String, Object> getLabelMessage(Message message, Properties protoIndexMapping, int partition) throws InvalidProtocolBufferException {
         Map<String, Object> labelPair = new HashMap<>();
         if (protoIndexMapping == null) {
-            labelPair.put("kafka_partition", partition);
+            labelPair.put(KAFKA_PARTITION, partition);
         } else {
             for (Object protoFieldIndex : protoIndexMapping.keySet()) {
                 int fieldIndex = Integer.parseInt((String) protoFieldIndex);
@@ -122,7 +120,7 @@ public class TimeSeriesBuilder {
                     return getLabelMessage((Message) tagValue, (Properties) tag, partition);
                 }
             }
-            labelPair.put("kafka_partition", partition);
+            labelPair.put(KAFKA_PARTITION, partition);
         }
         return labelPair;
     }

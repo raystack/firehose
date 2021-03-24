@@ -1,27 +1,26 @@
 package io.odpf.firehose.sink.prometheus.builder;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static io.odpf.firehose.sink.prometheus.PromSinkConstants.*;
+
 public class HeaderBuilder {
 
-    private String headerConfig;
+    private final Map<String, String> baseHeaders;
 
     public HeaderBuilder(String headerConfig) {
-        this.headerConfig = headerConfig;
-    }
-
-    private Map<String, String> buildConfigHeader() {
-        return Arrays.stream(headerConfig.split(","))
-                .filter(headerKeyValue -> !headerKeyValue.trim().isEmpty()).collect(Collectors
-                        .toMap(headerKeyValue -> headerKeyValue.split(":")[0], headerKeyValue -> headerKeyValue.split(":")[1]));
+        baseHeaders = Arrays.stream(headerConfig.split(","))
+                        .filter(kv -> !kv.trim().isEmpty()).map(kv -> kv.split(":"))
+                        .collect(Collectors.toMap(kv -> kv[0], kv -> kv[1]));
     }
 
     public Map<String, String> build() {
-        Map<String, String> baseHeaders = buildConfigHeader();
-        baseHeaders.put("Content-Encoding", "snappy");
-        baseHeaders.put("X-Prometheus-Remote-Write-Version", "0.1.0");
-        return baseHeaders;
+        Map<String, String> headers = new HashMap<>(baseHeaders);
+        headers.put(CONTENT_ENCODING, CONTENT_ENCODING_DEFAULT);
+        headers.put(PROMETHEUS_REMOTE_WRITE_VERSION, PROMETHEUS_REMOTE_WRITE_VERSION_DEFAULT);
+        return headers;
     }
 }

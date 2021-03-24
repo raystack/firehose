@@ -1,13 +1,12 @@
 package io.odpf.firehose.sink.prometheus.request;
 
+import cortexpb.Cortex;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.sink.http.request.uri.UriBuilder;
 import io.odpf.firehose.sink.prometheus.builder.HeaderBuilder;
 import io.odpf.firehose.sink.prometheus.builder.RequestEntityBuilder;
 import io.odpf.firehose.sink.prometheus.builder.WriteRequestBuilder;
-import cortexpb.Cortex;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpPost;
 
@@ -20,23 +19,23 @@ import java.util.Map;
 public class PromRequest {
     private Instrumentation instrumentation;
     private WriteRequestBuilder writeRequestBuilder;
-    private UriBuilder uriBuilder;
+    private String url;
     private RequestEntityBuilder requestEntityBuilder;
     private HeaderBuilder headerBuilder;
 
 
-    public PromRequest(Instrumentation instrumentation, HeaderBuilder headerBuilder, UriBuilder uriBuilder,
+    public PromRequest(Instrumentation instrumentation, HeaderBuilder headerBuilder, String url,
                        RequestEntityBuilder requestEntityBuilder, WriteRequestBuilder writeRequestBuilder) {
         this.instrumentation = instrumentation;
         this.writeRequestBuilder = writeRequestBuilder;
         this.headerBuilder = headerBuilder;
-        this.uriBuilder = uriBuilder;
+        this.url = url;
         this.requestEntityBuilder = requestEntityBuilder;
     }
 
     public HttpEntityEnclosingRequestBase build(List<Message> messages) throws DeserializerException, URISyntaxException, IOException {
         Cortex.WriteRequest writeRequest = writeRequestBuilder.buildWriteRequest(messages);
-        URI uri = uriBuilder.build();
+        URI uri = new URI(url);
         HttpEntityEnclosingRequestBase request = new HttpPost(uri);
         Map<String, String> headerMap = headerBuilder.build();
         headerMap.forEach(request::addHeader);
