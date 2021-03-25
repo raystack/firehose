@@ -20,7 +20,7 @@ Following sinks are supported in firehose
 * [Redis](https://en.wikipedia.org/wiki/Redis)
 * [ElasticSearch](https://en.wikipedia.org/wiki/Elasticsearch)
 * [GRPC](https://en.wikipedia.org/wiki/GRPC)
-* [Prometheus](https://en.wikipedia.org/wiki/Prometheus_(software)) - `Coming soon`
+* [Prometheus](https://en.wikipedia.org/wiki/Prometheus_(software))
 
 ## How is Firehose different from Kafka-connect?
 * **Ease of use:** Firehose is easier to install and using different sink only requires chnaging few configurations. Kafka connect whhen used in distributed mode across multiple nodes, requires connectors to be installed across all the workers within your kafka connect cluster.

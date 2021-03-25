@@ -8,5 +8,6 @@ public enum SinkType {
     INFLUXDB,
     ELASTICSEARCH,
     REDIS,
-    GRPC;
+    GRPC,
+    PROMETHEUS;
 }
