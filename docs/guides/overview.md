@@ -1,12 +1,36 @@
 # Overview
 
-This page contains how to guides for creating Firehose with different sinks along with their features.
+This page contains how-to guides for creating Firehose with different sinks along with their features.
 
 ## Create a Log Sink
-* A log sink firehose requires the following [variables](../reference/configuration.md#-generic) to be set.
+
+Firehose provides log sink to make it easy consume messages in [standard output](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)). A log sink firehose requires the following [variables](../reference/configuration.md#-generic) to be set.
+An exmaple log sink configurations look like
+```
+SOURCE_KAFKA_BROKERS = localhost:9092
+SOURCE_KAFKA_TOPIC = test-topic
+KAFKA_RECOED_CONSUMER_GROUP_ID = sample-group-id
+KAFKA_RECORD_PARSER_MODE = message
+SINK_TYPE = log
+INPUT_SCHEMA_PROTO_CLASS = com.tests.TestMessage
+```
+
+Sample output of a firehose log sink looks something like
+```
+2021-03-29T08:43:05,998Z [pool-2-thread-1] INFO  i.o.firehose.Consumer- Execution successful for 1 records
+2021-03-29T08:43:06,246Z [pool-2-thread-1] INFO  i.o.firehose.Consumer - Pulled 1 messages
+2021-03-29T08:43:06,246Z [pool-2-thread-1] INFO  io.odpf.firehose.sink.log.LogSink - 
+================= DATA =======================
+sample_field: 81179979
+sample_field_2: 9897987987
+event_timestamp {
+  seconds: 1617007385
+  nanos: 964581040
+}
+```
 
 ## Create an HTTP Sink
-* Data read from Kafka is written to an HTTP endpoint and it requires the following [variables](../reference/configuration.md#-http-sink) to be set. You need to create your own HTTP endpoint so that the Firehose can send data to it.
+Firehose [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol) sink allows users to read data from Kafka and write to an HTTP endpoint. it requires the following [variables](../reference/configuration.md#-http-sink) to be set. You need to create your own HTTP endpoint so that the Firehose can send data to it.
 
 ***Templating Body In Firehose [`SINK_HTTP_JSON_BODY_TEMPLATE`](../reference/configuration.md#-sink_http_json_body_template)***
 
