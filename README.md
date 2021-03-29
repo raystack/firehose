@@ -9,28 +9,29 @@ Firehose is a cloud native service for delivering real-time streaming data to de
 ## Key Features
 Discover why users choose Firehose as their main Kafka Consumer
 
-* **Support for multiple sinks** Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB(JDBC), InfluxDB, Elasticsearch & Redis
-* **Self-serve** Configure, deploy, validate, scale, monitor, alert, debug, audit and so on.
-* **Elastic scaling** Cloud-native & leverages horizontal scaling and high-performance streaming to sink data in near real-time & zero data drops
-* **Metrics for performance monitoring** Exposes critical metrics through the consoles to monitor the health of your delivery streams, take any necessary actions
-* **Easy Deployment:** Firehose can be easily deployed on VMs or Kubernetes clusters.
+* **Sinks:** Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB(JDBC), InfluxDB, Elasticsearch & Redis.
+* **Scale:** Firehose scales in an instant, both vertically and horizontally  for high performance streaming sink and zero data drops.
+* **Extensibility:** Add your own sink to firehose with a clearly defined interface or choose from already provided ones.
+* **Runtime:** Firehose can run inside VMs or containers in a fully managed runtime environment like kubernetes.
+* **Metrics:** Always know what’s going on with your deployment with built-in [monitoring](./docs/assets/firehose-grafana-dashboard.json) of throughput, response times, errors and more.
 
 To know more, follow the detailed [documentation](docs) 
 
-## How can I get started?
+## Usage
 
 Explore the following resources to get started with Firehose:
 
-* [Guides](docs/guides) provides guidance on [creating Firehose](docs/guides/overview.md) with different sinks and [managing](docs/guides/manage.md) them effectively.
+* [Guides](docs/guides) provides guidance on [creating Firehose](docs/guides/overview.md) with different sinks.
 * [Concepts](docs/concepts) describes all important Firehose concepts.
 * [Reference](docs/reference) contains details about configurations, metrics and other aspects of Firehose.
 * [Contribute](docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Firehose.
 
 ## Run with Docker
-* Firehose Docker image is available on [ODPF docker hub](https://hub.docker.com/r/odpf/firehose/)
-* Command to run simple Log Sink
+Use the docker hub to download firehose [docker image](https://hub.docker.com/r/odpf/firehose/). You need to have docker installed in your system.
 ```
-docker run -e SOURCE_KAFKA_BROKERS=127.0.0.1:6667 -e SOURCE_KAFKA_CONSUMER_GROUP_ID=kafka-consumer-group-id -e SOURCE_KAFKA_TOPIC=sample-topic -e SINK_TYPE=log -e SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_OFFSET_RESET=latest -e INPUT_SCHEMA_PROTO_CLASS=com.github.firehose.sampleLogProto.SampleLogMessage odpf/firehose:latest
+$ docker pull odpf/firehose
+# Run the following docker command for a simple log sink.
+$ docker run -e SOURCE_KAFKA_BROKERS=127.0.0.1:6667 -e SOURCE_KAFKA_CONSUMER_GROUP_ID=kafka-consumer-group-id -e SOURCE_KAFKA_TOPIC=sample-topic -e SINK_TYPE=log -e SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_OFFSET_RESET=latest -e PROTO_SCHEMA=com.github.firehose.sampleLogProto.SampleLogMessage odpf/firehose:latest
 ```
 **Note:** Make sure your protos (.jar file) are located in `work-dir`, this is required for Filter functionality to work.
 
@@ -39,11 +40,14 @@ docker run -e SOURCE_KAFKA_BROKERS=127.0.0.1:6667 -e SOURCE_KAFKA_CONSUMER_GROUP
 * Deployment also includes telegraf container which pushes stats metrics
 
 ## Running locally
-* Clone the repo `git clone https://github.com/odpf/firehose.git`
-* Build the jar `./gradlew clean build`
-* Configure the environment variables in `env/local.properties`
-* Sample configuration for other sinks along with some advanced configurations can be found [here](/docs/reference/configuration.md)
-* Run the firehose `./gradlew runConsumer` 
+
+```sh
+$ git clone https://github.com/odpf/firehose.git  # Clone the repo
+$ ./gradlew clean build # Build the jar
+$ cat env/local.properties # Configure env variables
+$ ./gradlew runConsumer # Run the firehose
+```
+**Note:** Sample configuration for other sinks along with some advanced configurations can be found [here](/docs/reference/configuration.md)
 
 ## Running tests 
 ```sh
@@ -55,15 +59,15 @@ docker run -e SOURCE_KAFKA_BROKERS=127.0.0.1:6667 -e SOURCE_KAFKA_CONSUMER_GROUP
 
 #Cleaning the build
 ./gradlew clean
-
 ```
 
 ## Contribute
 
 Development of Firehose happens in the open on GitHub, and we are grateful to the community for contributing bugfixes and improvements. Read below to learn how you can take part in improving Firehose.
 
-- Read our [contributing guide](docs/contribute/contribution.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Jest.
-- To help you get your feet wet and get you familiar with our contribution process, we have a list of [good first issues](https://github.com/odpf/firehose/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started.
+Read our [contributing guide](docs/contribute/contribution.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Firehose.
+
+To help you get your feet wet and get you familiar with our contribution process, we have a list of [good first issues](https://github.com/odpf/firehose/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started.
 
 ## Credits
 

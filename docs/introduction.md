@@ -6,10 +6,11 @@ Firehose is a cloud native service for delivering real-time streaming data to de
 ## Key Features
 Discover why users choose Firehose as their main Kafka Consumer
 
-* **Support for multiple sinks**  Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB, InfluxDB, ElasticSearch, Redis & Clevertap
-* **Self-serve** Configure, deploy, validate, scale, monitor, alert, debug, audit and so on.
-* **Elastic scaling** Cloud-native & leverages horizontal scaling and high-performance streaming to sink data in near real-time & zero data drops
-* **Metrics for performance monitoring** Exposes critical metrics through the consoles to monitor the health of your delivery streams, take any necessary actions
+* **Sinks** Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB(JDBC), InfluxDB, Elasticsearch & Redis.
+* **Scale** Firehose scales in an instant, both vertically and horizontally  for high performance streaming sink and zero data drops.
+* **Extensibility** Add your own sink to firehose with a clearly defined interface or choose from already provided ones.
+* **Runtime** Firehose can run inside containers or VMs in a fully managed runtime environment like kubernetes.
+* **Metrics** Always know what’s going on with your deployment with built-in monitoring of throughput, response times, errors and more.
 
 ## Supported Sinks:
 Following sinks are supported in firehose
