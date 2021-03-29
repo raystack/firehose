@@ -259,7 +259,6 @@ public class TimeSeriesBuilderTest {
 
         TimeSeriesBuilder timeSeries = new TimeSeriesBuilder(promSinkConfig);
         timeSeries.buildTimeSeries(dynamicMessage, 2);
-
     }
 
     @Test

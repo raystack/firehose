@@ -21,14 +21,8 @@ import static io.odpf.firehose.sink.prometheus.PromSinkConstants.*;
 
 /**
  * Builder for Cortex TimeSeries.
- *
- * The buildTimeSeries(Message message, int partition) method should be synchronised if called from multiple threads
  */
 public class TimeSeriesBuilder {
-
-    private Cortex.TimeSeries.Builder cortexTimeSeriesBuilder = Cortex.TimeSeries.newBuilder();
-    private Cortex.LabelPair.Builder cortexLabelBuilder = Cortex.LabelPair.newBuilder();
-    private Cortex.Sample.Builder cortexSampleBuilder = Cortex.Sample.newBuilder();
 
     private Properties metricNameProtoIndexMapping;
     private Properties labelNameProtoIndexMapping;
@@ -56,38 +50,51 @@ public class TimeSeriesBuilder {
      * @throws InvalidProtocolBufferException   the exception on invalid protobuf
      */
     public List<Cortex.TimeSeries> buildTimeSeries(Message message, int partition) throws InvalidProtocolBufferException {
+        Cortex.TimeSeries.Builder cortexTimeSeriesBuilder = Cortex.TimeSeries.newBuilder();
+        Cortex.LabelPair.Builder cortexLabelBuilder = Cortex.LabelPair.newBuilder();
+        Cortex.Sample.Builder cortexSampleBuilder = Cortex.Sample.newBuilder();
+
         Map<String, Object> labelPair = getLabelMessage(message, labelNameProtoIndexMapping, partition);
         List<Map<String, Object>> metricList = getMetricMessage(message, metricNameProtoIndexMapping);
         List<Cortex.TimeSeries> timeSeriesList = new ArrayList<>();
         Long metricTimestamp = getMetricTimestamp(message);
         for (Map<String, Object> metricName : metricList) {
-            buildMetric((String) metricName.get(METRIC_NAME));
-            for (Map.Entry<String, Object> entry : labelPair.entrySet()) {
-                buildLabels(entry.getKey(), entry.getValue());
-            }
-            buildSample(metricTimestamp, Double.parseDouble(metricName.get(METRIC_VALUE).toString()));
-            timeSeriesList.add(cortexTimeSeriesBuilder.build());
             cortexTimeSeriesBuilder.clear();
+            buildMetric(metricName.get(METRIC_NAME).toString(), cortexTimeSeriesBuilder, cortexLabelBuilder);
+            for (Map.Entry<String, Object> entry : labelPair.entrySet()) {
+                buildLabels(entry.getKey(), entry.getValue(), cortexTimeSeriesBuilder, cortexLabelBuilder);
+            }
+            buildSample(metricTimestamp, Double.parseDouble(metricName.get(METRIC_VALUE).toString()), cortexTimeSeriesBuilder, cortexSampleBuilder);
+            timeSeriesList.add(cortexTimeSeriesBuilder.build());
         }
         return timeSeriesList;
     }
 
-    private void buildMetric(String metricName) {
-        Cortex.LabelPair metric = cortexLabelBuilder.setName(PROMETHEUS_LABEL_FOR_METRIC_NAME).setValue(metricName).build();
+    private void buildMetric(String metricName, Cortex.TimeSeries.Builder cortexTimeSeriesBuilder, Cortex.LabelPair.Builder cortexLabelBuilder) {
+        cortexLabelBuilder.clear();
+        Cortex.LabelPair metric = cortexLabelBuilder
+                .setName(PROMETHEUS_LABEL_FOR_METRIC_NAME)
+                .setValue(metricName)
+                .build();
         cortexTimeSeriesBuilder.addLabels(metric);
-        cortexLabelBuilder.clear();
     }
 
-    private void buildLabels(String labelName, Object labelValue) {
-        Cortex.LabelPair label = cortexLabelBuilder.setName(labelName).setValue(labelValue.toString()).build();
+    private void buildLabels(String labelName, Object labelValue, Cortex.TimeSeries.Builder cortexTimeSeriesBuilder, Cortex.LabelPair.Builder cortexLabelBuilder) {
+        cortexLabelBuilder.clear();
+        Cortex.LabelPair label = cortexLabelBuilder
+                .setName(labelName)
+                .setValue(labelValue.toString())
+                .build();
         cortexTimeSeriesBuilder.addLabels(label);
-        cortexLabelBuilder.clear();
     }
 
-    private void buildSample(long timestamp, double value) {
-        Cortex.Sample sample = cortexSampleBuilder.setTimestampMs(timestamp).setValue(value).build();
-        cortexTimeSeriesBuilder.addSamples(sample);
+    private void buildSample(long timestamp, double value, Cortex.TimeSeries.Builder cortexTimeSeriesBuilder, Cortex.Sample.Builder cortexSampleBuilder) {
         cortexSampleBuilder.clear();
+        Cortex.Sample sample = cortexSampleBuilder
+                .setTimestampMs(timestamp)
+                .setValue(value)
+                .build();
+        cortexTimeSeriesBuilder.addSamples(sample);
     }
 
     /**
