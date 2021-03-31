@@ -4,8 +4,9 @@ This page contains how-to guides for creating Firehose with different sinks alon
 
 ## Create a Log Sink
 
-Firehose provides log sink to make it easy consume messages in [standard output](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)). A log sink firehose requires the following [variables](../reference/configuration.md#-generic) to be set.
-An exmaple log sink configurations look like
+Firehose provides log sink to make it easy consume messages in [standard output](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)). A log sink firehose requires the following [variables](../reference/configuration.md#-generic) to be set. Firehose log sink can work in key as well as message parsing mode configured through [`KAFKA_RECORD_PARSER_MODE`](../reference/configuration.md#kafka_record_parser_mode)
+
+An exmaple log sink configurations:
 ```
 SOURCE_KAFKA_BROKERS = localhost:9092
 SOURCE_KAFKA_TOPIC = test-topic
@@ -15,7 +16,7 @@ SINK_TYPE = log
 INPUT_SCHEMA_PROTO_CLASS = com.tests.TestMessage
 ```
 
-Sample output of a firehose log sink looks something like
+Sample output of a Firehose log sink:
 ```
 2021-03-29T08:43:05,998Z [pool-2-thread-1] INFO  i.o.firehose.Consumer- Execution successful for 1 records
 2021-03-29T08:43:06,246Z [pool-2-thread-1] INFO  i.o.firehose.Consumer - Pulled 1 messages
