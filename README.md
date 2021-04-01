@@ -1,6 +1,8 @@
 # Firehose
 ![build workflow](https://github.com/odpf/firehose/actions/workflows/build.yml/badge.svg)
 ![package workflow](https://github.com/odpf/firehose/actions/workflows/package.yml/badge.svg)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)
+[![Version](https://img.shields.io/github/v/release/odpf/firehose?logo=semantic-release)](Version)
 
 Firehose is a cloud native service for delivering real-time streaming data to destinations such as service endpoints (HTTP or GRPC) & managed databases (Postgres, InfluxDB,  Redis, & Elasticsearch). With Firehose, you don't need to write applications or manage resources. It can be scaled up to match the throughput of your data. If your data is present in Kafka, Firehose delivers it to the destination(SINK) that you specified.
 
@@ -29,7 +31,9 @@ Explore the following resources to get started with Firehose:
 ## Run with Docker
 Use the docker hub to download firehose [docker image](https://hub.docker.com/r/odpf/firehose/). You need to have docker installed in your system.
 ```
+# Download docker image from docker hub
 $ docker pull odpf/firehose
+
 # Run the following docker command for a simple log sink.
 $ docker run -e SOURCE_KAFKA_BROKERS=127.0.0.1:6667 -e SOURCE_KAFKA_CONSUMER_GROUP_ID=kafka-consumer-group-id -e SOURCE_KAFKA_TOPIC=sample-topic -e SINK_TYPE=log -e SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_OFFSET_RESET=latest -e PROTO_SCHEMA=com.github.firehose.sampleLogProto.SampleLogMessage odpf/firehose:latest
 ```
@@ -42,23 +46,30 @@ $ docker run -e SOURCE_KAFKA_BROKERS=127.0.0.1:6667 -e SOURCE_KAFKA_CONSUMER_GRO
 ## Running locally
 
 ```sh
-$ git clone https://github.com/odpf/firehose.git  # Clone the repo
-$ ./gradlew clean build # Build the jar
-$ cat env/local.properties # Configure env variables
-$ ./gradlew runConsumer # Run the firehose
+# Clone the repo
+$ git clone https://github.com/odpf/firehose.git  
+
+# Build the jar
+$ ./gradlew clean build 
+
+# Configure env variables
+$ cat env/local.properties
+
+# Run the Firehose
+$ ./gradlew runConsumer 
 ```
 **Note:** Sample configuration for other sinks along with some advanced configurations can be found [here](/docs/reference/configuration.md)
 
 ## Running tests 
 ```sh
 # Running unit tests
-./gradlew test
+$ ./gradlew test
 
 # Run code quality checks
-./gradlew checkstyleMain checkstyleTest
+$ ./gradlew checkstyleMain checkstyleTest
 
 #Cleaning the build
-./gradlew clean
+$ ./gradlew clean
 ```
 
 ## Contribute
