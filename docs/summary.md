@@ -1,4 +1,4 @@
-# Table of contents
+# Summary
 
 * [Introduction](introduction.md)
 * [Roadmap](https://github.com/odpf/firehose/tree/7d0df99962507e6ad2147837c4536f36d52d5a48/docs/roadmap.md)
