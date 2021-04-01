@@ -1,6 +1,6 @@
 # Architecture
 
-![Firehose Architecture](../.gitbook/assets/architecture.png)
+![Firehose Architecture](../.gitbook/assets/architecture%20%281%29.png)
 
 Firehose has the capability to run parallelly on threads. Each thread does the following:
 
