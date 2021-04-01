@@ -39,7 +39,7 @@ Following sinks are supported in firehose
 Explore the following resources to get started with Firehose:
 
 * [Guides](guides/overview.md) provides guidance on creating Firehose with different sinks.
-* [Concepts](https://github.com/odpf/firehose/tree/7d0df99962507e6ad2147837c4536f36d52d5a48/docs/concepts/overview.md) describes all important Firehose concepts.
-* [Reference](https://github.com/odpf/firehose/tree/7d0df99962507e6ad2147837c4536f36d52d5a48/docs/reference/README.md) contains details about configurations, metrics and other aspects of Firehose.
-* [Contributing](https://github.com/odpf/firehose/tree/7d0df99962507e6ad2147837c4536f36d52d5a48/docs/contribute/contributing.md) contains resources for anyone who wants to contribute to Firehose.
+* [Concepts](https://github.com/odpf/firehose/tree/e73c4e962d3c8a5b2306a7693a9e2a4b40c6e188/docs/concepts/overview.md) describes all important Firehose concepts.
+* [Reference](https://github.com/odpf/firehose/tree/e73c4e962d3c8a5b2306a7693a9e2a4b40c6e188/docs/reference/README.md) contains details about configurations, metrics and other aspects of Firehose.
+* [Contributing](https://github.com/odpf/firehose/tree/e73c4e962d3c8a5b2306a7693a9e2a4b40c6e188/docs/contribute/contributing.md) contains resources for anyone who wants to contribute to Firehose.
 

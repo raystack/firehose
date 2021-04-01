@@ -4,9 +4,7 @@ This page contains how-to guides for creating Firehose with different sinks alon
 
 ## Create a Log Sink
 
-Firehose provides log sink to make it easy consume messages in \[standard output\]\([https://en.wikipedia.org/wiki/Standard\_streams\#Standard\_output\_\(stdout](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_%28stdout)\)\). A log sink firehose requires the following [variables](../reference/configuration.md#-generic) to be set. Firehose log sink can work in key as well as message parsing mode configured through [`KAFKA_RECORD_PARSER_MODE`](../reference/configuration.md#kafka_record_parser_mode)
-
-An exmaple log sink configurations:
+Firehose provides log sink to make it easy consume messages in \[standard output\]\([https://en.wikipedia.org/wiki/Standard\_streams\#Standard\_output\_\(stdout](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_%28stdout)\)\). A log sink firehose requires the following [variables](../reference/configuration.md#-generic) to be set. An exmaple log sink configurations look like
 
 ```text
 SOURCE_KAFKA_BROKERS = localhost:9092
@@ -17,7 +15,7 @@ SINK_TYPE = log
 INPUT_SCHEMA_PROTO_CLASS = com.tests.TestMessage
 ```
 
-Sample output of a Firehose log sink:
+Sample output of a firehose log sink looks something like
 
 ```text
 2021-03-29T08:43:05,998Z [pool-2-thread-1] INFO  i.o.firehose.Consumer- Execution successful for 1 records
@@ -43,6 +41,7 @@ Firehose supports `PUT` and `POST` verb in its http sink. The method can be conf
 ### Authentication
 
 Firehose HTTP sink supports [OAuth](https://en.wikipedia.org/wiki/OAuth) authentication. OAuth can be enabled for the HTTP sink by setting [`SINK_HTTP_OAUTH2_ENABLE`](../reference/configuration.md#-sink_http_oauth2_enable)
+
 ```text
 SINK_HTTP_OAUTH2_ACCESS_TOKEN_URL: https://sample-oauth.my-api.com/oauth2/token  # OAuth2 Token Endpoint.
 SINK_HTTP_OAUTH2_CLIENT_NAME: client-name  # OAuth2 identifier issued to the client.

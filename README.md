@@ -1,9 +1,6 @@
 # Firehose
 
-![build workflow](https://github.com/odpf/firehose/actions/workflows/build.yml/badge.svg)
-![package workflow](https://github.com/odpf/firehose/actions/workflows/package.yml/badge.svg)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)
-[![Version](https://img.shields.io/github/v/release/odpf/firehose?logo=semantic-release)](Version)
+![build workflow](https://github.com/odpf/firehose/actions/workflows/build.yml/badge.svg) ![package workflow](https://github.com/odpf/firehose/actions/workflows/package.yml/badge.svg)
 
 Firehose is a cloud native service for delivering real-time streaming data to destinations such as service endpoints \(HTTP or GRPC\) & managed databases \(Postgres, InfluxDB, Redis, & Elasticsearch\). With Firehose, you don't need to write applications or manage resources. It can be scaled up to match the throughput of your data. If your data is present in Kafka, Firehose delivers it to the destination\(SINK\) that you specified.
 
@@ -11,11 +8,11 @@ Firehose is a cloud native service for delivering real-time streaming data to de
 
 Discover why users choose Firehose as their main Kafka Consumer
 
-* **Sinks:** Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB(JDBC), InfluxDB, Elasticsearch & Redis.
+* **Sinks:** Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB\(JDBC\), InfluxDB, Elasticsearch & Redis.
 * **Scale:** Firehose scales in an instant, both vertically and horizontally  for high performance streaming sink and zero data drops.
 * **Extensibility:** Add your own sink to firehose with a clearly defined interface or choose from already provided ones.
 * **Runtime:** Firehose can run inside VMs or containers in a fully managed runtime environment like kubernetes.
-* **Metrics:** Always know what’s going on with your deployment with built-in [monitoring](./docs/assets/firehose-grafana-dashboard.json) of throughput, response times, errors and more.
+* **Metrics:** Always know what’s going on with your deployment with built-in [monitoring](https://github.com/odpf/firehose/tree/e73c4e962d3c8a5b2306a7693a9e2a4b40c6e188/docs/assets/firehose-grafana-dashboard.json) of throughput, response times, errors and more.
 
 To know more, follow the detailed [documentation](https://github.com/odpf/firehose/tree/e73c4e962d3c8a5b2306a7693a9e2a4b40c6e188/docs/README.md)
 
@@ -23,17 +20,17 @@ To know more, follow the detailed [documentation](https://github.com/odpf/fireho
 
 Explore the following resources to get started with Firehose:
 
-* [Guides](docs/guides) provides guidance on [creating Firehose](docs/guides/overview.md) with different sinks.
-* [Concepts](docs/concepts) describes all important Firehose concepts.
-* [Reference](docs/reference) contains details about configurations, metrics and other aspects of Firehose.
+* [Guides](https://github.com/odpf/firehose/tree/e73c4e962d3c8a5b2306a7693a9e2a4b40c6e188/docs/guides/README.md) provides guidance on [creating Firehose](docs/guides/overview.md) with different sinks.
+* [Concepts](https://github.com/odpf/firehose/tree/e73c4e962d3c8a5b2306a7693a9e2a4b40c6e188/docs/concepts/README.md) describes all important Firehose concepts.
+* [Reference](https://github.com/odpf/firehose/tree/e73c4e962d3c8a5b2306a7693a9e2a4b40c6e188/docs/reference/README.md) contains details about configurations, metrics and other aspects of Firehose.
 * [Contribute](docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Firehose.
 
 ## Run with Docker
-Use the docker hub to download firehose [docker image](https://hub.docker.com/r/odpf/firehose/). You need to have docker installed in your system.
-```
-# Download docker image from docker hub
-$ docker pull odpf/firehose
 
+Use the docker hub to download firehose [docker image](https://hub.docker.com/r/odpf/firehose/). You need to have docker installed in your system.
+
+```text
+$ docker pull odpf/firehose
 # Run the following docker command for a simple log sink.
 $ docker run -e SOURCE_KAFKA_BROKERS=127.0.0.1:6667 -e SOURCE_KAFKA_CONSUMER_GROUP_ID=kafka-consumer-group-id -e SOURCE_KAFKA_TOPIC=sample-topic -e SINK_TYPE=log -e SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_OFFSET_RESET=latest -e PROTO_SCHEMA=com.github.firehose.sampleLogProto.SampleLogMessage odpf/firehose:latest
 ```
@@ -47,31 +44,26 @@ $ docker run -e SOURCE_KAFKA_BROKERS=127.0.0.1:6667 -e SOURCE_KAFKA_CONSUMER_GRO
 
 ## Running locally
 
-```sh
-# Clone the repo
-$ git clone https://github.com/odpf/firehose.git  
-
-# Build the jar
-$ ./gradlew clean build 
-
-# Configure env variables
-$ cat env/local.properties
-
-# Run the Firehose
-$ ./gradlew runConsumer 
+```bash
+$ git clone https://github.com/odpf/firehose.git  # Clone the repo
+$ ./gradlew clean build # Build the jar
+$ cat env/local.properties # Configure env variables
+$ ./gradlew runConsumer # Run the firehose
 ```
-**Note:** Sample configuration for other sinks along with some advanced configurations can be found [here](/docs/reference/configuration.md)
 
-## Running tests 
-```sh
+**Note:** Sample configuration for other sinks along with some advanced configurations can be found [here](docs/reference/configuration.md)
+
+## Running tests
+
+```bash
 # Running unit tests
-$ ./gradlew test
+./gradlew test
 
 # Run code quality checks
-$ ./gradlew checkstyleMain checkstyleTest
+./gradlew checkstyleMain checkstyleTest
 
 #Cleaning the build
-$ ./gradlew clean
+./gradlew clean
 ```
 
 ## Contribute

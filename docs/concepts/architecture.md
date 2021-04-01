@@ -1,6 +1,6 @@
 # Architecture
 
-![Firehose Architecture](../.gitbook/assets/architecture.png)
+![Firehose Architecture](../../.gitbook/assets/architecture.png)
 
 Firehose has the capability to run parallelly on threads. Each thread does the following:
 
@@ -58,7 +58,7 @@ _**Commit**_
 
 The section details all integrating systems for Firehose deployment. These are external systems that Firehose connects to.
 
-![Firehose Integration](../.gitbook/assets/integration.png)
+![Firehose Integration](../../.gitbook/assets/integration.png)
 
 ### Kafka
 
