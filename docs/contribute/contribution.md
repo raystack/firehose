@@ -1,8 +1,8 @@
-# Contribution
+# Contribution Process
 
 The following is a set of guidelines for contributing to Firehose. These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request. Here are some important resources:
 
-* [Concepts](https://github.com/odpf/firehose/tree/7d0df99962507e6ad2147837c4536f36d52d5a48/docs/concepts/README.md) section will explain you about Firehose architecture,
+* [Concepts](../concepts/) section will explain you about Firehose architecture,
 * Our [roadmap](https://github.com/odpf/firehose/tree/7d0df99962507e6ad2147837c4536f36d52d5a48/docs/roadmap.md) is the 10k foot view of where we're going, and
 * Github [issues](https://github.com/odpf/firehose/issues) track the ongoing and reported issues.
 

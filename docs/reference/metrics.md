@@ -1,4 +1,4 @@
-# METRICS and SLIs
+# Metrics
 
 Service-level Indicators \(SLIs\) are the measurements used to calculate the performance for the goal. It is a direct measurement of a service’s behaviour and helps us and the users to evaluate whether our system has been running within SLO. The metrics captured as part of SLI for Firehose are described below.
 

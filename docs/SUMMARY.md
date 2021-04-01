@@ -8,9 +8,9 @@
   * [Architecture](concepts/architecture.md)
 * [Reference](reference/README.md)
   * [Configurations](reference/configuration.md)
-  * [METRICS and SLIs](reference/metrics.md)
+  * [Metrics](reference/metrics.md)
 * [Contribute](contribute/README.md)
-  * [Contribution](contribute/contribution.md)
+  * [Contribution Process](contribute/contribution.md)
   * [Development Guide](contribute/development.md)
 * [Summary](summary.md)
 
