@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Converts kafka messages into Templatized json.
+ */
 public class MessageToTemplatizedJson implements MessageSerializer {
     private static final String TEMPLATE_PATH_REGEX = "\"\\$\\.[^\\s\\\\]*?\"";
     private static final String ALL_FIELDS_FROM_TEMPLATE = "\"$._all_\"";
@@ -61,6 +64,13 @@ public class MessageToTemplatizedJson implements MessageSerializer {
         this.pathsToReplace = paths;
     }
 
+    /**
+     * Create json string from kafka message based on json Template.
+     *
+     * @param message the message
+     * @return the string
+     * @throws DeserializerException the deserializer exception
+     */
     @Override
     public String serialize(Message message) throws DeserializerException {
         try {

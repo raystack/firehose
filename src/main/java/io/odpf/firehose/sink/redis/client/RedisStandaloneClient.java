@@ -13,6 +13,9 @@ import redis.clients.jedis.Response;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Redis standalone client.
+ */
 public class RedisStandaloneClient implements RedisClient {
 
     private Instrumentation instrumentation;
@@ -21,6 +24,14 @@ public class RedisStandaloneClient implements RedisClient {
     private Jedis jedis;
     private Pipeline jedisPipelined;
 
+    /**
+     * Instantiates a new Redis standalone client.
+     *
+     * @param instrumentation the instrumentation
+     * @param redisParser     the redis parser
+     * @param redisTTL        the redis ttl
+     * @param jedis           the jedis
+     */
     public RedisStandaloneClient(Instrumentation instrumentation, RedisParser redisParser, RedisTtl redisTTL, Jedis jedis) {
         this.instrumentation = instrumentation;
         this.redisParser = redisParser;

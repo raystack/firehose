@@ -9,12 +9,22 @@ import lombok.AllArgsConstructor;
 
 import java.io.IOException;
 
+/**
+ * Parser for Key or message.
+ */
 @AllArgsConstructor
 public class KeyOrMessageParser {
 
     private ProtoParser protoParser;
     private AppConfig appConfig;
 
+    /**
+     * Parse dynamic message.
+     *
+     * @param message the message
+     * @return the dynamic message
+     * @throws IOException when invalid message is encountered
+     */
     public DynamicMessage parse(Message message) throws IOException {
         if (appConfig.getKafkaRecordParserMode().equals("key")) {
             return protoParse(message.getLogKey());

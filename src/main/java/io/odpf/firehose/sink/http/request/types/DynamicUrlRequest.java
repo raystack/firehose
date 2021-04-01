@@ -18,6 +18,9 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import java.net.URISyntaxException;
 import java.util.List;
 
+/**
+ * Dynamic url request.
+ */
 public class DynamicUrlRequest implements Request {
 
     private StatsDReporter statsDReporter;
@@ -27,6 +30,14 @@ public class DynamicUrlRequest implements Request {
     private RequestEntityBuilder requestEntityBuilder;
     private RequestCreator requestCreator;
 
+    /**
+     * Instantiates a new Dynamic url request.
+     *
+     * @param statsDReporter the stats d reporter
+     * @param httpSinkConfig the http sink config
+     * @param body           the body
+     * @param method         the method
+     */
     public DynamicUrlRequest(StatsDReporter statsDReporter, HttpSinkConfig httpSinkConfig, JsonBody body, HttpSinkRequestMethodType method) {
         this.statsDReporter = statsDReporter;
         this.httpSinkConfig = httpSinkConfig;
@@ -38,6 +49,14 @@ public class DynamicUrlRequest implements Request {
         return requestCreator.create(messages, requestEntityBuilder.setWrapping(!isTemplateBody(httpSinkConfig)));
     }
 
+    /**
+     * Sets request strategy.
+     *
+     * @param headerBuilder        the header builder
+     * @param uriBuilder           the uri builder
+     * @param requestEntitybuilder the request entitybuilder
+     * @return the request strategy
+     */
     @Override
     public Request setRequestStrategy(HeaderBuilder headerBuilder, UriBuilder uriBuilder, RequestEntityBuilder requestEntitybuilder) {
         this.requestCreator = new IndividualRequestCreator(

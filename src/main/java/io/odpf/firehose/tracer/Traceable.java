@@ -11,13 +11,17 @@ import java.util.List;
 public interface Traceable {
 
     /**
-     * @param messages
-     * @return
+     * Start trace.
+     *
+     * @param messages messages to trace
+     * @return the list of spans
      */
     List<Span> startTrace(List<Message> messages);
 
     /**
-     * @param spans
+     * Finish trace.
+     *
+     * @param spans the spans
      */
     default void finishTrace(List<Span> spans) {
         spans.forEach(span -> span.finish());

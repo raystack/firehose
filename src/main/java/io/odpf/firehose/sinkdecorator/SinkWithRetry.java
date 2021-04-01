@@ -13,6 +13,9 @@ import java.util.List;
 
 import static io.odpf.firehose.metrics.Metrics.RETRY_TOTAL;
 
+/**
+ * Pushes messages with configured retry.
+ */
 public class SinkWithRetry extends SinkDecorator {
 
     private final BackOffProvider backOffProvider;
@@ -38,6 +41,14 @@ public class SinkWithRetry extends SinkDecorator {
         this.parser = parser;
     }
 
+    /**
+     * Pushes messages with retry.
+     *
+     * @param messages list of messages
+     * @return the remaining failed messages
+     * @throws IOException           the io exception
+     * @throws DeserializerException the deserializer exception
+     */
     @Override
     public List<Message> pushMessage(List<Message> messages) throws IOException, DeserializerException {
         int attemptCount = 0;

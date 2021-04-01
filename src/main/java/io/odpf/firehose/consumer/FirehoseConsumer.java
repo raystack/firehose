@@ -16,6 +16,9 @@ import java.util.List;
 
 import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS;
 
+/**
+ * Firehose consumer reads messages from Generic consumer and pushes messages to the configured sink.
+ */
 @AllArgsConstructor
 public class FirehoseConsumer implements Closeable {
 

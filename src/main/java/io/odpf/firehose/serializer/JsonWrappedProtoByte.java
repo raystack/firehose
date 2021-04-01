@@ -20,10 +20,20 @@ public class JsonWrappedProtoByte implements MessageSerializer {
 
   private Gson gson;
 
+  /**
+   * Instantiates a new Json wrapped proto byte.
+   */
   public JsonWrappedProtoByte() {
     this.gson = new GsonBuilder().registerTypeAdapter(Message.class, new MessageJsonSerializer()).create();
   }
 
+  /**
+   * Serialize string.
+   *
+   * @param message the message
+   * @return the string
+   * @throws DeserializerException the deserializer exception
+   */
   @Override
   public String serialize(Message message) throws DeserializerException {
     return gson.toJson(message);
