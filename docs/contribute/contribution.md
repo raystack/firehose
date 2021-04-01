@@ -35,4 +35,3 @@ Please follow these practices for you change to get merged fast and smoothly:
 * Make sure your local build is running with all the tests and checkstyle passing.
 * If your change is related to user-facing protocols / configurations, you need to make the corresponding change in the documentation as well.
 * Docs live in the code repo under [`docs`](https://github.com/odpf/firehose/tree/7d0df99962507e6ad2147837c4536f36d52d5a48/docs/docs/README.md) so that changes to that can be done in the same PR as changes to the code.
-

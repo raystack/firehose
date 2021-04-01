@@ -43,7 +43,6 @@ Firehose supports `PUT` and `POST` verb in its http sink. The method can be conf
 ### Authentication
 
 Firehose HTTP sink supports [OAuth](https://en.wikipedia.org/wiki/OAuth) authentication. OAuth can be enabled for the HTTP sink by setting [`SINK_HTTP_OAUTH2_ENABLE`](../reference/configuration.md#-sink_http_oauth2_enable)
-
 ```text
 SINK_HTTP_OAUTH2_ACCESS_TOKEN_URL: https://sample-oauth.my-api.com/oauth2/token  # OAuth2 Token Endpoint.
 SINK_HTTP_OAUTH2_CLIENT_NAME: client-name  # OAuth2 identifier issued to the client.

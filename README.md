@@ -1,14 +1,14 @@
 # Firehose
+
 ![build workflow](https://github.com/odpf/firehose/actions/workflows/build.yml/badge.svg)
 ![package workflow](https://github.com/odpf/firehose/actions/workflows/package.yml/badge.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)
 [![Version](https://img.shields.io/github/v/release/odpf/firehose?logo=semantic-release)](Version)
 
-Firehose is a cloud native service for delivering real-time streaming data to destinations such as service endpoints (HTTP or GRPC) & managed databases (Postgres, InfluxDB,  Redis, & Elasticsearch). With Firehose, you don't need to write applications or manage resources. It can be scaled up to match the throughput of your data. If your data is present in Kafka, Firehose delivers it to the destination(SINK) that you specified.
-
-<p align="center"><img src="./docs/assets/overview.svg" /></p>
+Firehose is a cloud native service for delivering real-time streaming data to destinations such as service endpoints \(HTTP or GRPC\) & managed databases \(Postgres, InfluxDB, Redis, & Elasticsearch\). With Firehose, you don't need to write applications or manage resources. It can be scaled up to match the throughput of your data. If your data is present in Kafka, Firehose delivers it to the destination\(SINK\) that you specified.
 
 ## Key Features
+
 Discover why users choose Firehose as their main Kafka Consumer
 
 * **Sinks:** Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB(JDBC), InfluxDB, Elasticsearch & Redis.
@@ -17,7 +17,7 @@ Discover why users choose Firehose as their main Kafka Consumer
 * **Runtime:** Firehose can run inside VMs or containers in a fully managed runtime environment like kubernetes.
 * **Metrics:** Always know what’s going on with your deployment with built-in [monitoring](./docs/assets/firehose-grafana-dashboard.json) of throughput, response times, errors and more.
 
-To know more, follow the detailed [documentation](docs) 
+To know more, follow the detailed [documentation](https://github.com/odpf/firehose/tree/e73c4e962d3c8a5b2306a7693a9e2a4b40c6e188/docs/README.md)
 
 ## Usage
 
@@ -37,9 +37,11 @@ $ docker pull odpf/firehose
 # Run the following docker command for a simple log sink.
 $ docker run -e SOURCE_KAFKA_BROKERS=127.0.0.1:6667 -e SOURCE_KAFKA_CONSUMER_GROUP_ID=kafka-consumer-group-id -e SOURCE_KAFKA_TOPIC=sample-topic -e SINK_TYPE=log -e SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_OFFSET_RESET=latest -e PROTO_SCHEMA=com.github.firehose.sampleLogProto.SampleLogMessage odpf/firehose:latest
 ```
-**Note:** Make sure your protos (.jar file) are located in `work-dir`, this is required for Filter functionality to work.
+
+**Note:** Make sure your protos \(.jar file\) are located in `work-dir`, this is required for Filter functionality to work.
 
 ## Run with Kubernetes
+
 * Create a firehose deployment using the helm chart available [here](https://github.com/odpf/charts/tree/main/stable/firehose)
 * Deployment also includes telegraf container which pushes stats metrics
 
@@ -85,4 +87,6 @@ To help you get your feet wet and get you familiar with our contribution process
 This project exists thanks to all the [contributors](https://github.com/odpf/firehose/graphs/contributors).
 
 ## License
-Firehose is [Apache 2.0](LICENSE) licensed.
+
+Firehose is [Apache 2.0](https://github.com/odpf/firehose/tree/e73c4e962d3c8a5b2306a7693a9e2a4b40c6e188/LICENSE/README.md) licensed.
+
