@@ -1,16 +1,23 @@
 # Table of contents
 
 * [Introduction](README.md)
-* [Guides](guides/README.md)
-  * [Overview](guides/overview.md)
-  * [Manage consumer lag](guides/manage.md)
-* [Concepts](concepts/README.md)
-  * [Architecture](concepts/architecture.md)
-* [Reference](reference/README.md)
-  * [Configurations](reference/configuration.md)
-  * [Metrics](reference/metrics.md)
-* [Contribute](contribute/README.md)
-  * [Contribution Process](contribute/contribution.md)
-  * [Development Guide](contribute/development.md)
-* [Summary](summary.md)
+
+## Guides <a id="guides-1"></a>
+
+* [Overview](guides-1/overview.md)
+* [Manage consumer lag](guides-1/manage.md)
+
+## Concepts <a id="concepts-1"></a>
+
+* [Architecture](concepts-1/architecture.md)
+
+## Reference <a id="reference-1"></a>
+
+* [Configurations](reference-1/configuration.md)
+* [Metrics](reference-1/metrics.md)
+
+## Contribute <a id="contribute-1"></a>
+
+* [Contribution Process](contribute-1/contribution.md)
+* [Development Guide](contribute-1/development.md)
 
