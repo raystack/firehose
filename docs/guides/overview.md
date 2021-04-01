@@ -4,9 +4,9 @@ This page contains how-to guides for creating Firehose with different sinks alon
 
 ## Create a Log Sink
 
-Firehose provides log sink to make it easy consume messages in \[standard output\]\([https://en.wikipedia.org/wiki/Standard\_streams\#Standard\_output\_\(stdout](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_%28stdout)\)\). A log sink firehose requires the following [variables](../reference/configuration.md#-generic) to be set. Firehose log sink can work in key as well as message parsing mode configured through [`KAFKA_RECORD_PARSER_MODE`](../reference/configuration.md#kafka_record_parser_mode)
+Firehose provides a log sink to make it easy to consume messages in \[standard output\]\([https://en.wikipedia.org/wiki/Standard\_streams\#Standard\_output\_\(stdout](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_%28stdout)\)\). A log sink firehose requires the following [variables](../reference/configuration.md#-generic) to be set. Firehose log sink can work in key as well as message parsing mode configured through [`KAFKA_RECORD_PARSER_MODE`](../reference/configuration.md#kafka_record_parser_mode)
 
-An exmaple log sink configurations:
+An example log sink configurations:
 
 ```text
 SOURCE_KAFKA_BROKERS = localhost:9092
@@ -38,7 +38,7 @@ Firehose [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol) sink 
 
 ### Supported Methods
 
-Firehose supports `PUT` and `POST` verb in its http sink. The method can be configured using [`SINK_HTTP_REQUEST_METHOD`](../reference/configuration.md#-sink_http_request_method).
+Firehose supports `PUT` and `POST` verbs in its HTTP sink. The method can be configured using [`SINK_HTTP_REQUEST_METHOD`](../reference/configuration.md#-sink_http_request_method).
 
 ### Authentication
 
@@ -57,7 +57,7 @@ Firehose allows for retrying to sink messages in case of failure of HTTP service
 
 ### Templating
 
-Firehose HTTP sink supports payload templating using [`SINK_HTTP_JSON_BODY_TEMPLATE`](../reference/configuration.md#-sink_http_json_body_template) configuration. It uses [JsonPath](https://github.com/json-path/JsonPath) for creating Templates which is a DSL for basic JSON parsing. Playground for this: [https://jsonpath.com/](https://jsonpath.com/), where users can play around with a given JSON to extract out the elements as required and validate the jsonpath. The template works only when the output data format [`SINK_HTTP_DATA_FORMAT`](../reference/configuration.md#-sink_http_data_format) is JSON.
+Firehose HTTP sink supports payload templating using [`SINK_HTTP_JSON_BODY_TEMPLATE`](../reference/configuration.md#-sink_http_json_body_template) configuration. It uses [JsonPath](https://github.com/json-path/JsonPath) for creating Templates which is a DSL for basic JSON parsing. Playground for this: [https://jsonpath.com/](https://jsonpath.com/), where users can play around with a given JSON to extract out the elements as required and validate the `jsonpath`. The template works only when the output data format [`SINK_HTTP_DATA_FORMAT`](../reference/configuration.md#-sink_http_data_format) is JSON.
 
 _**Creating Templates:**_
 
@@ -70,7 +70,7 @@ Limitations:
 * Works when the input DATA TYPE is a protobuf, not a JSON.
 * Supports only on messages, not keys.
 * validation on the level of valid JSON template. But after data has been replaced the resulting string may or may not be a valid JSON. Users must do proper testing/validation from the service side.
-* If selecting fields from complex data type like repeated/messages/map of proto, the user must do filtering based first as selecting a field that does not exist would fail.
+* If selecting fields from complex data types like repeated/messages/map of proto, the user must do filtering based first as selecting a field that does not exist would fail.
 
 ## Create a JDBC SINK
 
@@ -88,9 +88,9 @@ _**Note:**_ [_**DATABASE**_](../reference/configuration.md#-sink_influx_db_name)
 ## Create a Redis Sink
 
 * it requires the following [variables](../reference/configuration.md#-redis-sink) to be set.
-* Redis sink can be created in 2 different modes based on the value of [`SINK_REDIS_DATA_TYPE`](../reference/configuration.md#-sink_redis_data_type): Hashset or List
-  * `Hashset`: For each message, an entry of the format ‘key : field : value’ is generated and pushed to Redis. field and value are generated on the basis of the config [`INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING`](https://github.com/odpf/firehose/blob/documentation/docs/reference/configuration.md#-input_schema_proto_to_column_mapping-2)
-  * `List`: For each message entry of the format ‘key : value’ is generated and pushed to Redis. Value is fetched for the proto index provided in the config [`SINK_REDIS_LIST_DATA_PROTO_INDEX`](../reference/configuration.md#-sink_redis_list_data_proto_index)
+* Redis sink can be created in 2 different modes based on the value of [`SINK_REDIS_DATA_TYPE`](../reference/configuration.md#-sink_redis_data_type): HashSet or List
+  * `Hashset`: For each message, an entry of the format `key : field : value` is generated and pushed to Redis. field and value are generated on the basis of the config [`INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING`](https://github.com/odpf/firehose/blob/documentation/docs/reference/configuration.md#-input_schema_proto_to_column_mapping-2)
+  * `List`: For each message entry of the format `key : value` is generated and pushed to Redis. Value is fetched for the proto index provided in the config [`SINK_REDIS_LIST_DATA_PROTO_INDEX`](../reference/configuration.md#-sink_redis_list_data_proto_index)
 * The `key` is picked up from a field in the message itself.
 * Redis sink also supports different [Deployment Types](../reference/configuration.md#-sink_redis_deployment_type) `Standalone` and `Cluster`.
 * Limitation: Firehose Redis sink only supports HashSet and List entries as of now.
@@ -155,7 +155,7 @@ driver_location {
 gcm_key: "abc123"
 ```
 
-_**Key based filter expressions examples:**_
+_**Key**_-_**based filter expressions examples:**_
 
 * `sampleLogKey.getDriverId()=="abcde12345"`
 * `sampleLogKey.getVehicleType()=="BIKE"`
@@ -163,7 +163,7 @@ _**Key based filter expressions examples:**_
 * `sampleLogKey.getDriverId()=="abcde12345"&&sampleLogKey.getVehicleType=="BIKE"` \(multiple conditions example 1\)
 * `sampleLogKey.getVehicleType()=="BIKE"||sampleLogKey.getEventTimestamp().getSeconds()==186178` \(multiple conditions example 2\)
 
-_**Message based filter expressions examples:**_
+_**Message -ased filter expressions examples:**_
 
 * `sampleLogMessage.getGcmKey()=="abc123"`
 * `sampleLogMessage.getDriverId()=="abcde12345"&&sampleLogMessage.getDriverLocation().getLatitude()>0.6487193703651428`

@@ -8,7 +8,7 @@ Firehose has the capability to run parallelly on threads. Each thread does the f
 * Filter the messages \(optional\)
 * Push these messages to sink
 * In case push fails and DLQ is:
-  * enabled: Firehose keeps on retrying for configured number of attempts before the messages got pushed to DLQ kafka topic
+  * enabled: Firehose keeps on retrying for the configured number of attempts before the messages got pushed to DLQ Kafka topic
   * disabled: Firehose keeps on retrying until it receives a success code
 * Captures telemetry and success/failure events and send them to Telegraf
 * Repeat the process
@@ -33,13 +33,13 @@ _**Sink**_
 
 * Firehose has an exclusive Sink class for each of the sink types, this Sink receives a list of filtered messages that will go through a well-defined lifecycle.
 * All the existing sink types follow the same contract/lifecycle defined in `AbstractSink.java`. It consists of two stages:
-  * Prepare: Transformation over filtered messages’ list to prepare the sink specific insert/update client requests.
+  * Prepare: Transformation over-filtered messages’ list to prepare the sink-specific insert/update client requests.
   * Execute: Requests created in the Prepare stage are executed at this step and a list of failed messages is returned \(if any\) for retry.
 * If the batch has any failures, Firehose will retry to push the failed messages to the sink
 
 _**Instrumentation**_
 
-* Instrumentation is a wrapper around statsDclient and logging. Its job is to capture Important metrics such as Latencies, Successful/Failed Messages Count, Sink Response Time, etc. for each record that goes through the firehose ecosystem.
+* Instrumentation is a wrapper around statsD client and logging. Its job is to capture Important metrics such as Latencies, Successful/Failed Messages Count, Sink Response Time, etc. for each record that goes through the firehose ecosystem.
 
 _**Commit**_
 
@@ -80,5 +80,5 @@ The section details all integrating systems for Firehose deployment. These are e
 
 * InfluxDB - time-series database where all firehose metrics are stored. Integration through the Telegraf component.
 
-For a complete set of configuration please refer to the sink-specific [configuration](../reference/configuration.md).
+For a complete set of configurations please refer to the sink-specific [configuration](../reference/configuration.md).
 
