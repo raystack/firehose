@@ -2,22 +2,22 @@
 
 * [Introduction](README.md)
 
-## Guides <a id="guides-1"></a>
+## Guides <a id="guides"></a>
 
-* [Overview](guides-1/overview.md)
-* [Manage consumer lag](guides-1/manage.md)
+* [Overview](guides/overview.md)
+* [Manage consumer lag](guides/manage.md)
 
-## Concepts <a id="concepts-1"></a>
+## Concepts <a id="concepts"></a>
 
-* [Architecture](concepts-1/architecture.md)
+* [Architecture](concepts/architecture.md)
 
-## Reference <a id="reference-1"></a>
+## Reference <a id="reference"></a>
 
-* [Configurations](reference-1/configuration.md)
-* [Metrics](reference-1/metrics.md)
+* [Configurations](reference/configuration.md)
+* [Metrics](reference/metrics.md)
 
-## Contribute <a id="contribute-1"></a>
+## Contribute <a id="contribute"></a>
 
-* [Contribution Process](contribute-1/contribution.md)
-* [Development Guide](contribute-1/development.md)
+* [Contribution Process](contribute/contribution.md)
+* [Development Guide](contribute/development.md)
 

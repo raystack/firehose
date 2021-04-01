@@ -40,8 +40,8 @@ Following sinks are supported in the Firehose
 
 Explore the following resources to get started with Firehose:
 
-* [Guides]() provide guidance on creating Firehose with different sinks.
-* [Concepts]() describe all important Firehose concepts.
-* [Reference]() contains details about configurations, metrics, and other aspects of Firehose.
-* [Contributing]() contains resources for anyone who wants to contribute to Firehose.
+* [Guides](./guides/overview.md) provide guidance on creating Firehose with different sinks.
+* [Concepts](./concepts/architecture.md) describe all important Firehose concepts.
+* [Reference](./reference/cofiguration.md) contains details about configurations, metrics, and other aspects of Firehose.
+* [Contributing](./contribute/contribution.md) contains resources for anyone who wants to contribute to Firehose.
 
