@@ -1,22 +1,28 @@
 # Table of contents
 
 * [Introduction](README.md)
+* [Roadmap](roadmap.md)
+* [Changelog](https://github.com/odpf/firehose/blob/main/CHANGELOG.md)
 
-## Guides <a id="guides"></a>
+## Guides
 
 * [Overview](guides/overview.md)
-* [Manage consumer lag](guides/manage.md)
+* [Creating Firehose](guides/create_firehose.md)
+* [Deployment](guides/deployment.md)
+* [Monitoring](guides/monitoring.md)
+* [Troubleshooting](guides/manage.md)
 
-## Concepts <a id="concepts"></a>
+## Concepts
 
+* [Overview](concepts/overview.md)
 * [Architecture](concepts/architecture.md)
 
-## Reference <a id="reference"></a>
+## Reference
 
 * [Configurations](reference/configuration.md)
 * [Metrics](reference/metrics.md)
 
-## Contribute <a id="contribute"></a>
+## Contribute
 
 * [Contribution Process](contribute/contribution.md)
 * [Development Guide](contribute/development.md)
