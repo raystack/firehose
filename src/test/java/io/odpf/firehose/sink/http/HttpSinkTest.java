@@ -72,7 +72,7 @@ public class HttpSinkTest {
     }
 
     @Test
-    public void shouldPrepareRequestDuringPreparationAndCallItDuringExecution() throws Exception {
+    public void shouldCallHttpClientWithProperRequest() throws Exception {
         when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
         when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
         when(response.getStatusLine()).thenReturn(statusLine, statusLine);
