@@ -1,321 +1,333 @@
-# METRICS and SLIs
+# Metrics
 
-Service-level Indicators (SLIs) are the measurements used to calculate the performance for the goal. It is a direct measurement of a service’s behaviour and helps us and the users to evaluate whether our system has been running within SLO. The metrics captured as part of SLI for Firehose are described below.
-
+Service-level Indicators \(SLIs\) are the measurements used to calculate the performance for the goal. It is a direct measurement of a service’s behaviour and helps us and the users to evaluate whether our system has been running within SLO. The metrics captured as part of SLI for Firehose are described below.
 
 ## Table of Contents
-- [Type Details](#-type-details)
-- [Overview](#-overview)
-- [Pods Health](#-pods-health)
-- [Kafka Consumer Details](#-kafka-consumer-details)
-- [Error](#-error)
-- [Memory](#-memory)
-- [Error](#-error)
-- [Garbage Collection](#-garbage-collection)
-- [Retry](#-retry)
-- [HTTP Sink](#-http-sink)
-- [Filter](#-filter)
 
-## <a name="Type Details" /> Type Details
+* [Type Details](metrics.md#-type-details)
+* [Overview](metrics.md#-overview)
+* [Pods Health](metrics.md#-pods-health)
+* [Kafka Consumer Details](metrics.md#-kafka-consumer-details)
+* [Error](metrics.md#-error)
+* [Memory](metrics.md#-memory)
+* [Error](metrics.md#-error)
+* [Garbage Collection](metrics.md#-garbage-collection)
+* [Retry](metrics.md#-retry)
+* [HTTP Sink](metrics.md#-http-sink)
+* [Filter](metrics.md#-filter)
+
+## Type Details
 
 Collection of all the generic configurations in a firehose.
 
-#### <a name="Sink" /> `Sink`
-- The type of sink of the firehose. It could be 'log', 'HTTP', 'DB', 'redis', 'influx' or 'Elasticsearch'
+### `Sink`
 
-#### <a name="Team" /> `Team`
-- Team who has the ownership for the given firehose.
+* The type of sink of the firehose. It could be 'log', 'HTTP', 'DB', 'redis', 'influx' or 'Elasticsearch'
 
-#### <a name="Proto Schema" /> `Proto Schema`
+### `Team`
 
-- The proto class used for creating the firehose
+* Team who has the ownership for the given firehose.
 
-#### <a name="Stream" /> `Stream`
+### `Proto Schema`
 
-- The stream where the input topic is read from
+* The proto class used for creating the firehose
 
-## <a name="Overview" /> Overview
+### `Stream`
+
+* The stream where the input topic is read from
+
+## Overview
+
 Some of the most important metrics related to firehose that gives you an overview of the current state of it.
 
-#### <a name="ConsumerLag: MaxLag" /> `ConsumerLag: MaxLag`
+### `ConsumerLag: MaxLag`
 
-- The maximum lag in terms of number of records for any partition in this window. An increasing value over time is your best indication that the consumer group is not keeping up with the producers.
+* The maximum lag in terms of number of records for any partition in this window. An increasing value over time is your best indication that the consumer group is not keeping up with the producers.
 
-#### <a name="Total Message Received" /> `Total Message Received`
+### `Total Message Received`
 
-- Sum of all messages received from Kafka per pod.
+* Sum of all messages received from Kafka per pod.
 
-#### <a name="Message Sent Successfully" /> `Message Sent Successfully`
+### `Message Sent Successfully`
 
-- Messages sent successfully to the sink per batch per pod.
+* Messages sent successfully to the sink per batch per pod.
 
-#### <a name="Message Sent Failed" /> `Message Sent Failed`
+### `Message Sent Failed`
 
-- Messages failed to be pushed into the sink per batch per pod. In case of HTTP sink, if status code is not in retry codes configured, the records will be dropped.
+* Messages failed to be pushed into the sink per batch per pod. In case of HTTP sink, if status code is not in retry codes configured, the records will be dropped.
 
-#### <a name="Message Dropped" /> `Message Dropped`
+### `Message Dropped`
 
-- In case of HTTP sink, when status code is not in retry codes configured, the records are dropped. This metric captures the dropped messages count.
+* In case of HTTP sink, when status code is not in retry codes configured, the records are dropped. This metric captures the dropped messages count.
 
-#### <a name="Batch size Distribution" /> `Batch size Distribution`
+### `Batch size Distribution`
 
-- 99p of batch size distribution for pulled and pushed messages per pod. 
+* 99p of batch size distribution for pulled and pushed messages per pod. 
 
-#### <a name="Time spent in firehose" /> `Time spent in firehose`
+### `Time spent in firehose`
 
-- Latency introduced by firehose (time before sending to sink - time when reading from Kafka). Note: It could be high if the response time of the sink is higher as subsequent batches could be delayed. 
+* Latency introduced by firehose \(time before sending to sink - time when reading from Kafka\). Note: It could be high if the response time of the sink is higher as subsequent batches could be delayed. 
 
-#### <a name="Time spent in pipeline" /> `Time spent in pipeline`
+### `Time spent in pipeline`
 
-- Time difference between Kafka ingestion and sending to sink (Time before sending to sink - Time of Kafka ingestion) 
+* Time difference between Kafka ingestion and sending to sink \(Time before sending to sink - Time of Kafka ingestion\) 
 
-#### <a name="Sink Response Time" /> `Sink Response Time`
+### `Sink Response Time`
 
-- Different percentile of the response time of the sink. 
+* Different percentile of the response time of the sink. 
 
-## <a name="Pods Health" /> Pods Health
-Since firehose runs on Kube, this gives a nice health details of each pods. 
+## Pods Health
 
-#### <a name="JVM Lifetime" /> `JVM Lifetime`
+Since firehose runs on Kube, this gives a nice health details of each pods.
 
-- JVM Uptime of each pod. 
+### `JVM Lifetime`
 
-#### <a name="Cpu Load" /> `Cpu Load`
+* JVM Uptime of each pod. 
 
-- Returns the "recent cpu usage" for the Java Virtual Machine process. This value is a double in the [0.0,1.0] interval. A value of 0.0 means that none of the CPUs were running threads from the JVM process during the recent period of time observed, while a value of 1.0 means that all CPUs were actively running threads from the JVM 100% of the time during the recent period being observed. Threads from the JVM include the application threads as well as the JVM internal threads. All values betweens 0.0 and 1.0 are possible depending of the activities going on in the JVM process and the whole system. If the Java Virtual Machine recent CPU usage is not available, the method returns a negative value. 
+### `Cpu Load`
 
-#### <a name="Cpu Time" /> `Cpu Time`
+* Returns the "recent cpu usage" for the Java Virtual Machine process. This value is a double in the \[0.0,1.0\] interval. A value of 0.0 means that none of the CPUs were running threads from the JVM process during the recent period of time observed, while a value of 1.0 means that all CPUs were actively running threads from the JVM 100% of the time during the recent period being observed. Threads from the JVM include the application threads as well as the JVM internal threads. All values betweens 0.0 and 1.0 are possible depending of the activities going on in the JVM process and the whole system. If the Java Virtual Machine recent CPU usage is not available, the method returns a negative value. 
 
-- Returns the CPU time used by the process on which the Java virtual machine is running. The returned value is of nanoseconds precision but not necessarily nanoseconds accuracy. 
+### `Cpu Time`
 
-## <a name="Kafka Consumer Details" /> Kafka Consumer Details
+* Returns the CPU time used by the process on which the Java virtual machine is running. The returned value is of nanoseconds precision but not necessarily nanoseconds accuracy. 
+
+## Kafka Consumer Details
+
 Listing some of the Kafka consumer metrics here.
 
-#### <a name="Assigned partitions" /> `Assigned partitions`
+### `Assigned partitions`
 
-- Consumer Group Metrics: The number of partitions currently assigned to this consumer (per pod). 
+* Consumer Group Metrics: The number of partitions currently assigned to this consumer \(per pod\). 
 
-#### <a name="Consumer Number of Request/second" /> `Consumer Number of Request/second`
+### `Consumer Number of Request/second`
 
-- Global Request Metrics: The average number of requests sent per second per pod. 
+* Global Request Metrics: The average number of requests sent per second per pod. 
 
-#### <a name="Records Consumed Rate/second" /> `Records Consumed Rate/second`
+### `Records Consumed Rate/second`
 
-- Topic-level Fetch Metrics: The average number of records consumed per second for a specific topic per pod. 
+* Topic-level Fetch Metrics: The average number of records consumed per second for a specific topic per pod. 
 
-#### <a name="Bytes Consumed Rate/second" /> `Bytes Consumed Rate/second`
+### `Bytes Consumed Rate/second`
 
-- Topic-level Fetch Metrics: The average number of bytes consumed per second per pod. 
+* Topic-level Fetch Metrics: The average number of bytes consumed per second per pod. 
 
-#### <a name="Fetch Rate/second" /> `Fetch Rate/second`
+### `Fetch Rate/second`
 
-- Fetch Metrics: The number of fetch requests per second per pod. 
+* Fetch Metrics: The number of fetch requests per second per pod. 
 
-#### <a name="Max Fetch Latency" /> `Max Fetch Latency`
+### `Max Fetch Latency`
 
-- Fetch Metrics: The max time taken for a fetch request per pod. 
+* Fetch Metrics: The max time taken for a fetch request per pod. 
 
-#### <a name="Average Fetch Latency" /> `Average Fetch Latency`
+### `Average Fetch Latency`
 
-- Fetch Metrics: The average time taken for a fetch request per pod. 
+* Fetch Metrics: The average time taken for a fetch request per pod. 
 
-#### <a name="Average Fetch Size" /> `Average Fetch Size`
+### `Average Fetch Size`
 
-- Fetch Metrics: The average number of bytes fetched per request per pod.
+* Fetch Metrics: The average number of bytes fetched per request per pod.
 
-#### <a name="Max Fetch Size" /> `Max Fetch Size`
+### `Max Fetch Size`
 
-- Fetch Metrics: The max number of bytes fetched per request per pod.
+* Fetch Metrics: The max number of bytes fetched per request per pod.
 
-#### <a name="Commit Rate/second" /> `Commit Rate/second`
+### `Commit Rate/second`
 
-- Consumer Group Metrics: The number of commit calls per second per pod.
+* Consumer Group Metrics: The number of commit calls per second per pod.
 
-#### <a name="Consumer Active Connections Count" /> `Consumer Active Connections Count`
+### `Consumer Active Connections Count`
 
-- Global Connection Metrics: The current number of active connections per pod.
+* Global Connection Metrics: The current number of active connections per pod.
 
-#### <a name="New Connections Creation Rate/second" /> `New Connections Creation Rate/second`
+### `New Connections Creation Rate/second`
 
-- Global Connection Metrics: New connections established per second in the window per pod. 
+* Global Connection Metrics: New connections established per second in the window per pod. 
 
-#### <a name="Connections Close Rate/second" /> `Connections Close Rate/second`
+### `Connections Close Rate/second`
 
-- Global Connection Metrics: Connections closed per second in the window per pod. 
+* Global Connection Metrics: Connections closed per second in the window per pod. 
 
-#### <a name="Consumer Outgoing Byte Rate/Sec" /> `Consumer Outgoing Byte Rate/Sec`
+### `Consumer Outgoing Byte Rate/Sec`
 
-- Global Request Metrics: The average number of outgoing bytes sent per second to all servers per pod. 
+* Global Request Metrics: The average number of outgoing bytes sent per second to all servers per pod. 
 
-#### <a name="Avg time between poll" /> `Avg time between poll`
+### `Avg time between poll`
 
-- Average time spent between poll per pod. 
+* Average time spent between poll per pod. 
 
-#### <a name="Max time between poll" /> `Max time between poll`
+### `Max time between poll`
 
-- Max time spent between poll per pod. 
+* Max time spent between poll per pod. 
 
-#### <a name="Sync rate" /> `Sync rate`
+### `Sync rate`
 
-- Consumer Group Metrics: The number of group syncs per second per pod. Group synchronization is the second and last phase of the rebalance protocol. Similar to join-rate, a large value indicates group instability. 
+* Consumer Group Metrics: The number of group syncs per second per pod. Group synchronization is the second and last phase of the rebalance protocol. Similar to join-rate, a large value indicates group instability. 
 
-#### <a name="Consumer Network IO rate /second" /> `Consumer Network IO rate /second`
+### `Consumer Network IO rate /second`
 
-- The average number of network operations (reads or writes) on all connections per second per pod 
+* The average number of network operations \(reads or writes\) on all connections per second per pod 
 
-#### <a name="Rebalance Rate /hour" /> `Rebalance Rate /hour`
+### `Rebalance Rate /hour`
 
-- Rate of rebalance the consumer.  
+* Rate of rebalance the consumer.  
 
-#### <a name="Average Commit latency" /> `Average Commit latency`
+### `Average Commit latency`
 
-- Consumer Group Metrics: The average time taken for a commit request per pod 
+* Consumer Group Metrics: The average time taken for a commit request per pod 
 
-#### <a name="Max Commit latency" /> `Max Commit latency`
+### `Max Commit latency`
 
-- Consumer Group Metrics: The max time taken for a commit request per pod. 
+* Consumer Group Metrics: The max time taken for a commit request per pod. 
 
-#### <a name="Avg Rebalance latency" /> `Avg Rebalance latency`
+### `Avg Rebalance latency`
 
-- Average Rebalance Latency for the consumer per pod. 
+* Average Rebalance Latency for the consumer per pod. 
 
-#### <a name="Max Rebalance latency" /> `Max Rebalance latency`
+### `Max Rebalance latency`
 
-- Max Rebalance Latency for the consumer per pod.
+* Max Rebalance Latency for the consumer per pod.
 
-## <a name="Error" /> Error
+## Error
+
 This gives you a nice insight about the critical and noncritical exceptions happened in the firehose.
 
-#### <a name="Fatal Error" /> `Fatal Error`
+### `Fatal Error`
 
-- Count of all the exception raised by the pods which can restart the firehose.
+* Count of all the exception raised by the pods which can restart the firehose.
 
-#### <a name="Nonfatal Error" /> `Nonfatal Error`
+### `Nonfatal Error`
 
-- Count of all the exception raised by the firehose which will not restart the firehose and firehose will keep retrying.
+* Count of all the exception raised by the firehose which will not restart the firehose and firehose will keep retrying.
 
-## <a name="Memory" /> Memory
+## Memory
+
 Details on memory used by the firehose for different tasks.
 
-#### <a name="Heap Memory Usage" /> `Heap Memory Usage`
+### `Heap Memory Usage`
 
-- Details of heap memory usage:
-  
-      Max: The amount of memory that can be used for memory management
-      Used: The amount of memory currently in use
-  
+* Details of heap memory usage:
 
+  ```text
+  Max: The amount of memory that can be used for memory management
+  Used: The amount of memory currently in use
+  ```
 
-#### <a name="Non-Heap Memory Usage" /> `Non-Heap Memory Usage`
+### `Non-Heap Memory Usage`
 
-- Details of non-heap memory usage:
-  
-      Max: The amount of memory that can be used for memory management
-      Used: The amount of memory currently in use
+* Details of non-heap memory usage:
 
-#### <a name="GC: Memory Pool Collection Usage" /> `GC: Memory Pool Collection Usage`
+  ```text
+  Max: The amount of memory that can be used for memory management
+  Used: The amount of memory currently in use
+  ```
 
-- For a garbage-collected memory pool, the amount of used memory includes the memory occupied by all objects in the pool including both reachable and unreachable objects. This is for all the names in the type: MemoryPool.
-  
-#### <a name="GC: Memory Pool Peak Usage" /> `GC: Memory Pool Peak Usage`
+### `GC: Memory Pool Collection Usage`
 
-- Peak usage of GC memory usage.
+* For a garbage-collected memory pool, the amount of used memory includes the memory occupied by all objects in the pool including both reachable and unreachable objects. This is for all the names in the type: MemoryPool.
 
-#### <a name="GC: Memory Pool Usage" /> `GC: Memory Pool Usage`
+### `GC: Memory Pool Peak Usage`
 
-- Total usage of GC memory usage.
+* Peak usage of GC memory usage.
 
+### `GC: Memory Pool Usage`
 
-## <a name="Garbage Collection" /> Garbage Collection
+* Total usage of GC memory usage.
+
+## Garbage Collection
+
 All JVM Garbage Collection Details.
 
-#### <a name="GC Collection Count" /> `GC Collection Count`
+### `GC Collection Count`
 
-- The total number of collections that have occurred per pod. Rather than showing the absolute value we are showing the difference to see the rate of change more easily.
+* The total number of collections that have occurred per pod. Rather than showing the absolute value we are showing the difference to see the rate of change more easily.
 
-#### <a name="GC Collection Time" /> `GC Collection Time`
+### `GC Collection Time`
 
-- The approximate accumulated collection elapsed time in milliseconds per pod. Rather than showing the absolute value we are showing the difference to see the rate of change more easily.
+* The approximate accumulated collection elapsed time in milliseconds per pod. Rather than showing the absolute value we are showing the difference to see the rate of change more easily.
 
-#### <a name="Thread Count" /> `Thread Count`
+### `Thread Count`
 
-- daemonThreadCount: Returns the current number of live daemon threads per pod peakThreadCount: Returns the peak live thread count since the Java virtual machine started or peak was reset per pod threadCount: Returns the current number of live threads including both daemon and non-daemon threads per pod.
+* daemonThreadCount: Returns the current number of live daemon threads per pod peakThreadCount: Returns the peak live thread count since the Java virtual machine started or peak was reset per pod threadCount: Returns the current number of live threads including both daemon and non-daemon threads per pod.
 
-#### <a name="Class Count" /> `Class Count`
+### `Class Count`
 
-- loadedClass: Displays number of classes that are currently loaded in the Java virtual machine per pod unloadedClass: Displays the total number of classes unloaded since the Java virtual machine has started execution.
+* loadedClass: Displays number of classes that are currently loaded in the Java virtual machine per pod unloadedClass: Displays the total number of classes unloaded since the Java virtual machine has started execution.
 
-#### <a name="Code Cache Memory after GC" /> `Code Cache Memory after GC`
+### `Code Cache Memory after GC`
 
-- The code cache memory usage in the memory pools at the end of a GC per pod.
+* The code cache memory usage in the memory pools at the end of a GC per pod.
 
-#### <a name="Compressed Class Space after GC" /> `Compressed Class Space after GC`
+### `Compressed Class Space after GC`
 
-- The compressed class space memory usage in the memory pools at the end of a GC per pod.
+* The compressed class space memory usage in the memory pools at the end of a GC per pod.
 
-#### <a name="Metaspace after GC" /> `Metaspace after GC`
+### `Metaspace after GC`
 
-- The metaspace memory usage in the memory pools at the end of a GC per pod.
+* The metaspace memory usage in the memory pools at the end of a GC per pod.
 
-#### <a name="Par Eden Space after GC" /> `Par Eden Space after GC`
+### `Par Eden Space after GC`
 
-- The eden space memory usage in the memory pools at the end of a GC per pod.
+* The eden space memory usage in the memory pools at the end of a GC per pod.
 
-#### <a name="Par Survivor Space after GC" /> `Par Survivor Space after GC`
+### `Par Survivor Space after GC`
 
-- The survivor space memory usage in the memory pools at the end of a GC per pod.
+* The survivor space memory usage in the memory pools at the end of a GC per pod.
 
-#### <a name="Tenured Space after GC" /> `Tenured Space after GC`
+### `Tenured Space after GC`
 
-- The tenured space memory usage in the memory pools at the end of a GC per pod.
-#### <a name="File Descriptor" /> `File Descriptor`
+* The tenured space memory usage in the memory pools at the end of a GC per pod.
 
-- Number of file descriptor per pod
-  
-      Open: Current open file descriptors
-      Max: Based on config max allowed
- 
+  **`File Descriptor`**
 
-## <a name="Retry" /> Retry
+* Number of file descriptor per pod
+
+  ```text
+  Open: Current open file descriptors
+  Max: Based on config max allowed
+  ```
+
+## Retry
+
 If you have configured retries this will give you some insight about the retries.
 
-#### <a name="Average Retry Requests" /> `Average Retry Requests`
+### `Average Retry Requests`
 
-- Request retries per min per pod.
+* Request retries per min per pod.
 
-#### <a name="Back Off time" /> `Back Off time`
+### `Back Off time`
 
-- Time spent per pod backing off.
+* Time spent per pod backing off.
 
-## <a name="HTTP Sink" /> HTTP Sink
+## HTTP Sink
+
 HTTP Sink response code details.
 
-#### <a name="2XX Response Count" /> `2XX Response Count`
+### `2XX Response Count`
 
-- Total number of 2xx response received by firehose from the HTTP service,
+* Total number of 2xx response received by firehose from the HTTP service,
 
-#### <a name="4XX Response Count" /> `4XX Response Count`
+### `4XX Response Count`
 
-- Total number of 4xx response received by firehose from the HTTP service.
+* Total number of 4xx response received by firehose from the HTTP service.
 
-#### <a name="5XX Response Count" /> `5XX Response Count`
+### `5XX Response Count`
 
-- Total number of 5xx response received by firehose from the HTTP service.
+* Total number of 5xx response received by firehose from the HTTP service.
 
-#### <a name="No Response Count" /> `No Response Count`
+### `No Response Count`
 
-- Total number of No response received by firehose from the HTTP service.
+* Total number of No response received by firehose from the HTTP service.
 
+## Filter
 
-## <a name="Filter" /> Filter
 Since firehose supports filtration based on some data, these metrics give some information related to that.
 
-#### <a name="Filter Type" /> `Filter Type`
+### `Filter Type`
 
-- Type of filter in the firehose. It will be one of the "none", "key", "message".
+* Type of filter in the firehose. It will be one of the "none", "key", "message".
 
-#### <a name="Total Messages filtered" /> `Total Messages filtered`
+### `Total Messages filtered`
 
-- Sum of all the messages filtered because of the filter condition per pod.
+* Sum of all the messages filtered because of the filter condition per pod.
 
-*****
