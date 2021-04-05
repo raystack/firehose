@@ -62,7 +62,6 @@ public class PromRequest {
         Map<String, String> headerMap = headerBuilder.build();
         headerMap.forEach(request::addHeader);
         request.setEntity(requestEntityBuilder.buildHttpEntity(writeRequest));
-        instrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}", uri, headerMap, writeRequest.toString());
         return Collections.singletonList(request);
     }
 }

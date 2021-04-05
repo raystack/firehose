@@ -50,11 +50,11 @@ public class TimeSeriesBuilderUtilsTest {
                 .setCustomerId("CUSTOMER")
                 .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000000)).build();
         DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
-        Map<String, Object> labelsFromMessage = TimeSeriesBuilderUtils.getLabelsFromMessage(dynamicMessage, labelNameProtoIndexMapping, 1);
+        Map<String, String> labelsFromMessage = TimeSeriesBuilderUtils.getLabelsFromMessage(dynamicMessage, labelNameProtoIndexMapping, 1);
         Assert.assertEquals(3, labelsFromMessage.size());
         Assert.assertEquals("DRIVER", labelsFromMessage.get("driver_id"));
         Assert.assertEquals("CUSTOMER", labelsFromMessage.get("customer_id"));
-        Assert.assertEquals(1, labelsFromMessage.get(PromSinkConstants.KAFKA_PARTITION));
+        Assert.assertEquals("1", labelsFromMessage.get(PromSinkConstants.KAFKA_PARTITION));
     }
 
     @Test
@@ -85,9 +85,9 @@ public class TimeSeriesBuilderUtilsTest {
                 TestFeedbackLogMessage.newBuilder().
                         setOrderCompletionTime(Timestamp.newBuilder().setSeconds(seconds)).build();
         DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
-        Map<String, Object> labelsFromMessage = TimeSeriesBuilderUtils.getLabelsFromMessage(dynamicMessage, labelNameProtoIndexMapping, 1);
+        Map<String, String> labelsFromMessage = TimeSeriesBuilderUtils.getLabelsFromMessage(dynamicMessage, labelNameProtoIndexMapping, 1);
         Assert.assertEquals(2, labelsFromMessage.size());
-        Assert.assertEquals(seconds, labelsFromMessage.get("order_completion_time_seconds"));
-        Assert.assertEquals(1, labelsFromMessage.get(PromSinkConstants.KAFKA_PARTITION));
+        Assert.assertEquals(String.valueOf(seconds), labelsFromMessage.get("order_completion_time_seconds"));
+        Assert.assertEquals("1", labelsFromMessage.get(PromSinkConstants.KAFKA_PARTITION));
     }
 }

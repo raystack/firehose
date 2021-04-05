@@ -40,10 +40,10 @@ public class WriteRequestBuilder {
     public Cortex.WriteRequest buildWriteRequest(List<Message> messages) throws InvalidProtocolBufferException {
         writeRequestBuilder.clear();
         List<Cortex.TimeSeries> sortedTimeSeriesList = new ArrayList<>();
-        for (Message esbMessage : messages) {
-            DynamicMessage message = protoParser.parse(esbMessage.getLogMessage());
-            int partition = esbMessage.getPartition();
-            List<Cortex.TimeSeries> timeSeriesList = timeSeriesBuilder.buildTimeSeries(message, partition);
+        for (Message message : messages) {
+            DynamicMessage protoMessage = protoParser.parse(message.getLogMessage());
+            int partition = message.getPartition();
+            List<Cortex.TimeSeries> timeSeriesList = timeSeriesBuilder.buildTimeSeries(protoMessage, partition);
             sortedTimeSeriesList.addAll(timeSeriesList);
         }
         sortedTimeSeriesList.sort(Comparator.comparing(o -> o.getSamplesList().get(0).getTimestampMs()));

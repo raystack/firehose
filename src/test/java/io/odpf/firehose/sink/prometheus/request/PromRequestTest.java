@@ -93,7 +93,6 @@ public class PromRequestTest {
         verify(headerBuilder, times(1)).build();
         verify(writeRequestBuilder, times(1)).buildWriteRequest(messages);
         verify(requestEntityBuilder, times(1)).buildHttpEntity(writeRequestBody);
-        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}", uri, headerMap, writeRequestBody.toString());
 
         byte[] byteArrayIs = IOUtils.toByteArray(request.getEntity().getContent());
         byte[] uncompressedSnappy = Snappy.uncompress(byteArrayIs);

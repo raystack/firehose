@@ -52,20 +52,15 @@ public class TimeSeriesBuilder {
         Cortex.LabelPair.Builder cortexLabelBuilder = Cortex.LabelPair.newBuilder();
         Cortex.Sample.Builder cortexSampleBuilder = Cortex.Sample.newBuilder();
 
-        Map<String, Object> labelPair = TimeSeriesBuilderUtils.getLabelsFromMessage(message, labelNameProtoIndexMapping, partition);
+        Map<String, String> labels = TimeSeriesBuilderUtils.getLabelsFromMessage(message, labelNameProtoIndexMapping, partition);
         List<PrometheusMetric> metricList = TimeSeriesBuilderUtils.getMetricsFromMessage(message, metricNameProtoIndexMapping);
         Long metricTimestamp = TimeSeriesBuilderUtils.getMetricTimestamp(message, isEventTimestampEnabled, timestampIndex);
         List<Cortex.TimeSeries> timeSeriesList = new ArrayList<>();
         for (PrometheusMetric prometheusMetric : metricList) {
-            Cortex.LabelPair metric = buildMetric(prometheusMetric.getMetricName(), cortexLabelBuilder);
-            Cortex.Sample sample = buildSample(metricTimestamp, prometheusMetric.getMetricValue(), cortexSampleBuilder);
             cortexTimeSeriesBuilder.clear();
-            cortexTimeSeriesBuilder.addLabels(metric);
-            cortexTimeSeriesBuilder.addSamples(sample);
-            for (Map.Entry<String, Object> entry : labelPair.entrySet()) {
-                Cortex.LabelPair label = buildLabels(entry.getKey(), entry.getValue(), cortexLabelBuilder);
-                cortexTimeSeriesBuilder.addLabels(label);
-            }
+            cortexTimeSeriesBuilder.addLabels(buildMetric(prometheusMetric.getMetricName(), cortexLabelBuilder));
+            cortexTimeSeriesBuilder.addSamples(buildSample(metricTimestamp, prometheusMetric.getMetricValue(), cortexSampleBuilder));
+            labels.forEach((name, value) -> cortexTimeSeriesBuilder.addLabels(buildLabels(name, value, cortexLabelBuilder)));
             timeSeriesList.add(cortexTimeSeriesBuilder.build());
         }
         return timeSeriesList;
@@ -79,11 +74,11 @@ public class TimeSeriesBuilder {
                 .build();
     }
 
-    private Cortex.LabelPair buildLabels(String labelName, Object labelValue, Cortex.LabelPair.Builder cortexLabelBuilder) {
+    private Cortex.LabelPair buildLabels(String labelName, String labelValue, Cortex.LabelPair.Builder cortexLabelBuilder) {
         cortexLabelBuilder.clear();
         return cortexLabelBuilder
                 .setName(labelName)
-                .setValue(labelValue.toString())
+                .setValue(labelValue)
                 .build();
     }
 

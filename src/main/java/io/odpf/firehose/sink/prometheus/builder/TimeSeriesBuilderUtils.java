@@ -23,10 +23,10 @@ public class TimeSeriesBuilderUtils {
             throw new EglcConfigurationException(FIELD_NAME_MAPPING_ERROR_MESSAGE);
         }
         List<PrometheusMetric> metricList = new ArrayList<>();
-        for (Object protoFieldIndex : metricNameProtoIndexMapping.keySet()) {
+        for (Object metricProtoIndex : metricNameProtoIndexMapping.keySet()) {
             PrometheusMetric metric = new PrometheusMetric();
-            int fieldIndex = Integer.parseInt((String) protoFieldIndex);
-            Object labelKey = metricNameProtoIndexMapping.get(protoFieldIndex);
+            int fieldIndex = Integer.parseInt((String) metricProtoIndex);
+            Object labelKey = metricNameProtoIndexMapping.get(metricProtoIndex);
             Object labelValue = getField(message, fieldIndex);
             if (labelKey instanceof String) {
                 metric.setMetricName(labelKey.toString());
@@ -40,32 +40,32 @@ public class TimeSeriesBuilderUtils {
         return metricList;
     }
 
-    public static Map<String, Object> getLabelsFromMessage(Message message, Properties labelNameProtoIndexMapping, int partition) throws InvalidProtocolBufferException {
-        Map<String, Object> labelPair = new HashMap<>();
-        for (Object protoFieldIndex : labelNameProtoIndexMapping.keySet()) {
-            int fieldIndex = Integer.parseInt((String) protoFieldIndex);
-            Object label = labelNameProtoIndexMapping.get(protoFieldIndex);
+    public static Map<String, String> getLabelsFromMessage(Message message, Properties labelNameProtoIndexMapping, int partition) throws InvalidProtocolBufferException {
+        Map<String, String> labels = new HashMap<>();
+        for (Object labelProtoIndex : labelNameProtoIndexMapping.keySet()) {
+            int fieldIndex = Integer.parseInt((String) labelProtoIndex);
+            Object labelKey = labelNameProtoIndexMapping.get(labelProtoIndex);
             Object labelValue = getField(message, fieldIndex);
-            if (label instanceof String) {
-                labelPair.put(label.toString(), getFieldFromString(message, fieldIndex));
-            } else if (label instanceof Properties) {
-                Map<String, Object> labelsFromMessage = getLabelsFromMessage((Message) labelValue, (Properties) label, partition);
-                labelPair.putAll(labelsFromMessage);
+            if (labelKey instanceof String) {
+                labels.put(labelKey.toString(), getFieldValueString(message, fieldIndex));
+            } else if (labelKey instanceof Properties) {
+                Map<String, String> labelsFromMessage = getLabelsFromMessage((Message) labelValue, (Properties) labelKey, partition);
+                labels.putAll(labelsFromMessage);
             }
         }
-        labelPair.put(KAFKA_PARTITION, partition);
-        return labelPair;
+        labels.put(KAFKA_PARTITION, String.valueOf(partition));
+        return labels;
     }
 
-    private static Object getFieldFromString(Message message, int fieldIndex) throws InvalidProtocolBufferException {
+    private static String getFieldValueString(Message message, int fieldIndex) throws InvalidProtocolBufferException {
         Descriptors.FieldDescriptor fieldDescriptor = getFieldByIndex(message, fieldIndex);
         if (fieldIsOfMessageType(fieldDescriptor, Timestamp.getDescriptor())
                 || fieldIsOfMessageType(fieldDescriptor, Duration.getDescriptor())) {
-            return getMillisFromTimestamp(getTimestamp(message, fieldIndex));
+            return getMillisFromTimestamp(getTimestamp(message, fieldIndex)).toString();
         } else if (fieldIsOfEnumType(fieldDescriptor)) {
             return getField(message, fieldIndex).toString();
         } else {
-            return getField(message, fieldIndex);
+            return getField(message, fieldIndex).toString();
         }
     }
 

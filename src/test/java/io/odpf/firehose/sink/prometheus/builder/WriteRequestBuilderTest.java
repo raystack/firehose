@@ -8,7 +8,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
 import cortexpb.Cortex;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -18,13 +20,16 @@ import java.util.List;
 
 import static io.odpf.firehose.sink.prometheus.PromSinkConstants.KAFKA_PARTITION;
 import static io.odpf.firehose.sink.prometheus.PromSinkConstants.PROMETHEUS_LABEL_FOR_METRIC_NAME;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class WriteRequestBuilderTest {
 
     @Mock
     private TimeSeriesBuilder timeSeriesBuilder;
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Mock
     private ProtoParser protoParser;
@@ -106,5 +111,20 @@ public class WriteRequestBuilderTest {
         String expected = "timeseries {\n  labels {\n    name: \"__name__\"\n    value: \"tip_amount\"\n  }\n  labels {\n    name: \"kafka_partition\"\n    value: \"1\"\n  }\n  samples {\n    value: 200.0\n    timestamp_ms: 8000\n  }\n}\n"
                 + "timeseries {\n  labels {\n    name: \"__name__\"\n    value: \"tip_amount\"\n  }\n  labels {\n    name: \"kafka_partition\"\n    value: \"0\"\n  }\n  samples {\n    value: 100.0\n    timestamp_ms: 10000\n  }\n}\n";
         assertEquals(expected, writeRequest.toString());
+    }
+
+    @Test
+    public void shouldReturnEmptyRequest() throws InvalidProtocolBufferException {
+        Cortex.WriteRequest writeRequest = new WriteRequestBuilder(timeSeriesBuilder, protoParser)
+                .buildWriteRequest(new ArrayList<>());
+        assertTrue(writeRequest.toString().isEmpty());
+    }
+
+    @Test
+    public void shouldThrowException() throws InvalidProtocolBufferException {
+        expectedException.expect(InvalidProtocolBufferException.class);
+        expectedException.expectMessage("Invalid");
+        Mockito.when(protoParser.parse(message1.getLogMessage())).thenThrow(new InvalidProtocolBufferException("Invalid"));
+        new WriteRequestBuilder(timeSeriesBuilder, protoParser).buildWriteRequest(messages);
     }
 }
