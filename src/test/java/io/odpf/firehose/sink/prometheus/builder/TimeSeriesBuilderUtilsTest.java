@@ -56,4 +56,38 @@ public class TimeSeriesBuilderUtilsTest {
         Assert.assertEquals("CUSTOMER", labelsFromMessage.get("customer_id"));
         Assert.assertEquals(1, labelsFromMessage.get(PromSinkConstants.KAFKA_PARTITION));
     }
+
+    @Test
+    public void shouldGetNestedMetricListFromMessage() throws InvalidProtocolBufferException {
+        Properties metricNameProtoIndexMapping = new Properties();
+        Properties m = new Properties();
+        m.setProperty("1", "order_completion_time_seconds");
+        metricNameProtoIndexMapping.put("15", m);
+        long seconds = System.currentTimeMillis() / 1000;
+        TestFeedbackLogMessage feedbackLogMessage =
+                TestFeedbackLogMessage.newBuilder().
+                        setOrderCompletionTime(Timestamp.newBuilder().setSeconds(seconds)).build();
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
+        List<PrometheusMetric> metricsFromMessage = TimeSeriesBuilderUtils.getMetricsFromMessage(dynamicMessage, metricNameProtoIndexMapping);
+        Assert.assertEquals(1, metricsFromMessage.size());
+        Assert.assertEquals("order_completion_time_seconds", metricsFromMessage.get(0).getMetricName());
+        Assert.assertEquals(seconds, metricsFromMessage.get(0).getMetricValue(), 0.0001);
+    }
+
+    @Test
+    public void shouldGetNestedLabelListFromMessage() throws InvalidProtocolBufferException {
+        Properties labelNameProtoIndexMapping = new Properties();
+        Properties m = new Properties();
+        m.setProperty("1", "order_completion_time_seconds");
+        labelNameProtoIndexMapping.put("15", m);
+        long seconds = System.currentTimeMillis() / 1000;
+        TestFeedbackLogMessage feedbackLogMessage =
+                TestFeedbackLogMessage.newBuilder().
+                        setOrderCompletionTime(Timestamp.newBuilder().setSeconds(seconds)).build();
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
+        Map<String, Object> labelsFromMessage = TimeSeriesBuilderUtils.getLabelsFromMessage(dynamicMessage, labelNameProtoIndexMapping, 1);
+        Assert.assertEquals(2, labelsFromMessage.size());
+        Assert.assertEquals(seconds, labelsFromMessage.get("order_completion_time_seconds"));
+        Assert.assertEquals(1, labelsFromMessage.get(PromSinkConstants.KAFKA_PARTITION));
+    }
 }
