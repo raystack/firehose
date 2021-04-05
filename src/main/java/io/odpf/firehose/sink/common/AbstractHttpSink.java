@@ -25,7 +25,7 @@ import static io.odpf.firehose.metrics.Metrics.SINK_HTTP_RESPONSE_CODE_TOTAL;
 
 public abstract class AbstractHttpSink extends AbstractSink {
 
-    private List<HttpEntityEnclosingRequestBase> httpRequests = new ArrayList<>();
+    private final List<HttpEntityEnclosingRequestBase> httpRequests = new ArrayList<>();
     private final HttpClient httpClient;
     private final StencilClient stencilClient;
     private final Map<Integer, Boolean> retryStatusCodeRanges;

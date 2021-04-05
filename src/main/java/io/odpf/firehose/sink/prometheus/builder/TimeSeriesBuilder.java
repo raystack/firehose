@@ -18,8 +18,8 @@ import static io.odpf.firehose.sink.prometheus.PromSinkConstants.*;
  */
 public class TimeSeriesBuilder {
 
-    private Properties metricNameProtoIndexMapping;
-    private Properties labelNameProtoIndexMapping;
+    private final Properties metricNameProtoIndexMapping;
+    private final Properties labelNameProtoIndexMapping;
     private Integer timestampIndex;
     private Boolean isEventTimestampEnabled;
 
@@ -29,10 +29,14 @@ public class TimeSeriesBuilder {
      * @param config the prometheus sink config
      */
     public TimeSeriesBuilder(PromSinkConfig config) {
-        metricNameProtoIndexMapping = config.getSinkPromMetricNameProtoIndexMapping();
-        labelNameProtoIndexMapping = config.getSinkPromLabelNameProtoIndexMapping();
-        timestampIndex = config.getSinkPromProtoEventTimestampIndex();
+        this(config.getSinkPromMetricNameProtoIndexMapping(), config.getSinkPromLabelNameProtoIndexMapping());
         isEventTimestampEnabled = config.isEventTimestampEnabled();
+        timestampIndex = config.getSinkPromProtoEventTimestampIndex();
+    }
+
+    private TimeSeriesBuilder(Properties metricNameProtoIndexMapping, Properties labelNameProtoIndexMapping) {
+        this.metricNameProtoIndexMapping = metricNameProtoIndexMapping == null ? new Properties() : metricNameProtoIndexMapping;
+        this.labelNameProtoIndexMapping = labelNameProtoIndexMapping == null ? new Properties() : labelNameProtoIndexMapping;
     }
 
     /**
@@ -49,12 +53,12 @@ public class TimeSeriesBuilder {
         Cortex.Sample.Builder cortexSampleBuilder = Cortex.Sample.newBuilder();
 
         Map<String, Object> labelPair = TimeSeriesBuilderUtils.getLabelsFromMessage(message, labelNameProtoIndexMapping, partition);
-        List<Map<String, Object>> metricList = TimeSeriesBuilderUtils.getMetricsFromMessage(message, metricNameProtoIndexMapping);
+        List<PrometheusMetric> metricList = TimeSeriesBuilderUtils.getMetricsFromMessage(message, metricNameProtoIndexMapping);
         Long metricTimestamp = TimeSeriesBuilderUtils.getMetricTimestamp(message, isEventTimestampEnabled, timestampIndex);
         List<Cortex.TimeSeries> timeSeriesList = new ArrayList<>();
-        for (Map<String, Object> metricName : metricList) {
-            Cortex.LabelPair metric = buildMetric(metricName.get(METRIC_NAME).toString(), cortexLabelBuilder);
-            Cortex.Sample sample = buildSample(metricTimestamp, Double.parseDouble(metricName.get(METRIC_VALUE).toString()), cortexSampleBuilder);
+        for (PrometheusMetric prometheusMetric : metricList) {
+            Cortex.LabelPair metric = buildMetric(prometheusMetric.getMetricName(), cortexLabelBuilder);
+            Cortex.Sample sample = buildSample(metricTimestamp, prometheusMetric.getMetricValue(), cortexSampleBuilder);
             cortexTimeSeriesBuilder.clear();
             cortexTimeSeriesBuilder.addLabels(metric);
             cortexTimeSeriesBuilder.addSamples(sample);

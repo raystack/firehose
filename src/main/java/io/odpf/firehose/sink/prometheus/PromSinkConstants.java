@@ -10,8 +10,6 @@ public class PromSinkConstants {
     public static final String FIELD_NAME_MAPPING_ERROR_MESSAGE = "field index mapping cannot be empty; at least one field value is required";
 
     public static final String PROMETHEUS_LABEL_FOR_METRIC_NAME = "__name__";
-    public static final String METRIC_NAME = "metric_name";
-    public static final String METRIC_VALUE = "metric_value";
     public static final String KAFKA_PARTITION = "kafka_partition";
 
     public static final long SECONDS_SCALED_TO_MILLI = 1000L;

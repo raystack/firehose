@@ -29,7 +29,7 @@ import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_DROP_TOTAL;
  */
 public class HttpSink extends AbstractHttpSink {
 
-    private Request request;
+    private final Request request;
 
     /**
      * Instantiates a new Http sink.

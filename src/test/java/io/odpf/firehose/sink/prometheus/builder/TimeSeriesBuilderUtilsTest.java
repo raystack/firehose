@@ -28,13 +28,13 @@ public class TimeSeriesBuilderUtilsTest {
                 .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000000)).build();
 
         DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
-        List<Map<String, Object>> metricsFromMessage = TimeSeriesBuilderUtils.getMetricsFromMessage(dynamicMessage, metricNameProtoIndexMapping);
+        List<PrometheusMetric> metricsFromMessage = TimeSeriesBuilderUtils.getMetricsFromMessage(dynamicMessage, metricNameProtoIndexMapping);
         Assert.assertEquals(2, metricsFromMessage.size());
-        metricsFromMessage.sort(Comparator.comparing(o -> o.get(PromSinkConstants.METRIC_NAME).toString()));
-        Assert.assertEquals("feedback_ratings", metricsFromMessage.get(0).get(PromSinkConstants.METRIC_NAME));
-        Assert.assertEquals(5, metricsFromMessage.get(0).get(PromSinkConstants.METRIC_VALUE));
-        Assert.assertEquals("tip_amount", metricsFromMessage.get(1).get(PromSinkConstants.METRIC_NAME));
-        Assert.assertEquals((float) 10000.0, metricsFromMessage.get(1).get(PromSinkConstants.METRIC_VALUE));
+        metricsFromMessage.sort(Comparator.comparing(PrometheusMetric::getMetricName));
+        Assert.assertEquals("feedback_ratings", metricsFromMessage.get(0).getMetricName());
+        Assert.assertEquals(5.0, metricsFromMessage.get(0).getMetricValue(), 0.0001);
+        Assert.assertEquals("tip_amount", metricsFromMessage.get(1).getMetricName());
+        Assert.assertEquals(10000.0, metricsFromMessage.get(1).getMetricValue(), 0.0001);
     }
 
 
