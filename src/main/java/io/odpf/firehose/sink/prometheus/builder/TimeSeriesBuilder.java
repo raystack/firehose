@@ -9,7 +9,7 @@ import cortexpb.Cortex;
 import java.util.Properties;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import static io.odpf.firehose.sink.prometheus.PromSinkConstants.*;
 
@@ -55,15 +55,13 @@ public class TimeSeriesBuilder {
         Map<String, String> labels = TimeSeriesBuilderUtils.getLabelsFromMessage(message, labelNameProtoIndexMapping, partition);
         List<PrometheusMetric> metricList = TimeSeriesBuilderUtils.getMetricsFromMessage(message, metricNameProtoIndexMapping);
         Long metricTimestamp = TimeSeriesBuilderUtils.getMetricTimestamp(message, isEventTimestampEnabled, timestampIndex);
-        List<Cortex.TimeSeries> timeSeriesList = new ArrayList<>();
-        for (PrometheusMetric prometheusMetric : metricList) {
+        return metricList.stream().map(prometheusMetric -> {
             cortexTimeSeriesBuilder.clear();
             cortexTimeSeriesBuilder.addLabels(buildMetric(prometheusMetric.getMetricName(), cortexLabelBuilder));
             cortexTimeSeriesBuilder.addSamples(buildSample(metricTimestamp, prometheusMetric.getMetricValue(), cortexSampleBuilder));
             labels.forEach((name, value) -> cortexTimeSeriesBuilder.addLabels(buildLabels(name, value, cortexLabelBuilder)));
-            timeSeriesList.add(cortexTimeSeriesBuilder.build());
-        }
-        return timeSeriesList;
+            return cortexTimeSeriesBuilder.build();
+        }).collect(Collectors.toList());
     }
 
     private Cortex.LabelPair buildMetric(String metricName, Cortex.LabelPair.Builder cortexLabelBuilder) {
