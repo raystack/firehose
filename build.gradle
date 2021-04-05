@@ -26,7 +26,7 @@ lombok {
 }
 
 group 'io.odpf'
-version '1.1.0'
+version '1.2.0'
 
 
 def projName = "firehose"
@@ -216,8 +216,16 @@ jacocoTestReport {
         html.destination file("${reportsDir}/jacoco/")
     }
     afterEvaluate {
-        classDirectories = files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: ['**/config/**', '**/factory/**', '**/exception/**', '**/serializer/**', '**/Clock**'])
+        getClassDirectories().setFrom(classDirectories.files.collect {
+            fileTree(dir: it,
+                    exclude: ['**/config/**',
+                              '**/factory/**',
+                              '**/exception/**',
+                              '**/serializer/**',
+                              '**/cortexpb/**',
+                              '**/Clock**',
+                              '**/GoGoProtos**',
+                    ])
         })
     }
 }
@@ -226,6 +234,18 @@ tasks.withType(Test) {
 }
 
 jacocoTestCoverageVerification {
+    afterEvaluate {
+        getClassDirectories().setFrom(classDirectories.files.collect {
+            fileTree(dir: it,
+                    exclude: ['**/config/**',
+                              '**/factory/**',
+                              '**/exception/**',
+                              '**/serializer/**',
+                              '**/cortexpb/**',
+                              '**/Clock**',
+                              '**/GoGoProtos**',])
+        })
+    }
     violationRules {
         rule {
             limit {
