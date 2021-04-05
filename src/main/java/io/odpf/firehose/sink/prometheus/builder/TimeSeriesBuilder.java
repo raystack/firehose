@@ -67,11 +67,7 @@ public class TimeSeriesBuilder {
     }
 
     private Cortex.LabelPair buildMetric(String metricName, Cortex.LabelPair.Builder cortexLabelBuilder) {
-        cortexLabelBuilder.clear();
-        return cortexLabelBuilder
-                .setName(PROMETHEUS_LABEL_FOR_METRIC_NAME)
-                .setValue(metricName)
-                .build();
+        return buildLabels(PROMETHEUS_LABEL_FOR_METRIC_NAME, metricName, cortexLabelBuilder);
     }
 
     private Cortex.LabelPair buildLabels(String labelName, String labelValue, Cortex.LabelPair.Builder cortexLabelBuilder) {
