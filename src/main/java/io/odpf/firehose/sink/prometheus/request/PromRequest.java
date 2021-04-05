@@ -13,6 +13,7 @@ import org.apache.http.client.methods.HttpPost;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -30,11 +31,11 @@ public class PromRequest {
     /**
      * Instantiates a new Prometheus request.
      *
-     * @param instrumentation       the instrumentation
-     * @param headerBuilder         the header builder
-     * @param url                   the url
-     * @param requestEntityBuilder  the request entity builder
-     * @param writeRequestBuilder   the writeRequest builder
+     * @param instrumentation      the instrumentation
+     * @param headerBuilder        the header builder
+     * @param url                  the url
+     * @param requestEntityBuilder the request entity builder
+     * @param writeRequestBuilder  the writeRequest builder
      */
     public PromRequest(Instrumentation instrumentation, HeaderBuilder headerBuilder, String url,
                        RequestEntityBuilder requestEntityBuilder, WriteRequestBuilder writeRequestBuilder) {
@@ -48,13 +49,13 @@ public class PromRequest {
     /**
      * build Prometheus request.
      *
-     * @param messages                  the list of consumer message
-     * @return                          HttpEntityEnclosingRequestBase
-     * @throws DeserializerException    the exception on deserialization
-     * @throws URISyntaxException       the exception on URI
-     * @throws IOException              the io exception
+     * @param messages the list of consumer message
+     * @return HttpEntityEnclosingRequestBase
+     * @throws DeserializerException the exception on deserialization
+     * @throws URISyntaxException    the exception on URI
+     * @throws IOException           the io exception
      */
-    public HttpEntityEnclosingRequestBase build(List<Message> messages) throws DeserializerException, URISyntaxException, IOException {
+    public List<HttpEntityEnclosingRequestBase> build(List<Message> messages) throws DeserializerException, URISyntaxException, IOException {
         Cortex.WriteRequest writeRequest = writeRequestBuilder.buildWriteRequest(messages);
         URI uri = new URI(url);
         HttpEntityEnclosingRequestBase request = new HttpPost(uri);
@@ -62,6 +63,6 @@ public class PromRequest {
         headerMap.forEach(request::addHeader);
         request.setEntity(requestEntityBuilder.buildHttpEntity(writeRequest));
         instrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}", uri, headerMap, writeRequest.toString());
-        return request;
+        return Collections.singletonList(request);
     }
 }

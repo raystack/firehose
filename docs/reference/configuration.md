@@ -414,7 +414,7 @@ Defines the range of HTTP status codes for which retry will be attempted.
 * Default value: `400-600`
 
 #### <a name="SINK_PROM_REQUEST_LOG_STATUS_CODE_RANGES" /> `SINK_PROM_REQUEST_LOG_STATUS_CODE_RANGES`
-Defines the range of HTTP status codes for which retry will be attempted.
+Defines the range of HTTP status codes for which the request will be logged.
 * Example value: `400-499`
 * Type: `optional`
 * Default value: `400-499`
@@ -431,7 +431,8 @@ The mapping of fields and the corresponding proto index which will be set as the
 * Type: `required`
 
 #### <a name="SINK_PROM_LABEL_NAME_PROTO_INDEX_MAPPING" /> `SINK_PROM_LABEL_NAME_PROTO_INDEX_MAPPING`
-The mapping of fields and the corresponding proto index which will be set as the label name on Cortex. This is a JSON field.
+The mapping of proto fields to metric lables. This is a JSON field.
+Each metric defined in `SINK_PROM_METRIC_NAME_PROTO_INDEX_MAPPING` will have all the labels defined here.
 * Example value: `{"6":"customer_id"}`
 * Type: `optional`
 

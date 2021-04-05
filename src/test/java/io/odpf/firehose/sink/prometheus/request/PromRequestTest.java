@@ -82,7 +82,7 @@ public class PromRequestTest {
         when(requestEntityBuilder.buildHttpEntity(writeRequestBody)).thenReturn(new ByteArrayEntity(compressedBody));
 
         PromRequest promRequest = new PromRequest(instrumentation, headerBuilder, url, requestEntityBuilder, writeRequestBuilder);
-        HttpEntityEnclosingRequestBase request = promRequest.build(messages);
+        HttpEntityEnclosingRequestBase request = promRequest.build(messages).get(0);
 
         BasicHeader header1 = new BasicHeader(CONTENT_ENCODING, CONTENT_ENCODING_DEFAULT);
         BasicHeader header2 = new BasicHeader(PROMETHEUS_REMOTE_WRITE_VERSION, PROMETHEUS_REMOTE_WRITE_VERSION_DEFAULT);

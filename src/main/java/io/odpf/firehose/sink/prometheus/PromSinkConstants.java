@@ -16,6 +16,4 @@ public class PromSinkConstants {
 
     public static final long SECONDS_SCALED_TO_MILLI = 1000L;
     public static final long MILLIS_SCALED_TO_NANOS = 1000000L;
-
-    static final String SUCCESS_CODE_PATTERN = "^2.*";
 }
