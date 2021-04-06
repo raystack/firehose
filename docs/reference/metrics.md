@@ -4,17 +4,17 @@ Service-level Indicators \(SLIs\) are the measurements used to calculate the per
 
 ## Table of Contents
 
-* [Type Details](metrics.md#-type-details)
-* [Overview](metrics.md#-overview)
-* [Pods Health](metrics.md#-pods-health)
-* [Kafka Consumer Details](metrics.md#-kafka-consumer-details)
-* [Error](metrics.md#-error)
-* [Memory](metrics.md#-memory)
-* [Error](metrics.md#-error)
-* [Garbage Collection](metrics.md#-garbage-collection)
-* [Retry](metrics.md#-retry)
-* [HTTP Sink](metrics.md#-http-sink)
-* [Filter](metrics.md#-filter)
+* [Type Details](metrics.md#type-details)
+* [Overview](metrics.md#overview)
+* [Pods Health](metrics.md#pods-health)
+* [Kafka Consumer Details](metrics.md#kafka-consumer-details)
+* [Error](metrics.md#error)
+* [Memory](metrics.md#memory)
+* [Error](metrics.md#error)
+* [Garbage Collection](metrics.md#garbage-collection)
+* [Retry](metrics.md#retry)
+* [HTTP Sink](metrics.md#http-sink)
+* [Filter](metrics.md#filter)
 
 ## Type Details
 
