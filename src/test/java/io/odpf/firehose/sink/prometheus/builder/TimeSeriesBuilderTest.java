@@ -16,19 +16,43 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 public class TimeSeriesBuilderTest {
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
+    private void sortAndAssertTimeSeries(List<Cortex.TimeSeries> expectedTimeSeries, List<Cortex.TimeSeries> timeSeries) {
+        timeSeries.sort((o1, o2) -> o1.getLabelsList().stream().filter(x -> x.getName().equals("__name__")).findFirst().get().getValue().compareTo(
+                o2.getLabelsList().stream().filter(x -> x.getName().equals("__name__")).findFirst().get().getValue()));
+        expectedTimeSeries.sort((o1, o2) -> o1.getLabelsList().stream().filter(x -> x.getName().equals("__name__")).findFirst().get().getValue().compareTo(
+                o2.getLabelsList().stream().filter(x -> x.getName().equals("__name__")).findFirst().get().getValue()));
+        timeSeries = timeSeries.stream().map(x -> {
+            Cortex.TimeSeries.Builder builder = x.toBuilder();
+            List<Cortex.LabelPair> labels = new ArrayList<>(builder.getLabelsList());
+            labels.sort(Comparator.comparing(Cortex.LabelPairOrBuilder::getName));
+            builder.clearLabels();
+            builder.addAllLabels(labels);
+            return builder.build();
+        }).collect(Collectors.toList());
+        expectedTimeSeries = expectedTimeSeries.stream().map(x -> {
+            Cortex.TimeSeries.Builder builder = x.toBuilder();
+            List<Cortex.LabelPair> labels = new ArrayList<>(builder.getLabelsList());
+            labels.sort(Comparator.comparing(Cortex.LabelPairOrBuilder::getName));
+            builder.clearLabels();
+            builder.addAllLabels(labels);
+            return builder.build();
+        }).collect(Collectors.toList());
+
+        assertEquals(expectedTimeSeries, timeSeries);
+    }
+
     @Test
-    public void testSingleMetricWithMultipleLables() throws InvalidProtocolBufferException {
+    public void testSingleMetricWithMultipleLabels() throws InvalidProtocolBufferException {
         Properties promConfigProps = new Properties();
 
         promConfigProps.setProperty("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX", "2");
@@ -47,13 +71,28 @@ public class TimeSeriesBuilderTest {
 
         PromSinkConfig promSinkConfig = ConfigFactory.create(PromSinkConfig.class, promConfigProps);
 
-        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig)
-                .buildTimeSeries(dynamicMessage, 2);
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig).buildTimeSeries(dynamicMessage, 2);
 
-        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"support_ticket_created\"\n  value: \"true\"\n}\nlabels {\n  name: \"customer_id\"\n  value: \"CUSTOMER\"\n}\nsamples {\n  value: 10000.0\n  timestamp_ms: 1000000000\n}\n]";
-
-        assertEquals(expectedResult, timeSeries.toString());
+        List<Cortex.TimeSeries> expectedTimeSeries = new ArrayList<>();
+        expectedTimeSeries.add(Cortex.TimeSeries.newBuilder().
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("support_ticket_created").
+                        setValue("true")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("kafka_partition").
+                        setValue("2")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("__name__").
+                        setValue("tip_amount")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("customer_id").
+                        setValue("CUSTOMER")).
+                addSamples(Cortex.Sample.newBuilder().
+                        setValue(10000).
+                        setTimestampMs(1000000000)).build());
+        sortAndAssertTimeSeries(expectedTimeSeries, timeSeries);
     }
+
 
     @Test
     public void testMultipleMetricWithMultipleLabels() throws InvalidProtocolBufferException {
@@ -75,11 +114,43 @@ public class TimeSeriesBuilderTest {
 
         PromSinkConfig promSinkConfig = ConfigFactory.create(PromSinkConfig.class, promConfigProps);
 
-        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig)
-                .buildTimeSeries(dynamicMessage, 2);
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig).buildTimeSeries(dynamicMessage, 2);
 
-        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"feedback_ratings\"\n}\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"support_ticket_created\"\n  value: \"true\"\n}\nsamples {\n  value: 5.0\n  timestamp_ms: 1000000000\n}\n, labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"support_ticket_created\"\n  value: \"true\"\n}\nsamples {\n  value: 10000.0\n  timestamp_ms: 1000000000\n}\n]";
-        assertEquals(expectedResult, timeSeries.toString());
+        List<Cortex.TimeSeries> expectedTimeSeries = new ArrayList<>();
+        expectedTimeSeries.add(Cortex.TimeSeries.newBuilder().
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("__name__").
+                        setValue("tip_amount")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("driver_id").
+                        setValue("DRIVER")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("support_ticket_created").
+                        setValue("true")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("kafka_partition").
+                        setValue("2")).
+                addSamples(Cortex.Sample.newBuilder().
+                        setValue(10000).
+                        setTimestampMs(1000000000)).build());
+        expectedTimeSeries.add(Cortex.TimeSeries.newBuilder().
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("__name__").
+                        setValue("feedback_ratings")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("support_ticket_created").
+                        setValue("true")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("kafka_partition").
+                        setValue("2")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("driver_id").
+                        setValue("DRIVER")).
+                addSamples(Cortex.Sample.newBuilder().
+                        setValue(5).
+                        setTimestampMs(1000000000)).build());
+
+        sortAndAssertTimeSeries(expectedTimeSeries, timeSeries);
     }
 
     @Test
@@ -100,13 +171,28 @@ public class TimeSeriesBuilderTest {
 
         PromSinkConfig promSinkConfig = ConfigFactory.create(PromSinkConfig.class, promConfigProps);
 
-        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig)
-                .buildTimeSeries(dynamicMessage, 2);
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig).buildTimeSeries(dynamicMessage, 2);
 
-        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"event_timestamp\"\n  value: \"1000000000\"\n}\nsamples {\n  value: 10000.0\n  timestamp_ms: 1000000000\n}\n]";
 
-        assertEquals(expectedResult, timeSeries.toString());
+        List<Cortex.TimeSeries> expectedTimeSeries = new ArrayList<>();
+        expectedTimeSeries.add(Cortex.TimeSeries.newBuilder().
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("__name__").
+                        setValue("tip_amount")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("driver_id").
+                        setValue("DRIVER")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("event_timestamp").
+                        setValue("1000000000")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("kafka_partition").
+                        setValue("2")).
+                addSamples(Cortex.Sample.newBuilder().
+                        setValue(10000).
+                        setTimestampMs(1000000000)).build());
 
+        sortAndAssertTimeSeries(expectedTimeSeries, timeSeries);
     }
 
     @Test
@@ -125,12 +211,21 @@ public class TimeSeriesBuilderTest {
 
         PromSinkConfig promSinkConfig = ConfigFactory.create(PromSinkConfig.class, promConfigProps);
 
-        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig)
-                .buildTimeSeries(dynamicMessage, 2);
+        List<Cortex.TimeSeries> timeSeries = new ArrayList(new TimeSeriesBuilder(promSinkConfig)
+                .buildTimeSeries(dynamicMessage, 2));
 
-        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"order_number\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 100.0\n  timestamp_ms: 1000000\n}\n]";
-
-        assertEquals(expectedResult, timeSeries.toString());
+        List<Cortex.TimeSeries> expectedTimeSeries = new ArrayList<>();
+        expectedTimeSeries.add(Cortex.TimeSeries.newBuilder().
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("__name__").
+                        setValue("order_number")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("kafka_partition").
+                        setValue("2")).
+                addSamples(Cortex.Sample.newBuilder().
+                        setValue(100).
+                        setTimestampMs(1000000)).build());
+        sortAndAssertTimeSeries(expectedTimeSeries, timeSeries);
     }
 
     @Test
@@ -151,12 +246,24 @@ public class TimeSeriesBuilderTest {
 
         PromSinkConfig promSinkConfig = ConfigFactory.create(PromSinkConfig.class, promConfigProps);
 
-        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig)
-                .buildTimeSeries(dynamicMessage, 2);
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig).buildTimeSeries(dynamicMessage, 2);
 
-        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"feedback_source\"\n  value: \"DRIVER\"\n}\nsamples {\n  value: 10000.0\n  timestamp_ms: 1000000000\n}\n]";
+        List<Cortex.TimeSeries> expectedTimeSeries = new ArrayList<>();
+        expectedTimeSeries.add(Cortex.TimeSeries.newBuilder().
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("__name__").
+                        setValue("tip_amount")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("feedback_source").
+                        setValue("DRIVER")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("kafka_partition").
+                        setValue("2")).
+                addSamples(Cortex.Sample.newBuilder().
+                        setValue(10000).
+                        setTimestampMs(1000000000)).build());
 
-        assertEquals(expectedResult, timeSeries.toString());
+        sortAndAssertTimeSeries(expectedTimeSeries, timeSeries);
     }
 
     @Test
@@ -179,11 +286,37 @@ public class TimeSeriesBuilderTest {
 
         PromSinkConfig promSinkConfig = ConfigFactory.create(PromSinkConfig.class, promConfigProps);
 
-        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig)
-                .buildTimeSeries(dynamicMessage, 2);
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig).buildTimeSeries(dynamicMessage, 2);
 
-        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"order_completion_time_seconds\"\n}\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 12345.0\n  timestamp_ms: 1000000000\n}\n, labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 100.0\n  timestamp_ms: 1000000000\n}\n]";
-        assertEquals(expectedResult, timeSeries.toString());
+        List<Cortex.TimeSeries> expectedTimeSeries = new ArrayList<>();
+        expectedTimeSeries.add(Cortex.TimeSeries.newBuilder().
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("__name__").
+                        setValue("tip_amount")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("driver_id").
+                        setValue("DRIVER")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("kafka_partition").
+                        setValue("2")).
+                addSamples(Cortex.Sample.newBuilder().
+                        setValue(100).
+                        setTimestampMs(1000000000)).build());
+
+        expectedTimeSeries.add(Cortex.TimeSeries.newBuilder().
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("__name__").
+                        setValue("order_completion_time_seconds")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("driver_id").
+                        setValue("DRIVER")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("kafka_partition").
+                        setValue("2")).
+                addSamples(Cortex.Sample.newBuilder().
+                        setValue(12345).
+                        setTimestampMs(1000000000)).build());
+        sortAndAssertTimeSeries(expectedTimeSeries, timeSeries);
     }
 
     @Test
@@ -205,16 +338,27 @@ public class TimeSeriesBuilderTest {
 
         PromSinkConfig promSinkConfig = ConfigFactory.create(PromSinkConfig.class, promConfigProps);
 
-        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig)
-                .buildTimeSeries(dynamicMessage, 2);
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig).buildTimeSeries(dynamicMessage, 2);
+        List<Cortex.TimeSeries> expectedTimeSeries = new ArrayList<>();
+        expectedTimeSeries.add(Cortex.TimeSeries.newBuilder().
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("__name__").
+                        setValue("tip_amount")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("order_completion_time_seconds").
+                        setValue("12345")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("kafka_partition").
+                        setValue("2")).
+                addSamples(Cortex.Sample.newBuilder().
+                        setValue(10000).
+                        setTimestampMs(1000000000)).build());
+        sortAndAssertTimeSeries(expectedTimeSeries, timeSeries);
 
-        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"order_completion_time_seconds\"\n  value: \"12345\"\n}\nsamples {\n  value: 10000.0\n  timestamp_ms: 1000000000\n}\n]";
-
-        assertEquals(expectedResult, timeSeries.toString());
     }
 
     @Test
-    public void testMessageWithMetricTimestampUsingIngestionTimestamp() throws InvalidProtocolBufferException {
+    public void testMessageWithMetricTimestampUsingIngestionTimestamp() throws InvalidProtocolBufferException, InterruptedException {
         Properties promConfigProps = new Properties();
         promConfigProps.setProperty("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX", "2");
         promConfigProps.setProperty("INPUT_SCHEMA_PROTO_CLASS", TestFeedbackLogMessage.class.getName());
@@ -231,12 +375,12 @@ public class TimeSeriesBuilderTest {
 
         PromSinkConfig promSinkConfig = ConfigFactory.create(PromSinkConfig.class, promConfigProps);
 
-        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig)
-                .buildTimeSeries(dynamicMessage, 2);
-
-        String eventTimestampResult = "[labels {\n  name: \"__name__\"\n  value: \"order_number\"\n}\n\nlabels {\n  name: \"driver_id\"\n  value: \"DRIVER\"\n}labels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 100.0\n  timestamp_ms: 1000000\n}\n]";
-
-        assertNotEquals(eventTimestampResult, timeSeries.toString());
+        long beforeTime = System.currentTimeMillis();
+        Thread.sleep(2);
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig).buildTimeSeries(dynamicMessage, 2);
+        long afterTime = System.currentTimeMillis();
+        long seriesTime = timeSeries.get(0).getSamples(0).getTimestampMs();
+        assertTrue(seriesTime > beforeTime && seriesTime <= afterTime);
     }
 
     @Test
@@ -279,13 +423,20 @@ public class TimeSeriesBuilderTest {
 
         PromSinkConfig promSinkConfig = ConfigFactory.create(PromSinkConfig.class, promConfigProps);
 
-        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig)
-                .buildTimeSeries(dynamicMessage, 2);
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig).buildTimeSeries(dynamicMessage, 2);
 
-        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"tip_amount\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nsamples {\n  value: 12345.0\n  timestamp_ms: 1000000\n}\n]";
-
-        assertEquals(expectedResult, timeSeries.toString());
-
+        List<Cortex.TimeSeries> expectedTimeSeries = new ArrayList<>();
+        expectedTimeSeries.add(Cortex.TimeSeries.newBuilder().
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("__name__").
+                        setValue("tip_amount")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("kafka_partition").
+                        setValue("2")).
+                addSamples(Cortex.Sample.newBuilder().
+                        setValue(12345).
+                        setTimestampMs(1000000)).build());
+        sortAndAssertTimeSeries(expectedTimeSeries, timeSeries);
     }
 
     @Test
@@ -333,11 +484,46 @@ public class TimeSeriesBuilderTest {
 
         PromSinkConfig promSinkConfig = ConfigFactory.create(PromSinkConfig.class, promConfigProps);
 
-        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig)
-                .buildTimeSeries(dynamicMessage, 2);
-
-        String expectedResult = "[labels {\n  name: \"__name__\"\n  value: \"amount_paid_by_cash\"\n}\nlabels {\n  name: \"driver_pickup_location_name\"\n  value: \"local1\"\n}\nlabels {\n  name: \"customer_name\"\n  value: \"testing\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"driver_pickup_location_type\"\n  value: \"type1\"\n}\nsamples {\n  value: 10.0\n  timestamp_ms: 12345000\n}\n, labels {\n  name: \"__name__\"\n  value: \"booking_creation_time_seconds\"\n}\nlabels {\n  name: \"driver_pickup_location_name\"\n  value: \"local1\"\n}\nlabels {\n  name: \"customer_name\"\n  value: \"testing\"\n}\nlabels {\n  name: \"kafka_partition\"\n  value: \"2\"\n}\nlabels {\n  name: \"driver_pickup_location_type\"\n  value: \"type1\"\n}\nsamples {\n  value: 54321.0\n  timestamp_ms: 12345000\n}\n]";
-
-        assertEquals(expectedResult, timeSeries.toString());
+        List<Cortex.TimeSeries> timeSeries = new TimeSeriesBuilder(promSinkConfig).buildTimeSeries(dynamicMessage, 2);
+        List<Cortex.TimeSeries> expectedTimeSeries = new ArrayList<>();
+        expectedTimeSeries.add(Cortex.TimeSeries.newBuilder().
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("__name__").
+                        setValue("amount_paid_by_cash")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("customer_name").
+                        setValue("testing")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("driver_pickup_location_name").
+                        setValue("local1")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("driver_pickup_location_type").
+                        setValue("type1")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("kafka_partition").
+                        setValue("2")).
+                addSamples(Cortex.Sample.newBuilder().
+                        setValue(10).
+                        setTimestampMs(12345000)).build());
+        expectedTimeSeries.add(Cortex.TimeSeries.newBuilder().
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("__name__").
+                        setValue("booking_creation_time_seconds")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("customer_name").
+                        setValue("testing")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("driver_pickup_location_name").
+                        setValue("local1")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("driver_pickup_location_type").
+                        setValue("type1")).
+                addLabels(Cortex.LabelPair.newBuilder().
+                        setName("kafka_partition").
+                        setValue("2")).
+                addSamples(Cortex.Sample.newBuilder().
+                        setValue(54321).
+                        setTimestampMs(12345000)).build());
+        sortAndAssertTimeSeries(expectedTimeSeries, timeSeries);
     }
 }

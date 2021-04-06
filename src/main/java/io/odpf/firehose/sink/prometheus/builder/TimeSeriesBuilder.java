@@ -5,10 +5,11 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
 import cortexpb.Cortex;
+import io.odpf.firehose.exception.EglcConfigurationException;
 
-import java.util.Properties;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static io.odpf.firehose.sink.prometheus.PromSinkConstants.*;
@@ -48,20 +49,27 @@ public class TimeSeriesBuilder {
      * @throws InvalidProtocolBufferException the exception on invalid protobuf
      */
     public List<Cortex.TimeSeries> buildTimeSeries(Message message, int partition) throws InvalidProtocolBufferException {
+        checkValidity();
         Cortex.TimeSeries.Builder cortexTimeSeriesBuilder = Cortex.TimeSeries.newBuilder();
         Cortex.LabelPair.Builder cortexLabelBuilder = Cortex.LabelPair.newBuilder();
         Cortex.Sample.Builder cortexSampleBuilder = Cortex.Sample.newBuilder();
 
-        Map<String, String> labels = TimeSeriesBuilderUtils.getLabelsFromMessage(message, labelNameProtoIndexMapping, partition);
-        List<PrometheusMetric> metricList = TimeSeriesBuilderUtils.getMetricsFromMessage(message, metricNameProtoIndexMapping);
+        Set<PrometheusLabel> labels = TimeSeriesBuilderUtils.getLabelsFromMessage(message, labelNameProtoIndexMapping, partition);
+        Set<PrometheusMetric> metrics = TimeSeriesBuilderUtils.getMetricsFromMessage(message, metricNameProtoIndexMapping);
         Long metricTimestamp = TimeSeriesBuilderUtils.getMetricTimestamp(message, isEventTimestampEnabled, timestampIndex);
-        return metricList.stream().map(prometheusMetric -> {
+        return metrics.stream().map(metric -> {
             cortexTimeSeriesBuilder.clear();
-            cortexTimeSeriesBuilder.addLabels(buildMetric(prometheusMetric.getMetricName(), cortexLabelBuilder));
-            cortexTimeSeriesBuilder.addSamples(buildSample(metricTimestamp, prometheusMetric.getMetricValue(), cortexSampleBuilder));
-            labels.forEach((name, value) -> cortexTimeSeriesBuilder.addLabels(buildLabels(name, value, cortexLabelBuilder)));
+            cortexTimeSeriesBuilder.addLabels(buildMetric(metric.getName(), cortexLabelBuilder));
+            cortexTimeSeriesBuilder.addSamples(buildSample(metricTimestamp, metric.getValue(), cortexSampleBuilder));
+            labels.forEach((label) -> cortexTimeSeriesBuilder.addLabels(buildLabels(label.getName(), label.getValue(), cortexLabelBuilder)));
             return cortexTimeSeriesBuilder.build();
         }).collect(Collectors.toList());
+    }
+
+    private void checkValidity() {
+        if (metricNameProtoIndexMapping == null || metricNameProtoIndexMapping.isEmpty()) {
+            throw new EglcConfigurationException(FIELD_NAME_MAPPING_ERROR_MESSAGE);
+        }
     }
 
     private Cortex.LabelPair buildMetric(String metricName, Cortex.LabelPair.Builder cortexLabelBuilder) {
