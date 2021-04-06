@@ -6,66 +6,67 @@ import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.Timestamp;
-import io.odpf.firehose.exception.EglcConfigurationException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import static io.odpf.firehose.sink.prometheus.PromSinkConstants.*;
 
 public class TimeSeriesBuilderUtils {
 
-    public static List<PrometheusMetric> getMetricsFromMessage(Message message, Properties metricNameProtoIndexMapping) {
-        if (metricNameProtoIndexMapping == null || metricNameProtoIndexMapping.isEmpty()) {
-            throw new EglcConfigurationException(FIELD_NAME_MAPPING_ERROR_MESSAGE);
-        }
-        List<PrometheusMetric> metricList = new ArrayList<>();
-        for (Object metricProtoIndex : metricNameProtoIndexMapping.keySet()) {
-            PrometheusMetric metric = new PrometheusMetric();
-            int fieldIndex = Integer.parseInt((String) metricProtoIndex);
-            Object labelKey = metricNameProtoIndexMapping.get(metricProtoIndex);
-            Object labelValue = getField(message, fieldIndex);
-            if (labelKey instanceof String) {
-                metric.setMetricName(labelKey.toString());
-                metric.setMetricValue(Double.parseDouble(labelValue.toString()));
-                metricList.add(metric);
-            } else if (labelKey instanceof Properties) {
-                List<PrometheusMetric> metricsFromMessage = getMetricsFromMessage((Message) labelValue, (Properties) labelKey);
-                metricList.addAll(metricsFromMessage);
+    public static Set<PrometheusMetric> getMetricsFromMessage(Message message, Properties metricNameProtoIndexMapping) {
+        Set<PrometheusMetric> metrics = new HashSet<>();
+        metricNameProtoIndexMapping.forEach((metricIndex, metricKey) -> {
+            int fieldIndex = Integer.parseInt((String) metricIndex);
+            Object metricValue = getField(message, fieldIndex);
+            if (metricKey instanceof String) {
+                metrics.add(new PrometheusMetric(metricKey.toString(), Double.parseDouble(metricValue.toString())));
+            } else if (metricKey instanceof Properties) {
+                metrics.addAll(getMetricsFromMessage((Message) metricValue, (Properties) metricKey));
             }
-        }
-        return metricList;
+        });
+        return metrics;
     }
+    /**
+     * @param message                    Protobuf message to read values from
+     * @param labelNameProtoIndexMapping mapping of index to metric name
+     * @param partition                  kafka partition to be set as default label
+     * @return Set of Labels
+     */
 
-    public static Map<String, String> getLabelsFromMessage(Message message, Properties labelNameProtoIndexMapping, int partition) throws InvalidProtocolBufferException {
-        Map<String, String> labels = new HashMap<>();
-        for (Object labelProtoIndex : labelNameProtoIndexMapping.keySet()) {
-            int fieldIndex = Integer.parseInt((String) labelProtoIndex);
-            Object labelKey = labelNameProtoIndexMapping.get(labelProtoIndex);
-            Object labelValue = getField(message, fieldIndex);
-            if (labelKey instanceof String) {
-                labels.put(labelKey.toString(), getFieldValueString(message, fieldIndex));
-            } else if (labelKey instanceof Properties) {
-                Map<String, String> labelsFromMessage = getLabelsFromMessage((Message) labelValue, (Properties) labelKey, partition);
-                labels.putAll(labelsFromMessage);
-            }
-        }
-        labels.put(KAFKA_PARTITION, String.valueOf(partition));
+    public static Set<PrometheusLabel> getLabelsFromMessage(Message message, Properties labelNameProtoIndexMapping, int partition) {
+        Set<PrometheusLabel> labels = new HashSet<>();
+        labels.add(new PrometheusLabel(KAFKA_PARTITION, String.valueOf(partition)));
+        labels.addAll(getLabelsFromMessage(message, labelNameProtoIndexMapping));
         return labels;
     }
 
-    private static String getFieldValueString(Message message, int fieldIndex) throws InvalidProtocolBufferException {
-        Descriptors.FieldDescriptor fieldDescriptor = getFieldByIndex(message, fieldIndex);
-        if (fieldIsOfMessageType(fieldDescriptor, Timestamp.getDescriptor())
-                || fieldIsOfMessageType(fieldDescriptor, Duration.getDescriptor())) {
-            return getMillisFromTimestamp(getTimestamp(message, fieldIndex)).toString();
-        } else if (fieldIsOfEnumType(fieldDescriptor)) {
-            return getField(message, fieldIndex).toString();
-        } else {
-            return getField(message, fieldIndex).toString();
+    private static Set<PrometheusLabel> getLabelsFromMessage(Message message, Properties labelNameProtoIndexMapping) {
+        Set<PrometheusLabel> labels = new HashSet<>();
+        labelNameProtoIndexMapping.forEach((labelIndex, labelKey) -> {
+            int fieldIndex = Integer.parseInt((String) labelIndex);
+            Object labelValue = getField(message, fieldIndex);
+            if (labelKey instanceof String) {
+                labels.add(new PrometheusLabel(labelKey.toString(), getFieldValueString(message, fieldIndex)));
+            } else if (labelKey instanceof Properties) {
+                labels.addAll(getLabelsFromMessage((Message) labelValue, (Properties) labelKey));
+            }
+        });
+        return labels;
+    }
+
+    private static String getFieldValueString(Message message, int fieldIndex) {
+        try {
+            Descriptors.FieldDescriptor fieldDescriptor = getFieldByIndex(message, fieldIndex);
+            if (fieldIsOfMessageType(fieldDescriptor, Timestamp.getDescriptor())
+                    || fieldIsOfMessageType(fieldDescriptor, Duration.getDescriptor())) {
+                return getMillisFromTimestamp(getTimestamp(message, fieldIndex)).toString();
+            } else {
+                return getField(message, fieldIndex).toString();
+            }
+        } catch (InvalidProtocolBufferException e) {
+            throw new IllegalArgumentException(e);
         }
     }
 
@@ -85,10 +86,6 @@ public class TimeSeriesBuilderUtils {
         return fieldDescriptor.getType().name().equals("MESSAGE")
                 && fieldDescriptor.getMessageType().getFullName().equals(typeDescriptor.getFullName()
         );
-    }
-
-    private static boolean fieldIsOfEnumType(Descriptors.FieldDescriptor fieldDescriptor) {
-        return fieldDescriptor.getType().name().equals("ENUM");
     }
 
     private static Timestamp getTimestamp(Message message, Integer fieldIndex) throws InvalidProtocolBufferException {

@@ -43,8 +43,7 @@ public class WriteRequestBuilder {
         for (Message message : messages) {
             DynamicMessage protoMessage = protoParser.parse(message.getLogMessage());
             int partition = message.getPartition();
-            List<Cortex.TimeSeries> timeSeriesList = timeSeriesBuilder.buildTimeSeries(protoMessage, partition);
-            sortedTimeSeriesList.addAll(timeSeriesList);
+            sortedTimeSeriesList.addAll(timeSeriesBuilder.buildTimeSeries(protoMessage, partition));
         }
         sortedTimeSeriesList.sort(Comparator.comparing(o -> o.getSamplesList().get(0).getTimestampMs()));
         writeRequestBuilder.addAllTimeseries(sortedTimeSeriesList);

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PrometheusMetric {
+public class PrometheusLabel {
     private String name;
-    private double value;
+    private String value;
 }

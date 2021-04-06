@@ -8,10 +8,7 @@ import io.odpf.firehose.sink.prometheus.PromSinkConstants;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public class TimeSeriesBuilderUtilsTest {
 
@@ -28,13 +25,13 @@ public class TimeSeriesBuilderUtilsTest {
                 .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000000)).build();
 
         DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
-        List<PrometheusMetric> metricsFromMessage = TimeSeriesBuilderUtils.getMetricsFromMessage(dynamicMessage, metricNameProtoIndexMapping);
+        List<PrometheusMetric> metricsFromMessage = new ArrayList<>(TimeSeriesBuilderUtils.getMetricsFromMessage(dynamicMessage, metricNameProtoIndexMapping));
         Assert.assertEquals(2, metricsFromMessage.size());
-        metricsFromMessage.sort(Comparator.comparing(PrometheusMetric::getMetricName));
-        Assert.assertEquals("feedback_ratings", metricsFromMessage.get(0).getMetricName());
-        Assert.assertEquals(5.0, metricsFromMessage.get(0).getMetricValue(), 0.0001);
-        Assert.assertEquals("tip_amount", metricsFromMessage.get(1).getMetricName());
-        Assert.assertEquals(10000.0, metricsFromMessage.get(1).getMetricValue(), 0.0001);
+        metricsFromMessage.sort(Comparator.comparing(PrometheusMetric::getName));
+        Assert.assertEquals("feedback_ratings", metricsFromMessage.get(0).getName());
+        Assert.assertEquals(5.0, metricsFromMessage.get(0).getValue(), 0.0001);
+        Assert.assertEquals("tip_amount", metricsFromMessage.get(1).getName());
+        Assert.assertEquals(10000.0, metricsFromMessage.get(1).getValue(), 0.0001);
     }
 
 
@@ -50,11 +47,11 @@ public class TimeSeriesBuilderUtilsTest {
                 .setCustomerId("CUSTOMER")
                 .setEventTimestamp(Timestamp.newBuilder().setSeconds(1000000)).build();
         DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
-        Map<String, String> labelsFromMessage = TimeSeriesBuilderUtils.getLabelsFromMessage(dynamicMessage, labelNameProtoIndexMapping, 1);
+        Set<PrometheusLabel> labelsFromMessage = TimeSeriesBuilderUtils.getLabelsFromMessage(dynamicMessage, labelNameProtoIndexMapping, 1);
         Assert.assertEquals(3, labelsFromMessage.size());
-        Assert.assertEquals("DRIVER", labelsFromMessage.get("driver_id"));
-        Assert.assertEquals("CUSTOMER", labelsFromMessage.get("customer_id"));
-        Assert.assertEquals("1", labelsFromMessage.get(PromSinkConstants.KAFKA_PARTITION));
+        Assert.assertTrue(labelsFromMessage.contains(new PrometheusLabel("driver_id", "DRIVER")));
+        Assert.assertTrue(labelsFromMessage.contains(new PrometheusLabel("customer_id", "CUSTOMER")));
+        Assert.assertTrue(labelsFromMessage.contains(new PrometheusLabel(PromSinkConstants.KAFKA_PARTITION, "1")));
     }
 
     @Test
@@ -68,10 +65,10 @@ public class TimeSeriesBuilderUtilsTest {
                 TestFeedbackLogMessage.newBuilder().
                         setOrderCompletionTime(Timestamp.newBuilder().setSeconds(seconds)).build();
         DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
-        List<PrometheusMetric> metricsFromMessage = TimeSeriesBuilderUtils.getMetricsFromMessage(dynamicMessage, metricNameProtoIndexMapping);
+        List<PrometheusMetric> metricsFromMessage = new ArrayList<>(TimeSeriesBuilderUtils.getMetricsFromMessage(dynamicMessage, metricNameProtoIndexMapping));
         Assert.assertEquals(1, metricsFromMessage.size());
-        Assert.assertEquals("order_completion_time_seconds", metricsFromMessage.get(0).getMetricName());
-        Assert.assertEquals(seconds, metricsFromMessage.get(0).getMetricValue(), 0.0001);
+        Assert.assertEquals("order_completion_time_seconds", metricsFromMessage.get(0).getName());
+        Assert.assertEquals(seconds, metricsFromMessage.get(0).getValue(), 0.0001);
     }
 
     @Test
@@ -85,9 +82,9 @@ public class TimeSeriesBuilderUtilsTest {
                 TestFeedbackLogMessage.newBuilder().
                         setOrderCompletionTime(Timestamp.newBuilder().setSeconds(seconds)).build();
         DynamicMessage dynamicMessage = DynamicMessage.parseFrom(TestFeedbackLogMessage.getDescriptor(), feedbackLogMessage.toByteArray());
-        Map<String, String> labelsFromMessage = TimeSeriesBuilderUtils.getLabelsFromMessage(dynamicMessage, labelNameProtoIndexMapping, 1);
+        Set<PrometheusLabel> labelsFromMessage = TimeSeriesBuilderUtils.getLabelsFromMessage(dynamicMessage, labelNameProtoIndexMapping, 1);
         Assert.assertEquals(2, labelsFromMessage.size());
-        Assert.assertEquals(String.valueOf(seconds), labelsFromMessage.get("order_completion_time_seconds"));
-        Assert.assertEquals("1", labelsFromMessage.get(PromSinkConstants.KAFKA_PARTITION));
+        Assert.assertTrue(labelsFromMessage.contains(new PrometheusLabel("order_completion_time_seconds", String.valueOf(seconds))));
+        Assert.assertTrue(labelsFromMessage.contains(new PrometheusLabel(PromSinkConstants.KAFKA_PARTITION, "1")));
     }
 }
