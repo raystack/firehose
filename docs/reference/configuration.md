@@ -4,15 +4,15 @@ This page contains reference for all the application configurations for Firehose
 
 ## Table of Contents
 
-* [Generic](configuration.md#-generic)
-* [HTTP Sink](configuration.md#-http-sink)
-* [JDBC Sink](configuration.md#-jdbc-sink)
-* [Influx Sink](configuration.md#-influx-sink)
-* [Redis Sink](configuration.md#-redis-sink)
-* [Elasticsearch Sink](configuration.md#-elasticsearch-sink)
-* [GRPC Sink](configuration.md#-grpc-sink)
-* [Prometheus Sink](configuration.md#-prometheus-sink)
-* [Standard](configuration.md#-standard)
+* [Generic](configuration.md#generic)
+* [HTTP Sink](configuration.md#http-sink)
+* [JDBC Sink](configuration.md#jdbc-sink)
+* [Influx Sink](configuration.md#influx-sink)
+* [Redis Sink](configuration.md#redis-sink)
+* [Elasticsearch Sink](configuration.md#elasticsearch-sink)
+* [GRPC Sink](configuration.md#grpc-sink)
+* [Prometheus Sink](configuration.md#prometheus-sink)
+* [Standard](configuration.md#standard)
 
 ## Generic
 
