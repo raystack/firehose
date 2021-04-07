@@ -1,15 +1,22 @@
 # Changelog
 
-## [v1.1.0](https://github.com/odpf/firehose/releases/tag/1.1.0) (2021-03-20)
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-[Full Changelog](https://github.com/odpf/firehose/commit/3db9fd4321a83b9b72afe917ac73b16c548fae0b)
+## [1.2.0](https://github.com/odpf/firehose/releases/tag/1.2.0) (2021-04-07)
 
-**Implemented enhancements:**
+### Features
 
-- Log
-- HTTP
-- JDBC
-- InfluxDB
-- Redis
-- ElasticSearch
-- GRPC
+* add prometheus sink ([#18](https://github.com/odpf/firehose/issues/18)) ([1b2982b](https://github.com/odpf/firehose/commit/1b2982b92e84d13310ba7022f5ad72188326dcff))
+
+
+## [1.1.0](https://github.com/odpf/firehose/releases/tag/1.1.0) (2021-03-20)
+
+### Features
+
+- add log sink
+- add HTTP sink
+- add JDBC sink
+- add InfluxDB sink
+- add Redis sink
+- add ElasticSearch sink
+- add GRPC sink
