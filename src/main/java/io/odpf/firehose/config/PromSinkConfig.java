@@ -38,6 +38,7 @@ public interface PromSinkConfig extends AppConfig {
     Properties getSinkPromLabelNameProtoIndexMapping();
 
     @Key("SINK_PROM_PROTO_EVENT_TIMESTAMP_INDEX")
+    @DefaultValue("1")
     Integer getSinkPromProtoEventTimestampIndex();
 
     @Key("SINK_PROM_WITH_EVENT_TIMESTAMP")
