@@ -18,7 +18,7 @@ jobs:
       - name: Build
         run: ./gradlew build
 
-  publishJar:
+  publish:
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -44,7 +44,5 @@ jobs:
           context: .
           push: true
           tags: |
-            docker.pkg.github.com/${{ github.repository }}/firehose:latest
-            docker.pkg.github.com/${{ github.repository }}/firehose:${{ steps.get_version.outputs.version }}
             odpf/firehose:latest
             odpf/firehose:${{ steps.get_version.outputs.version }}
