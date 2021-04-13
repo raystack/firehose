@@ -26,7 +26,25 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 1.8
+      - name: Get release tag
+        id: get_version
+        uses: battila7/get-version-action@v2
       - name: Publish package
         run: ./gradlew publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and Push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: |
+            docker.pkg.github.com/${{ github.repository }}/firehose:latest
+            docker.pkg.github.com/${{ github.repository }}/firehose:${{ steps.get_version.outputs.version }}
+            odpf/firehose:latest
+            odpf/firehose:${{ steps.get_version.outputs.version }}
