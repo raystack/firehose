@@ -2,8 +2,8 @@
 
 The following is a set of guidelines for contributing to Firehose. These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request. Here are some important resources:
 
-* [Concepts]() section will explain you about Firehose architecture,
-* Our [roadmap](https://github.com/odpf/firehose/tree/7d0df99962507e6ad2147837c4536f36d52d5a48/docs/roadmap.md) is the 10k foot view of where we're going, and
+* [Concepts](https://github.com/odpf/firehose/tree/main/docs/concepts) section will explain you about Firehose architecture,
+* Our [roadmap](https://github.com/odpf/firehose/blob/main/docs/roadmap.md) is the 10k foot view of where we're going, and
 * Github [issues](https://github.com/odpf/firehose/issues) track the ongoing and reported issues.
 
 ## How can I contribute?
@@ -15,7 +15,7 @@ We use RFCS and GitHub issues to communicate ideas.
 * You can help with documenting new features or improve existing documentation.
 * You can also review and accept other contributions if you are a maintainer.
 
-Please submit a PR to the master branch of the Firehose repository once you are ready to submit your contribution. Code submission to Firehose \(including submission from project maintainers\) require review and approval from maintainers or code owners. PRs that are submitted by the general public need to pass the build. Once build is passed community members will help to review the pull request.
+Please submit a PR to the main branch of the Firehose repository once you are ready to submit your contribution. Code submission to Firehose \(including submission from project maintainers\) require review and approval from maintainers or code owners. PRs that are submitted by the general public need to pass the build. Once build is passed community members will help to review the pull request.
 
 ## Becoming a maintainer
 
