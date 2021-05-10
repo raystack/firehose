@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Help
+    url: https://github.com/odpf/firehose/discussions/new?category=q-a
+    about: "If you have a question or need help, ask a question on the discussion forums."
+  - name: Show and tell
+    url: https://github.com/odpf/firehose/discussions/new?category=show-and-tell
+    about: "Have something nice to show and tell? We'd love to hear it!"
