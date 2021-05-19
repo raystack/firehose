@@ -81,7 +81,13 @@ dependencies {
     compile group: 'org.jfrog.buildinfo', name: 'build-info-extractor', version: '2.6.3'
     compile group: 'com.google.gradle', name: 'osdetector-gradle-plugin', version: '1.2.1'
     compile group: 'org.apache.ivy', name: 'ivy', version: '2.2.0'
-
+    compile (group: 'org.apache.hadoop', name: 'hadoop-common', version: '3.1.0') {
+        exclude group: "log4j", module: "log4j"
+        exclude group: "org.slf4j", module:"slf4j-log4j12"
+    }
+    compile 'com.gojek.parquet:parquet-hadoop:1.11.8'
+    compile group: 'com.github.os72', name: 'protobuf-dynamic', version: '1.0.1'
+    compile group: 'com.gojek', name: 'stencil', version: '4.2.1'
 
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile 'org.mockito:mockito-core:2.0.99-beta'
