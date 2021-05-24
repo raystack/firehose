@@ -10,8 +10,10 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
+// TODO: 21/05/21 fix this implementation and change test
 public class FileSink extends AbstractSink {
 
+    private PathBuilder path;
     private List<Record> records;
     private FileWriter writer;
     private Serializer serializer;
@@ -21,14 +23,17 @@ public class FileSink extends AbstractSink {
         records = new LinkedList<>();
     }
 
-    public FileSink(Instrumentation instrumentation, String sinkType, FileWriter writer, Serializer serializer) {
+    public FileSink(Instrumentation instrumentation, String sinkType, FileWriter writer, Serializer serializer, PathBuilder path) {
         super(instrumentation, sinkType);
         this.writer = writer;
         this.serializer = serializer;
+        this.path = path;
+        this.records = new LinkedList<>();
     }
 
     @Override
     protected List<Message> execute() throws Exception {
+        this.writer.open(path);
         for (Record record : records) {
             writer.write(record);
         }

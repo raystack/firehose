@@ -85,6 +85,7 @@ dependencies {
         exclude group: "log4j", module: "log4j"
         exclude group: "org.slf4j", module:"slf4j-log4j12"
     }
+    compile group: 'com.gojek.parquet', name: 'parquet-protobuf', version: '1.11.8'
     compile 'com.gojek.parquet:parquet-hadoop:1.11.8'
     compile group: 'com.github.os72', name: 'protobuf-dynamic', version: '1.0.1'
     compile group: 'com.gojek', name: 'stencil', version: '4.2.1'

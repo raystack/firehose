@@ -10,11 +10,11 @@ import java.time.Instant;
 public class KafkaMetadataProto {
     private static final String TYPE_NAME = "KafkaOffsetMetadata";
 
-    private static final String MESSAGE_OFFSET_FIELD_NAME = "message_offset";
-    private static final String MESSAGE_PARTITION_FIELD_NAME = "message_partition";
-    private static final String MESSAGE_TOPIC_FIELD_NAME = "message_topic";
-    private static final String MESSAGE_TIMESTAMP_FIELD_NAME = "message_timestamp";
-    private static final String LOAD_TIME_FIELD_NAME = "load_time";
+    public static final String MESSAGE_OFFSET_FIELD_NAME = "message_offset";
+    public static final String MESSAGE_PARTITION_FIELD_NAME = "message_partition";
+    public static final String MESSAGE_TOPIC_FIELD_NAME = "message_topic";
+    public static final String MESSAGE_TIMESTAMP_FIELD_NAME = "message_timestamp";
+    public static final String LOAD_TIME_FIELD_NAME = "load_time";
 
     public static MessageDefinition createMessageDefinition() {
         return MessageDefinition.newBuilder(TYPE_NAME)
