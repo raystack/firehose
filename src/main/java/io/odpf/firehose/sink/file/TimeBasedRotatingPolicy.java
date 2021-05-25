@@ -3,7 +3,6 @@ package io.odpf.firehose.sink.file;
 import java.time.Duration;
 import java.time.Instant;
 
-// TODO: 21/05/21 test this
 public class TimeBasedRotatingPolicy implements RotatingFilePolicy {
 
     private final Duration duration;

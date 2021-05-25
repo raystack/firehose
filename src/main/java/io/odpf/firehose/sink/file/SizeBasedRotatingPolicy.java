@@ -1,6 +1,5 @@
 package io.odpf.firehose.sink.file;
 
-// TODO: 21/05/21 test this
 public class SizeBasedRotatingPolicy implements RotatingFilePolicy {
 
     private final long size;

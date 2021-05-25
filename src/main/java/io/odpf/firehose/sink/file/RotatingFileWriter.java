@@ -3,10 +3,12 @@ package io.odpf.firehose.sink.file;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.UUID;
 
-// TODO: 21/05/21 test this
 public class RotatingFileWriter implements FileWriter {
 
+    private final int fileSize;
+    private final int durationSeconds;
     private PathBuilder path;
 
     private SizeBasedRotatingPolicy sizeBasedRotatingPolicy;
@@ -15,7 +17,9 @@ public class RotatingFileWriter implements FileWriter {
     private final FileWriterFactory writerFactory;
     private FileWriter fileWriter;
 
-    public RotatingFileWriter(FileWriterFactory writerFactory) {
+    public RotatingFileWriter(int fileSize, int durationSeconds, FileWriterFactory writerFactory) {
+        this.fileSize = fileSize;
+        this.durationSeconds = durationSeconds;
         this.writerFactory = writerFactory;
     }
 
@@ -26,22 +30,29 @@ public class RotatingFileWriter implements FileWriter {
 
     @Override
     public void write(Record record) throws IOException {
-        if (fileWriter == null) {
+        if(fileWriter == null){
             init();
         }
 
         fileWriter.write(record);
         update();
 
-        if (sizeBasedRotatingPolicy.needRotate() || timeBasedRotatingPolicy.needRotate()) {
+        if (needRotate()) {
+            fileWriter.close();
+            fileWriter = null;
             init();
         }
+     }
+
+    private boolean needRotate() {
+        return sizeBasedRotatingPolicy.needRotate() || timeBasedRotatingPolicy.needRotate();
     }
 
     private void init() throws IOException {
         this.fileWriter = createWriter();
-        sizeBasedRotatingPolicy = new SizeBasedRotatingPolicy(256);
-        timeBasedRotatingPolicy = new TimeBasedRotatingPolicy(Duration.ofHours(1));
+        sizeBasedRotatingPolicy = new SizeBasedRotatingPolicy(fileSize);
+        timeBasedRotatingPolicy = new TimeBasedRotatingPolicy(Duration.ofSeconds(durationSeconds));
+        timeBasedRotatingPolicy.start();
     }
 
     @Override
@@ -49,7 +60,7 @@ public class RotatingFileWriter implements FileWriter {
         return fileWriter.getDataSize();
     }
 
-    private void update() {
+    private void update() throws IOException {
         long dataSize = getDataSize();
         this.sizeBasedRotatingPolicy.setCurrentSize(dataSize);
 
@@ -60,8 +71,11 @@ public class RotatingFileWriter implements FileWriter {
     private FileWriter createWriter() throws IOException {
         ParquetWriter parquetWriter = writerFactory.createParquetWriter();
 
-        // TODO: 24/05/21 implement path generation here
         PathBuilder generatedPath = path.copy();
+        String fileName = UUID.randomUUID().toString();
+
+        generatedPath.setFileName(fileName);
+
         parquetWriter.open(generatedPath);
         return parquetWriter;
     }

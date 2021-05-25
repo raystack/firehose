@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
-// TODO: 21/05/21 fix this implementation and change test
 public class FileSink extends AbstractSink {
 
     private PathBuilder path;
