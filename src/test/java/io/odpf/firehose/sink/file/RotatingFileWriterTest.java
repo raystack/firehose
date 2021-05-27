@@ -1,15 +1,16 @@
 package io.odpf.firehose.sink.file;
 
-import org.junit.After;
-import org.junit.Before;
+import io.odpf.firehose.sink.file.message.Record;
+import io.odpf.firehose.sink.file.writer.FileWriterFactory;
+import io.odpf.firehose.sink.file.writer.ParquetWriter;
+import io.odpf.firehose.sink.file.writer.RotatingFileWriter;
+import io.odpf.firehose.sink.file.writer.path.PathBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -18,7 +19,7 @@ public class RotatingFileWriterTest {
     @Test
     public void shouldRotateBasedOnDuration() throws IOException, InterruptedException {
         PathBuilder base = PathBuilder.create();
-        Record record = new Record();
+        Record record = RecordsUtil.createRecord("abc", 123);
 
         ParquetWriter delegateWriter = mock(ParquetWriter.class);
 
@@ -46,7 +47,7 @@ public class RotatingFileWriterTest {
     @Test
     public void shouldRotateBasedOnFileSize() throws IOException {
         PathBuilder base = PathBuilder.create();
-        Record record = new Record();
+        Record record = RecordsUtil.createRecord("abc", 123);
 
         ParquetWriter delegateWriter = mock(ParquetWriter.class);
 

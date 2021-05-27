@@ -4,6 +4,10 @@ import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
+import io.odpf.firehose.sink.file.message.MessageSerializer;
+import io.odpf.firehose.sink.file.message.Record;
+import io.odpf.firehose.sink.file.writer.FileWriter;
+import io.odpf.firehose.sink.file.writer.path.PathBuilder;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -15,14 +19,14 @@ public class FileSink extends AbstractSink {
     private PathBuilder path;
     private List<Record> records;
     private FileWriter writer;
-    private Serializer serializer;
+    private MessageSerializer serializer;
 
     public FileSink(Instrumentation instrumentation, String sinkType) {
         super(instrumentation, sinkType);
         records = new LinkedList<>();
     }
 
-    public FileSink(Instrumentation instrumentation, String sinkType, FileWriter writer, Serializer serializer, PathBuilder path) {
+    public FileSink(Instrumentation instrumentation, String sinkType, FileWriter writer, MessageSerializer serializer, PathBuilder path) {
         super(instrumentation, sinkType);
         this.writer = writer;
         this.serializer = serializer;

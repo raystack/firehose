@@ -1,10 +1,10 @@
 package io.odpf.firehose.sink.file;
 
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import io.odpf.firehose.consumer.Message;
-import io.odpf.firehose.sink.file.proto.KafkaMetadataProto;
-import io.odpf.firehose.sink.file.proto.KafkaMetadataProtoFile;
+import io.odpf.firehose.sink.file.message.KafkaMetadataUtils;
+import io.odpf.firehose.sink.file.message.Record;
+import io.odpf.firehose.sink.file.writer.path.TimePartitionPath;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -16,13 +16,13 @@ import java.time.Instant;
 import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DateHourPathFactoryTest {
+public class TimePartitionPathTest {
 
     private final String zone = "Asia/Jakarta";
     private final String pattern = "YYYY-MM-dd";
     private final String fieldName = MessageProto.CREATED_TIME_FIELD_NAME;
 
-    private DateHourPathFactory factory;
+    private TimePartitionPath factory;
     private final String prefix = "dt=";
 
     private Instant timestamp = Instant.parse("2020-01-01T10:00:00.000Z");
@@ -40,7 +40,7 @@ public class DateHourPathFactoryTest {
         DynamicMessage metadata = createMedatata(kafkaMetadataFieldName, timestamp, offset, partition, topic);
         Record record = new Record(message, metadata);
 
-        factory = new DateHourPathFactory(kafkaMetadataFieldName, fieldName, pattern, zone, prefix);
+        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, pattern, zone, prefix);
         Path path = factory.create(record);
 
         assertEquals(partitionPath, path);
@@ -54,7 +54,7 @@ public class DateHourPathFactoryTest {
         DynamicMessage metadata = createMedatata(kafkaMetadataFieldName, timestamp, offset, partition, topic);
         Record record = new Record(message, metadata);
 
-        factory = new DateHourPathFactory(kafkaMetadataFieldName, fieldName, pattern, zone, prefix);
+        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, pattern, zone, prefix);
         Path path = factory.create(record);
 
         assertEquals(partitionPath, path);
@@ -62,8 +62,8 @@ public class DateHourPathFactoryTest {
 
     private DynamicMessage createMedatata(String kafkaMetadataFieldName, Instant timestamp, long offset, int partition, String topic) {
         Message message = new Message("".getBytes(), "".getBytes(), topic, partition, offset,null,timestamp.toEpochMilli(),timestamp.toEpochMilli());
-        KafkaMetadataFactory metadataFactory = new KafkaMetadataFactory(kafkaMetadataFieldName);
-        return metadataFactory.create(message);
+        KafkaMetadataUtils metadataFactory = new KafkaMetadataUtils(kafkaMetadataFieldName);
+        return metadataFactory.createKafkaMetadata(message);
     }
 
     private DynamicMessage createMessage(Instant timestamp, int orderNumber) {

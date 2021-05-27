@@ -5,7 +5,7 @@ import com.github.os72.protobuf.dynamic.MessageDefinition;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import io.odpf.firehose.sink.file.proto.TimestampProto;
-import io.odpf.firehose.sink.file.proto.Util;
+import io.odpf.firehose.sink.file.proto.ProtoUtils;
 
 import java.time.Instant;
 
@@ -45,7 +45,7 @@ public class MessageProto {
 
     public static MessageBuilder createMessageBuilder() {
         DynamicSchema schema = createSchema();
-        Descriptors.FileDescriptor fileDescriptor = Util.createFileDescriptor(schema);
+        Descriptors.FileDescriptor fileDescriptor = ProtoUtils.createFileDescriptor(schema);
         Descriptors.Descriptor descriptor = fileDescriptor.findMessageTypeByName(getTypeName());
         return new MessageBuilder(descriptor);
     }

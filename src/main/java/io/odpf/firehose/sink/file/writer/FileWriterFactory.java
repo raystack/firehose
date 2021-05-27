@@ -1,6 +1,8 @@
-package io.odpf.firehose.sink.file;
+package io.odpf.firehose.sink.file.writer;
 
 import com.google.protobuf.Descriptors;
+import io.odpf.firehose.sink.file.writer.ParquetWriter;
+import io.odpf.firehose.sink.file.writer.RotatingFileWriter;
 import lombok.AllArgsConstructor;
 import org.apache.hadoop.fs.Path;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;

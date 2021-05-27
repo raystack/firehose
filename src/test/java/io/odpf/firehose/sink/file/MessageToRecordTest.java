@@ -8,6 +8,9 @@ import com.gojek.de.stencil.parser.Parser;
 
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.sink.file.message.KafkaMetadataUtils;
+import io.odpf.firehose.sink.file.message.MessageSerializer;
+import io.odpf.firehose.sink.file.message.Record;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,12 +24,12 @@ import static junit.framework.TestCase.assertEquals;
 public class MessageToRecordTest {
 
     @Mock
-    private MetadataFactory kafkaMetadataFactory;
+    private KafkaMetadataUtils kafkaMetadataUtils;
 
     @Mock
     private Parser protoParser;
 
-    private MessageToRecord serializer;
+    private MessageSerializer serializer;
 
     private final byte[] logKey = "key".getBytes();
     private final byte[] logMessage = "msg".getBytes();
@@ -35,7 +38,7 @@ public class MessageToRecordTest {
     @Before
     public void setUp() throws Exception {
         message = new Message(logKey, logMessage, "topic1", 0, 100);
-        serializer = new MessageToRecord(kafkaMetadataFactory, true, protoParser);
+        serializer = new MessageSerializer(kafkaMetadataUtils, true, protoParser);
     }
 
     @Test
@@ -45,7 +48,7 @@ public class MessageToRecordTest {
         DynamicMessage metadataMessage = DynamicMessage.newBuilder(Int64Value.of(112)).build();
 
         when(protoParser.parse(logMessage)).thenReturn(dynamicMessage);
-        when(kafkaMetadataFactory.create(message)).thenReturn(metadataMessage);
+        when(kafkaMetadataUtils.createKafkaMetadata(message)).thenReturn(metadataMessage);
 
         Record record = serializer.serialize(message);
 
@@ -53,7 +56,7 @@ public class MessageToRecordTest {
         assertEquals(record.getMessage(), dynamicMessage);
 
         verify(protoParser,times(1)).parse(logMessage);
-        verify(kafkaMetadataFactory,times(1)).create(message);
+        verify(kafkaMetadataUtils,times(1)).createKafkaMetadata(message);
     }
 
     @Test(expected = DeserializerException.class)

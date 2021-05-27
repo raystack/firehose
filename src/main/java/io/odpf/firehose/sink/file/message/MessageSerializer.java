@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.file;
+package io.odpf.firehose.sink.file.message;
 
 import com.gojek.de.stencil.parser.Parser;
 import com.google.protobuf.DynamicMessage;
@@ -8,9 +8,9 @@ import io.odpf.firehose.exception.DeserializerException;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class MessageToRecord implements Serializer {
+public class MessageSerializer {
 
-    private MetadataFactory metadataFactory;
+    private KafkaMetadataUtils metadataUtils;
     private final boolean doWriteKafkaMetadata;
     private Parser protoParser;
 
@@ -20,7 +20,7 @@ public class MessageToRecord implements Serializer {
 
             DynamicMessage kafkaMetadata = null;
             if (doWriteKafkaMetadata) {
-                kafkaMetadata = metadataFactory.create(message);
+                kafkaMetadata = metadataUtils.createKafkaMetadata(message);
             }
             return new Record(dynamicMessage, kafkaMetadata);
         } catch (InvalidProtocolBufferException e) {

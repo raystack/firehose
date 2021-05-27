@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.file;
+package io.odpf.firehose.sink.file.message;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
@@ -9,18 +9,17 @@ import io.odpf.firehose.sink.file.proto.NestedKafkaMetadataProto;
 
 import java.time.Instant;
 
-public class KafkaMetadataFactory implements MetadataFactory {
+public class KafkaMetadataUtils {
 
     private Descriptors.FileDescriptor kafkaMetadataFileDescriptor;
     private String kafkaMetadataColumnName;
 
-    public KafkaMetadataFactory(String kafkaMetadataColumnName) {
+    public KafkaMetadataUtils(String kafkaMetadataColumnName) {
         this.kafkaMetadataColumnName = kafkaMetadataColumnName;
         kafkaMetadataFileDescriptor = KafkaMetadataProtoFile.createFileDescriptor(kafkaMetadataColumnName);
     }
 
-    @Override
-    public DynamicMessage create(Message message){
+    public DynamicMessage createKafkaMetadata(Message message){
         Descriptors.Descriptor metadataDescriptor = kafkaMetadataFileDescriptor.findMessageTypeByName(KafkaMetadataProto.getTypeName());
 
         Instant loadTime = Instant.now();

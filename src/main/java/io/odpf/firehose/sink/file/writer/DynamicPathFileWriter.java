@@ -1,4 +1,8 @@
-package io.odpf.firehose.sink.file;
+package io.odpf.firehose.sink.file.writer;
+
+import io.odpf.firehose.sink.file.writer.path.PathBuilder;
+import io.odpf.firehose.sink.file.message.Record;
+import io.odpf.firehose.sink.file.writer.path.TimePartitionPath;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -9,11 +13,11 @@ public class DynamicPathFileWriter implements FileWriter {
 
     private Map<PathBuilder, FileWriter> fileWriterMap;
     private FileWriterFactory writerFactory;
-    private PathFactory pathFactory;
+    private TimePartitionPath timePartitionPath;
     private PathBuilder path;
 
-    public DynamicPathFileWriter(PathFactory pathFactory, FileWriterFactory writerFactory) {
-        this.pathFactory = pathFactory;
+    public DynamicPathFileWriter(TimePartitionPath timePartitionPath, FileWriterFactory writerFactory) {
+        this.timePartitionPath = timePartitionPath;
         this.writerFactory = writerFactory;
         this.fileWriterMap = new HashMap<>();
     }
@@ -38,7 +42,7 @@ public class DynamicPathFileWriter implements FileWriter {
     }
 
     private PathBuilder createPath(Record record) {
-        Path partitionedPath = pathFactory.create(record);
+        Path partitionedPath = timePartitionPath.create(record);
 
         PathBuilder currentPath = path.copy();
         Path currentDir = currentPath.getDir();

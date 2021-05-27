@@ -1,4 +1,7 @@
-package io.odpf.firehose.sink.file;
+package io.odpf.firehose.sink.file.writer;
+
+import io.odpf.firehose.sink.file.writer.path.PathBuilder;
+import io.odpf.firehose.sink.file.message.Record;
 
 import java.io.Closeable;
 import java.io.IOException;

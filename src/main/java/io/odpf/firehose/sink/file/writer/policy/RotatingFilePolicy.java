@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.file;
+package io.odpf.firehose.sink.file.writer.policy;
 
 /**
  * RotatingFilePolicy is state manager for rotating file writing behavior

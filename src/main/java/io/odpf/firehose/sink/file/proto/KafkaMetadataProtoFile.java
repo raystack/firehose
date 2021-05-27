@@ -12,7 +12,7 @@ public class KafkaMetadataProtoFile {
 
     public static Descriptors.FileDescriptor createFileDescriptor(String kafkaMetadataColumnName) {
         DynamicSchema schema = createSchema(kafkaMetadataColumnName);
-        return Util.createFileDescriptor(schema);
+        return ProtoUtils.createFileDescriptor(schema);
     }
 
     private static DynamicSchema createSchema(String kafkaMetadataColumnName) {

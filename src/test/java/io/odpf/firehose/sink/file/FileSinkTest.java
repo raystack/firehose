@@ -1,8 +1,15 @@
 package io.odpf.firehose.sink.file;
 
+import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.Int64Value;
+import com.google.protobuf.StringValue;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.sink.file.message.MessageSerializer;
+import io.odpf.firehose.sink.file.message.Record;
+import io.odpf.firehose.sink.file.writer.FileWriter;
+import io.odpf.firehose.sink.file.writer.path.PathBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
@@ -25,7 +33,7 @@ public class FileSinkTest {
     private Instrumentation instrumentation;
 
     @Mock
-    private Serializer serializer;
+    private MessageSerializer serializer;
 
     @Mock
     private FileWriter fileWriter;
@@ -43,7 +51,9 @@ public class FileSinkTest {
 
     @Test
     public void shouldSerialiseMessageIntoRecord() throws SQLException, IOException {
-        Record record = new Record();
+        DynamicMessage dynamicMessage = DynamicMessage.getDefaultInstance(StringValue.getDefaultInstance().getDescriptorForType());
+        DynamicMessage metadata = DynamicMessage.getDefaultInstance(Int64Value.getDefaultInstance().getDescriptorForType());
+        Record record = new Record(dynamicMessage,metadata);
         when(serializer.serialize(message)).thenReturn(record);
 
         fileSink.prepare(Arrays.asList(message, message));
@@ -55,13 +65,15 @@ public class FileSinkTest {
         DeserializerException exception = new DeserializerException("");
         when(serializer.serialize(message)).thenThrow(exception);
 
-        fileSink.prepare(Arrays.asList(message));
+        fileSink.prepare(Collections.singletonList(message));
     }
 
 
     @Test
     public void shouldWriteToFile() throws IOException {
-        Record record = new Record();
+        DynamicMessage dynamicMessage = DynamicMessage.getDefaultInstance(StringValue.getDefaultInstance().getDescriptorForType());
+        DynamicMessage metadata = DynamicMessage.getDefaultInstance(Int64Value.getDefaultInstance().getDescriptorForType());
+        Record record = new Record(dynamicMessage,metadata);
         when(serializer.serialize(message)).thenReturn(record);
         doNothing().when(fileWriter).open(path);
 
@@ -73,7 +85,9 @@ public class FileSinkTest {
 
     @Test
     public void shouldReturnEmptyListWhenNoException() throws IOException {
-        Record record = new Record();
+        DynamicMessage dynamicMessage = DynamicMessage.getDefaultInstance(StringValue.getDefaultInstance().getDescriptorForType());
+        DynamicMessage metadata = DynamicMessage.getDefaultInstance(Int64Value.getDefaultInstance().getDescriptorForType());
+        Record record = new Record(dynamicMessage,metadata);
         when(serializer.serialize(message)).thenReturn(record);
         doNothing().when(fileWriter).open(path);
 
@@ -84,7 +98,10 @@ public class FileSinkTest {
 
     @Test
     public void shouldReturnFailedMessagesWhenExecuteThrowsException() throws IOException {
-        Record record = new Record();
+        DynamicMessage dynamicMessage = DynamicMessage.getDefaultInstance(StringValue.getDefaultInstance().getDescriptorForType());
+        DynamicMessage metadata = DynamicMessage.getDefaultInstance(Int64Value.getDefaultInstance().getDescriptorForType());
+
+        Record record = new Record(dynamicMessage,metadata);
         when(serializer.serialize(message)).thenReturn(record);
         doNothing().when(fileWriter).open(path);
 

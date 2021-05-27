@@ -1,5 +1,6 @@
 package io.odpf.firehose.sink.file;
 
+import io.odpf.firehose.sink.file.writer.policy.SizeBasedRotatingPolicy;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;

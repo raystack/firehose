@@ -1,8 +1,9 @@
-package io.odpf.firehose.sink.file;
+package io.odpf.firehose.sink.file.writer.path;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Timestamp;
+import io.odpf.firehose.sink.file.message.Record;
 import io.odpf.firehose.sink.file.proto.KafkaMetadataProto;
 import lombok.AllArgsConstructor;
 
@@ -12,10 +13,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @AllArgsConstructor
-public class DateHourPathFactory implements PathFactory {
+public class TimePartitionPath {
 
     private String kafkaMetadataFieldName;
     private String fieldName;
@@ -23,7 +23,6 @@ public class DateHourPathFactory implements PathFactory {
     private String zone;
     private String prefix;
 
-    @Override
     public Path create(Record record) {
         DynamicMessage message = record.getMessage();
         Instant timestamp = getTimestamp(message);
@@ -39,7 +38,7 @@ public class DateHourPathFactory implements PathFactory {
     }
 
     private String getTopic(DynamicMessage dynamicMessage) {
-        Descriptors.Descriptor metadataDescriptor = dynamicMessage.getDescriptorForType();;
+        Descriptors.Descriptor metadataDescriptor = dynamicMessage.getDescriptorForType();
 
         if (!kafkaMetadataFieldName.isEmpty()) {
             DynamicMessage nestedMetadataMessage = (DynamicMessage) dynamicMessage.getField(metadataDescriptor.findFieldByName(kafkaMetadataFieldName));

@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.file;
+package io.odpf.firehose.sink.file.writer.policy;
 
 import java.time.Duration;
 import java.time.Instant;

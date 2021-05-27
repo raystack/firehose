@@ -1,4 +1,9 @@
-package io.odpf.firehose.sink.file;
+package io.odpf.firehose.sink.file.writer;
+
+import io.odpf.firehose.sink.file.message.Record;
+import io.odpf.firehose.sink.file.writer.path.PathBuilder;
+import io.odpf.firehose.sink.file.writer.policy.SizeBasedRotatingPolicy;
+import io.odpf.firehose.sink.file.writer.policy.TimeBasedRotatingPolicy;
 
 import java.io.IOException;
 import java.time.Duration;

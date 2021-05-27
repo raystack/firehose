@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.file;
+package io.odpf.firehose.sink.file.writer.policy;
 
 public class SizeBasedRotatingPolicy implements RotatingFilePolicy {
 

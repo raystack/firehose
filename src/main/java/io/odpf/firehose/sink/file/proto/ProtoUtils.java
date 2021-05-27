@@ -4,7 +4,7 @@ import com.github.os72.protobuf.dynamic.DynamicSchema;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
 
-public class Util {
+public class ProtoUtils {
     public static Descriptors.FileDescriptor createFileDescriptor(DynamicSchema schema) {
         DescriptorProtos.FileDescriptorSet fileDescriptorSet = schema.getFileDescriptorSet();
         DescriptorProtos.FileDescriptorProto fileDescriptorProto = fileDescriptorSet.getFile(0);

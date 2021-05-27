@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.file;
+package io.odpf.firehose.sink.file.writer.path;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

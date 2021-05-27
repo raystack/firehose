@@ -1,9 +1,12 @@
 package io.odpf.firehose.sink.file;
 
 import com.google.protobuf.Descriptors;
-import com.google.protobuf.DynamicMessage;
-import com.google.protobuf.Int64Value;
-import com.google.protobuf.StringValue;
+import io.odpf.firehose.sink.file.message.Record;
+import io.odpf.firehose.sink.file.writer.DynamicPathFileWriter;
+import io.odpf.firehose.sink.file.writer.FileWriterFactory;
+import io.odpf.firehose.sink.file.writer.RotatingFileWriter;
+import io.odpf.firehose.sink.file.writer.path.PathBuilder;
+import io.odpf.firehose.sink.file.writer.path.TimePartitionPath;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,34 +33,28 @@ public class DynamicPathFileWriterTest {
     private DummyFileWriterFactory writerFactory = new DummyFileWriterFactory();
 
     @Mock
-    private PathFactory pathFactory;
+    private TimePartitionPath timePartitionPath;
 
     private DynamicPathFileWriter writer;
 
-    private Record record = createRecord("abc", 123);
+    private Record record = RecordsUtil.createRecord("abc", 123);
 
     private PathBuilder path = new PathBuilder().setDir(Paths.get("")).setFileName("booking");
 
 
     @Before
     public void setUp() throws Exception {
-        delegateWriter = mock(RotatingFileWriter.class);;
+        delegateWriter = mock(RotatingFileWriter.class);
         writerFactory.addWriter(delegateWriter);
 
-        writer = new DynamicPathFileWriter(pathFactory, writerFactory);
-    }
-
-    private Record createRecord(String msgValue, int msgMetadata) {
-        DynamicMessage message = DynamicMessage.newBuilder(StringValue.of(msgValue)).build();
-        DynamicMessage metadata = DynamicMessage.newBuilder(Int64Value.of(msgMetadata)).build();
-        return new Record(message, metadata);
+        writer = new DynamicPathFileWriter(timePartitionPath, writerFactory);
     }
 
     @Test
     public void shouldWriteRecord() throws IOException {
 
         Path dirPath = Paths.get("booking/2021-02-27/10");
-        when(pathFactory.create(record)).thenReturn(dirPath);
+        when(timePartitionPath.create(record)).thenReturn(dirPath);
 
         writer.open(path);
         writer.write(record);
@@ -72,7 +69,7 @@ public class DynamicPathFileWriterTest {
     @Test(expected = IOException.class)
     public void shouldThrowExceptionWhenWriteThrowException() throws IOException {
         Path dirPath = Paths.get("booking/2021-02-27/10");
-        when(pathFactory.create(record)).thenReturn(dirPath);
+        when(timePartitionPath.create(record)).thenReturn(dirPath);
         doThrow(new IOException()).when(delegateWriter).write(record);
 
         writer.open(path);
@@ -90,12 +87,12 @@ public class DynamicPathFileWriterTest {
         RotatingFileWriter otherWriter = mock(RotatingFileWriter.class);
         writerFactory.addWriter(otherWriter);
 
-        Record otherRecord = createRecord("def",456);
+        Record otherRecord = RecordsUtil.createRecord("def",456);
         Path dirPath = Paths.get("booking/2021-02-01/10");
         Path otherDirPath = Paths.get("booking/2021-02-01/11");
 
-        when(pathFactory.create(record)).thenReturn(dirPath);
-        when(pathFactory.create(otherRecord)).thenReturn(otherDirPath);
+        when(timePartitionPath.create(record)).thenReturn(dirPath);
+        when(timePartitionPath.create(otherRecord)).thenReturn(otherDirPath);
 
         writer.open(path);
         writer.write(record);
@@ -111,7 +108,7 @@ public class DynamicPathFileWriterTest {
         this.writerFactory.clear();
     }
 
-    class DummyFileWriterFactory extends FileWriterFactory{
+    class DummyFileWriterFactory extends FileWriterFactory {
 
         Queue<RotatingFileWriter> writers;
 
