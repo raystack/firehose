@@ -1,27 +1,17 @@
 package io.odpf.firehose.sink.file.writer.policy;
 
-public class SizeBasedRotatingPolicy implements RotatingFilePolicy {
+import io.odpf.firehose.sink.file.writer.LocalFileWriter;
 
-    private final long size;
-    private long currentSize;
+public class SizeBasedRotatingPolicy implements WriterPolicy {
 
-    /**
-     * @param size is data size in bytes
-     */
-    public SizeBasedRotatingPolicy(long size) {
-        this.size = size;
-    }
+    private final long maxSize;
 
-    public void add(long size){
-        this.currentSize += size;
-    }
-
-    public void setCurrentSize(long currentSize) {
-        this.currentSize = currentSize;
+    public SizeBasedRotatingPolicy(long maxSize) {
+        this.maxSize = maxSize;
     }
 
     @Override
-    public boolean needRotate() {
-        return currentSize > size;
+    public boolean shouldRotate(LocalFileWriter writer) {
+        return writer.currentSize() >= maxSize;
     }
 }

@@ -33,6 +33,7 @@ public class KafkaMetadataUtils {
                 .setTopic(message.getTopic());
 
         DynamicMessage metadata = messageBuilder.build();
+        System.out.println(metadata.getAllFields());
 
         if (kafkaMetadataColumnName.isEmpty()){
             return metadata;

@@ -72,11 +72,12 @@ public class KafkaMetadataProto {
         }
 
         public DynamicMessage build(){
+            Timestamp timestamp = TimestampProto.newBuilder()
+                    .setSeconds(loadTime.getEpochSecond())
+                    .setNanos(loadTime.getNano())
+                    .build();
             return DynamicMessage.newBuilder(descriptor)
-                    .setField(descriptor.findFieldByName(LOAD_TIME_FIELD_NAME), TimestampProto.newBuilder()
-                            .setSeconds(loadTime.getEpochSecond())
-                            .setNanos(loadTime.getNano())
-                            .build())
+                    .setField(descriptor.findFieldByName(LOAD_TIME_FIELD_NAME), timestamp)
                     .setField(descriptor.findFieldByName(MESSAGE_TIMESTAMP_FIELD_NAME), TimestampProto.newBuilder()
                             .setSeconds(messageTimestamp.getEpochSecond())
                             .setNanos(messageTimestamp.getNano())

@@ -52,6 +52,7 @@ private Properties loadEnv() {
 def mainClassName = "io.odpf.firehose.launch.Main"
 
 dependencies {
+    implementation 'org.junit.jupiter:junit-jupiter:5.7.0'
     compile group: 'com.google.protobuf', name: 'protobuf-java', version: '3.1.0'
     compile group: 'com.google.protobuf', name: 'protobuf-java-util', version: '3.1.0'
     compile group: 'com.newrelic.agent.java', name: 'newrelic-api', version: '3.31.1'

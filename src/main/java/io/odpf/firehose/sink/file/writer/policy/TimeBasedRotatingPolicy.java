@@ -1,35 +1,17 @@
 package io.odpf.firehose.sink.file.writer.policy;
 
-import java.time.Duration;
-import java.time.Instant;
+import io.odpf.firehose.sink.file.writer.LocalFileWriter;
 
-public class TimeBasedRotatingPolicy implements RotatingFilePolicy {
+public class TimeBasedRotatingPolicy implements WriterPolicy {
 
-    private final Duration duration;
+    private final long maxRotatingDurationMillis;
 
-    private Instant endTime;
-    private Instant registeredTime;
-
-    public TimeBasedRotatingPolicy(Duration duration) {
-        this.duration = duration;
-    }
-
-    public void start() {
-        Instant now = Instant.now();
-        endTime = now.plus(duration);
-        registeredTime = now;
+    public TimeBasedRotatingPolicy(long maxRotatingDurationMillis) {
+        this.maxRotatingDurationMillis = maxRotatingDurationMillis;
     }
 
     @Override
-    public boolean needRotate() {
-        return endTime.isBefore(registeredTime);
-    }
-
-    public void setRegisteredTime(Instant registeredTime) {
-        this.registeredTime = registeredTime;
-    }
-
-    public void advanceTime(Duration duration) {
-        registeredTime.plus(duration);
+    public boolean shouldRotate(LocalFileWriter writer) {
+        return System.currentTimeMillis() - writer.getCreatedTimestampMillis() >= maxRotatingDurationMillis;
     }
 }

@@ -6,39 +6,38 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.file.message.MessageSerializer;
 import io.odpf.firehose.sink.file.message.Record;
-import io.odpf.firehose.sink.file.writer.FileWriter;
-import io.odpf.firehose.sink.file.writer.path.PathBuilder;
+import io.odpf.firehose.sink.file.writer.LocalFileWriter;
+import io.odpf.firehose.sink.file.writer.PartitioningWriter;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FileSink extends AbstractSink {
 
-    private PathBuilder path;
+    private PartitioningWriter partitioningWriter;
+    private Path basePath;
     private List<Record> records;
-    private FileWriter writer;
     private MessageSerializer serializer;
 
     public FileSink(Instrumentation instrumentation, String sinkType) {
         super(instrumentation, sinkType);
-        records = new LinkedList<>();
     }
 
-    public FileSink(Instrumentation instrumentation, String sinkType, FileWriter writer, MessageSerializer serializer, PathBuilder path) {
+    public FileSink(Instrumentation instrumentation, String sinkType, PartitioningWriter partitioningWriter, MessageSerializer serializer, Path basePath) {
         super(instrumentation, sinkType);
-        this.writer = writer;
         this.serializer = serializer;
-        this.path = path;
-        this.records = new LinkedList<>();
+        this.basePath = basePath;
+        this.partitioningWriter = partitioningWriter;
     }
 
     @Override
     protected List<Message> execute() throws Exception {
-        this.writer.open(path);
-        for (Record record : records) {
-            writer.write(record);
+        for (Record record : this.records) {
+            this.partitioningWriter.getWriter(basePath, record).write(record);
         }
         return new LinkedList<>();
     }
@@ -54,6 +53,6 @@ public class FileSink extends AbstractSink {
 
     @Override
     public void close() throws IOException {
-        writer.close();
+        partitioningWriter.close();
     }
 }

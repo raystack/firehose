@@ -21,7 +21,7 @@ public class TimePartitionPath {
     private String fieldName;
     private String dateTimePattern;
     private String zone;
-    private String prefix;
+    private String datePrefix;
 
     public Path create(Record record) {
         DynamicMessage message = record.getMessage();
@@ -29,7 +29,7 @@ public class TimePartitionPath {
         LocalDateTime localDateTime = LocalDateTime.ofInstant(timestamp, ZoneId.of(zone));
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateTimePattern);
         String dateTime = formatter.format(localDateTime);
-        String dateSegment = String.format("%s%s", prefix, dateTime);
+        String dateSegment = String.format("%s%s", datePrefix, dateTime);
 
         DynamicMessage metadataMessage = record.getMetadata();
         String topic = getTopic(metadataMessage);
@@ -42,7 +42,7 @@ public class TimePartitionPath {
 
         if (!kafkaMetadataFieldName.isEmpty()) {
             DynamicMessage nestedMetadataMessage = (DynamicMessage) dynamicMessage.getField(metadataDescriptor.findFieldByName(kafkaMetadataFieldName));
-            Descriptors.Descriptor nestedMetadataMessageDescriptor= nestedMetadataMessage.getDescriptorForType();
+            Descriptors.Descriptor nestedMetadataMessageDescriptor = nestedMetadataMessage.getDescriptorForType();
             return (String) nestedMetadataMessage.getField(nestedMetadataMessageDescriptor.findFieldByName(KafkaMetadataProto.MESSAGE_TOPIC_FIELD_NAME));
         }
 
@@ -52,7 +52,9 @@ public class TimePartitionPath {
     private Instant getTimestamp(DynamicMessage dynamicMessage) {
         Descriptors.Descriptor descriptor = dynamicMessage.getDescriptorForType();
         Descriptors.FieldDescriptor timestampField = descriptor.findFieldByName(fieldName);
-        Timestamp timestamp = (Timestamp) dynamicMessage.getField(timestampField);
-        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
+        DynamicMessage timestamp = (DynamicMessage) dynamicMessage.getField(timestampField);
+        long seconds = (long) timestamp.getField(timestamp.getDescriptorForType().findFieldByName("seconds"));
+        int nanos = (int) timestamp.getField(timestamp.getDescriptorForType().findFieldByName("nanos"));
+        return Instant.ofEpochSecond(seconds, nanos);
     }
 }
