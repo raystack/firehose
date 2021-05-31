@@ -15,14 +15,19 @@ public class KafkaMetadataProto {
     public static final String MESSAGE_TOPIC_FIELD_NAME = "message_topic";
     public static final String MESSAGE_TIMESTAMP_FIELD_NAME = "message_timestamp";
     public static final String LOAD_TIME_FIELD_NAME = "load_time";
+    public static final int MESSAGE_OFFSET_FIELD_NUMBER = 536870907;
+    public static final int MESSAGE_PARTITION_FIELD_NUMBER = 536870908;
+    public static final int MESSAGE_TOPIC_FIELD_NUMBER = 536870909;
+    public static final int MESSAGE_TIMESTAMP_FIELD_NUMBER = 536870910;
+    public static final int LOAD_TIME_FIELD_NUMBER = 536870911;
 
     public static MessageDefinition createMessageDefinition() {
         return MessageDefinition.newBuilder(TYPE_NAME)
-                .addField("optional", "int64", MESSAGE_OFFSET_FIELD_NAME, 536870907)
-                .addField("optional", "int32", MESSAGE_PARTITION_FIELD_NAME, 536870908)
-                .addField("optional", "string", MESSAGE_TOPIC_FIELD_NAME, 536870909)
-                .addField("optional", "Timestamp", MESSAGE_TIMESTAMP_FIELD_NAME, 536870910)
-                .addField("optional", "Timestamp", LOAD_TIME_FIELD_NAME, 536870911)
+                .addField("optional", "int64", MESSAGE_OFFSET_FIELD_NAME, MESSAGE_OFFSET_FIELD_NUMBER)
+                .addField("optional", "int32", MESSAGE_PARTITION_FIELD_NAME, MESSAGE_PARTITION_FIELD_NUMBER)
+                .addField("optional", "string", MESSAGE_TOPIC_FIELD_NAME, MESSAGE_TOPIC_FIELD_NUMBER)
+                .addField("optional", "Timestamp", MESSAGE_TIMESTAMP_FIELD_NAME, MESSAGE_TIMESTAMP_FIELD_NUMBER)
+                .addField("optional", "Timestamp", LOAD_TIME_FIELD_NAME, LOAD_TIME_FIELD_NUMBER)
                 .build();
     }
 
@@ -71,7 +76,7 @@ public class KafkaMetadataProto {
             return this;
         }
 
-        public DynamicMessage build(){
+        public DynamicMessage build() {
             Timestamp timestamp = TimestampProto.newBuilder()
                     .setSeconds(loadTime.getEpochSecond())
                     .setNanos(loadTime.getNano())
@@ -89,7 +94,7 @@ public class KafkaMetadataProto {
         }
     }
 
-    public static MessageBuilder newBuilder(Descriptors.Descriptor descriptor){
+    public static MessageBuilder newBuilder(Descriptors.Descriptor descriptor) {
         return new MessageBuilder(descriptor);
     }
 }

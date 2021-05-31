@@ -2,7 +2,6 @@ package io.odpf.firehose.sink.file.writer;
 
 import com.google.protobuf.Descriptors;
 import io.odpf.firehose.sink.file.message.Record;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;

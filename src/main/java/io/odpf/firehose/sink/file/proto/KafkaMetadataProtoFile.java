@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.file.proto;
 import com.github.os72.protobuf.dynamic.DynamicSchema;
 import com.github.os72.protobuf.dynamic.MessageDefinition;
 import com.google.protobuf.Descriptors;
-import lombok.*;
+import lombok.Getter;
 
 @Getter
 public class KafkaMetadataProtoFile {

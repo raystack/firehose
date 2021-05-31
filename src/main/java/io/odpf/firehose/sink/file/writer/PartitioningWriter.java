@@ -60,8 +60,7 @@ public class PartitioningWriter implements Closeable {
 
     private Boolean shouldRotate(LocalFileWriter writer) {
         return policies.stream().reduce(false,
-                (accumulated, writerPolicy) -> accumulated || writerPolicy.shouldRotate(writer)
-                , (left, right) -> left || right);
+                (accumulated, writerPolicy) -> accumulated || writerPolicy.shouldRotate(writer), (left, right) -> left || right);
     }
 
     @Override

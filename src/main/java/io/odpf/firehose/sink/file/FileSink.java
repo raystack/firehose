@@ -6,7 +6,6 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.file.message.MessageSerializer;
 import io.odpf.firehose.sink.file.message.Record;
-import io.odpf.firehose.sink.file.writer.LocalFileWriter;
 import io.odpf.firehose.sink.file.writer.PartitioningWriter;
 
 import java.io.IOException;
@@ -14,7 +13,6 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class FileSink extends AbstractSink {
 

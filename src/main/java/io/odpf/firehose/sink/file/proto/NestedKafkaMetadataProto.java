@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class NestedKafkaMetadataProto {
     private static final String NESTED_OFFSET_METADATA_PROTO_NAME = "KafkaNestedOffsetMetadata";
+    public static final int METADATA_FIELD_NUMBER = 536870911;
 
     public static String getTypeName() {
         return NESTED_OFFSET_METADATA_PROTO_NAME;
@@ -17,7 +18,7 @@ public class NestedKafkaMetadataProto {
 
         return MessageDefinition.newBuilder(NestedKafkaMetadataProto.getTypeName())
                 .addMessageDefinition(metadataMessageDefinition)
-                .addField("optional", kafkaMetadataProtoTypeName, nestedKafkaMetadataColumnName, 536870911)
+                .addField("optional", kafkaMetadataProtoTypeName, nestedKafkaMetadataColumnName, METADATA_FIELD_NUMBER)
                 .build();
     }
 
@@ -25,7 +26,7 @@ public class NestedKafkaMetadataProto {
         return new MessageBuilder(descriptor);
     }
 
-    public static class  MessageBuilder {
+    public static class MessageBuilder {
 
         private String metadataColumnName;
         private DynamicMessage metadata;
@@ -47,7 +48,7 @@ public class NestedKafkaMetadataProto {
         }
 
         public DynamicMessage build() {
-            return metadata = DynamicMessage.newBuilder(descriptor)
+            return DynamicMessage.newBuilder(descriptor)
                     .setField(descriptor.findFieldByName(metadataColumnName), metadata)
                     .build();
         }

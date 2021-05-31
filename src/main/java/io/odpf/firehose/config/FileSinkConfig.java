@@ -1,5 +1,8 @@
 package io.odpf.firehose.config;
 
+import io.odpf.firehose.config.converter.FileSinkPartitioningTypeConverter;
+import io.odpf.firehose.sink.file.writer.PartitioningType;
+
 public interface FileSinkConfig extends AppConfig {
 
     @Key("SINK_FILE_LOCAL_DIRECTORY")
@@ -40,4 +43,13 @@ public interface FileSinkConfig extends AppConfig {
     @Key("SINK_FILE_TIME_PARTITIONING_DATE_PREFIX")
     @DefaultValue("dt=")
     String getTimePartitioningDatePrefix();
+
+    @Key("SINK_FILE_TIME_PARTITIONING_TYPE")
+    @DefaultValue("day")
+    @ConverterClass(FileSinkPartitioningTypeConverter.class)
+    PartitioningType getPartitioningType();
+
+    @Key("SINK_FILE_TIME_PARTITIONING_HOUR_PREFIX")
+    @DefaultValue("hr=")
+    String getTimePartitioningHourPrefix();
 }

@@ -39,26 +39,29 @@ public class FileSinkFactory implements SinkFactory {
         Descriptors.Descriptor metadataMessageDescriptor;
         if (sinkConfig.getKafkaMetadataColumnName().isEmpty()) {
             metadataMessageDescriptor = fileDescriptor.findMessageTypeByName(KafkaMetadataProto.getTypeName());
-        }else{
+        } else {
             metadataMessageDescriptor = fileDescriptor.findMessageTypeByName(NestedKafkaMetadataProto.getTypeName());
         }
 
         List<WriterPolicy> writerPolicies = new ArrayList<>();
-        if(sinkConfig.getFileRotationDurationMillis() != -1){
+        if (sinkConfig.getFileRotationDurationMillis() != -1) {
             TimeBasedRotatingPolicy rotatingPolicy = new TimeBasedRotatingPolicy(sinkConfig.getFileRotationDurationMillis());
             writerPolicies.add(rotatingPolicy);
         }
 
-        if(sinkConfig.getFileRationMaxSizeBytes() != -1){
+        if (sinkConfig.getFileRationMaxSizeBytes() != -1) {
             SizeBasedRotatingPolicy rotatingPolicy = new SizeBasedRotatingPolicy(sinkConfig.getFileRationMaxSizeBytes());
             writerPolicies.add(rotatingPolicy);
         }
 
-        TimePartitionPath timePartitionPath = new TimePartitionPath(sinkConfig.getKafkaMetadataColumnName(),
+        TimePartitionPath timePartitionPath = new TimePartitionPath(
+                sinkConfig.getKafkaMetadataColumnName(),
                 sinkConfig.getTimePartitioningFieldName(),
                 sinkConfig.getTimePartitioningDatePattern(),
+                sinkConfig.getPartitioningType(),
                 sinkConfig.getTimePartitioningTimeZone(),
-                sinkConfig.getTimePartitioningDatePrefix());
+                sinkConfig.getTimePartitioningDatePrefix(),
+                sinkConfig.getTimePartitioningHourPrefix());
 
         PartitioningWriter partitioningWriter = new PartitioningWriter(sinkConfig.getWriterBlockSize(),
                 sinkConfig.getWriterPageSize(),

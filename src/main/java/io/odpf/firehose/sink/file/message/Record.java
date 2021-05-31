@@ -1,7 +1,8 @@
 package io.odpf.firehose.sink.file.message;
 
 import com.google.protobuf.DynamicMessage;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 @AllArgsConstructor
 @Data

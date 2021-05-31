@@ -19,7 +19,7 @@ public class KafkaMetadataUtils {
         kafkaMetadataFileDescriptor = KafkaMetadataProtoFile.createFileDescriptor(kafkaMetadataColumnName);
     }
 
-    public DynamicMessage createKafkaMetadata(Message message){
+    public DynamicMessage createKafkaMetadata(Message message) {
         Descriptors.Descriptor metadataDescriptor = kafkaMetadataFileDescriptor.findMessageTypeByName(KafkaMetadataProto.getTypeName());
 
         Instant loadTime = Instant.now();
@@ -35,7 +35,7 @@ public class KafkaMetadataUtils {
         DynamicMessage metadata = messageBuilder.build();
         System.out.println(metadata.getAllFields());
 
-        if (kafkaMetadataColumnName.isEmpty()){
+        if (kafkaMetadataColumnName.isEmpty()) {
             return metadata;
         }
 
