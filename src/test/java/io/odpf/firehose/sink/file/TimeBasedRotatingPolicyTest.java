@@ -1,15 +1,11 @@
 package io.odpf.firehose.sink.file;
 
-import io.odpf.firehose.sink.file.writer.LocalFileWriter;
+import io.odpf.firehose.sink.file.writer.LocalParquetFileWriter;
 import io.odpf.firehose.sink.file.writer.policy.TimeBasedRotatingPolicy;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
@@ -18,7 +14,7 @@ import static org.mockito.Mockito.when;
 public class TimeBasedRotatingPolicyTest {
 
     @Mock
-    private LocalFileWriter fileWriter;
+    private LocalParquetFileWriter fileWriter;
 
     private TimeBasedRotatingPolicy rotatingPolicy = new TimeBasedRotatingPolicy(200);
 

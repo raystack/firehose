@@ -55,8 +55,8 @@ public class MessageToRecordTest {
         assertEquals(record.getMetadata(), metadataMessage);
         assertEquals(record.getMessage(), dynamicMessage);
 
-        verify(protoParser,times(1)).parse(logMessage);
-        verify(kafkaMetadataUtils,times(1)).createKafkaMetadata(message);
+        verify(protoParser, times(1)).parse(logMessage);
+        verify(kafkaMetadataUtils, times(1)).createKafkaMetadata(message);
     }
 
     @Test(expected = DeserializerException.class)

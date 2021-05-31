@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.file;
 
-import io.odpf.firehose.sink.file.writer.LocalFileWriter;
+import io.odpf.firehose.sink.file.writer.LocalParquetFileWriter;
 import io.odpf.firehose.sink.file.writer.policy.SizeBasedRotatingPolicy;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +14,7 @@ import static org.mockito.Mockito.*;
 public class SizeBasedRotatingPolicyTest {
 
     @Mock
-    private LocalFileWriter fileWriter;
+    private LocalParquetFileWriter fileWriter;
     private SizeBasedRotatingPolicy sizeBasedRotatingPolicy = new SizeBasedRotatingPolicy(256);
 
     @Test

@@ -6,7 +6,7 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.file.message.MessageSerializer;
 import io.odpf.firehose.sink.file.message.Record;
-import io.odpf.firehose.sink.file.writer.PartitioningWriter;
+import io.odpf.firehose.sink.file.writer.WriterOrchestrator;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -16,7 +16,7 @@ import java.util.List;
 
 public class FileSink extends AbstractSink {
 
-    private PartitioningWriter partitioningWriter;
+    private WriterOrchestrator writerOrchestrator;
     private Path basePath;
     private List<Record> records;
     private MessageSerializer serializer;
@@ -25,17 +25,17 @@ public class FileSink extends AbstractSink {
         super(instrumentation, sinkType);
     }
 
-    public FileSink(Instrumentation instrumentation, String sinkType, PartitioningWriter partitioningWriter, MessageSerializer serializer, Path basePath) {
+    public FileSink(Instrumentation instrumentation, String sinkType, WriterOrchestrator writerOrchestrator, MessageSerializer serializer, Path basePath) {
         super(instrumentation, sinkType);
         this.serializer = serializer;
         this.basePath = basePath;
-        this.partitioningWriter = partitioningWriter;
+        this.writerOrchestrator = writerOrchestrator;
     }
 
     @Override
-    protected List<Message> execute() throws Exception {
+    protected List<Message> execute() throws IOException {
         for (Record record : this.records) {
-            this.partitioningWriter.getWriter(basePath, record).write(record);
+            this.writerOrchestrator.getWriter(basePath, record).write(record);
         }
         return new LinkedList<>();
     }
@@ -51,6 +51,6 @@ public class FileSink extends AbstractSink {
 
     @Override
     public void close() throws IOException {
-        partitioningWriter.close();
+        writerOrchestrator.close();
     }
 }

@@ -13,7 +13,7 @@ import io.odpf.firehose.sink.file.message.MessageSerializer;
 import io.odpf.firehose.sink.file.proto.KafkaMetadataProto;
 import io.odpf.firehose.sink.file.proto.KafkaMetadataProtoFile;
 import io.odpf.firehose.sink.file.proto.NestedKafkaMetadataProto;
-import io.odpf.firehose.sink.file.writer.PartitioningWriter;
+import io.odpf.firehose.sink.file.writer.WriterOrchestrator;
 import io.odpf.firehose.sink.file.writer.path.TimePartitionPath;
 import io.odpf.firehose.sink.file.writer.policy.SizeBasedRotatingPolicy;
 import io.odpf.firehose.sink.file.writer.policy.TimeBasedRotatingPolicy;
@@ -63,7 +63,7 @@ public class FileSinkFactory implements SinkFactory {
                 sinkConfig.getTimePartitioningDatePrefix(),
                 sinkConfig.getTimePartitioningHourPrefix());
 
-        PartitioningWriter partitioningWriter = new PartitioningWriter(sinkConfig.getWriterBlockSize(),
+        WriterOrchestrator writerOrchestrator = new WriterOrchestrator(sinkConfig.getWriterBlockSize(),
                 sinkConfig.getWriterPageSize(),
                 messageDescriptor,
                 metadataMessageDescriptor.getFields(),
@@ -76,6 +76,6 @@ public class FileSinkFactory implements SinkFactory {
 
         Path basePath = Paths.get(sinkConfig.getLocalDirectory());
 
-        return new FileSink(new Instrumentation(statsDReporter, FileSink.class), "file", partitioningWriter, messageSerializer, basePath);
+        return new FileSink(new Instrumentation(statsDReporter, FileSink.class), "file", writerOrchestrator, messageSerializer, basePath);
     }
 }

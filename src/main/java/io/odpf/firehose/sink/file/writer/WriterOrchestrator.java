@@ -9,13 +9,18 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class PartitioningWriter implements Closeable {
+public class WriterOrchestrator implements Closeable {
+    enum LocalWriterType {
+        PARQUET,
+        MEMORY
+    }
+
+    private LocalWriterType writerType;
 
     private int pageSize;
     private int blockSize;
@@ -27,13 +32,18 @@ public class PartitioningWriter implements Closeable {
 
     private Map<Path, LocalFileWriter> writerMap = new ConcurrentHashMap<>();
 
-    public PartitioningWriter(int pageSize, int blockSize, Descriptors.Descriptor messageDescriptor, List<Descriptors.FieldDescriptor> metadataFieldDescriptor, List<WriterPolicy> policies, TimePartitionPath timePartitionPath) {
+    public WriterOrchestrator(int pageSize, int blockSize, Descriptors.Descriptor messageDescriptor, List<Descriptors.FieldDescriptor> metadataFieldDescriptor, List<WriterPolicy> policies, TimePartitionPath timePartitionPath) {
+        this(pageSize, blockSize, messageDescriptor, metadataFieldDescriptor, policies, timePartitionPath, LocalWriterType.PARQUET);
+    }
+
+    public WriterOrchestrator(int pageSize, int blockSize, Descriptors.Descriptor messageDescriptor, List<Descriptors.FieldDescriptor> metadataFieldDescriptor, List<WriterPolicy> policies, TimePartitionPath timePartitionPath, LocalWriterType writerType) {
         this.pageSize = pageSize;
         this.blockSize = blockSize;
         this.messageDescriptor = messageDescriptor;
         this.metadataFieldDescriptor = metadataFieldDescriptor;
         this.policies = policies;
         this.timePartitionPath = timePartitionPath;
+        this.writerType = writerType;
     }
 
     public LocalFileWriter getWriter(Path basePath, Record record) throws IOException {
@@ -53,9 +63,21 @@ public class PartitioningWriter implements Closeable {
         Path dir = basePath.resolve(partitionedPath);
         Path fullPath = dir.resolve(Paths.get(fileName));
 
-        LocalFileWriter fileWriter = new LocalFileWriter(System.currentTimeMillis(), fullPath.toString(), pageSize, blockSize, messageDescriptor, metadataFieldDescriptor);
+        LocalFileWriter fileWriter = createLocalFileWriter(fullPath);
+
         writerMap.put(partitionedPath, fileWriter);
         return fileWriter;
+    }
+
+    public LocalFileWriter createLocalFileWriter(Path fullPath) throws IOException {
+        switch (writerType) {
+            case PARQUET:
+                return new LocalParquetFileWriter(System.currentTimeMillis(), fullPath.toString(), pageSize, blockSize, messageDescriptor, metadataFieldDescriptor);
+            case MEMORY:
+                return new MemoryWriter(System.currentTimeMillis());
+            default:
+                throw new IOException("unsupported LOCAL_FILE_WRITER_TYPE");
+        }
     }
 
     private Boolean shouldRotate(LocalFileWriter writer) {
@@ -65,8 +87,7 @@ public class PartitioningWriter implements Closeable {
 
     @Override
     public void close() throws IOException {
-        Collection<LocalFileWriter> writers = writerMap.values();
-        for (LocalFileWriter writer :writers) {
+        for (LocalFileWriter writer : writerMap.values()) {
             writer.close();
         }
     }

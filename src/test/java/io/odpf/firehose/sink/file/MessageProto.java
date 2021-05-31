@@ -4,6 +4,7 @@ import com.github.os72.protobuf.dynamic.DynamicSchema;
 import com.github.os72.protobuf.dynamic.MessageDefinition;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.Timestamp;
 import io.odpf.firehose.sink.file.proto.TimestampProto;
 import io.odpf.firehose.sink.file.proto.ProtoUtils;
 
@@ -28,7 +29,7 @@ public class MessageProto {
         return TYPE_NAME;
     }
 
-    private static DynamicSchema createSchema(){
+    private static DynamicSchema createSchema() {
         DynamicSchema.Builder schemaBuilder = DynamicSchema.newBuilder().setName(FILE_NAME).setPackage(PACKAGE);
         MessageDefinition messageDefinition = new MessageProto().createMessageDefinition();
         schemaBuilder.addMessageDefinition(messageDefinition);
@@ -70,12 +71,15 @@ public class MessageProto {
             return this;
         }
 
-        public DynamicMessage build(){
+        public DynamicMessage build() {
+            Timestamp timestamp = TimestampProto.newBuilder()
+                    .setSeconds(createdTime.getEpochSecond())
+                    .setNanos(createdTime.getNano())
+                    .build();
+            DynamicMessage timestampMessage = DynamicMessage.newBuilder(timestamp).build();
+
             return DynamicMessage.newBuilder(descriptor)
-                    .setField(descriptor.findFieldByName(CREATED_TIME_FIELD_NAME), TimestampProto.newBuilder()
-                            .setSeconds(createdTime.getEpochSecond())
-                            .setNanos(createdTime.getNano())
-                            .build())
+                    .setField(descriptor.findFieldByName(CREATED_TIME_FIELD_NAME), timestampMessage)
                     .setField(descriptor.findFieldByName(ORDER_NUMBER_FIELD_NAME), orderNumber)
                     .build();
         }

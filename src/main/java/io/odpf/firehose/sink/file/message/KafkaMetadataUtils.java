@@ -8,6 +8,7 @@ import io.odpf.firehose.sink.file.proto.KafkaMetadataProtoFile;
 import io.odpf.firehose.sink.file.proto.NestedKafkaMetadataProto;
 
 import java.time.Instant;
+import java.util.List;
 
 public class KafkaMetadataUtils {
 
@@ -33,7 +34,6 @@ public class KafkaMetadataUtils {
                 .setTopic(message.getTopic());
 
         DynamicMessage metadata = messageBuilder.build();
-        System.out.println(metadata.getAllFields());
 
         if (kafkaMetadataColumnName.isEmpty()) {
             return metadata;
@@ -46,5 +46,13 @@ public class KafkaMetadataUtils {
                 .setMetadataColumnName(kafkaMetadataColumnName);
 
         return builder.build();
+    }
+
+    public List<Descriptors.FieldDescriptor> getFieldDescriptor() {
+        return getMetadataDescriptor().getFields();
+    }
+
+    public Descriptors.Descriptor getMetadataDescriptor() {
+        return kafkaMetadataFileDescriptor.findMessageTypeByName(KafkaMetadataProto.getTypeName());
     }
 }
