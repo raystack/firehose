@@ -53,6 +53,9 @@ public class KafkaMetadataUtils {
     }
 
     public Descriptors.Descriptor getMetadataDescriptor() {
-        return kafkaMetadataFileDescriptor.findMessageTypeByName(KafkaMetadataProto.getTypeName());
+        if (kafkaMetadataColumnName.isEmpty()) {
+            return kafkaMetadataFileDescriptor.findMessageTypeByName(KafkaMetadataProto.getTypeName());
+        }
+        return kafkaMetadataFileDescriptor.findMessageTypeByName(NestedKafkaMetadataProto.getTypeName());
     }
 }
