@@ -14,7 +14,7 @@ import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
-import io.odpf.firehose.sink.file.FileSinkFactory;
+import io.odpf.firehose.sink.cloud.CloudSinkFactory;
 import io.odpf.firehose.sink.jdbc.JdbcSinkFactory;
 import io.odpf.firehose.sink.elasticsearch.EsSinkFactory;
 import io.odpf.firehose.sink.grpc.GrpcSinkFactory;
@@ -126,7 +126,7 @@ public class FirehoseConsumerFactory {
             case PROMETHEUS:
                 return new PromSinkFactory().create(config, statsDReporter, stencilClient);
             case FILE:
-                return new FileSinkFactory().create(config, statsDReporter, stencilClient);
+                return new CloudSinkFactory().create(config, statsDReporter, stencilClient);
             default:
                 throw new EglcConfigurationException("Invalid Firehose SINK_TYPE");
 
