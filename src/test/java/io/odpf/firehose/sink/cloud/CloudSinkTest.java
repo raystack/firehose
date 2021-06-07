@@ -5,7 +5,6 @@ import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.cloud.message.MessageSerializer;
 import io.odpf.firehose.sink.cloud.message.Record;
-import io.odpf.firehose.sink.cloud.writer.LocalParquetFileWriter;
 import io.odpf.firehose.sink.cloud.writer.WriterOrchestrator;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +19,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -31,9 +30,6 @@ public class CloudSinkTest {
     private MessageSerializer messageSerializer;
 
     @Mock
-    private LocalParquetFileWriter localParquetFileWriter;
-
-    @Mock
     private WriterOrchestrator writerOrchestrator;
 
     private CloudSink cloudSink;
@@ -41,7 +37,7 @@ public class CloudSinkTest {
     @Mock
     private Instrumentation instrumentation;
 
-    private Path basePath = Paths.get("");
+    private final Path basePath = Paths.get("");
 
     @Before
     public void setUp() throws Exception {
@@ -52,6 +48,7 @@ public class CloudSinkTest {
     public void shouldWriteRecords() throws IOException {
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
         Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 1, 2);
+        String pathToWriter = "/tmp/test";
 
         Record record1 = new Record(null, null);
         Record record2 = new Record(null, null);
@@ -60,11 +57,11 @@ public class CloudSinkTest {
         when(messageSerializer.serialize(message2)).thenReturn(record2);
 
         when(writerOrchestrator.getMessageSerializer()).thenReturn(messageSerializer);
-        when(writerOrchestrator.getWriter(any(Record.class))).thenReturn(localParquetFileWriter);
+        when(writerOrchestrator.write(any(Record.class))).thenReturn(pathToWriter);
 
         List<Message> retryMessages = cloudSink.pushMessage(Arrays.asList(message1, message2));
 
-        verify(localParquetFileWriter, times(2)).write(any(Record.class));
+        verify(writerOrchestrator, times(2)).write(any(Record.class));
         assertEquals(0, retryMessages.size());
     }
 
@@ -75,22 +72,7 @@ public class CloudSinkTest {
 
         when(messageSerializer.serialize(message1)).thenReturn(record);
         when(writerOrchestrator.getMessageSerializer()).thenReturn(messageSerializer);
-        when(writerOrchestrator.getWriter(record)).thenReturn(localParquetFileWriter);
-        doThrow(new IOException("")).when(localParquetFileWriter).write(record);
-
-        cloudSink.prepare(Arrays.asList(message1));
-        List<Message> messages = cloudSink.execute();
-        assertEquals(1, messages.size());
-    }
-
-    @Test(expected = IOException.class)
-    public void shouldThrowIOExceptionWhenCreatingWriterThrowException() throws IOException, SQLException {
-        Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
-        Record record = new Record(null, null);
-
-        when(messageSerializer.serialize(message1)).thenReturn(record);
-        when(writerOrchestrator.getMessageSerializer()).thenReturn(messageSerializer);
-        when(writerOrchestrator.getWriter(record)).thenThrow(new IOException(""));
+        doThrow(new IOException("")).when(writerOrchestrator).write(record);
 
         cloudSink.prepare(Arrays.asList(message1));
         List<Message> messages = cloudSink.execute();

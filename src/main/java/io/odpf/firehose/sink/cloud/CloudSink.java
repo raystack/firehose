@@ -25,7 +25,7 @@ public class CloudSink extends AbstractSink {
     @Override
     protected List<Message> execute() throws IOException {
         for (Record record : this.records) {
-            this.writerOrchestrator.getWriter(record).write(record);
+            this.writerOrchestrator.write(record);
         }
         return new LinkedList<>();
     }

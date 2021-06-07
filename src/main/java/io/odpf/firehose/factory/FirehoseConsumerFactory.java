@@ -125,7 +125,7 @@ public class FirehoseConsumerFactory {
                 return new GrpcSinkFactory().create(config, statsDReporter, stencilClient);
             case PROMETHEUS:
                 return new PromSinkFactory().create(config, statsDReporter, stencilClient);
-            case FILE:
+            case CLOUD:
                 return new CloudSinkFactory().create(config, statsDReporter, stencilClient);
             default:
                 throw new EglcConfigurationException("Invalid Firehose SINK_TYPE");

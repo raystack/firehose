@@ -1,10 +1,11 @@
 package io.odpf.firehose.sink.cloud.writer.path;
 
 import com.google.protobuf.DynamicMessage;
+import io.odpf.firehose.sink.cloud.Constants;
 import io.odpf.firehose.sink.cloud.TestUtils;
 import io.odpf.firehose.sink.cloud.message.MessageProto;
 import io.odpf.firehose.sink.cloud.message.Record;
-import io.odpf.firehose.sink.cloud.writer.PartitioningType;
+import io.odpf.firehose.sink.cloud.writer.local.TimePartitionPath;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -41,7 +42,7 @@ public class TimePartitionPathTest {
         DynamicMessage metadata = TestUtils.createMetadata(kafkaMetadataFieldName, defaultTimestamp, defaultOffset, defaultPartition, defaultTopic);
         Record record = new Record(message, metadata);
 
-        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, pattern, PartitioningType.DAY, zone, "date=", "");
+        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, pattern, Constants.PartitioningType.DAY, zone, "date=", "");
         Path path = factory.create(record);
 
         assertEquals(partitionPath, path);
@@ -56,7 +57,7 @@ public class TimePartitionPathTest {
         DynamicMessage metadata = TestUtils.createMetadata(kafkaMetadataFieldName, defaultTimestamp, defaultOffset, defaultPartition, defaultTopic);
         Record record = new Record(message, metadata);
 
-        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, pattern, PartitioningType.HOUR, zone, datePrefix, hourPrefix);
+        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, pattern, Constants.PartitioningType.HOUR, zone, datePrefix, hourPrefix);
         Path path = factory.create(record);
 
         assertEquals(partitionPath, path);
@@ -71,7 +72,7 @@ public class TimePartitionPathTest {
         DynamicMessage metadata = TestUtils.createMetadata(kafkaMetadataFieldName, defaultTimestamp, defaultOffset, defaultPartition, defaultTopic);
         Record record = new Record(message, metadata);
 
-        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, pattern, PartitioningType.NONE, zone, datePrefix, hourPrefix);
+        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, pattern, Constants.PartitioningType.NONE, zone, datePrefix, hourPrefix);
         Path path = factory.create(record);
 
         assertEquals(partitionPath, path);
@@ -86,7 +87,7 @@ public class TimePartitionPathTest {
         DynamicMessage metadata = TestUtils.createMetadata(kafkaMetadataFieldName, defaultTimestamp, defaultOffset, defaultPartition, defaultTopic);
         Record record = new Record(message, metadata);
 
-        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, pattern, PartitioningType.DAY, zone, datePrefix, hourPrefix);
+        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, pattern, Constants.PartitioningType.DAY, zone, datePrefix, hourPrefix);
         Path path = factory.create(record);
 
         assertEquals(partitionPath, path);
@@ -101,7 +102,7 @@ public class TimePartitionPathTest {
         DynamicMessage metadata = TestUtils.createMetadata(kafkaMetadataFieldName, defaultTimestamp, defaultOffset, defaultPartition, defaultTopic);
         Record record = new Record(message, metadata);
 
-        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, pattern, PartitioningType.DAY, zone, datePrefix, hourPrefix);
+        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, pattern, Constants.PartitioningType.DAY, zone, datePrefix, hourPrefix);
         Path path = factory.create(record);
 
         assertEquals(partitionPath, path);

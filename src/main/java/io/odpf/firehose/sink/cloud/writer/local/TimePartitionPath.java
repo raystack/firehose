@@ -1,11 +1,11 @@
-package io.odpf.firehose.sink.cloud.writer.path;
+package io.odpf.firehose.sink.cloud.writer.local;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import io.odpf.firehose.exception.EglcConfigurationException;
+import io.odpf.firehose.sink.cloud.Constants;
 import io.odpf.firehose.sink.cloud.message.Record;
 import io.odpf.firehose.sink.cloud.proto.KafkaMetadataProto;
-import io.odpf.firehose.sink.cloud.writer.PartitioningType;
 import lombok.AllArgsConstructor;
 
 import java.nio.file.Path;
@@ -18,13 +18,13 @@ import java.time.format.DateTimeFormatter;
 @AllArgsConstructor
 public class TimePartitionPath {
 
-    private String kafkaMetadataFieldName;
-    private String fieldName;
-    private String datePattern;
-    private PartitioningType partitioningType;
-    private String zone;
-    private String datePrefix;
-    private String hourPrefix;
+    private final String kafkaMetadataFieldName;
+    private final String fieldName;
+    private final String datePattern;
+    private final Constants.PartitioningType partitioningType;
+    private final String zone;
+    private final String datePrefix;
+    private final String hourPrefix;
 
     public Path create(Record record) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(datePattern);

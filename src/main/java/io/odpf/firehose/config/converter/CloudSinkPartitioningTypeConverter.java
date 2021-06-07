@@ -1,13 +1,13 @@
 package io.odpf.firehose.config.converter;
 
-import io.odpf.firehose.sink.cloud.writer.PartitioningType;
+import io.odpf.firehose.sink.cloud.Constants;
 import org.aeonbits.owner.Converter;
 
 import java.lang.reflect.Method;
 
-public class CloudSinkPartitioningTypeConverter implements Converter<PartitioningType> {
+public class CloudSinkPartitioningTypeConverter implements Converter<Constants.PartitioningType> {
     @Override
-    public PartitioningType convert(Method method, String input) {
-        return PartitioningType.valueOf(input.toUpperCase());
+    public Constants.PartitioningType convert(Method method, String input) {
+        return Constants.PartitioningType.valueOf(input.toUpperCase());
     }
 }

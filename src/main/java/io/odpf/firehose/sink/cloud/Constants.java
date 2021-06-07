@@ -6,8 +6,10 @@ public class Constants {
         S3,
         HDFS
     }
-    public enum LocalFileWriterType {
-        PARQUET,
-        MEMORY
+
+    public enum PartitioningType {
+        NONE,
+        DAY,
+        HOUR
     }
 }

@@ -1,7 +1,8 @@
-package io.odpf.firehose.sink.cloud.writer;
+package io.odpf.firehose.sink.cloud.writer.local;
 
 import com.google.protobuf.Descriptors;
 import io.odpf.firehose.sink.cloud.message.Record;
+import lombok.Getter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.apache.parquet.proto.ProtoParquetWriter;
@@ -14,6 +15,8 @@ public class LocalParquetFileWriter implements LocalFileWriter {
 
     private ParquetWriter parquetWriter;
     private long createdTimestampMillis;
+    @Getter
+    private String fullPath;
 
     public LocalParquetFileWriter(long createdTimestampMillis, String path, int pageSize, int blockSize, Descriptors.Descriptor messageDescriptor, List<Descriptors.FieldDescriptor> metadataFieldDescriptor) throws IOException {
         this.parquetWriter = new ProtoParquetWriter(new org.apache.hadoop.fs.Path(path),
@@ -22,6 +25,7 @@ public class LocalParquetFileWriter implements LocalFileWriter {
                 CompressionCodecName.GZIP,
                 blockSize, pageSize);
         this.createdTimestampMillis = createdTimestampMillis;
+        this.fullPath = path;
     }
 
     public long currentSize() {

@@ -1,16 +1,16 @@
 package io.odpf.firehose.config;
 
 import io.odpf.firehose.config.converter.CloudSinkPartitioningTypeConverter;
-import io.odpf.firehose.sink.cloud.writer.PartitioningType;
+import io.odpf.firehose.sink.cloud.Constants;
 
 public interface CloudSinkConfig extends AppConfig {
 
     @Key("SINK_CLOUD_LOCAL_DIRECTORY")
     String getLocalDirectory();
 
-    @Key("SINK_CLOUD_LOCAL_WRITER_TYPE")
-    @DefaultValue("PARQUET")
-    String getLocalFileWriterType();
+    @Key("SINK_CLOUD_LOCAL_WRITER_CLASS")
+    @DefaultValue("io.odpf.firehose.sink.cloud.writer.local.LocalParquetFileWriter")
+    String getLocalFileWriterClass();
 
     @Key("SINK_CLOUD_KAFKA_METADATA_COLUMN_NAME")
     @DefaultValue("")
@@ -51,7 +51,7 @@ public interface CloudSinkConfig extends AppConfig {
     @Key("SINK_CLOUD_TIME_PARTITIONING_TYPE")
     @DefaultValue("day")
     @ConverterClass(CloudSinkPartitioningTypeConverter.class)
-    PartitioningType getPartitioningType();
+    Constants.PartitioningType getPartitioningType();
 
     @Key("SINK_CLOUD_TIME_PARTITIONING_HOUR_PREFIX")
     @DefaultValue("hr=")

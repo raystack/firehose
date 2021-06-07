@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.cloud.writer;
+package io.odpf.firehose.sink.cloud.writer.local;
 
 import io.odpf.firehose.sink.cloud.message.Record;
 
@@ -11,4 +11,6 @@ public interface LocalFileWriter extends Closeable {
     void write(Record record) throws IOException;
 
     long getCreatedTimestampMillis();
+
+    String getFullPath();
 }

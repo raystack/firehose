@@ -1,6 +1,6 @@
-package io.odpf.firehose.sink.cloud.writer.policy;
+package io.odpf.firehose.sink.cloud.writer.local.policy;
 
-import io.odpf.firehose.sink.cloud.writer.LocalFileWriter;
+import io.odpf.firehose.sink.cloud.writer.local.LocalFileWriter;
 
 public class TimeBasedRotatingPolicy implements WriterPolicy {
 

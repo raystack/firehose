@@ -1,6 +1,6 @@
-package io.odpf.firehose.sink.cloud.writer.policy;
+package io.odpf.firehose.sink.cloud.writer.local.policy;
 
-import io.odpf.firehose.sink.cloud.writer.LocalParquetFileWriter;
+import io.odpf.firehose.sink.cloud.writer.local.LocalParquetFileWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
