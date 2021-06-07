@@ -1,6 +1,7 @@
 package io.odpf.firehose.config;
 
 import io.odpf.firehose.config.converter.CloudSinkPartitioningTypeConverter;
+import io.odpf.firehose.config.converter.CloudSinkWriterTypeConverter;
 import io.odpf.firehose.sink.cloud.Constants;
 
 public interface CloudSinkConfig extends AppConfig {
@@ -8,9 +9,10 @@ public interface CloudSinkConfig extends AppConfig {
     @Key("SINK_CLOUD_LOCAL_DIRECTORY")
     String getLocalDirectory();
 
-    @Key("SINK_CLOUD_LOCAL_WRITER_CLASS")
-    @DefaultValue("io.odpf.firehose.sink.cloud.writer.local.LocalParquetFileWriter")
-    String getLocalFileWriterClass();
+    @Key("SINK_CLOUD_FILE_WRITER_TYPE")
+    @DefaultValue("parquet")
+    @ConverterClass(CloudSinkWriterTypeConverter.class)
+    Constants.WriterType getFileWriterType();
 
     @Key("SINK_CLOUD_KAFKA_METADATA_COLUMN_NAME")
     @DefaultValue("")

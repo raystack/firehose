@@ -14,7 +14,6 @@ import io.odpf.firehose.sink.cloud.proto.KafkaMetadataProto;
 import io.odpf.firehose.sink.cloud.proto.KafkaMetadataProtoFile;
 import io.odpf.firehose.sink.cloud.proto.NestedKafkaMetadataProto;
 import io.odpf.firehose.sink.cloud.writer.WriterOrchestrator;
-import io.odpf.firehose.sink.cloud.writer.local.LocalFileWriter;
 import io.odpf.firehose.sink.cloud.writer.local.LocalFileWriterWrapper;
 import io.odpf.firehose.sink.cloud.writer.local.TimePartitionPath;
 import io.odpf.firehose.sink.cloud.writer.local.policy.SizeBasedRotatingPolicy;
@@ -22,7 +21,6 @@ import io.odpf.firehose.sink.cloud.writer.local.policy.TimeBasedRotatingPolicy;
 import io.odpf.firehose.sink.cloud.writer.local.policy.WriterPolicy;
 import org.aeonbits.owner.ConfigFactory;
 
-import java.lang.reflect.Constructor;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -60,20 +58,13 @@ public class CloudSinkFactory implements SinkFactory {
                 sinkConfig.getTimePartitioningDatePrefix(),
                 sinkConfig.getTimePartitioningHourPrefix());
 
-        String writerClass = sinkConfig.getLocalFileWriterClass();
-        Constructor<LocalFileWriter> localFileWriterConstructor;
-        try {
-            localFileWriterConstructor = (Constructor<LocalFileWriter>) Class.forName(writerClass).getConstructor(long.class, String.class, int.class, int.class, Descriptors.Descriptor.class, List.class);
-        } catch (ClassNotFoundException | NoSuchMethodException e) {
-            throw new IllegalArgumentException(e);
-        }
         Path basePath = Paths.get(sinkConfig.getLocalDirectory());
         ProtoParser protoParser = new ProtoParser(stencilClient, sinkConfig.getInputSchemaProtoClass());
         KafkaMetadataUtils kafkaMetadataUtils = new KafkaMetadataUtils(sinkConfig.getKafkaMetadataColumnName());
         MessageSerializer messageSerializer = new MessageSerializer(kafkaMetadataUtils, sinkConfig.getWriteKafkaMetadata(), protoParser);
         LocalFileWriterWrapper localFileWriterWrapper =
                 new LocalFileWriterWrapper(
-                        localFileWriterConstructor,
+                        sinkConfig.getFileWriterType(),
                         sinkConfig.getWriterPageSize(),
                         sinkConfig.getWriterBlockSize(),
                         messageDescriptor,

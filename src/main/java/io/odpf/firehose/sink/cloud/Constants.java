@@ -7,6 +7,10 @@ public class Constants {
         HDFS
     }
 
+    public enum WriterType {
+        PARQUET,
+    }
+
     public enum PartitioningType {
         NONE,
         DAY,
