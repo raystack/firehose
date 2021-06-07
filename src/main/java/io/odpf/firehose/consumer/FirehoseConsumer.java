@@ -9,7 +9,6 @@ import io.odpf.firehose.util.Clock;
 import io.opentracing.Span;
 import lombok.AllArgsConstructor;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
@@ -20,7 +19,7 @@ import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_PARTITIONS_PROCESS_T
  * Firehose consumer reads messages from Generic consumer and pushes messages to the configured sink.
  */
 @AllArgsConstructor
-public class FirehoseConsumer implements Closeable {
+public class FirehoseConsumer implements KafkaConsumer {
 
     private final GenericConsumer consumer;
     private final Sink sink;
@@ -28,7 +27,8 @@ public class FirehoseConsumer implements Closeable {
     private final SinkTracer tracer;
     private final Instrumentation instrumentation;
 
-    public void processPartitions() throws IOException, DeserializerException, FilterException {
+    @Override
+    public void process() throws IOException, DeserializerException, FilterException {
         Instant beforeCall = clock.now();
         try {
             List<Message> messages = consumer.readMessages();

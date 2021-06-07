@@ -56,7 +56,7 @@ public class FirehoseConsumerTest {
 
     @Test
     public void shouldProcessPartitions() throws IOException, DeserializerException, FilterException {
-        firehoseConsumer.processPartitions();
+        firehoseConsumer.process();
 
         verify(sink).pushMessage(messages);
     }
@@ -65,14 +65,14 @@ public class FirehoseConsumerTest {
     public void shouldProcessEmptyPartitions() throws IOException, DeserializerException, FilterException {
         when(genericConsumer.readMessages()).thenReturn(new ArrayList<>());
 
-        firehoseConsumer.processPartitions();
+        firehoseConsumer.process();
 
         verify(sink, times(0)).pushMessage(anyList());
     }
 
     @Test
     public void shouldSendNoOfMessagesReceivedCount() throws IOException, DeserializerException, FilterException {
-        firehoseConsumer.processPartitions();
+        firehoseConsumer.process();
         verify(instrumentation).logInfo("Execution successful for {} records", 2);
     }
 
@@ -81,13 +81,13 @@ public class FirehoseConsumerTest {
         Instant beforeCall = Instant.now();
         Instant afterCall = beforeCall.plusSeconds(1);
         when(clock.now()).thenReturn(beforeCall).thenReturn(afterCall);
-        firehoseConsumer.processPartitions();
+        firehoseConsumer.process();
         verify(instrumentation).captureDurationSince("firehose_source_kafka_partitions_process_milliseconds", beforeCall);
     }
 
     @Test
     public void shouldCallTracerWithTheSpan() throws IOException, DeserializerException, FilterException {
-        firehoseConsumer.processPartitions();
+        firehoseConsumer.process();
 
         verify(sink).pushMessage(messages);
         verify(tracer).startTrace(messages);

@@ -88,4 +88,12 @@ public class GenericConsumer {
             instrumentation.captureNonFatalError(e, "Exception while closing consumer");
         }
     }
+
+    public ConsumerRecords<byte[], byte[]> getRecords() {
+        return records;
+    }
+
+    public Filter getFilter() {
+        return filter;
+    }
 }
