@@ -1,11 +1,15 @@
 package io.odpf.firehose.sink.cloud.writer.remote;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
@@ -46,5 +50,12 @@ public class CloudFileCheckerWorker implements Runnable {
         }).filter(x -> !x.isEmpty()).collect(Collectors.toSet());
         cloudUploadFutures.removeIf(x -> flushedPath.contains(x.getPath()));
         flushedToCloudPathList.addAll(flushedPath);
+    }
+
+    @AllArgsConstructor
+    @Data
+    static class CloudWriterWorkerFuture {
+        private Future future;
+        private String path;
     }
 }
