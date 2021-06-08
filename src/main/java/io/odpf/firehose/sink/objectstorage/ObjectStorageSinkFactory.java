@@ -77,6 +77,6 @@ public class ObjectStorageSinkFactory implements SinkFactory {
                         basePath,
                         messageSerializer);
 
-        return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), "file", writerOrchestrator);
+        return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator);
     }
 }

@@ -8,6 +8,7 @@ import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriterWrapper;
 import io.odpf.firehose.sink.objectstorage.writer.local.TimePartitionPath;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageFileCheckerWorker;
+import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterWorkerFuture;
 import lombok.Getter;
 
 import java.io.Closeable;
@@ -27,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class WriterOrchestrator implements Closeable {
     private static final int FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS = 10;
     private static final int FILE_CHECKER_THREAD_FREQUENCY_SECONDS = 5;
-    private final Map<Path, LocalFileWriter> writerMap = new ConcurrentHashMap<>();
+    private final Map<String, LocalFileWriter> timePartitionWriterMap = new ConcurrentHashMap<>();
     private final Path basePath;
     @Getter
     private final MessageSerializer messageSerializer;
@@ -51,11 +52,12 @@ public class WriterOrchestrator implements Closeable {
         this.writerWrapper = writerWrapper;
 
         BlockingQueue<String> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
+        BlockingQueue<ObjectStorageWriterWorkerFuture> remoteUploadFutures = new LinkedBlockingQueue<>();
 
         localFileCheckerScheduler.scheduleAtFixedRate(
                 new LocalFileCheckerWorker(
                         toBeFlushedToRemotePaths,
-                        writerMap,
+                        timePartitionWriterMap,
                         policies),
                 FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS,
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
@@ -65,6 +67,7 @@ public class WriterOrchestrator implements Closeable {
                 new ObjectStorageFileCheckerWorker(
                         toBeFlushedToRemotePaths,
                         flushedToRemotePaths,
+                        remoteUploadFutures,
                         remoteUploadScheduler),
                 FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS,
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
@@ -84,19 +87,19 @@ public class WriterOrchestrator implements Closeable {
 
     public String write(Record record) throws IOException {
         Path partitionedPath = timePartitionPath.create(record);
-        synchronized (writerMap) {
-            if (!writerMap.containsKey(partitionedPath)) {
-                writerMap.put(partitionedPath, this.writerWrapper.createLocalFileWriter(basePath, partitionedPath));
+        synchronized (timePartitionWriterMap) {
+            if (!timePartitionWriterMap.containsKey(partitionedPath.toString())) {
+                timePartitionWriterMap.put(partitionedPath.toString(), this.writerWrapper.createLocalFileWriter(basePath, partitionedPath));
             }
-            writerMap.get(partitionedPath).write(record);
-            return writerMap.get(partitionedPath).getFullPath();
+            timePartitionWriterMap.get(partitionedPath.toString()).write(record);
+            return timePartitionWriterMap.get(partitionedPath.toString()).getFullPath();
         }
     }
 
     @Override
     public void close() throws IOException {
-        synchronized (writerMap) {
-            for (LocalFileWriter writer : writerMap.values()) {
+        synchronized (timePartitionWriterMap) {
+            for (LocalFileWriter writer : timePartitionWriterMap.values()) {
                 writer.close();
             }
         }

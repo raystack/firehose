@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.objectstorage.writer.path;
+package io.odpf.firehose.sink.objectstorage.writer.local;
 
 import com.google.protobuf.DynamicMessage;
 import io.odpf.firehose.sink.objectstorage.Constants;

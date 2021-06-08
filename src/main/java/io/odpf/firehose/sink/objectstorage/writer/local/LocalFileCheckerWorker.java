@@ -3,34 +3,34 @@ package io.odpf.firehose.sink.objectstorage.writer.local;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
 public class LocalFileCheckerWorker implements Runnable {
     private final BlockingQueue<String> toBeFlushedToRemotePaths;
-    private final Map<Path, LocalFileWriter> writerMap;
+    private final Map<String, LocalFileWriter> timePartitionWriterMap;
     private final List<WriterPolicy> policies;
 
     public LocalFileCheckerWorker(BlockingQueue<String> toBeFlushedToRemotePaths,
-                                  Map<Path, LocalFileWriter> writerMap,
+                                  Map<String, LocalFileWriter> timePartitionWriterMap,
                                   List<WriterPolicy> policies) {
         this.toBeFlushedToRemotePaths = toBeFlushedToRemotePaths;
-        this.writerMap = writerMap;
+        this.timePartitionWriterMap = timePartitionWriterMap;
         this.policies = policies;
     }
 
     @Override
     public void run() {
-        synchronized (writerMap) {
-            writerMap.entrySet().removeIf(kv -> {
+        synchronized (timePartitionWriterMap) {
+            timePartitionWriterMap.entrySet().removeIf(kv -> {
                 if (shouldRotate(kv.getValue())) {
                     try {
                         kv.getValue().close();
                         toBeFlushedToRemotePaths.add(kv.getValue().getFullPath());
                     } catch (IOException e) {
                         e.printStackTrace();
+                        throw new LocalFileWriterFailedException(e);
                     }
                     return true;
                 }

@@ -1,29 +1,26 @@
 package io.odpf.firehose.sink.objectstorage.writer.remote;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
 public class ObjectStorageFileCheckerWorker implements Runnable {
     private final BlockingQueue<String> toBeFlushedToRemotePaths;
     private final BlockingQueue<String> flushedToRemotePaths;
-    private final BlockingQueue<ObjectStorageWriterWorkerFuture> remoteUploadFutures = new LinkedBlockingQueue<>();
+    private final BlockingQueue<ObjectStorageWriterWorkerFuture> remoteUploadFutures;
     private final ExecutorService remoteUploadScheduler;
 
     public ObjectStorageFileCheckerWorker(BlockingQueue<String> toBeFlushedToRemotePaths,
                                           BlockingQueue<String> flushedToRemotePaths,
+                                          BlockingQueue<ObjectStorageWriterWorkerFuture> remoteUploadFutures,
                                           ExecutorService remoteUploadScheduler) {
         this.toBeFlushedToRemotePaths = toBeFlushedToRemotePaths;
         this.flushedToRemotePaths = flushedToRemotePaths;
+        this.remoteUploadFutures = remoteUploadFutures;
         this.remoteUploadScheduler = remoteUploadScheduler;
     }
 
@@ -43,6 +40,7 @@ public class ObjectStorageFileCheckerWorker implements Runnable {
                     future.getFuture().get();
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
+                    throw new ObjectStorageUploadFailedException(e);
                 }
                 return future.getPath();
             }
@@ -51,10 +49,5 @@ public class ObjectStorageFileCheckerWorker implements Runnable {
         flushedToRemotePaths.addAll(flushedPath);
     }
 
-    @AllArgsConstructor
-    @Data
-    static class ObjectStorageWriterWorkerFuture {
-        private Future future;
-        private String path;
-    }
+
 }
