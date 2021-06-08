@@ -1,6 +1,6 @@
 package io.odpf.firehose.config.converter;
 
-import io.odpf.firehose.sink.cloud.Constants;
+import io.odpf.firehose.sink.objectstorage.Constants;
 import org.aeonbits.owner.Converter;
 
 import java.lang.reflect.Method;
