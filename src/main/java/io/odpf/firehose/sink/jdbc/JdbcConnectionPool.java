@@ -13,14 +13,14 @@ public interface JdbcConnectionPool {
      * @return the connection
      * @throws SQLException the sql exception
      */
-    Connection get() throws SQLException;
+    Connection getConnection() throws SQLException;
 
     /**
      * Release the connection held.
      *
      * @param connection the connection
      */
-    void release(Connection connection);
+    void release(Connection connection) throws SQLException;
 
     /**
      * Shutdown the connection pool.
