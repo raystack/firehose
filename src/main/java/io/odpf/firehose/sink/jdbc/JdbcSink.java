@@ -42,10 +42,16 @@ public class JdbcSink extends AbstractSink {
         this.stencilClient = stencilClient;
     }
 
+    JdbcSink(Instrumentation instrumentation, String sinkType, JdbcConnectionPool pool, QueryTemplate queryTemplate, StencilClient stencilClient, Statement statement, Connection connection) {
+        this(instrumentation, sinkType, pool, queryTemplate, stencilClient);
+        this.statement = statement;
+        this.connection = connection;
+    }
+
     @Override
     protected void prepare(List<Message> messages) throws SQLException {
         List<String> queriesList = createQueries(messages);
-        connection = pool.get();
+        connection = pool.getConnection();
         statement = connection.createStatement();
 
         for (String query : queriesList) {

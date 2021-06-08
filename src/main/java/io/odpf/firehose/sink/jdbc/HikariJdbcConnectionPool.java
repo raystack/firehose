@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.jdbc;
 
 import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.pool.HikariPool;
+import com.zaxxer.hikari.HikariDataSource;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -13,8 +13,7 @@ public class HikariJdbcConnectionPool implements JdbcConnectionPool {
 
     private static final Integer CONNECTION_TIMEOUT_THRESHOLD = 250;
     private static final Integer IDLE_TIMEOUT_THRESHOLD = 0;
-
-    private HikariPool hikariPool;
+    private final HikariDataSource hikariDataSource;
 
     /**
      * Instantiates a new Hikari jdbc connection pool.
@@ -41,22 +40,25 @@ public class HikariJdbcConnectionPool implements JdbcConnectionPool {
         if (idleTimeout >= IDLE_TIMEOUT_THRESHOLD) {
             config.setIdleTimeout(idleTimeout);
         }
-        this.hikariPool = new HikariPool(config);
+        hikariDataSource = new HikariDataSource(config);
+    }
 
+    HikariJdbcConnectionPool(HikariDataSource hikariDataSource) {
+        this.hikariDataSource = hikariDataSource;
     }
 
     @Override
-    public Connection get() throws SQLException {
-        return hikariPool.getConnection();
+    public Connection getConnection() throws SQLException {
+        return hikariDataSource.getConnection();
     }
 
     @Override
-    public void release(Connection connection) {
-        hikariPool.evictConnection(connection);
+    public void release(Connection connection) throws SQLException {
+        connection.close();
     }
 
     @Override
-    public void shutdown() throws InterruptedException {
-        hikariPool.shutdown();
+    public void shutdown() {
+        hikariDataSource.close();
     }
 }
