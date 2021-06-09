@@ -34,7 +34,7 @@ public class ObjectStorageSink extends AbstractSink {
     protected void prepare(List<Message> messages) throws DeserializerException, IOException, SQLException {
         records = new LinkedList<>();
         for (Message message : messages) {
-            Record record = this.writerOrchestrator.getMessageSerializer().serialize(message);
+            Record record = this.writerOrchestrator.convertToRecord(message);
             records.add(record);
         }
     }

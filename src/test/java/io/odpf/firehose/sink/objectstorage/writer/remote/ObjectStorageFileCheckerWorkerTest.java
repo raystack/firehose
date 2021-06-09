@@ -8,19 +8,23 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.nio.file.Paths;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class ObjectStorageFileCheckerWorkerTest {
 
-    public static final String GCP_PROJECT_ID = "gcp-project-id";
-    public static final String BUCKET_NAME = "gcs-bucket";
-    public static final String BASE_PATH = "/tmp";
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
     private final BlockingQueue<String> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
     private final BlockingQueue<String> flushedToRemotePaths = new LinkedBlockingQueue<>();
     private final ExecutorService remoteUploadScheduler = Mockito.mock(ExecutorService.class);
     private final BlockingQueue<ObjectStorageWriterWorkerFuture> remoteUploadFutures = new LinkedBlockingQueue<>();
+    private final ObjectStorageWriterConfig writerWrapper =
+            new ObjectStorageWriterConfig(Paths.get("/test"), "test", "test");
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
     private ObjectStorageFileCheckerWorker worker;
 
     @Before
@@ -30,9 +34,7 @@ public class ObjectStorageFileCheckerWorkerTest {
                 flushedToRemotePaths,
                 remoteUploadFutures,
                 remoteUploadScheduler,
-                GCP_PROJECT_ID,
-                BUCKET_NAME,
-                BASE_PATH);
+                writerWrapper);
     }
 
     @Test
@@ -82,6 +84,4 @@ public class ObjectStorageFileCheckerWorkerTest {
         Mockito.when(remoteUploadScheduler.submit(Mockito.any(Runnable.class))).thenReturn(f);
         worker.run();
     }
-
-
 }

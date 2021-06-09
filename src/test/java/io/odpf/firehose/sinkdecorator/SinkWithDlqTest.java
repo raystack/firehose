@@ -235,7 +235,7 @@ public class SinkWithDlqTest {
     @Test
     public void shouldRecordRetriesIfKafkaThrowsException() throws Exception {
         ArrayList<Message> messages = new ArrayList<>();
-        final CountDownLatch completedLatch = new CountDownLatch(1);
+        CountDownLatch completedLatch = new CountDownLatch(1);
         messages.add(message);
         messages.add(message);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
@@ -246,7 +246,7 @@ public class SinkWithDlqTest {
             try {
                 sinkWithDlq.pushMessage(messages);
                 completedLatch.countDown();
-            } catch (Exception e) {
+            } catch (IOException | DeserializerException e) {
                 e.printStackTrace();
             }
         });

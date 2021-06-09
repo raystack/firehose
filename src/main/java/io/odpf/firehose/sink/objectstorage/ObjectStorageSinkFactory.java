@@ -19,6 +19,7 @@ import io.odpf.firehose.sink.objectstorage.writer.local.TimePartitionPath;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.SizeBasedRotatingPolicy;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.TimeBasedRotatingPolicy;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
+import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterConfig;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.nio.file.Path;
@@ -58,7 +59,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
                 sinkConfig.getTimePartitioningDatePrefix(),
                 sinkConfig.getTimePartitioningHourPrefix());
 
-        Path basePath = Paths.get(sinkConfig.getLocalDirectory());
+        Path localBasePath = Paths.get(sinkConfig.getLocalDirectory());
         ProtoParser protoParser = new ProtoParser(stencilClient, sinkConfig.getInputSchemaProtoClass());
         KafkaMetadataUtils kafkaMetadataUtils = new KafkaMetadataUtils(sinkConfig.getKafkaMetadataColumnName());
         MessageSerializer messageSerializer = new MessageSerializer(kafkaMetadataUtils, sinkConfig.getWriteKafkaMetadata(), protoParser);
@@ -68,16 +69,18 @@ public class ObjectStorageSinkFactory implements SinkFactory {
                         sinkConfig.getWriterPageSize(),
                         sinkConfig.getWriterBlockSize(),
                         messageDescriptor,
-                        metadataMessageDescriptor.getFields());
-        WriterOrchestrator writerOrchestrator =
-                new WriterOrchestrator(
-                        localFileWriterWrapper,
+                        metadataMessageDescriptor.getFields(),
+                        localBasePath,
                         writerPolicies,
                         timePartitionPath,
-                        basePath,
-                        messageSerializer,
-                        sinkConfig.getStorageGcloudProjectID(),
-                        sinkConfig.getObjectStorageBucketName());
+                        messageSerializer);
+        ObjectStorageWriterConfig objectStorageWriterConfig =
+                new ObjectStorageWriterConfig(
+                        localBasePath,
+                        sinkConfig.getObjectStorageBucketName(),
+                        sinkConfig.getStorageGcloudProjectID());
+        WriterOrchestrator writerOrchestrator =
+                new WriterOrchestrator(localFileWriterWrapper, objectStorageWriterConfig);
 
         return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator);
     }

@@ -22,18 +22,20 @@ public interface ObjectStorageSinkConfig extends AppConfig {
     boolean getWriteKafkaMetadata();
 
     @Key("SINK_OBJECT_STORAGE_WRITER_BLOCK_SIZE")
+    @DefaultValue("134217728")
     int getWriterBlockSize();
 
     @Key("SINK_OBJECT_STORAGE_WRITER_PAGE_SIZE")
+    @DefaultValue("1048576")
     int getWriterPageSize();
 
     @Key("SINK_OBJECT_STORAGE_ROTATION_DURATION_MILLIS")
     @DefaultValue("3600000")
-    int getFileRotationDurationMillis();
+    long getFileRotationDurationMillis();
 
     @Key("SINK_OBJECT_STORAGE_ROTATION_MAX_SIZE_BYTES")
     @DefaultValue("268435456")
-    int getFileRationMaxSizeBytes();
+    long getFileRationMaxSizeBytes();
 
     @Key("SINK_OBJECT_STORAGE_TIME_PARTITIONING_FIELD_NAME")
     String getTimePartitioningFieldName();

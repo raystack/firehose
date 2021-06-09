@@ -3,7 +3,6 @@ package io.odpf.firehose.sink.objectstorage;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.sink.objectstorage.message.MessageSerializer;
 import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.writer.WriterOrchestrator;
 import org.junit.Before;
@@ -21,23 +20,20 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ObjectStorageSinkTest {
 
-    @Mock
-    private MessageSerializer messageSerializer;
-
+    private final Path basePath = Paths.get("");
     @Mock
     private WriterOrchestrator writerOrchestrator;
-
     private ObjectStorageSink objectStorageSink;
-
     @Mock
     private Instrumentation instrumentation;
-
-    private final Path basePath = Paths.get("");
 
     @Before
     public void setUp() throws Exception {
@@ -53,10 +49,9 @@ public class ObjectStorageSinkTest {
         Record record1 = new Record(null, null);
         Record record2 = new Record(null, null);
 
-        when(messageSerializer.serialize(message1)).thenReturn(record1);
-        when(messageSerializer.serialize(message2)).thenReturn(record2);
+        when(writerOrchestrator.convertToRecord(message1)).thenReturn(record1);
+        when(writerOrchestrator.convertToRecord(message2)).thenReturn(record2);
 
-        when(writerOrchestrator.getMessageSerializer()).thenReturn(messageSerializer);
         when(writerOrchestrator.write(any(Record.class))).thenReturn(pathToWriter);
 
         List<Message> retryMessages = objectStorageSink.pushMessage(Arrays.asList(message1, message2));
@@ -70,8 +65,7 @@ public class ObjectStorageSinkTest {
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
         Record record = new Record(null, null);
 
-        when(messageSerializer.serialize(message1)).thenReturn(record);
-        when(writerOrchestrator.getMessageSerializer()).thenReturn(messageSerializer);
+        when(writerOrchestrator.convertToRecord(message1)).thenReturn(record);
         doThrow(new IOException("")).when(writerOrchestrator).write(record);
 
         objectStorageSink.prepare(Arrays.asList(message1));
@@ -82,8 +76,7 @@ public class ObjectStorageSinkTest {
     @Test(expected = DeserializerException.class)
     public void shouldThrowDeserializerExceptionWhenSerialiseThrowException() throws SQLException, IOException {
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
-        when(writerOrchestrator.getMessageSerializer()).thenReturn(messageSerializer);
-        when(messageSerializer.serialize(message1)).thenThrow(new DeserializerException(""));
+        when(writerOrchestrator.convertToRecord(message1)).thenThrow(new DeserializerException(""));
 
         objectStorageSink.prepare(Arrays.asList(message1));
     }
