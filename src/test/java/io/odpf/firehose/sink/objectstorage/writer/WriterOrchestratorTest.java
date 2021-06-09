@@ -32,6 +32,9 @@ import static org.mockito.ArgumentMatchers.any;
 @RunWith(MockitoJUnitRunner.class)
 public class WriterOrchestratorTest {
 
+    private static final String PROJECT_ID = "gcp-project-id";
+    private static final String BUCKET_NAME = "gcs-bucket";
+
     public static final int DEFAULT_PAGE_SIZE = 1048576;
     public static final int DEFAULT_BLOCK_SIZE = 134217728;
     private final KafkaMetadataUtils kafkaMetadataUtils = new KafkaMetadataUtils("");
@@ -60,7 +63,7 @@ public class WriterOrchestratorTest {
         Mockito.when(localFileWriter1.getFullPath()).thenReturn("test");
         Mockito.when(writerWrapper.createLocalFileWriter(basePath, Paths.get("dt=2021-01-01"))).thenReturn(localFileWriter1);
         List<WriterPolicy> writerPolicies = new ArrayList<>();
-        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(writerWrapper, writerPolicies, timePartitionPath, basePath, messageSerializer)) {
+        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(writerWrapper, writerPolicies, timePartitionPath, basePath, messageSerializer, PROJECT_ID, BUCKET_NAME)) {
             String path = writerOrchestrator.write(record);
             Mockito.verify(timePartitionPath, Mockito.times(1)).create(record);
             Assert.assertEquals("test", path);
@@ -84,7 +87,7 @@ public class WriterOrchestratorTest {
         Mockito.when(writerWrapper.createLocalFileWriter(basePath, Paths.get("dt=2021-01-02"))).thenReturn(localFileWriter2);
 
         List<WriterPolicy> writerPolicies = new ArrayList<>();
-        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(writerWrapper, writerPolicies, timePartitionPath, basePath, messageSerializer)) {
+        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(writerWrapper, writerPolicies, timePartitionPath, basePath, messageSerializer, PROJECT_ID, BUCKET_NAME)) {
             Set<String> paths = new HashSet<>();
             paths.add(writerOrchestrator.write(record1));
             paths.add(writerOrchestrator.write(record1));
@@ -101,7 +104,7 @@ public class WriterOrchestratorTest {
         Mockito.when(localFileWriter1.getFullPath()).thenReturn("test1");
         Mockito.when(writerWrapper.createLocalFileWriter(basePath, Paths.get("dt=2021-01-01"))).thenReturn(localFileWriter1);
         List<WriterPolicy> writerPolicies = new ArrayList<>();
-        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(writerWrapper, writerPolicies, timePartitionPath, basePath, messageSerializer)) {
+        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(writerWrapper, writerPolicies, timePartitionPath, basePath, messageSerializer, PROJECT_ID, BUCKET_NAME)) {
             Mockito.doThrow(new IOException("")).when(localFileWriter1).write(record);
             writerOrchestrator.write(record);
         }
@@ -114,7 +117,7 @@ public class WriterOrchestratorTest {
         Mockito.when(localFileWriter1.getFullPath()).thenReturn("test1");
         Mockito.when(writerWrapper.createLocalFileWriter(basePath, Paths.get("dt=2021-01-01"))).thenThrow(new IOException());
         List<WriterPolicy> writerPolicies = new ArrayList<>();
-        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(writerWrapper, writerPolicies, timePartitionPath, basePath, messageSerializer)) {
+        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(writerWrapper, writerPolicies, timePartitionPath, basePath, messageSerializer, PROJECT_ID, BUCKET_NAME)) {
             writerOrchestrator.write(record);
         }
     }

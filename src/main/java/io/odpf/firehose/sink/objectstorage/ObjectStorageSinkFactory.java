@@ -75,7 +75,9 @@ public class ObjectStorageSinkFactory implements SinkFactory {
                         writerPolicies,
                         timePartitionPath,
                         basePath,
-                        messageSerializer);
+                        messageSerializer,
+                        sinkConfig.getStorageGcloudProjectID(),
+                        sinkConfig.getObjectStorageBucketName());
 
         return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator);
     }

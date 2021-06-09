@@ -40,11 +40,16 @@ public class WriterOrchestrator implements Closeable {
     private final BlockingQueue<String> flushedToRemotePaths = new LinkedBlockingQueue<>();
     private final LocalFileWriterWrapper writerWrapper;
 
+    private String projectID;
+    private String bucketName;
+
     public WriterOrchestrator(LocalFileWriterWrapper writerWrapper,
                               List<WriterPolicy> policies,
                               TimePartitionPath timePartitionPath,
                               Path basePath,
-                              MessageSerializer messageSerializer) {
+                              MessageSerializer messageSerializer,
+                              String projectID,
+                              String bucketName) {
 
         this.timePartitionPath = timePartitionPath;
         this.basePath = basePath;
@@ -68,7 +73,7 @@ public class WriterOrchestrator implements Closeable {
                         toBeFlushedToRemotePaths,
                         flushedToRemotePaths,
                         remoteUploadFutures,
-                        remoteUploadScheduler),
+                        remoteUploadScheduler, projectID, bucketName, basePath.toString()),
                 FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS,
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
                 TimeUnit.SECONDS);

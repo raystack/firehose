@@ -14,14 +14,24 @@ public class ObjectStorageFileCheckerWorker implements Runnable {
     private final BlockingQueue<ObjectStorageWriterWorkerFuture> remoteUploadFutures;
     private final ExecutorService remoteUploadScheduler;
 
+    private final String projectID;
+    private final String bucketName;
+    private final String basePath;
+
     public ObjectStorageFileCheckerWorker(BlockingQueue<String> toBeFlushedToRemotePaths,
                                           BlockingQueue<String> flushedToRemotePaths,
                                           BlockingQueue<ObjectStorageWriterWorkerFuture> remoteUploadFutures,
-                                          ExecutorService remoteUploadScheduler) {
+                                          ExecutorService remoteUploadScheduler,
+                                          String projectID,
+                                          String bucketName,
+                                          String basePath) {
         this.toBeFlushedToRemotePaths = toBeFlushedToRemotePaths;
         this.flushedToRemotePaths = flushedToRemotePaths;
         this.remoteUploadFutures = remoteUploadFutures;
         this.remoteUploadScheduler = remoteUploadScheduler;
+        this.projectID = projectID;
+        this.bucketName = bucketName;
+        this.basePath = basePath;
     }
 
     @Override
@@ -30,7 +40,7 @@ public class ObjectStorageFileCheckerWorker implements Runnable {
         toBeFlushedToRemotePaths.drainTo(tobeFlushed);
         remoteUploadFutures.addAll(tobeFlushed.stream()
                 .map(path -> new ObjectStorageWriterWorkerFuture(
-                        remoteUploadScheduler.submit(new ObjectStorageWriterWorker(path)), path)).collect(Collectors.toList()));
+                        remoteUploadScheduler.submit(new ObjectStorageWriterWorker(projectID, bucketName, basePath, path)), path)).collect(Collectors.toList()));
 
         Set<String> flushedPath = remoteUploadFutures.stream().map(future -> {
             if (!future.getFuture().isDone()) {

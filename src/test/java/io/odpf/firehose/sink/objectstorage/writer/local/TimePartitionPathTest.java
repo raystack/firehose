@@ -5,7 +5,6 @@ import io.odpf.firehose.sink.objectstorage.Constants;
 import io.odpf.firehose.sink.objectstorage.TestUtils;
 import io.odpf.firehose.sink.objectstorage.message.MessageProto;
 import io.odpf.firehose.sink.objectstorage.message.Record;
-import io.odpf.firehose.sink.objectstorage.writer.local.TimePartitionPath;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;

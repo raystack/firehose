@@ -12,6 +12,9 @@ import java.util.concurrent.*;
 
 public class ObjectStorageFileCheckerWorkerTest {
 
+    public static final String GCP_PROJECT_ID = "gcp-project-id";
+    public static final String BUCKET_NAME = "gcs-bucket";
+    public static final String BASE_PATH = "/tmp";
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
     private final BlockingQueue<String> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
@@ -26,7 +29,10 @@ public class ObjectStorageFileCheckerWorkerTest {
                 toBeFlushedToRemotePaths,
                 flushedToRemotePaths,
                 remoteUploadFutures,
-                remoteUploadScheduler);
+                remoteUploadScheduler,
+                GCP_PROJECT_ID,
+                BUCKET_NAME,
+                BASE_PATH);
     }
 
     @Test
