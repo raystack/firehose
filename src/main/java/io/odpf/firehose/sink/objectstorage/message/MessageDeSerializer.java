@@ -8,13 +8,13 @@ import io.odpf.firehose.exception.DeserializerException;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class MessageSerializer {
+public class MessageDeSerializer {
 
     private final KafkaMetadataUtils metadataUtils;
     private final boolean doWriteKafkaMetadata;
     private final Parser protoParser;
 
-    public Record serialize(Message message) throws DeserializerException {
+    public Record deSerialize(Message message) throws DeserializerException {
         try {
             DynamicMessage dynamicMessage = protoParser.parse(message.getLogMessage());
 

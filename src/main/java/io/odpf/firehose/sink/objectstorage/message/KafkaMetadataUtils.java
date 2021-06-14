@@ -12,8 +12,8 @@ import java.util.List;
 
 public class KafkaMetadataUtils {
 
-    private Descriptors.FileDescriptor kafkaMetadataFileDescriptor;
-    private String kafkaMetadataColumnName;
+    private final Descriptors.FileDescriptor kafkaMetadataFileDescriptor;
+    private final String kafkaMetadataColumnName;
 
     public KafkaMetadataUtils(String kafkaMetadataColumnName) {
         this.kafkaMetadataColumnName = kafkaMetadataColumnName;
@@ -41,11 +41,9 @@ public class KafkaMetadataUtils {
 
         Descriptors.Descriptor nestedMetadataDescriptor = kafkaMetadataFileDescriptor.findMessageTypeByName(NestedKafkaMetadataProto.getTypeName());
 
-        NestedKafkaMetadataProto.MessageBuilder builder = NestedKafkaMetadataProto.newMessageBuilder(nestedMetadataDescriptor)
+        return NestedKafkaMetadataProto.newMessageBuilder(nestedMetadataDescriptor)
                 .setMetadata(metadata)
-                .setMetadataColumnName(kafkaMetadataColumnName);
-
-        return builder.build();
+                .setMetadataColumnName(kafkaMetadataColumnName).build();
     }
 
     public List<Descriptors.FieldDescriptor> getFieldDescriptor() {

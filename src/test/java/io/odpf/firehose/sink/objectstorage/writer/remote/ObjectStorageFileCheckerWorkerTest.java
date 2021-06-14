@@ -9,6 +9,8 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -20,7 +22,7 @@ public class ObjectStorageFileCheckerWorkerTest {
     private final BlockingQueue<String> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
     private final BlockingQueue<String> flushedToRemotePaths = new LinkedBlockingQueue<>();
     private final ExecutorService remoteUploadScheduler = Mockito.mock(ExecutorService.class);
-    private final BlockingQueue<ObjectStorageWriterWorkerFuture> remoteUploadFutures = new LinkedBlockingQueue<>();
+    private final Set<ObjectStorageWriterWorkerFuture> remoteUploadFutures = new HashSet<>();
     private final ObjectStorageWriterConfig writerWrapper =
             new ObjectStorageWriterConfig(Paths.get("/test"), "test", "test");
     @Rule
@@ -47,8 +49,7 @@ public class ObjectStorageFileCheckerWorkerTest {
         Assert.assertEquals(0, toBeFlushedToRemotePaths.size());
         Assert.assertEquals(0, flushedToRemotePaths.size());
         Assert.assertEquals(1, remoteUploadFutures.size());
-        Assert.assertNotNull(remoteUploadFutures.peek());
-        Assert.assertEquals("/tmp/a/some-file", remoteUploadFutures.peek().getPath());
+        Assert.assertTrue(remoteUploadFutures.contains(new ObjectStorageWriterWorkerFuture(f, "/tmp/a/some-file")));
     }
 
     @Test
@@ -61,8 +62,7 @@ public class ObjectStorageFileCheckerWorkerTest {
         Assert.assertEquals(0, toBeFlushedToRemotePaths.size());
         Assert.assertEquals(0, flushedToRemotePaths.size());
         Assert.assertEquals(1, remoteUploadFutures.size());
-        Assert.assertNotNull(remoteUploadFutures.peek());
-        Assert.assertEquals("/tmp/a/some-file", remoteUploadFutures.peek().getPath());
+        Assert.assertTrue(remoteUploadFutures.contains(new ObjectStorageWriterWorkerFuture(f, "/tmp/a/some-file")));
 
         Mockito.when(f.isDone()).thenReturn(true);
         Mockito.when(f.get()).thenReturn(null);

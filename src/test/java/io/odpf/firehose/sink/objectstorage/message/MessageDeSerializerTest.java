@@ -18,7 +18,7 @@ import static org.mockito.Mockito.*;
 import static junit.framework.TestCase.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MessageSerializerTest {
+public class MessageDeSerializerTest {
 
     @Mock
     private KafkaMetadataUtils kafkaMetadataUtils;
@@ -26,7 +26,7 @@ public class MessageSerializerTest {
     @Mock
     private Parser protoParser;
 
-    private MessageSerializer serializer;
+    private MessageDeSerializer deSerializer;
 
     private final byte[] logKey = "key".getBytes();
     private final byte[] logMessage = "msg".getBytes();
@@ -35,7 +35,7 @@ public class MessageSerializerTest {
     @Before
     public void setUp() throws Exception {
         message = new Message(logKey, logMessage, "topic1", 0, 100);
-        serializer = new MessageSerializer(kafkaMetadataUtils, true, protoParser);
+        deSerializer = new MessageDeSerializer(kafkaMetadataUtils, true, protoParser);
     }
 
     @Test
@@ -47,7 +47,7 @@ public class MessageSerializerTest {
         when(protoParser.parse(logMessage)).thenReturn(dynamicMessage);
         when(kafkaMetadataUtils.createKafkaMetadata(message)).thenReturn(metadataMessage);
 
-        Record record = serializer.serialize(message);
+        Record record = deSerializer.deSerialize(message);
 
         assertEquals(record.getMetadata(), metadataMessage);
         assertEquals(record.getMessage(), dynamicMessage);
@@ -61,6 +61,6 @@ public class MessageSerializerTest {
         InvalidProtocolBufferException invalidProtocolBufferException = new InvalidProtocolBufferException("");
         when(protoParser.parse(logMessage)).thenThrow(invalidProtocolBufferException);
 
-        Record record = serializer.serialize(message);
+        Record record = deSerializer.deSerialize(message);
     }
 }

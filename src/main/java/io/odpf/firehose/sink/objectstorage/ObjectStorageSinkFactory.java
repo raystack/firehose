@@ -9,7 +9,7 @@ import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.objectstorage.message.KafkaMetadataUtils;
-import io.odpf.firehose.sink.objectstorage.message.MessageSerializer;
+import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
 import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProto;
 import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoFile;
 import io.odpf.firehose.sink.objectstorage.proto.NestedKafkaMetadataProto;
@@ -62,7 +62,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
         Path localBasePath = Paths.get(sinkConfig.getLocalDirectory());
         ProtoParser protoParser = new ProtoParser(stencilClient, sinkConfig.getInputSchemaProtoClass());
         KafkaMetadataUtils kafkaMetadataUtils = new KafkaMetadataUtils(sinkConfig.getKafkaMetadataColumnName());
-        MessageSerializer messageSerializer = new MessageSerializer(kafkaMetadataUtils, sinkConfig.getWriteKafkaMetadata(), protoParser);
+        MessageDeSerializer messageDeSerializer = new MessageDeSerializer(kafkaMetadataUtils, sinkConfig.getWriteKafkaMetadata(), protoParser);
         LocalFileWriterWrapper localFileWriterWrapper =
                 new LocalFileWriterWrapper(
                         sinkConfig.getFileWriterType(),
@@ -72,8 +72,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
                         metadataMessageDescriptor.getFields(),
                         localBasePath,
                         writerPolicies,
-                        timePartitionPath,
-                        messageSerializer);
+                        timePartitionPath);
         ObjectStorageWriterConfig objectStorageWriterConfig =
                 new ObjectStorageWriterConfig(
                         localBasePath,
@@ -82,6 +81,6 @@ public class ObjectStorageSinkFactory implements SinkFactory {
         WriterOrchestrator writerOrchestrator =
                 new WriterOrchestrator(localFileWriterWrapper, objectStorageWriterConfig);
 
-        return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator);
+        return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer);
     }
 }

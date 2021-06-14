@@ -3,7 +3,6 @@ package io.odpf.firehose.sink.objectstorage.writer.local;
 import com.google.protobuf.Descriptors;
 import io.odpf.firehose.exception.EglcConfigurationException;
 import io.odpf.firehose.sink.objectstorage.Constants;
-import io.odpf.firehose.sink.objectstorage.message.MessageSerializer;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,8 +26,6 @@ public class LocalFileWriterWrapper {
     private final List<WriterPolicy> policies;
     @Getter
     private final TimePartitionPath timePartitionPath;
-    @Getter
-    private final MessageSerializer messageSerializer;
 
     public LocalFileWriter createLocalFileWriter(Path partitionedPath) throws IOException {
         String fileName = UUID.randomUUID().toString();

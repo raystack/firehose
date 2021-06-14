@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class ObjectStorageFileCheckerWorker implements Runnable {
     private final BlockingQueue<String> toBeFlushedToRemotePaths;
     private final BlockingQueue<String> flushedToRemotePaths;
-    private final BlockingQueue<ObjectStorageWriterWorkerFuture> remoteUploadFutures;
+    private final Set<ObjectStorageWriterWorkerFuture> remoteUploadFutures;
     private final ExecutorService remoteUploadScheduler;
     private final ObjectStorageWriterConfig objectStorageWriterConfig;
 
@@ -45,6 +45,4 @@ public class ObjectStorageFileCheckerWorker implements Runnable {
         remoteUploadFutures.removeIf(x -> flushedPath.contains(x.getPath()));
         flushedToRemotePaths.addAll(flushedPath);
     }
-
-
 }

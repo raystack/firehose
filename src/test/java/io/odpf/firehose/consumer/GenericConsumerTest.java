@@ -1,5 +1,29 @@
 package io.odpf.firehose.consumer;
 
+import io.odpf.firehose.config.KafkaConsumerConfig;
+import io.odpf.firehose.consumer.committer.OffsetCommitter;
+import io.odpf.firehose.filter.Filter;
+import io.odpf.firehose.filter.FilterException;
+import io.odpf.firehose.metrics.Instrumentation;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.header.Headers;
+import org.apache.kafka.common.header.internals.RecordHeaders;
+import org.apache.kafka.common.record.TimestampType;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -12,27 +36,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Duration;
-import java.util.Arrays;
-import java.util.List;
-
-import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.filter.FilterException;
-import io.odpf.firehose.filter.Filter;
-import io.odpf.firehose.metrics.Instrumentation;
-
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.header.Headers;
-import org.apache.kafka.common.header.internals.RecordHeaders;
-import org.apache.kafka.common.record.TimestampType;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
 @RunWith(MockitoJUnitRunner.class)
 public class GenericConsumerTest {
     @Mock
@@ -42,7 +45,7 @@ public class GenericConsumerTest {
     private ConsumerRecords consumerRecords;
 
     @Mock
-    private Offsets offsets;
+    private OffsetCommitter offsetCommitter;
 
     @Mock
     private Filter filter;
@@ -61,9 +64,10 @@ public class GenericConsumerTest {
 
     @Before
     public void setUp() {
+        MockitoAnnotations.initMocks(this);
         message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
-        genericConsumer = new GenericConsumer(kafkaConsumer, consumerConfig, filter, offsets, instrumentation);
+        genericConsumer = new GenericConsumer(kafkaConsumer, consumerConfig, filter, offsetCommitter, instrumentation);
         when(consumerConfig.getSourceKafkaPollTimeoutMs()).thenReturn(500L);
         when(kafkaConsumer.poll(Duration.ofMillis(500L))).thenReturn(consumerRecords);
     }
@@ -131,7 +135,10 @@ public class GenericConsumerTest {
     public void shouldrecordStatsFromEsbLog() throws FilterException {
         ConsumerRecord<byte[], byte[]> record1 = new ConsumerRecord<>("topic1", 1, 0, key.toByteArray(), message.toByteArray());
         ConsumerRecord<byte[], byte[]> record2 = new ConsumerRecord<>("topic2", 1, 0, key.toByteArray(), message.toByteArray());
-        when(consumerRecords.iterator()).thenReturn(Arrays.asList(record1, record2).iterator());
+        Iterator iteratorMock = Mockito.mock(Iterator.class);
+        when(iteratorMock.hasNext()).thenReturn(true, true, false);
+        when(iteratorMock.next()).thenReturn(record1, record2);
+        when(consumerRecords.iterator()).thenReturn(iteratorMock);
 
         Message expectedMsg1 = new Message(key.toByteArray(), message.toByteArray(), "topic1", 0, 100);
         Message expectedMsg2 = new Message(key.toByteArray(), message.toByteArray(), "topic2", 0, 100);
@@ -148,10 +155,13 @@ public class GenericConsumerTest {
     }
 
     @Test
-    public void shouldCallCommitOnOffsets() {
+    public void shouldCallCommitOnOffsets() throws FilterException {
+        Iterator iteratorMock = Mockito.mock(Iterator.class);
+        when(iteratorMock.hasNext()).thenReturn(false);
+        when(consumerRecords.iterator()).thenReturn(iteratorMock);
+        genericConsumer.readMessages();
         genericConsumer.commit();
-
-        verify(offsets, times(1)).commit(any());
+        verify(offsetCommitter, times(1)).commit(consumerRecords);
     }
 
     @Test

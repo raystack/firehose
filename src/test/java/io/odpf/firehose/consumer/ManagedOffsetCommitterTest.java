@@ -1,6 +1,7 @@
 package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
+import io.odpf.firehose.consumer.committer.ManagedOffsetCommitter;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -23,9 +24,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class TopicPartitionOffsetsTest {
+public class ManagedOffsetCommitterTest {
 
-    private TopicPartitionOffsets offsets;
+    private ManagedOffsetCommitter offsets;
 
     @Mock
     private KafkaConsumer kafkaConsumer;
@@ -49,7 +50,7 @@ public class TopicPartitionOffsetsTest {
     public void setup() {
         initMocks(this);
 
-        offsets = new TopicPartitionOffsets(kafkaConsumer, consumerConfig, instrumentation);
+        offsets = new ManagedOffsetCommitter(kafkaConsumer, consumerConfig, instrumentation);
 
         message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();

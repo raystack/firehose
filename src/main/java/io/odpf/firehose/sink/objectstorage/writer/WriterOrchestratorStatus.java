@@ -7,7 +7,7 @@ import java.util.concurrent.ScheduledFuture;
 
 @AllArgsConstructor
 @Data
-public class WriterOrchestratorExceptionHandler {
+public class WriterOrchestratorStatus {
     private boolean isClosed;
     private ScheduledFuture<?> localFileWriterFuture;
     private ScheduledFuture<?> remoteFileWriterFuture;

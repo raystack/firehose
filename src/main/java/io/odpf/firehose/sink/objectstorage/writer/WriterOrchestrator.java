@@ -1,20 +1,19 @@
 package io.odpf.firehose.sink.objectstorage.writer;
 
-import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileCheckerWorker;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriter;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriterWrapper;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageFileCheckerWorker;
-import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterWorkerFuture;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterConfig;
+import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterWorkerFuture;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -34,7 +33,7 @@ public class WriterOrchestrator implements Closeable {
     private final ExecutorService remoteUploadScheduler = Executors.newFixedThreadPool(10);
     private final BlockingQueue<String> flushedToRemotePaths = new LinkedBlockingQueue<>();
     private final LocalFileWriterWrapper localFileWriterWrapper;
-    private final WriterOrchestratorExceptionHandler exceptionHandler;
+    private final WriterOrchestratorStatus writerOrchestratorStatus;
 
     public WriterOrchestrator(LocalFileWriterWrapper localFileWriterWrapper,
                               ObjectStorageWriterConfig objectStorageWriterConfig) {
@@ -42,7 +41,7 @@ public class WriterOrchestrator implements Closeable {
         this.localFileWriterWrapper = localFileWriterWrapper;
 
         BlockingQueue<String> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
-        BlockingQueue<ObjectStorageWriterWorkerFuture> remoteUploadFutures = new LinkedBlockingQueue<>();
+        Set<ObjectStorageWriterWorkerFuture> remoteUploadFutures = new HashSet<>();
 
         ScheduledFuture<?> localWriterFuture = localFileCheckerScheduler.scheduleAtFixedRate(
                 new LocalFileCheckerWorker(
@@ -64,48 +63,51 @@ public class WriterOrchestrator implements Closeable {
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
                 TimeUnit.SECONDS);
 
-        exceptionHandler = new WriterOrchestratorExceptionHandler(false, localWriterFuture, remoteWriterFuture, null);
+        writerOrchestratorStatus = new WriterOrchestratorStatus(false, localWriterFuture, remoteWriterFuture, null);
+        checkForLocalFileWriterCompletion();
+        checkForRemoteFileWriterCompletion();
+    }
 
+    private void checkForLocalFileWriterCompletion() {
         new Thread(() -> {
             try {
-                exceptionHandler.getLocalFileWriterFuture().get();
+                writerOrchestratorStatus.getLocalFileWriterFuture().get();
             } catch (InterruptedException e) {
-                exceptionHandler.setThrowable(e);
+                writerOrchestratorStatus.setThrowable(e);
             } catch (ExecutionException e) {
-                exceptionHandler.setThrowable(e.getCause());
+                writerOrchestratorStatus.setThrowable(e.getCause());
             } finally {
-                exceptionHandler.setClosed(true);
+                writerOrchestratorStatus.setClosed(true);
             }
         }).start();
+    }
 
+    private void checkForRemoteFileWriterCompletion() {
         new Thread(() -> {
             try {
-                exceptionHandler.getRemoteFileWriterFuture().get();
+                writerOrchestratorStatus.getRemoteFileWriterFuture().get();
             } catch (InterruptedException e) {
-                exceptionHandler.setThrowable(e);
+                writerOrchestratorStatus.setThrowable(e);
             } catch (ExecutionException e) {
-                exceptionHandler.setThrowable(e.getCause());
+                writerOrchestratorStatus.setThrowable(e.getCause());
             } finally {
-                exceptionHandler.setClosed(true);
+                writerOrchestratorStatus.setClosed(true);
             }
         }).start();
-
     }
 
     /**
-     * @return a copy of flushed path list
+     * @return Return all paths which are flushed to remote and drain the list
      */
-    public List<String> getFlushedPaths() {
-        return new ArrayList<>(flushedToRemotePaths);
-    }
-
-    public void deleteFromFlushedPath(String path) {
-        flushedToRemotePaths.removeIf(x -> x.equals(path));
+    public Set<String> getFlushedPaths() {
+        Set<String> flushedPath = new HashSet<>();
+        flushedToRemotePaths.drainTo(flushedPath);
+        return flushedPath;
     }
 
     public String write(Record record) throws IOException {
-        if (exceptionHandler.isClosed()) {
-            throw new IOException(exceptionHandler.getThrowable());
+        if (writerOrchestratorStatus.isClosed()) {
+            throw new IOException(writerOrchestratorStatus.getThrowable());
         }
         Path partitionedPath = localFileWriterWrapper.getTimePartitionPath().create(record);
         synchronized (timePartitionWriterMap) {
@@ -127,10 +129,6 @@ public class WriterOrchestrator implements Closeable {
         localFileCheckerScheduler.shutdown();
         remoteFileCheckerScheduler.shutdown();
         remoteUploadScheduler.shutdown();
-        exceptionHandler.setClosed(true);
-    }
-
-    public Record convertToRecord(Message message) {
-        return localFileWriterWrapper.getMessageSerializer().serialize(message);
+        writerOrchestratorStatus.setClosed(true);
     }
 }

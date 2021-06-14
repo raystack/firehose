@@ -1,6 +1,7 @@
 package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
+import io.odpf.firehose.consumer.committer.AutoOffsetCommitter;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -14,9 +15,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class TopicOffsetsTest {
+public class AutoOffsetCommitterTest {
 
-    private TopicOffsets topicOffsets;
+    private AutoOffsetCommitter topicOffsets;
 
     @Mock
     private KafkaConsumer kafkaConsumer;
@@ -34,7 +35,7 @@ public class TopicOffsetsTest {
     public void setup() {
         initMocks(this);
 
-        topicOffsets = new TopicOffsets(kafkaConsumer, consumerConfig, instrumentation);
+        topicOffsets = new AutoOffsetCommitter(kafkaConsumer, consumerConfig, instrumentation);
     }
 
     @Test
