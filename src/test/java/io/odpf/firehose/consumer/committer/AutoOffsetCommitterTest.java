@@ -1,7 +1,6 @@
-package io.odpf.firehose.consumer;
+package io.odpf.firehose.consumer.committer;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.consumer.committer.AutoOffsetCommitter;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;

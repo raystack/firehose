@@ -12,4 +12,8 @@ public class OffsetNode {
     private OffsetAndMetadata offsetAndMetadata;
     private boolean isCommittable;
     private boolean isRemovable;
+
+    public OffsetNode(TopicPartition topicPartition, OffsetAndMetadata offsetAndMetadata) {
+        this(topicPartition, offsetAndMetadata, false, false);
+    }
 }

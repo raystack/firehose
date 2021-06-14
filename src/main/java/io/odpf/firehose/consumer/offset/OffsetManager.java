@@ -14,6 +14,9 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+/**
+ *
+ */
 public class OffsetManager {
     private final Map<Object, Set<OffsetNode>> batchOffsets = new ConcurrentHashMap<>();
     private final Map<TopicPartition, TreeSet<OffsetNode>> sortedOffsets = new ConcurrentHashMap<>();
@@ -21,18 +24,24 @@ public class OffsetManager {
     public void addOffsetToBatch(Object batch, Message message) {
         OffsetNode currentNode = new OffsetNode(
                 new TopicPartition(message.getTopic(), message.getPartition()),
-                new OffsetAndMetadata(message.getOffset() + 1),
-                false,
-                false);
+                new OffsetAndMetadata(message.getOffset() + 1));
         batchOffsets.computeIfAbsent(batch, x -> new HashSet<>()).add(currentNode);
         sortedOffsets.computeIfAbsent(
                 currentNode.getTopicPartition(),
                 x -> new TreeSet<>(Comparator.comparingLong(node -> node.getOffsetAndMetadata().offset()))).add(currentNode);
     }
 
+    public Set<OffsetNode> getOffsetsForBatch(Object key) {
+        return batchOffsets.get(key);
+    }
+
     public void commitBatch(Object batch) {
         batchOffsets.get(batch).forEach(x -> x.setCommittable(true));
         batchOffsets.remove(batch);
+    }
+
+    public TreeSet<OffsetNode> getOffsetsForTopicPartition(TopicPartition topicPartition) {
+        return sortedOffsets.get(topicPartition);
     }
 
     public Map<TopicPartition, OffsetAndMetadata> getCommittableOffset() {
@@ -45,6 +54,9 @@ public class OffsetManager {
     }
 
     public Optional<OffsetNode> compactAndFetchFirstCommittableNode(TreeSet<OffsetNode> nodes) {
+        if (nodes.size() == 0) {
+            return Optional.empty();
+        }
         Iterator<OffsetNode> iterator = nodes.iterator();
         OffsetNode current = null;
         OffsetNode previous;
