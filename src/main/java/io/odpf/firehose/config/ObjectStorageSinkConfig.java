@@ -35,14 +35,10 @@ public interface ObjectStorageSinkConfig extends AppConfig {
 
     @Key("SINK_OBJECT_STORAGE_ROTATION_MAX_SIZE_BYTES")
     @DefaultValue("268435456")
-    long getFileRationMaxSizeBytes();
+    long getFileRotationMaxSizeBytes();
 
     @Key("SINK_OBJECT_STORAGE_TIME_PARTITIONING_FIELD_NAME")
     String getTimePartitioningFieldName();
-
-    @Key("SINK_OBJECT_STORAGE_TIME_PARTITIONING_DATE_PATTERN")
-    @DefaultValue("YYYY-MM-dd")
-    String getTimePartitioningDatePattern();
 
     @Key("SINK_OBJECT_STORAGE_TIME_PARTITIONING_TIME_ZONE")
     @DefaultValue("UTC")
@@ -65,9 +61,14 @@ public interface ObjectStorageSinkConfig extends AppConfig {
     @DefaultValue("GCS")
     String getObjectStorageType();
 
-    @Key("SINK_OBJECT_STORAGE_BUCKET_NAME")
-    String getObjectStorageBucketName();
-
     @Key("SINK_OBJECT_STORAGE_GOOGLE_CLOUD_PROJECT_ID")
-    String getStorageGcloudProjectID();
+    String getGCloudProjectID();
+
+    @Key("SINK_OBJECT_STORAGE_GCS_BUCKET_NAME")
+    String getGCSBucketName();
+
+    @Key("SINK_OBJECT_STORAGE_GCS_CREDENTIAL_PATH")
+    String getGCSCredentialPath();
+
+
 }

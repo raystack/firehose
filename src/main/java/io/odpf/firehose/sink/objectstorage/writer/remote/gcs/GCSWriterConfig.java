@@ -10,5 +10,6 @@ import java.nio.file.Path;
 public class GCSWriterConfig {
     private Path localBasePath;
     private String gcsBucketName;
+    private String credentialPath;
     private String gcsProjectId;
 }

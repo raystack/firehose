@@ -20,14 +20,13 @@ public class TimePartitionPath {
 
     private final String kafkaMetadataFieldName;
     private final String fieldName;
-    private final String datePattern;
     private final Constants.PartitioningType partitioningType;
     private final String zone;
     private final String datePrefix;
     private final String hourPrefix;
 
     public Path create(Record record) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(datePattern);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         DynamicMessage metadataMessage = record.getMetadata();
         String topic = getTopic(metadataMessage);

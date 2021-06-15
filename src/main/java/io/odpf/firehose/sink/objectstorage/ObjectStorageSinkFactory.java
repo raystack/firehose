@@ -66,7 +66,6 @@ public class ObjectStorageSinkFactory implements SinkFactory {
         TimePartitionPath timePartitionPath = new TimePartitionPath(
                 sinkConfig.getKafkaMetadataColumnName(),
                 sinkConfig.getTimePartitioningFieldName(),
-                sinkConfig.getTimePartitioningDatePattern(),
                 sinkConfig.getPartitioningType(),
                 sinkConfig.getTimePartitioningTimeZone(),
                 sinkConfig.getTimePartitioningDatePrefix(),
@@ -75,7 +74,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
 
         List<WriterPolicy> writerPolicies = new ArrayList<>();
         writerPolicies.add(new TimeBasedRotatingPolicy(sinkConfig.getFileRotationDurationMillis()));
-        writerPolicies.add(new SizeBasedRotatingPolicy(sinkConfig.getFileRationMaxSizeBytes()));
+        writerPolicies.add(new SizeBasedRotatingPolicy(sinkConfig.getFileRotationMaxSizeBytes()));
 
         Path localBasePath = Paths.get(sinkConfig.getLocalDirectory());
 
