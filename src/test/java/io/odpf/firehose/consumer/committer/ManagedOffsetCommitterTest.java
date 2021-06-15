@@ -27,7 +27,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 public class ManagedOffsetCommitterTest {
 
-    private ManagedOffsetCommitter offsets;
+    private ManagedOffsetCommitter managedOffsetCommitter;
 
     @Mock
     private KafkaConsumer kafkaConsumer;
@@ -51,7 +51,7 @@ public class ManagedOffsetCommitterTest {
     public void setup() {
         initMocks(this);
 
-        offsets = new ManagedOffsetCommitter(kafkaConsumer, consumerConfig, instrumentation);
+        managedOffsetCommitter = new ManagedOffsetCommitter(kafkaConsumer, consumerConfig, instrumentation);
 
         message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
@@ -69,24 +69,68 @@ public class ManagedOffsetCommitterTest {
     public void shouldCommitSyncForCurrentPartitions() {
         when(consumerConfig.isSourceKafkaAsyncCommitEnable()).thenReturn(false);
 
-        offsets.commit(consumerRecords);
+        managedOffsetCommitter.commit(consumerRecords);
 
         verify(kafkaConsumer, times(1)).commitSync(any(Map.class));
+        verify(kafkaConsumer, times(0)).commitAsync(any(Map.class), any());
     }
 
     @Test
     public void shouldAsyncCommitForCurrentPartitions() {
         when(consumerConfig.isSourceKafkaAsyncCommitEnable()).thenReturn(true);
 
-        offsets.commit(consumerRecords);
+        managedOffsetCommitter.commit(consumerRecords);
 
         verify(kafkaConsumer, times(1)).commitAsync(any(Map.class), any());
+        verify(kafkaConsumer, times(0)).commitSync(any(Map.class));
     }
 
     @Test
     public void shouldCommitMaxOffsetInFetchedRecords() {
-        Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsetAndMetadataMap = offsets.createOffsetsAndMetadata(consumerRecords);
+        Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsetAndMetadataMap = managedOffsetCommitter.createOffsetsAndMetadata(consumerRecords);
         Assert.assertEquals(1, topicPartitionOffsetAndMetadataMap.size());
         Assert.assertEquals(2, topicPartitionOffsetAndMetadataMap.get(topicPartition).offset());
+    }
+
+    @Test
+    public void shouldNotCallKafkaCommitForEmpty() {
+        managedOffsetCommitter.commit(new HashMap<>());
+        verify(kafkaConsumer, times(0)).commitAsync(any(Map.class), any());
+        verify(kafkaConsumer, times(0)).commitSync(any(Map.class));
+    }
+
+    @Test
+    public void shouldCommitLatestOffsets() {
+        when(consumerConfig.isSourceKafkaAsyncCommitEnable()).thenReturn(false);
+        Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(1));
+        }};
+        managedOffsetCommitter.commit(offsets);
+        managedOffsetCommitter.commit(offsets);
+        verify(kafkaConsumer, times(1)).commitSync(offsets);
+
+        offsets = new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(2));
+        }};
+        managedOffsetCommitter.commit(offsets);
+        verify(kafkaConsumer, times(1)).commitSync(new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(2));
+        }});
+
+        offsets = new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(5));
+            put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(2));
+            put(new TopicPartition("topic1", 4), new OffsetAndMetadata(5));
+        }};
+        managedOffsetCommitter.commit(offsets);
+        verify(kafkaConsumer, times(1)).commitSync(new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(5));
+            put(new TopicPartition("topic1", 4), new OffsetAndMetadata(5));
+        }});
     }
 }
