@@ -1,6 +1,8 @@
 package io.odpf.firehose.sink.objectstorage.writer.local;
 
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -12,6 +14,7 @@ public class LocalFileChecker implements Runnable {
     private final Queue<String> toBeFlushedToRemotePaths;
     private final Map<String, LocalFileWriter> timePartitionWriterMap;
     private final List<WriterPolicy> policies;
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocalFileChecker.class);
 
     public LocalFileChecker(Queue<String> toBeFlushedToRemotePaths,
                             Map<String, LocalFileWriter> timePartitionWriterMap,
@@ -33,6 +36,7 @@ public class LocalFileChecker implements Runnable {
                 writer -> {
                     try {
                         writer.close();
+                        LOGGER.info("Closing Local File " + writer.getFullPath());
                         toBeFlushedToRemotePaths.add(writer.getFullPath());
                     } catch (IOException e) {
                         e.printStackTrace();

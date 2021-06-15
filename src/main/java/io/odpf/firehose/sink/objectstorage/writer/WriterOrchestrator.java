@@ -23,6 +23,16 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This class manages threads for local and object storage checking.
+ * It also provides apis to write and Message to correct path based on time partitions.
+ * <p>
+ * LocalFileChecker: This thread is responsible for rotation of files based on policies.
+ * Once a file is written to disk it adds to a queue to be consumed by ObjectStorageChecker.
+ * <p>
+ * ObjectStorageChecker: Reads the Local Files and Writes to given ObjectStorage.
+ * After the file is written to object storage, it adds to to flushedPath queue.
+ */
 public class WriterOrchestrator implements Closeable {
     private static final int FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS = 10;
     private static final int FILE_CHECKER_THREAD_FREQUENCY_SECONDS = 5;
@@ -67,12 +77,14 @@ public class WriterOrchestrator implements Closeable {
     }
 
     /**
-     * @return Return all paths which are flushed to remote and drain the list
+     * @return Return all paths which are flushed to remote and drain the list.
+     * It also cleans up local paths from the disk.
      */
     public Set<String> getFlushedPaths() {
-        Set<String> flushedPath = new HashSet<>();
-        flushedToRemotePaths.drainTo(flushedPath);
-        return flushedPath;
+        Set<String> flushedPaths = new HashSet<>();
+        flushedToRemotePaths.drainTo(flushedPaths);
+        flushedPaths.forEach(localStorage::deleteLocalFile);
+        return flushedPaths;
     }
 
     private void checkStatus() throws Exception {
@@ -81,6 +93,13 @@ public class WriterOrchestrator implements Closeable {
         }
     }
 
+    /**
+     * Writes the records based on the partition configuration.
+     *
+     * @param record
+     * @return Local path where the record was stored.
+     * @throws Exception
+     */
     public String write(Record record) throws Exception {
         checkStatus();
         Path partitionedPath = localStorage.getTimePartitionPath().create(record);
@@ -94,14 +113,17 @@ public class WriterOrchestrator implements Closeable {
 
     @Override
     public void close() throws IOException {
-        synchronized (timePartitionWriterMap) {
-            for (LocalFileWriter writer : timePartitionWriterMap.values()) {
-                writer.close();
-            }
-        }
         localFileCheckerScheduler.shutdown();
         objectStorageCheckerScheduler.shutdown();
         remoteUploadScheduler.shutdown();
         writerOrchestratorStatus.setClosed(true);
+        synchronized (timePartitionWriterMap) {
+            for (LocalFileWriter writer : timePartitionWriterMap.values()) {
+                writer.close();
+            }
+            for (String p : timePartitionWriterMap.keySet()) {
+                localStorage.deleteLocalFile(p);
+            }
+        }
     }
 }

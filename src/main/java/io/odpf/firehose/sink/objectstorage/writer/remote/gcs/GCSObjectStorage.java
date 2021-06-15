@@ -8,6 +8,8 @@ import com.google.cloud.storage.StorageOptions;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorage;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageFailedException;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,6 +19,7 @@ import java.nio.file.Paths;
 @AllArgsConstructor
 public class GCSObjectStorage implements ObjectStorage {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(GCSObjectStorage.class);
     private final GCSWriterConfig gcsWriterConfig;
     private final Storage storage;
 
@@ -35,6 +38,7 @@ public class GCSObjectStorage implements ObjectStorage {
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
         try {
             storage.create(blobInfo, Files.readAllBytes(Paths.get(localPath)));
+            LOGGER.info("Created object in GCS " + blobInfo.getBucket() + "/" + blobInfo.getName());
         } catch (IOException e) {
             e.printStackTrace();
             throw new ObjectStorageFailedException(e);

@@ -45,6 +45,9 @@ public class ManagedOffsetCommitter implements OffsetCommitter {
         if (latestOffsets.isEmpty()) {
             return;
         }
+        latestOffsets.forEach((k, v) -> {
+            instrumentation.logInfo("Committing Offsets " + k.topic() + ":" + k.partition() + "=>" + v.offset());
+        });
         committedOffsets.putAll(latestOffsets);
         if (kafkaConsumerConfig.isSourceKafkaAsyncCommitEnable()) {
             commitAsync(latestOffsets);
