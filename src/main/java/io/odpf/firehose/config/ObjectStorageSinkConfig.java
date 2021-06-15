@@ -1,7 +1,8 @@
 package io.odpf.firehose.config;
 
-import io.odpf.firehose.config.converter.CloudSinkPartitioningTypeConverter;
-import io.odpf.firehose.config.converter.CloudSinkWriterTypeConverter;
+import io.odpf.firehose.config.converter.ObjectStorageSinkLocalFileWriterTypeConverter;
+import io.odpf.firehose.config.converter.ObjectStorageSinkPartitioningTypeConverter;
+import io.odpf.firehose.config.converter.ObjectStorageTypeConverter;
 import io.odpf.firehose.sink.objectstorage.Constants;
 
 public interface ObjectStorageSinkConfig extends AppConfig {
@@ -9,9 +10,9 @@ public interface ObjectStorageSinkConfig extends AppConfig {
     @Key("SINK_OBJECT_STORAGE_LOCAL_DIRECTORY")
     String getLocalDirectory();
 
-    @Key("SINK_OBJECT_STORAGE_FILE_WRITER_TYPE")
+    @Key("SINK_OBJECT_STORAGE_LOCAL_FILE_WRITER_TYPE")
     @DefaultValue("parquet")
-    @ConverterClass(CloudSinkWriterTypeConverter.class)
+    @ConverterClass(ObjectStorageSinkLocalFileWriterTypeConverter.class)
     Constants.WriterType getFileWriterType();
 
     @Key("SINK_OBJECT_STORAGE_KAFKA_METADATA_COLUMN_NAME")
@@ -50,7 +51,7 @@ public interface ObjectStorageSinkConfig extends AppConfig {
 
     @Key("SINK_OBJECT_STORAGE_TIME_PARTITIONING_TYPE")
     @DefaultValue("day")
-    @ConverterClass(CloudSinkPartitioningTypeConverter.class)
+    @ConverterClass(ObjectStorageSinkPartitioningTypeConverter.class)
     Constants.PartitioningType getPartitioningType();
 
     @Key("SINK_OBJECT_STORAGE_TIME_PARTITIONING_HOUR_PREFIX")
@@ -59,7 +60,8 @@ public interface ObjectStorageSinkConfig extends AppConfig {
 
     @Key("SINK_OBJECT_STORAGE_TYPE")
     @DefaultValue("GCS")
-    String getObjectStorageType();
+    @ConverterClass(ObjectStorageTypeConverter.class)
+    Constants.ObjectStorageType getObjectStorageType();
 
     @Key("SINK_OBJECT_STORAGE_GOOGLE_CLOUD_PROJECT_ID")
     String getGCloudProjectID();

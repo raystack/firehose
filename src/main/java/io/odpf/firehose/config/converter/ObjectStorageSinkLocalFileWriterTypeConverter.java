@@ -5,7 +5,7 @@ import org.aeonbits.owner.Converter;
 
 import java.lang.reflect.Method;
 
-public class CloudSinkWriterTypeConverter implements Converter<Constants.WriterType> {
+public class ObjectStorageSinkLocalFileWriterTypeConverter implements Converter<Constants.WriterType> {
     @Override
     public Constants.WriterType convert(Method method, String input) {
         return Constants.WriterType.valueOf(input.toUpperCase());

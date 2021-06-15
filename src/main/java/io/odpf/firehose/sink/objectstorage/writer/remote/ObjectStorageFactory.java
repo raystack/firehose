@@ -11,7 +11,7 @@ public class ObjectStorageFactory {
 
     public static ObjectStorage createObjectStorage(ObjectStorageSinkConfig sinkConfig) {
         switch (sinkConfig.getObjectStorageType()) {
-            case "GCS":
+            case GCS:
                 try {
                     return new GCSObjectStorage(new GCSWriterConfig(
                             Paths.get(sinkConfig.getLocalDirectory()),

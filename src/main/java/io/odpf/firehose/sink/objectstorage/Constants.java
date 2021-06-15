@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.objectstorage;
 
 public class Constants {
-    enum ObjectStorageType {
+    public enum ObjectStorageType {
         GCS,
         S3,
         HDFS
