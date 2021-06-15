@@ -30,7 +30,7 @@ public class ObjectStorageSink extends AbstractSink {
     }
 
     @Override
-    protected List<Message> execute() throws IOException {
+    protected List<Message> execute() throws Exception {
         for (Message message : messages) {
             offsetManager.addOffsetToBatch(writerOrchestrator.write(messageDeSerializer.deSerialize(message)), message);
         }

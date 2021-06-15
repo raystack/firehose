@@ -66,7 +66,7 @@ public class ObjectStorageSinkTest {
     }
 
     @Test(expected = IOException.class)
-    public void shouldThrowIOExceptionWhenWritingRecordThrowException() throws IOException, SQLException {
+    public void shouldThrowIOExceptionWhenWritingRecordThrowException() throws Exception, SQLException {
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
         Record record1 = mock(Record.class);
         when(messageDeSerializer.deSerialize(message1)).thenReturn(record1);
@@ -77,7 +77,7 @@ public class ObjectStorageSinkTest {
     }
 
     @Test
-    public void shouldReturnCommittableOffsets() throws IOException {
+    public void shouldReturnCommittableOffsets() throws Exception {
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
         Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 1, 2);
         Record record1 = mock(Record.class);

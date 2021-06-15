@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -64,36 +63,8 @@ public class WriterOrchestrator implements Closeable {
                 TimeUnit.SECONDS);
 
         writerOrchestratorStatus = new WriterOrchestratorStatus(false, localWriterFuture, remoteWriterFuture, null);
-        checkForLocalFileWriterCompletion();
-        checkForRemoteFileWriterCompletion();
-    }
-
-    private void checkForLocalFileWriterCompletion() {
-        new Thread(() -> {
-            try {
-                writerOrchestratorStatus.getLocalFileWriterFuture().get();
-            } catch (InterruptedException e) {
-                writerOrchestratorStatus.setThrowable(e);
-            } catch (ExecutionException e) {
-                writerOrchestratorStatus.setThrowable(e.getCause());
-            } finally {
-                writerOrchestratorStatus.setClosed(true);
-            }
-        }).start();
-    }
-
-    private void checkForRemoteFileWriterCompletion() {
-        new Thread(() -> {
-            try {
-                writerOrchestratorStatus.getRemoteFileWriterFuture().get();
-            } catch (InterruptedException e) {
-                writerOrchestratorStatus.setThrowable(e);
-            } catch (ExecutionException e) {
-                writerOrchestratorStatus.setThrowable(e.getCause());
-            } finally {
-                writerOrchestratorStatus.setClosed(true);
-            }
-        }).start();
+        writerOrchestratorStatus.startCheckerForLocalFileWriterCompletion();
+        writerOrchestratorStatus.startCheckerForRemoteFileWriterCompletion();
     }
 
     /**
@@ -105,17 +76,20 @@ public class WriterOrchestrator implements Closeable {
         return flushedPath;
     }
 
-    public String write(Record record) throws IOException {
+    private void checkStatus() throws Exception {
         if (writerOrchestratorStatus.isClosed()) {
             throw new IOException(writerOrchestratorStatus.getThrowable());
         }
+    }
+
+    public String write(Record record) throws Exception {
+        checkStatus();
         Path partitionedPath = localFileWriterWrapper.getTimePartitionPath().create(record);
+        String pathString = partitionedPath.toString();
         synchronized (timePartitionWriterMap) {
-            if (!timePartitionWriterMap.containsKey(partitionedPath.toString())) {
-                timePartitionWriterMap.put(partitionedPath.toString(), this.localFileWriterWrapper.createLocalFileWriter(partitionedPath));
-            }
-            timePartitionWriterMap.get(partitionedPath.toString()).write(record);
-            return timePartitionWriterMap.get(partitionedPath.toString()).getFullPath();
+            LocalFileWriter writer = timePartitionWriterMap.computeIfAbsent(pathString, x -> localFileWriterWrapper.createLocalFileWriter(partitionedPath));
+            writer.write(record);
+            return writer.getFullPath();
         }
     }
 

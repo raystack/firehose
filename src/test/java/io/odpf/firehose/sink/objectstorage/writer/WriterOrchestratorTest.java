@@ -3,13 +3,16 @@ package io.odpf.firehose.sink.objectstorage.writer;
 import io.odpf.firehose.sink.objectstorage.TestUtils;
 import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriter;
+import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriterFailedException;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriterWrapper;
 import io.odpf.firehose.sink.objectstorage.writer.local.TimePartitionPath;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterConfig;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -30,17 +33,16 @@ import static org.mockito.ArgumentMatchers.any;
 public class WriterOrchestratorTest {
 
 
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
     @Mock
     private TimePartitionPath timePartitionPath;
     @Mock
     private LocalFileWriter localFileWriter1;
-
     @Mock
     private LocalFileWriter localFileWriter2;
-
     @Mock
     private LocalFileWriterWrapper writerWrapper;
-
     @Mock
     private ObjectStorageWriterConfig objectStorageWriterConfig;
 
@@ -106,14 +108,15 @@ public class WriterOrchestratorTest {
         }
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void shouldThrowIOExceptionWhenOpenNewWriterFailed() throws Exception {
+        expectedException.expect(LocalFileWriterFailedException.class);
         Record record = TestUtils.createRecordWithMetadata("abc", "default", 1, 1, Instant.now());
         Mockito.when(timePartitionPath.create(record)).thenReturn(Paths.get("dt=2021-01-01"));
         Mockito.when(writerWrapper.getTimePartitionPath()).thenReturn(timePartitionPath);
         Mockito.when(writerWrapper.getPolicies()).thenReturn(new ArrayList<>());
         Mockito.when(localFileWriter1.getFullPath()).thenReturn("test1");
-        Mockito.when(writerWrapper.createLocalFileWriter(Paths.get("dt=2021-01-01"))).thenThrow(new IOException());
+        Mockito.when(writerWrapper.createLocalFileWriter(Paths.get("dt=2021-01-01"))).thenThrow(new LocalFileWriterFailedException(new IOException("Some error")));
         try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(writerWrapper, objectStorageWriterConfig)) {
             writerOrchestrator.write(record);
         }

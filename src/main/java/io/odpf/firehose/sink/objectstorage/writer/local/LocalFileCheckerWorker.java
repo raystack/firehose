@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.stream.Collectors;
 
 public class LocalFileCheckerWorker implements Runnable {
     private final Queue<String> toBeFlushedToRemotePaths;
@@ -22,22 +23,22 @@ public class LocalFileCheckerWorker implements Runnable {
 
     @Override
     public void run() {
+        Map<String, LocalFileWriter> toBeRotated;
         synchronized (timePartitionWriterMap) {
-            timePartitionWriterMap.entrySet().removeIf(kv -> {
-                if (shouldRotate(kv.getValue())) {
+            toBeRotated = timePartitionWriterMap.entrySet().stream().filter(kv -> shouldRotate(kv.getValue()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            timePartitionWriterMap.entrySet().removeIf(kv -> toBeRotated.containsKey(kv.getKey()));
+        }
+        toBeRotated.values().forEach(
+                writer -> {
                     try {
-                        kv.getValue().close();
-                        toBeFlushedToRemotePaths.add(kv.getValue().getFullPath());
-                        System.out.println("Adding file to be flushed " + kv.getValue().getFullPath());
+                        writer.close();
+                        toBeFlushedToRemotePaths.add(writer.getFullPath());
                     } catch (IOException e) {
                         e.printStackTrace();
                         throw new LocalFileWriterFailedException(e);
                     }
-                    return true;
-                }
-                return false;
-            });
-        }
+                });
     }
 
     private Boolean shouldRotate(LocalFileWriter writer) {

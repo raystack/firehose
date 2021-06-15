@@ -24,11 +24,9 @@ public class ObjectStorageWriterWorker implements Runnable {
         try {
             Storage storage = StorageOptions.newBuilder().setProjectId(objectStorageWriterConfig.getGcsProjectId()).build().getService();
             storage.create(blobInfo, Files.readAllBytes(Paths.get(fullPath)));
-            System.out.println("Pushed to remote " + fullPath + " to " + objectName);
         } catch (IOException e) {
             e.printStackTrace();
             throw new ObjectStorageUploadFailedException(e);
         }
-
     }
 }

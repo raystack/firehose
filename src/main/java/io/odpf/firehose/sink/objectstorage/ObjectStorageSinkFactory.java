@@ -35,20 +35,37 @@ public class ObjectStorageSinkFactory implements SinkFactory {
 
         Instrumentation instrumentation = new Instrumentation(statsDReporter, ObjectStorageSinkFactory.class);
 
-        Descriptors.Descriptor messageDescriptor = stencilClient.get(sinkConfig.getInputSchemaProtoClass());
+        Path localBasePath = Paths.get(sinkConfig.getLocalDirectory());
+        LocalFileWriterWrapper localFileWriterWrapper = getLocalFileWriterWrapper(sinkConfig, stencilClient);
 
+        ObjectStorageWriterConfig objectStorageWriterConfig =
+                new ObjectStorageWriterConfig(
+                        localBasePath,
+                        sinkConfig.getObjectStorageBucketName(),
+                        sinkConfig.getStorageGcloudProjectID());
+
+        WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localFileWriterWrapper, objectStorageWriterConfig);
+        MessageDeSerializer messageDeSerializer = getMessageDeSerializer(sinkConfig, stencilClient);
+        return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer);
+    }
+
+    private Descriptors.Descriptor getMetadataMessageDescriptor(ObjectStorageSinkConfig sinkConfig) {
         Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoFile.createFileDescriptor(sinkConfig.getKafkaMetadataColumnName());
-        Descriptors.Descriptor metadataMessageDescriptor;
-        if (sinkConfig.getKafkaMetadataColumnName().isEmpty()) {
-            metadataMessageDescriptor = fileDescriptor.findMessageTypeByName(KafkaMetadataProto.getTypeName());
-        } else {
-            metadataMessageDescriptor = fileDescriptor.findMessageTypeByName(NestedKafkaMetadataProto.getTypeName());
-        }
+        return sinkConfig.getKafkaMetadataColumnName().isEmpty()
+                ? fileDescriptor.findMessageTypeByName(KafkaMetadataProto.getTypeName())
+                : fileDescriptor.findMessageTypeByName(NestedKafkaMetadataProto.getTypeName());
 
-        List<WriterPolicy> writerPolicies = new ArrayList<>();
+    }
 
-        writerPolicies.add(new TimeBasedRotatingPolicy(sinkConfig.getFileRotationDurationMillis()));
-        writerPolicies.add(new SizeBasedRotatingPolicy(sinkConfig.getFileRationMaxSizeBytes()));
+    private MessageDeSerializer getMessageDeSerializer(ObjectStorageSinkConfig sinkConfig, StencilClient stencilClient) {
+        ProtoParser protoParser = new ProtoParser(stencilClient, sinkConfig.getInputSchemaProtoClass());
+        KafkaMetadataUtils kafkaMetadataUtils = new KafkaMetadataUtils(sinkConfig.getKafkaMetadataColumnName());
+        return new MessageDeSerializer(kafkaMetadataUtils, sinkConfig.getWriteKafkaMetadata(), protoParser);
+    }
+
+    private LocalFileWriterWrapper getLocalFileWriterWrapper(ObjectStorageSinkConfig sinkConfig, StencilClient stencilClient) {
+        Descriptors.Descriptor outputMessageDescriptor = stencilClient.get(sinkConfig.getInputSchemaProtoClass());
+        Descriptors.Descriptor metadataMessageDescriptor = getMetadataMessageDescriptor(sinkConfig);
 
         TimePartitionPath timePartitionPath = new TimePartitionPath(
                 sinkConfig.getKafkaMetadataColumnName(),
@@ -59,28 +76,21 @@ public class ObjectStorageSinkFactory implements SinkFactory {
                 sinkConfig.getTimePartitioningDatePrefix(),
                 sinkConfig.getTimePartitioningHourPrefix());
 
-        Path localBasePath = Paths.get(sinkConfig.getLocalDirectory());
-        ProtoParser protoParser = new ProtoParser(stencilClient, sinkConfig.getInputSchemaProtoClass());
-        KafkaMetadataUtils kafkaMetadataUtils = new KafkaMetadataUtils(sinkConfig.getKafkaMetadataColumnName());
-        MessageDeSerializer messageDeSerializer = new MessageDeSerializer(kafkaMetadataUtils, sinkConfig.getWriteKafkaMetadata(), protoParser);
-        LocalFileWriterWrapper localFileWriterWrapper =
-                new LocalFileWriterWrapper(
-                        sinkConfig.getFileWriterType(),
-                        sinkConfig.getWriterPageSize(),
-                        sinkConfig.getWriterBlockSize(),
-                        messageDescriptor,
-                        metadataMessageDescriptor.getFields(),
-                        localBasePath,
-                        writerPolicies,
-                        timePartitionPath);
-        ObjectStorageWriterConfig objectStorageWriterConfig =
-                new ObjectStorageWriterConfig(
-                        localBasePath,
-                        sinkConfig.getObjectStorageBucketName(),
-                        sinkConfig.getStorageGcloudProjectID());
-        WriterOrchestrator writerOrchestrator =
-                new WriterOrchestrator(localFileWriterWrapper, objectStorageWriterConfig);
 
-        return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer);
+        List<WriterPolicy> writerPolicies = new ArrayList<>();
+        writerPolicies.add(new TimeBasedRotatingPolicy(sinkConfig.getFileRotationDurationMillis()));
+        writerPolicies.add(new SizeBasedRotatingPolicy(sinkConfig.getFileRationMaxSizeBytes()));
+
+        Path localBasePath = Paths.get(sinkConfig.getLocalDirectory());
+
+        return new LocalFileWriterWrapper(
+                sinkConfig.getFileWriterType(),
+                sinkConfig.getWriterPageSize(),
+                sinkConfig.getWriterBlockSize(),
+                outputMessageDescriptor,
+                metadataMessageDescriptor.getFields(),
+                localBasePath,
+                writerPolicies,
+                timePartitionPath);
     }
 }

@@ -27,14 +27,18 @@ public class LocalFileWriterWrapper {
     @Getter
     private final TimePartitionPath timePartitionPath;
 
-    public LocalFileWriter createLocalFileWriter(Path partitionedPath) throws IOException {
+    public LocalFileWriter createLocalFileWriter(Path partitionedPath) {
         String fileName = UUID.randomUUID().toString();
         Path dir = basePath.resolve(partitionedPath);
         Path fullPath = dir.resolve(Paths.get(fileName));
 
         switch (writerType) {
             case PARQUET:
-                return new LocalParquetFileWriter(System.currentTimeMillis(), fullPath.toString(), pageSize, blockSize, messageDescriptor, metadataFieldDescriptor);
+                try {
+                    return new LocalParquetFileWriter(System.currentTimeMillis(), fullPath.toString(), pageSize, blockSize, messageDescriptor, metadataFieldDescriptor);
+                } catch (IOException e) {
+                    throw new LocalFileWriterFailedException(e);
+                }
             default:
                 throw new EglcConfigurationException("unsupported file writer type");
         }
