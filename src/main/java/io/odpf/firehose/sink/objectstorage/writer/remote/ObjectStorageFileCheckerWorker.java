@@ -16,7 +16,7 @@ public class ObjectStorageFileCheckerWorker implements Runnable {
     private final BlockingQueue<String> flushedToRemotePaths;
     private final Set<ObjectStorageWriterWorkerFuture> remoteUploadFutures;
     private final ExecutorService remoteUploadScheduler;
-    private final ObjectStorageWriterConfig objectStorageWriterConfig;
+    private final ObjectStorage objectStorage;
 
     @Override
     public void run() {
@@ -24,8 +24,7 @@ public class ObjectStorageFileCheckerWorker implements Runnable {
         toBeFlushedToRemotePaths.drainTo(tobeFlushed);
         remoteUploadFutures.addAll(tobeFlushed.stream()
                 .map(path -> new ObjectStorageWriterWorkerFuture(
-                        remoteUploadScheduler.submit(new ObjectStorageWriterWorker(objectStorageWriterConfig, path)),
-                        path)
+                        remoteUploadScheduler.submit(new ObjectStorageWriterWorker(objectStorage, path)), path)
                 ).collect(Collectors.toList()));
 
         Set<String> flushedPath = remoteUploadFutures.stream().map(future -> {

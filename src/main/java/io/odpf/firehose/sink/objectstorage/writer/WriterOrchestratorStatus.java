@@ -11,7 +11,7 @@ import java.util.concurrent.ScheduledFuture;
 public class WriterOrchestratorStatus {
     private boolean isClosed;
     private ScheduledFuture<?> localFileWriterFuture;
-    private ScheduledFuture<?> remoteFileWriterFuture;
+    private ScheduledFuture<?> objectStorageWriterFuture;
     private Throwable throwable;
 
     public void startCheckerForLocalFileWriterCompletion() {
@@ -28,10 +28,10 @@ public class WriterOrchestratorStatus {
         }).start();
     }
 
-    public void startCheckerForRemoteFileWriterCompletion() {
+    public void startCheckerForObjectStorageWriterCompletion() {
         new Thread(() -> {
             try {
-                getRemoteFileWriterFuture().get();
+                getObjectStorageWriterFuture().get();
             } catch (InterruptedException e) {
                 setThrowable(e);
             } catch (ExecutionException e) {

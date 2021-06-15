@@ -3,9 +3,9 @@ package io.odpf.firehose.sink.objectstorage.writer;
 import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileCheckerWorker;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriter;
-import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriterWrapper;
+import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
+import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorage;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageFileCheckerWorker;
-import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterConfig;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterWorkerFuture;
 
 import java.io.Closeable;
@@ -28,43 +28,42 @@ public class WriterOrchestrator implements Closeable {
     private static final int FILE_CHECKER_THREAD_FREQUENCY_SECONDS = 5;
     private final Map<String, LocalFileWriter> timePartitionWriterMap = new ConcurrentHashMap<>();
     private final ScheduledExecutorService localFileCheckerScheduler = Executors.newScheduledThreadPool(1);
-    private final ScheduledExecutorService remoteFileCheckerScheduler = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService objectStorageCheckerScheduler = Executors.newScheduledThreadPool(1);
     private final ExecutorService remoteUploadScheduler = Executors.newFixedThreadPool(10);
     private final BlockingQueue<String> flushedToRemotePaths = new LinkedBlockingQueue<>();
-    private final LocalFileWriterWrapper localFileWriterWrapper;
+    private final LocalStorage localStorage;
     private final WriterOrchestratorStatus writerOrchestratorStatus;
 
-    public WriterOrchestrator(LocalFileWriterWrapper localFileWriterWrapper,
-                              ObjectStorageWriterConfig objectStorageWriterConfig) {
+    public WriterOrchestrator(LocalStorage localStorage, ObjectStorage objectStorage) {
 
-        this.localFileWriterWrapper = localFileWriterWrapper;
+        this.localStorage = localStorage;
 
         BlockingQueue<String> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
-        Set<ObjectStorageWriterWorkerFuture> remoteUploadFutures = new HashSet<>();
 
         ScheduledFuture<?> localWriterFuture = localFileCheckerScheduler.scheduleAtFixedRate(
                 new LocalFileCheckerWorker(
                         toBeFlushedToRemotePaths,
                         timePartitionWriterMap,
-                        localFileWriterWrapper.getPolicies()),
+                        localStorage.getPolicies()),
                 FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS,
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
                 TimeUnit.SECONDS);
 
-        ScheduledFuture<?> remoteWriterFuture = remoteFileCheckerScheduler.scheduleWithFixedDelay(
+        Set<ObjectStorageWriterWorkerFuture> remoteUploadFutures = new HashSet<>();
+        ScheduledFuture<?> objectStorageWriterFuture = objectStorageCheckerScheduler.scheduleWithFixedDelay(
                 new ObjectStorageFileCheckerWorker(
                         toBeFlushedToRemotePaths,
                         flushedToRemotePaths,
                         remoteUploadFutures,
                         remoteUploadScheduler,
-                        objectStorageWriterConfig),
+                        objectStorage),
                 FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS,
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
                 TimeUnit.SECONDS);
 
-        writerOrchestratorStatus = new WriterOrchestratorStatus(false, localWriterFuture, remoteWriterFuture, null);
+        writerOrchestratorStatus = new WriterOrchestratorStatus(false, localWriterFuture, objectStorageWriterFuture, null);
         writerOrchestratorStatus.startCheckerForLocalFileWriterCompletion();
-        writerOrchestratorStatus.startCheckerForRemoteFileWriterCompletion();
+        writerOrchestratorStatus.startCheckerForObjectStorageWriterCompletion();
     }
 
     /**
@@ -84,10 +83,10 @@ public class WriterOrchestrator implements Closeable {
 
     public String write(Record record) throws Exception {
         checkStatus();
-        Path partitionedPath = localFileWriterWrapper.getTimePartitionPath().create(record);
+        Path partitionedPath = localStorage.getTimePartitionPath().create(record);
         String pathString = partitionedPath.toString();
         synchronized (timePartitionWriterMap) {
-            LocalFileWriter writer = timePartitionWriterMap.computeIfAbsent(pathString, x -> localFileWriterWrapper.createLocalFileWriter(partitionedPath));
+            LocalFileWriter writer = timePartitionWriterMap.computeIfAbsent(pathString, x -> localStorage.createLocalFileWriter(partitionedPath));
             writer.write(record);
             return writer.getFullPath();
         }
@@ -101,7 +100,7 @@ public class WriterOrchestrator implements Closeable {
             }
         }
         localFileCheckerScheduler.shutdown();
-        remoteFileCheckerScheduler.shutdown();
+        objectStorageCheckerScheduler.shutdown();
         remoteUploadScheduler.shutdown();
         writerOrchestratorStatus.setClosed(true);
     }

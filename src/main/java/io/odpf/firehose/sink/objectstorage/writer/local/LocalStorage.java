@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
-public class LocalFileWriterWrapper {
+public class LocalStorage {
 
     private final Constants.WriterType writerType;
     private final int pageSize;

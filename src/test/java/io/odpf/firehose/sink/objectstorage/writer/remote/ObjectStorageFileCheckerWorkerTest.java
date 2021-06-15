@@ -1,5 +1,7 @@
 package io.odpf.firehose.sink.objectstorage.writer.remote;
 
+import io.odpf.firehose.sink.objectstorage.writer.remote.gcs.GCSObjectStorage;
+import io.odpf.firehose.sink.objectstorage.writer.remote.gcs.GCSWriterConfig;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,8 +25,9 @@ public class ObjectStorageFileCheckerWorkerTest {
     private final BlockingQueue<String> flushedToRemotePaths = new LinkedBlockingQueue<>();
     private final ExecutorService remoteUploadScheduler = Mockito.mock(ExecutorService.class);
     private final Set<ObjectStorageWriterWorkerFuture> remoteUploadFutures = new HashSet<>();
-    private final ObjectStorageWriterConfig writerWrapper =
-            new ObjectStorageWriterConfig(Paths.get("/test"), "test", "test");
+    private final GCSWriterConfig gcsWriterConfig =
+            new GCSWriterConfig(Paths.get("/test"), "test", "test");
+    private final ObjectStorage objectStorage = new GCSObjectStorage(gcsWriterConfig);
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
     private ObjectStorageFileCheckerWorker worker;
@@ -36,7 +39,7 @@ public class ObjectStorageFileCheckerWorkerTest {
                 flushedToRemotePaths,
                 remoteUploadFutures,
                 remoteUploadScheduler,
-                writerWrapper);
+                objectStorage);
     }
 
     @Test

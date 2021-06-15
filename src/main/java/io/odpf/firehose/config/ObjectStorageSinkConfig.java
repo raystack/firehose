@@ -63,7 +63,7 @@ public interface ObjectStorageSinkConfig extends AppConfig {
 
     @Key("SINK_OBJECT_STORAGE_TYPE")
     @DefaultValue("GCS")
-    String getCloudStorageType();
+    String getObjectStorageType();
 
     @Key("SINK_OBJECT_STORAGE_BUCKET_NAME")
     String getObjectStorageBucketName();

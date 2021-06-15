@@ -14,12 +14,13 @@ import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProto;
 import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoFile;
 import io.odpf.firehose.sink.objectstorage.proto.NestedKafkaMetadataProto;
 import io.odpf.firehose.sink.objectstorage.writer.WriterOrchestrator;
-import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriterWrapper;
+import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
 import io.odpf.firehose.sink.objectstorage.writer.local.TimePartitionPath;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.SizeBasedRotatingPolicy;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.TimeBasedRotatingPolicy;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
-import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterConfig;
+import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorage;
+import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageFactory;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.nio.file.Path;
@@ -35,16 +36,11 @@ public class ObjectStorageSinkFactory implements SinkFactory {
 
         Instrumentation instrumentation = new Instrumentation(statsDReporter, ObjectStorageSinkFactory.class);
 
-        Path localBasePath = Paths.get(sinkConfig.getLocalDirectory());
-        LocalFileWriterWrapper localFileWriterWrapper = getLocalFileWriterWrapper(sinkConfig, stencilClient);
+        LocalStorage localStorage = getLocalFileWriterWrapper(sinkConfig, stencilClient);
 
-        ObjectStorageWriterConfig objectStorageWriterConfig =
-                new ObjectStorageWriterConfig(
-                        localBasePath,
-                        sinkConfig.getObjectStorageBucketName(),
-                        sinkConfig.getStorageGcloudProjectID());
+        ObjectStorage objectStorage = ObjectStorageFactory.createObjectStorage(sinkConfig);
 
-        WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localFileWriterWrapper, objectStorageWriterConfig);
+        WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage);
         MessageDeSerializer messageDeSerializer = getMessageDeSerializer(sinkConfig, stencilClient);
         return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer);
     }
@@ -63,7 +59,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
         return new MessageDeSerializer(kafkaMetadataUtils, sinkConfig.getWriteKafkaMetadata(), protoParser);
     }
 
-    private LocalFileWriterWrapper getLocalFileWriterWrapper(ObjectStorageSinkConfig sinkConfig, StencilClient stencilClient) {
+    private LocalStorage getLocalFileWriterWrapper(ObjectStorageSinkConfig sinkConfig, StencilClient stencilClient) {
         Descriptors.Descriptor outputMessageDescriptor = stencilClient.get(sinkConfig.getInputSchemaProtoClass());
         Descriptors.Descriptor metadataMessageDescriptor = getMetadataMessageDescriptor(sinkConfig);
 
@@ -83,7 +79,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
 
         Path localBasePath = Paths.get(sinkConfig.getLocalDirectory());
 
-        return new LocalFileWriterWrapper(
+        return new LocalStorage(
                 sinkConfig.getFileWriterType(),
                 sinkConfig.getWriterPageSize(),
                 sinkConfig.getWriterBlockSize(),
