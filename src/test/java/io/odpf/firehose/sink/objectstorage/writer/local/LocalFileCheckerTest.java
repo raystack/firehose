@@ -19,7 +19,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class LocalFileCheckerWorkerTest {
+public class LocalFileCheckerTest {
 
     @Mock
     private LocalFileWriter writer1;
@@ -39,7 +39,7 @@ public class LocalFileCheckerWorkerTest {
     private BlockingQueue<String> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
     private Map<String, LocalFileWriter> writerMap = new ConcurrentHashMap<>();
     private List<WriterPolicy> policies = new ArrayList<>();
-    private LocalFileCheckerWorker worker = new LocalFileCheckerWorker(toBeFlushedToRemotePaths, writerMap, policies);
+    private LocalFileChecker worker = new LocalFileChecker(toBeFlushedToRemotePaths, writerMap, policies);
 
     @Before
     public void setup() {

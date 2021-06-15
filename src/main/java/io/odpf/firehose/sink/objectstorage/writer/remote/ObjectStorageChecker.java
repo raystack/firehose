@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
-public class ObjectStorageFileCheckerWorker implements Runnable {
+public class ObjectStorageChecker implements Runnable {
     private final BlockingQueue<String> toBeFlushedToRemotePaths;
     private final BlockingQueue<String> flushedToRemotePaths;
     private final Set<ObjectStorageWriterWorkerFuture> remoteUploadFutures;
@@ -24,7 +24,7 @@ public class ObjectStorageFileCheckerWorker implements Runnable {
         toBeFlushedToRemotePaths.drainTo(tobeFlushed);
         remoteUploadFutures.addAll(tobeFlushed.stream()
                 .map(path -> new ObjectStorageWriterWorkerFuture(
-                        remoteUploadScheduler.submit(new ObjectStorageWriterWorker(objectStorage, path)), path)
+                        remoteUploadScheduler.submit(() -> objectStorage.store(path)), path)
                 ).collect(Collectors.toList()));
 
         Set<String> flushedPath = remoteUploadFutures.stream().map(future -> {
@@ -34,9 +34,9 @@ public class ObjectStorageFileCheckerWorker implements Runnable {
                 try {
                     future.getFuture().get();
                 } catch (InterruptedException e) {
-                    throw new ObjectStorageUploadFailedException(e);
+                    throw new ObjectStorageFailedException(e);
                 } catch (ExecutionException e) {
-                    throw new ObjectStorageUploadFailedException(e.getCause());
+                    throw new ObjectStorageFailedException(e.getCause());
                 }
                 return future.getPath();
             }

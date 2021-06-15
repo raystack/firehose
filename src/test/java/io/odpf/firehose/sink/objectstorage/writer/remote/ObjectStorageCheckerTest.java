@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class ObjectStorageFileCheckerWorkerTest {
+public class ObjectStorageCheckerTest {
 
     private final BlockingQueue<String> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
     private final BlockingQueue<String> flushedToRemotePaths = new LinkedBlockingQueue<>();
@@ -27,14 +27,14 @@ public class ObjectStorageFileCheckerWorkerTest {
     public ExpectedException expectedException = ExpectedException.none();
     @Mock
     private ObjectStorage objectStorage;
-    private ObjectStorageFileCheckerWorker worker;
+    private ObjectStorageChecker worker;
 
-    public ObjectStorageFileCheckerWorkerTest() throws IOException {
+    public ObjectStorageCheckerTest() throws IOException {
     }
 
     @Before
     public void setup() {
-        worker = new ObjectStorageFileCheckerWorker(
+        worker = new ObjectStorageChecker(
                 toBeFlushedToRemotePaths,
                 flushedToRemotePaths,
                 remoteUploadFutures,
@@ -79,7 +79,7 @@ public class ObjectStorageFileCheckerWorkerTest {
 
     @Test
     public void shouldThrowExceptionIfTheUploadIsFailed() throws ExecutionException, InterruptedException {
-        expectedException.expect(ObjectStorageUploadFailedException.class);
+        expectedException.expect(ObjectStorageFailedException.class);
         toBeFlushedToRemotePaths.add("/tmp/a/some-file");
         Future f = Mockito.mock(Future.class);
         Mockito.when(f.isDone()).thenReturn(true);

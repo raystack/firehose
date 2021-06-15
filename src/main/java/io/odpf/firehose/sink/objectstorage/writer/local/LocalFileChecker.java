@@ -8,14 +8,14 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
-public class LocalFileCheckerWorker implements Runnable {
+public class LocalFileChecker implements Runnable {
     private final Queue<String> toBeFlushedToRemotePaths;
     private final Map<String, LocalFileWriter> timePartitionWriterMap;
     private final List<WriterPolicy> policies;
 
-    public LocalFileCheckerWorker(Queue<String> toBeFlushedToRemotePaths,
-                                  Map<String, LocalFileWriter> timePartitionWriterMap,
-                                  List<WriterPolicy> policies) {
+    public LocalFileChecker(Queue<String> toBeFlushedToRemotePaths,
+                            Map<String, LocalFileWriter> timePartitionWriterMap,
+                            List<WriterPolicy> policies) {
         this.toBeFlushedToRemotePaths = toBeFlushedToRemotePaths;
         this.timePartitionWriterMap = timePartitionWriterMap;
         this.policies = policies;

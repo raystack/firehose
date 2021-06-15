@@ -6,7 +6,7 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorage;
-import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageUploadFailedException;
+import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageFailedException;
 import lombok.AllArgsConstructor;
 
 import java.io.FileInputStream;
@@ -37,7 +37,7 @@ public class GCSObjectStorage implements ObjectStorage {
             storage.create(blobInfo, Files.readAllBytes(Paths.get(localPath)));
         } catch (IOException e) {
             e.printStackTrace();
-            throw new ObjectStorageUploadFailedException(e);
+            throw new ObjectStorageFailedException(e);
         }
     }
 }
