@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * This class manages threads for local and object storage checking.
- * It also provides apis to write and Message to correct path based on time partitions.
+ * It provides apis to write records to correct path based on time partitions.
  * <p>
  * LocalFileChecker: This thread is responsible for rotation of files based on policies.
  * Once a file is written to disk it adds to a queue to be consumed by ObjectStorageChecker.
@@ -96,9 +96,9 @@ public class WriterOrchestrator implements Closeable {
     /**
      * Writes the records based on the partition configuration.
      *
-     * @param record
+     * @param record record to be written
      * @return Local path where the record was stored.
-     * @throws Exception
+     * @throws Exception if local storage fails or writer orchestrator is closed.
      */
     public String write(Record record) throws Exception {
         checkStatus();
