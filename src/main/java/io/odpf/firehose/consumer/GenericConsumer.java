@@ -1,18 +1,22 @@
 package io.odpf.firehose.consumer;
 
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-
-import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.filter.FilterException;
-import io.odpf.firehose.filter.Filter;
-import io.odpf.firehose.metrics.Instrumentation;
 import com.newrelic.api.agent.Trace;
-
+import io.odpf.firehose.config.KafkaConsumerConfig;
+import io.odpf.firehose.consumer.committer.OffsetCommitter;
+import io.odpf.firehose.filter.Filter;
+import io.odpf.firehose.filter.FilterException;
+import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A class responsible for consuming the messages in kafka.
@@ -23,27 +27,27 @@ public class GenericConsumer {
 
     private final Consumer kafkaConsumer;
     private final KafkaConsumerConfig consumerConfig;
-    private Filter filter;
-    private Offsets offsets;
-    private Instrumentation instrumentation;
-
+    private final Filter filter;
+    private final OffsetCommitter offsetCommitter;
+    private final Instrumentation instrumentation;
+    private final Map<TopicPartition, OffsetAndMetadata> committedOffsets = new HashMap<>();
     private ConsumerRecords<byte[], byte[]> records;
 
     /**
      * A Constructor.
      *
-     * @param kafkaConsumer      {@see KafkaConsumer}
-     * @param config             Consumer configuration.
-     * @param filter             a Filter implementation to filter the messages. {@see Filter}, {@see io.odpf.firehose.filter.EsbMessageFilter}
-     * @param offsets            {@see Offsets}
-     * @param instrumentation     Contain logging and metrics collection
+     * @param kafkaConsumer   {@see KafkaConsumer}
+     * @param config          Consumer configuration.
+     * @param filter          a Filter implementation to filter the messages. {@see Filter}, {@see io.odpf.firehose.filter.EsbMessageFilter}
+     * @param offsetCommitter {@see Offsets}
+     * @param instrumentation Contain logging and metrics collection
      */
     public GenericConsumer(Consumer kafkaConsumer, KafkaConsumerConfig config, Filter filter,
-                           Offsets offsets, Instrumentation instrumentation) {
+                           OffsetCommitter offsetCommitter, Instrumentation instrumentation) {
         this.kafkaConsumer = kafkaConsumer;
         this.consumerConfig = config;
         this.filter = filter;
-        this.offsets = offsets;
+        this.offsetCommitter = offsetCommitter;
         this.instrumentation = instrumentation;
     }
 
@@ -76,8 +80,13 @@ public class GenericConsumer {
     }
 
     @Trace(dispatcher = true)
+    public void commit(Map<TopicPartition, OffsetAndMetadata> offsets) {
+        offsetCommitter.commit(offsets);
+    }
+
+    @Trace(dispatcher = true)
     public void commit() {
-        offsets.commit(records);
+        offsetCommitter.commit(records);
     }
 
     public void close() {

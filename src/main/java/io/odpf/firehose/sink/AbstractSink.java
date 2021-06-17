@@ -18,8 +18,8 @@ import java.util.List;
 @AllArgsConstructor
 public abstract class AbstractSink implements Closeable, Sink {
 
-    private Instrumentation instrumentation;
-    private String sinkType;
+    private final Instrumentation instrumentation;
+    private final String sinkType;
 
     /**
      * Method to push messages to sink.

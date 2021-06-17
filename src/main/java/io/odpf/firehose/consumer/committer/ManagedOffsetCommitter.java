@@ -1,4 +1,4 @@
-package io.odpf.firehose.consumer;
+package io.odpf.firehose.consumer.committer;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -11,29 +11,48 @@ import org.apache.kafka.common.TopicPartition;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL;
 import static io.odpf.firehose.metrics.Metrics.FAILURE_TAG;
+import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL;
 import static io.odpf.firehose.metrics.Metrics.SUCCESS_TAG;
 
 /**
  * Commit offsets for individual Topic partitions.
  */
 @AllArgsConstructor
-public class TopicPartitionOffsets implements Offsets {
+public class ManagedOffsetCommitter implements OffsetCommitter {
 
-    private KafkaConsumer kafkaConsumer;
-    private KafkaConsumerConfig kafkaConsumerConfig;
-    private Instrumentation instrumentation;
+    private final Map<TopicPartition, OffsetAndMetadata> committedOffsets = new HashMap<>();
+    private final KafkaConsumer kafkaConsumer;
+    private final KafkaConsumerConfig kafkaConsumerConfig;
+    private final Instrumentation instrumentation;
 
     @Override
     public void commit(ConsumerRecords<byte[], byte[]> records) {
         Map<TopicPartition, OffsetAndMetadata> offsets = createOffsetsAndMetadata(records);
+        commit(offsets);
+    }
 
+    @Override
+    public void commit(Map<TopicPartition, OffsetAndMetadata> offsets) {
+        Map<TopicPartition, OffsetAndMetadata> latestOffsets =
+                offsets.entrySet()
+                        .stream()
+                        .filter(metadataEntry -> !committedOffsets.containsKey(metadataEntry.getKey())
+                                                 || metadataEntry.getValue().offset() > committedOffsets.get(metadataEntry.getKey()).offset())
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        if (latestOffsets.isEmpty()) {
+            return;
+        }
+        latestOffsets.forEach((k, v) -> {
+            instrumentation.logInfo("Committing Offsets " + k.topic() + ":" + k.partition() + "=>" + v.offset());
+        });
+        committedOffsets.putAll(latestOffsets);
         if (kafkaConsumerConfig.isSourceKafkaAsyncCommitEnable()) {
-            commitAsync(offsets);
+            commitAsync(latestOffsets);
         } else {
-            kafkaConsumer.commitSync(offsets);
+            kafkaConsumer.commitSync(latestOffsets);
         }
     }
 
@@ -71,12 +90,8 @@ public class TopicPartitionOffsets implements Offsets {
     private boolean checkFeasibleTopicPartitionOffsetMapUpdation(Map<TopicPartition, OffsetAndMetadata> topicPartitionAndOffset,
                                                                  TopicPartition topicPartition,
                                                                  OffsetAndMetadata offsetAndMetadata) {
-        if ((!topicPartitionAndOffset.containsKey(topicPartition))
-                || (topicPartitionAndOffset.containsKey(topicPartition)
-                && topicPartitionAndOffset.get(topicPartition).offset() < offsetAndMetadata.offset())) {
-            return true;
-        }
-
-        return false;
+        return (!topicPartitionAndOffset.containsKey(topicPartition))
+               || (topicPartitionAndOffset.containsKey(topicPartition)
+                   && topicPartitionAndOffset.get(topicPartition).offset() < offsetAndMetadata.offset());
     }
 }
