@@ -37,7 +37,11 @@ public class FirehoseConsumer implements KafkaConsumer {
             if (!messages.isEmpty()) {
                 sink.pushMessage(messages);
             }
-            consumer.commit();
+            if (sink.canSyncCommit()) {
+                consumer.commit();
+            } else {
+                consumer.commit(sink.getCommittableOffset());
+            }
             instrumentation.logInfo("Execution successful for {} records", messages.size());
             tracer.finishTrace(spans);
         } finally {

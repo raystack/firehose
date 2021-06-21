@@ -1,4 +1,4 @@
-package io.odpf.firehose.consumer;
+package io.odpf.firehose.consumer.committer;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -14,7 +14,7 @@ import static io.odpf.firehose.metrics.Metrics.SUCCESS_TAG;
  * Commits offsets for consumer records.
  */
 @AllArgsConstructor
-public class TopicOffsets implements Offsets {
+public class AutoOffsetCommitter implements OffsetCommitter {
 
     private KafkaConsumer kafkaConsumer;
     private KafkaConsumerConfig kafkaConsumerConfig;

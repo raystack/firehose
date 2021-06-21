@@ -6,9 +6,9 @@ import java.util.Properties;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.consumer.GenericConsumer;
-import io.odpf.firehose.consumer.Offsets;
-import io.odpf.firehose.consumer.TopicOffsets;
-import io.odpf.firehose.consumer.TopicPartitionOffsets;
+import io.odpf.firehose.consumer.committer.OffsetCommitter;
+import io.odpf.firehose.consumer.committer.AutoOffsetCommitter;
+import io.odpf.firehose.consumer.committer.ManagedOffsetCommitter;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
@@ -38,15 +38,15 @@ public class GenericKafkaFactory {
 
         KafkaConsumer<byte[], byte[]> kafkaConsumer = new KafkaConsumer<>(FactoryUtil.getConfig(config, extraKafkaParameters));
         FactoryUtil.configureSubscription(config, kafkaConsumer, statsDReporter);
-        Offsets offsets = !config.isSourceKafkaCommitOnlyCurrentPartitionsEnable()
-                ? new TopicOffsets(kafkaConsumer, config, new Instrumentation(statsDReporter, TopicOffsets.class))
-                : new TopicPartitionOffsets(kafkaConsumer, config, new Instrumentation(statsDReporter, TopicPartitionOffsets.class));
+        OffsetCommitter offsetCommitter = !config.isSourceKafkaCommitOnlyCurrentPartitionsEnable()
+                ? new AutoOffsetCommitter(kafkaConsumer, config, new Instrumentation(statsDReporter, AutoOffsetCommitter.class))
+                : new ManagedOffsetCommitter(kafkaConsumer, config, new Instrumentation(statsDReporter, ManagedOffsetCommitter.class));
         TracingKafkaConsumer<byte[], byte[]> tracingKafkaConsumer = new TracingKafkaConsumer<>(kafkaConsumer, tracer);
         return new GenericConsumer(
             tracingKafkaConsumer,
             config,
             filter,
-            offsets,
+                offsetCommitter,
             new Instrumentation(statsDReporter, GenericConsumer.class));
     }
 
