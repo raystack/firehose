@@ -46,7 +46,7 @@ public class JdbcSinkTest {
 
     @Before
     public void setUp() throws SQLException {
-        when(jdbcConnectionPool.get()).thenReturn(connection);
+        when(jdbcConnectionPool.getConnection()).thenReturn(connection);
         when(connection.createStatement()).thenReturn(statement);
         jdbcSink = new JdbcSink(instrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient);
     }
@@ -70,7 +70,7 @@ public class JdbcSinkTest {
     }
 
     @Test
-    public void shouldCallStartExecutionBeforeCaptureSuccessAtempt() throws IOException, DeserializerException, SQLException {
+    public void shouldCallStartExecutionBeforeCaptureSuccessAttempt() throws IOException, DeserializerException, SQLException {
         List<Message> messages = Arrays.asList(new Message(new byte[0], new byte[0], "topic", 0, 100),
                 new Message(new byte[0], new byte[0], "topic", 0, 100));
         jdbcSink.pushMessage(messages);
@@ -123,6 +123,7 @@ public class JdbcSinkTest {
         JdbcSinkStub dbSinkStub = new JdbcSinkStub(instrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, Arrays.asList(sql));
 
         dbSinkStub.pushMessage(messages);
+
         verify(jdbcConnectionPool).release(connection);
     }
 
@@ -132,18 +133,20 @@ public class JdbcSinkTest {
                 new Message(new byte[0], new byte[0], "topic", 0, 100));
 
         jdbcSink.pushMessage(messages);
+
         verify(jdbcConnectionPool).release(connection);
     }
 
-    @Test(expected = NullPointerException.class)
-    public void shouldNotAttemptConnectionReleaseIfPoolReturnsNull() throws SQLException, IOException, DeserializerException {
-        when(jdbcConnectionPool.get()).thenReturn(null);
-        List<Message> messages = Arrays.asList(new Message(new byte[0], new byte[0], "topic", 0, 100),
-                new Message(new byte[0], new byte[0], "topic", 0, 100));
+    @Test
+    public void shouldNotReleaseConnectionWhenNull() throws Exception {
+        String sql = "select * from table";
+        JdbcSink sink = new JdbcSink(instrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, statement, null);
 
-        jdbcSink.pushMessage(messages);
-        verify(jdbcConnectionPool, never()).release(any());
+        sink.execute();
+
+        verify(jdbcConnectionPool, never()).release(connection);
     }
+
 
     @Test
     public void shouldCloseConnectionPool() throws IOException, InterruptedException {
@@ -209,6 +212,7 @@ public class JdbcSinkTest {
 
     public class JdbcSinkStub extends JdbcSink {
         private List<String> queries;
+
 
         public JdbcSinkStub(Instrumentation instrumentation, String sinkType, JdbcConnectionPool pool, QueryTemplate queryTemplate, StencilClient stencilClient, List<String> queries) {
             super(instrumentation, sinkType, pool, queryTemplate, stencilClient);
