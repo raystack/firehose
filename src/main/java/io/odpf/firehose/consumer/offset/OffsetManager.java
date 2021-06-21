@@ -29,10 +29,14 @@ public class OffsetManager {
         OffsetNode currentNode = new OffsetNode(
                 new TopicPartition(message.getTopic(), message.getPartition()),
                 new OffsetAndMetadata(message.getOffset() + 1));
-        batchOffsets.computeIfAbsent(batch, x -> new HashSet<>()).add(currentNode);
+        addOffsetToBatch(batch, currentNode);
+    }
+
+    public void addOffsetToBatch(Object batch, OffsetNode node) {
+        batchOffsets.computeIfAbsent(batch, x -> new HashSet<>()).add(node);
         sortedOffsets.computeIfAbsent(
-                currentNode.getTopicPartition(),
-                x -> new TreeSet<>(Comparator.comparingLong(node -> node.getOffsetAndMetadata().offset()))).add(currentNode);
+                node.getTopicPartition(),
+                x -> new TreeSet<>(Comparator.comparingLong(n -> n.getOffsetAndMetadata().offset()))).add(node);
     }
 
     public Set<OffsetNode> getOffsetsForBatch(Object key) {

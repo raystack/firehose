@@ -14,7 +14,6 @@ import org.apache.kafka.common.TopicPartition;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +29,6 @@ public class GenericConsumer {
     private final Filter filter;
     private final OffsetCommitter offsetCommitter;
     private final Instrumentation instrumentation;
-    private final Map<TopicPartition, OffsetAndMetadata> committedOffsets = new HashMap<>();
     private ConsumerRecords<byte[], byte[]> records;
 
     /**
@@ -96,13 +94,5 @@ public class GenericConsumer {
         } catch (Exception e) {
             instrumentation.captureNonFatalError(e, "Exception while closing consumer");
         }
-    }
-
-    public ConsumerRecords<byte[], byte[]> getRecords() {
-        return records;
-    }
-
-    public Filter getFilter() {
-        return filter;
     }
 }

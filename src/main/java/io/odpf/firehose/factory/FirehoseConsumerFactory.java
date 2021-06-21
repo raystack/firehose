@@ -17,7 +17,6 @@ import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
-import io.odpf.firehose.sink.bq.BQSinkFactory;
 import io.odpf.firehose.sink.objectstorage.ObjectStorageSinkFactory;
 import io.odpf.firehose.sink.jdbc.JdbcSinkFactory;
 import io.odpf.firehose.sink.elasticsearch.EsSinkFactory;
@@ -43,8 +42,6 @@ import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Factory for Firehose consumer.
@@ -58,7 +55,6 @@ public class FirehoseConsumerFactory {
     private StencilClient stencilClient;
     private Instrumentation instrumentation;
     private KeyOrMessageParser parser;
-    private ExecutorService executorService;
 
     /**
      * Instantiates a new Firehose consumer factory.
@@ -110,8 +106,7 @@ public class FirehoseConsumerFactory {
 
     private KafkaConsumer build(Sink retrySink, SinkTracer firehoseTracer, GenericConsumer genericConsumer) {
         if (kafkaConsumerConfig.getSourceKafkaConsumerMode().equals(KafkaConsumerMode.ASYNC)) {
-            executorService = Executors.newFixedThreadPool(kafkaConsumerConfig.getSourceKafkaConsumerThreads());
-            return new FirehoseAsyncConsumer(retrySink, genericConsumer, executorService);
+            return new FirehoseAsyncConsumer(retrySink, genericConsumer, kafkaConsumerConfig.getSourceKafkaConsumerThreads());
         }
         return new FirehoseConsumer(genericConsumer, retrySink, clockInstance, firehoseTracer, new Instrumentation(statsDReporter, FirehoseConsumer.class));
     }
@@ -143,7 +138,7 @@ public class FirehoseConsumerFactory {
             case OBJECTSTORAGE:
                 return new ObjectStorageSinkFactory().create(config, statsDReporter, stencilClient);
             case BQ:
-                return new BQSinkFactory().create(config, statsDReporter, stencilClient);
+//                return new BQSinkFactory().create(config, statsDReporter, stencilClient);
             default:
                 throw new EglcConfigurationException("Invalid Firehose SINK_TYPE");
 
