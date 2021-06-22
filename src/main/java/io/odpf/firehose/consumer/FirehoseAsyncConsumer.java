@@ -1,6 +1,5 @@
 package io.odpf.firehose.consumer;
 
-import io.odpf.firehose.consumer.offset.OffsetManager;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.sink.Sink;
 import org.apache.kafka.common.TopicPartition;
@@ -19,29 +18,24 @@ import java.util.concurrent.Future;
 
 public class FirehoseAsyncConsumer implements KafkaConsumer {
     private final Sink sink;
-    private final GenericConsumer consumer;
     private final ExecutorService executorService;
-    private final OffsetManager manager = new OffsetManager();
     private final Set<Future<?>> futures = new HashSet<>();
+    private final ConsumerOffsetManager consumerOffsetManager;
 
-    public FirehoseAsyncConsumer(Sink sink, GenericConsumer consumer, int sourceKafkaConsumerThreads) {
+    public FirehoseAsyncConsumer(Sink sink, int sourceKafkaConsumerThreads, ConsumerOffsetManager consumerOffsetManager) {
         this.sink = sink;
-        this.consumer = consumer;
         this.executorService = Executors.newFixedThreadPool(sourceKafkaConsumerThreads);
+        this.consumerOffsetManager = consumerOffsetManager;
     }
 
     @Override
     public void process() throws FilterException {
-        List<Message> messages = consumer.readMessages();
+        List<Message> messages = consumerOffsetManager.readMessagesFromKafka();
         if (!messages.isEmpty()) {
             pushMessages(messages);
         }
         checkFinishedSinkTasks();
-        if (sink.canSyncCommit()) {
-            consumer.commit(manager.getCommittableOffset());
-        } else {
-            consumer.commit(sink.getCommittableOffset());
-        }
+        consumerOffsetManager.commit();
     }
 
     private void checkFinishedSinkTasks() {
@@ -56,7 +50,7 @@ public class FirehoseAsyncConsumer implements KafkaConsumer {
             } catch (ExecutionException e) {
                 throw new AsyncConsumerFailedException(e.getCause());
             }
-            manager.commitBatch(f);
+            consumerOffsetManager.setCommittable(f);
             return true;
         });
     }
@@ -65,22 +59,16 @@ public class FirehoseAsyncConsumer implements KafkaConsumer {
         Map<TopicPartition, List<Message>> partitionedMessages = new HashMap<>();
         messages.forEach(m -> partitionedMessages.computeIfAbsent(
                 new TopicPartition(m.getTopic(), m.getPartition()), x -> new ArrayList<>()).add(m));
-        for (List<Message> messageList : partitionedMessages.values()) {
-            Future<List<Message>> future = executorService.submit(() -> {
-                synchronized (sink) {
-                    return sink.pushMessage(messageList);
-                }
-            });
+        for (List<Message> messagesPerPartition : partitionedMessages.values()) {
+            Future<List<Message>> future = executorService.submit(() -> sink.pushMessage(messagesPerPartition));
             futures.add(future);
-            manager.addOffsetToBatch(future, messageList.get(messageList.size() - 1));
+            consumerOffsetManager.addPartitionedOffsets(future, messagesPerPartition);
         }
     }
 
     @Override
     public void close() throws IOException {
-        if (consumer != null) {
-            consumer.close();
-        }
+        consumerOffsetManager.close();
         sink.close();
     }
 }

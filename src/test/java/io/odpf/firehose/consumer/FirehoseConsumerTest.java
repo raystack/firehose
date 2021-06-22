@@ -1,11 +1,13 @@
 package io.odpf.firehose.consumer;
 
+import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.tracer.SinkTracer;
 import io.odpf.firehose.util.Clock;
+import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,6 +41,7 @@ public class FirehoseConsumerTest {
     @Mock
     private SinkTracer tracer;
 
+
     private FirehoseConsumer firehoseConsumer;
     private List<Message> messages;
 
@@ -48,7 +51,9 @@ public class FirehoseConsumerTest {
         Message msg2 = new Message(new byte[]{}, new byte[]{}, "topic", 0, 100);
         messages = Arrays.asList(msg1, msg2);
 
-        firehoseConsumer = new FirehoseConsumer(genericConsumer, sink, clock, tracer, instrumentation);
+        KafkaConsumerConfig kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, System.getenv());
+        ConsumerOffsetManager consumerOffsetManager = new ConsumerOffsetManager(sink, genericConsumer, kafkaConsumerConfig, instrumentation);
+        firehoseConsumer = new FirehoseConsumer(sink, clock, tracer, consumerOffsetManager, instrumentation);
 
         when(genericConsumer.readMessages()).thenReturn(messages);
         when(clock.now()).thenReturn(Instant.now());
@@ -108,12 +113,13 @@ public class FirehoseConsumerTest {
 
     @Test
     public void shouldNotCloseConsumerIfConsumerIsNull() throws IOException {
-
-        firehoseConsumer = new FirehoseConsumer(null, sink, clock, tracer, instrumentation);
+        KafkaConsumerConfig kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, System.getenv());
+        ConsumerOffsetManager consumerOffsetManager = new ConsumerOffsetManager(sink, null, kafkaConsumerConfig, instrumentation);
+        firehoseConsumer = new FirehoseConsumer(sink, clock, tracer, consumerOffsetManager, instrumentation);
         firehoseConsumer.close();
 
         verify(instrumentation, times(0)).logInfo("closing consumer");
-        verify(tracer, times(0)).close();
+        verify(tracer, times(1)).close();
         verify(genericConsumer, times(0)).close();
 
         verify(sink, times(1)).close();

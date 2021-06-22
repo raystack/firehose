@@ -48,14 +48,14 @@ public class ObjectStorageSink extends AbstractSink {
     }
 
     @Override
-    public Map<TopicPartition, OffsetAndMetadata> getCommittableOffset() {
-        writerOrchestrator.getFlushedPaths().forEach(offsetManager::commitBatch);
+    public Map<TopicPartition, OffsetAndMetadata> getCommittableOffsets() {
+        writerOrchestrator.getFlushedPaths().forEach(offsetManager::setCommittable);
         return offsetManager.getCommittableOffset();
     }
 
     @Override
-    public boolean canSyncCommit() {
-        return false;
+    public boolean canManageOffsets() {
+        return true;
     }
 
 }

@@ -21,27 +21,23 @@ import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_PARTITIONS_PROCESS_T
 @AllArgsConstructor
 public class FirehoseConsumer implements KafkaConsumer {
 
-    private final GenericConsumer consumer;
     private final Sink sink;
     private final Clock clock;
     private final SinkTracer tracer;
+    private final ConsumerOffsetManager consumerOffsetManager;
     private final Instrumentation instrumentation;
 
     @Override
     public void process() throws IOException, DeserializerException, FilterException {
         Instant beforeCall = clock.now();
         try {
-            List<Message> messages = consumer.readMessages();
+            List<Message> messages = consumerOffsetManager.readMessagesFromKafka();
             List<Span> spans = tracer.startTrace(messages);
-
             if (!messages.isEmpty()) {
                 sink.pushMessage(messages);
+                consumerOffsetManager.addOffsets(messages);
             }
-            if (sink.canSyncCommit()) {
-                consumer.commit();
-            } else {
-                consumer.commit(sink.getCommittableOffset());
-            }
+            consumerOffsetManager.commit();
             instrumentation.logInfo("Execution successful for {} records", messages.size());
             tracer.finishTrace(spans);
         } finally {
@@ -51,12 +47,9 @@ public class FirehoseConsumer implements KafkaConsumer {
 
     @Override
     public void close() throws IOException {
-        if (consumer != null) {
-            instrumentation.logInfo("closing consumer");
-            tracer.close();
-            consumer.close();
-        }
-        sink.close();
+        tracer.close();
+        consumerOffsetManager.close();
         instrumentation.close();
+        sink.close();
     }
 }
