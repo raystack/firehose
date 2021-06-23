@@ -24,7 +24,7 @@ import java.util.List;
  *    consumerOffsetManager.setCommittable(key);
  *    consumerOffsetManager.commit();
  *
- * consumerOffsetManager.commit() It commits offsets returned from sink if the sink can manages its own offsets
+ * consumerOffsetManager.commit() commits offsets returned from sink if the sink can manages its own offsets
  *  otherwise it commits offsets added to this class.
  */
 @AllArgsConstructor

@@ -8,11 +8,11 @@ import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.config.enums.KafkaConsumerMode;
+import io.odpf.firehose.consumer.ConsumerOffsetManager;
 import io.odpf.firehose.consumer.FirehoseAsyncConsumer;
 import io.odpf.firehose.consumer.FirehoseConsumer;
 import io.odpf.firehose.consumer.GenericConsumer;
 import io.odpf.firehose.consumer.KafkaConsumer;
-import io.odpf.firehose.consumer.ConsumerOffsetManager;
 import io.odpf.firehose.exception.EglcConfigurationException;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.MessageFilter;
@@ -43,6 +43,7 @@ import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 /**
  * Factory for Firehose consumer.
@@ -108,7 +109,7 @@ public class FirehoseConsumerFactory {
     private KafkaConsumer build(Sink retrySink, SinkTracer firehoseTracer, GenericConsumer genericConsumer) {
         ConsumerOffsetManager consumerOffsetManager = new ConsumerOffsetManager(retrySink, genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerOffsetManager.class));
         if (kafkaConsumerConfig.getSourceKafkaConsumerMode().equals(KafkaConsumerMode.ASYNC)) {
-            return new FirehoseAsyncConsumer(retrySink, kafkaConsumerConfig.getSourceKafkaConsumerThreads(), consumerOffsetManager);
+            return new FirehoseAsyncConsumer(retrySink, Executors.newFixedThreadPool(kafkaConsumerConfig.getSourceKafkaConsumerThreads()), consumerOffsetManager);
         }
         return new FirehoseConsumer(retrySink, clockInstance, firehoseTracer, consumerOffsetManager, new Instrumentation(statsDReporter, FirehoseConsumer.class));
     }
