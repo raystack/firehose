@@ -2,6 +2,7 @@ package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.sink.Sink;
+import lombok.Getter;
 import org.apache.kafka.common.TopicPartition;
 
 import java.io.IOException;
@@ -19,6 +20,7 @@ import java.util.concurrent.Future;
 public class FirehoseAsyncConsumer implements KafkaConsumer {
     private final Sink sink;
     private final ExecutorService executorService;
+    @Getter
     private final Set<Future<?>> futures = new HashSet<>();
     private final ConsumerOffsetManager consumerOffsetManager;
 

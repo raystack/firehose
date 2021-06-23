@@ -10,6 +10,23 @@ import lombok.AllArgsConstructor;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * This class have APIs to read from kafka and also provide offset management.
+ * There are 2 use cases for this class.
+ * 1. FirehoseConsumer:
+ *    consumerOffsetManager.readMessagesFromKafka(); // Read messages from kafka.
+ *    consumerOffsetManager.addOffsetsAndSetCommittable(messages); // add offsets for messages.
+ *    consumerOffsetManager.commit(); // commit all committable offsets for all partitions.
+ *
+ * 2. FirehoseAsyncConsumer:
+ *    consumerOffsetManager.readMessagesFromKafka();
+ *    consumerOffsetManager.addOffsets(key, messages); or consumerOffsetManager.addPartitionedOffsets(key, messages)
+ *    consumerOffsetManager.setCommittable(key);
+ *    consumerOffsetManager.commit();
+ *
+ * consumerOffsetManager.commit() It commits offsets returned from sink if the sink can manages its own offsets
+ *  otherwise it commits offsets added to this class.
+ */
 @AllArgsConstructor
 public class ConsumerOffsetManager implements AutoCloseable {
     private static final String SYNC_BATCH_KEY = "sync_batch_key";
@@ -28,7 +45,7 @@ public class ConsumerOffsetManager implements AutoCloseable {
     }
 
 
-    public void addOffsets(List<Message> messages) {
+    public void addOffsetsAndSetCommittable(List<Message> messages) {
         if (!sink.canManageOffsets()) {
             addOffsets(SYNC_BATCH_KEY, messages);
             setCommittable(SYNC_BATCH_KEY);

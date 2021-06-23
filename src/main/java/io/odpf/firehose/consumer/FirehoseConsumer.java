@@ -35,7 +35,7 @@ public class FirehoseConsumer implements KafkaConsumer {
             List<Span> spans = tracer.startTrace(messages);
             if (!messages.isEmpty()) {
                 sink.pushMessage(messages);
-                consumerOffsetManager.addOffsets(messages);
+                consumerOffsetManager.addOffsetsAndSetCommittable(messages);
             }
             consumerOffsetManager.commit();
             instrumentation.logInfo("Execution successful for {} records", messages.size());
