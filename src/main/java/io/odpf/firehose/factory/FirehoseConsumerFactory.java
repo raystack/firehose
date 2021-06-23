@@ -151,8 +151,6 @@ public class FirehoseConsumerFactory {
                 return new PromSinkFactory().create(config, statsDReporter, stencilClient);
             case OBJECTSTORAGE:
                 return new ObjectStorageSinkFactory().create(config, statsDReporter, stencilClient);
-            case BQ:
-//                return new BQSinkFactory().create(config, statsDReporter, stencilClient);
             default:
                 throw new EglcConfigurationException("Invalid Firehose SINK_TYPE");
 

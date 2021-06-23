@@ -11,5 +11,4 @@ public enum SinkType {
     GRPC,
     PROMETHEUS,
     OBJECTSTORAGE,
-    BQ
 }
