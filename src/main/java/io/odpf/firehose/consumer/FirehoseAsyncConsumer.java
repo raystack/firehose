@@ -56,6 +56,7 @@ public class FirehoseAsyncConsumer implements KafkaConsumer {
             }
             try {
                 f.get();
+                instrumentation.logInfo("Finishing Sink task");
             } catch (InterruptedException e) {
                 throw new AsyncConsumerFailedException(e);
             } catch (ExecutionException e) {
@@ -79,6 +80,7 @@ public class FirehoseAsyncConsumer implements KafkaConsumer {
 
     @Override
     public void close() throws IOException {
+        executorService.shutdown();
         consumerOffsetManager.close();
         sink.close();
         tracer.close();

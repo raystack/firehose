@@ -14,18 +14,18 @@ import java.util.List;
  * This class have APIs to read from kafka and also provide offset management.
  * There are 2 use cases for this class.
  * 1. FirehoseConsumer:
- *    consumerOffsetManager.readMessagesFromKafka(); // Read messages from kafka.
- *    consumerOffsetManager.addOffsetsAndSetCommittable(messages); // add offsets for messages.
- *    consumerOffsetManager.commit(); // commit all committable offsets for all partitions.
- *
+ * consumerOffsetManager.readMessagesFromKafka(); // Read messages from kafka.
+ * consumerOffsetManager.addOffsetsAndSetCommittable(messages); // add offsets for messages.
+ * consumerOffsetManager.commit(); // commit all committable offsets for all partitions.
+ * <p>
  * 2. FirehoseAsyncConsumer:
- *    consumerOffsetManager.readMessagesFromKafka();
- *    consumerOffsetManager.addOffsets(key, messages); or consumerOffsetManager.addPartitionedOffsets(key, messages)
- *    consumerOffsetManager.setCommittable(key);
- *    consumerOffsetManager.commit();
- *
+ * consumerOffsetManager.readMessagesFromKafka();
+ * consumerOffsetManager.addOffsets(key, messages); or consumerOffsetManager.addPartitionedOffsets(key, messages)
+ * consumerOffsetManager.setCommittable(key);
+ * consumerOffsetManager.commit();
+ * <p>
  * consumerOffsetManager.commit() commits offsets returned from sink if the sink can manages its own offsets
- *  otherwise it commits offsets added to this class.
+ * otherwise it commits offsets added to this class.
  */
 @AllArgsConstructor
 public class ConsumerOffsetManager implements AutoCloseable {
