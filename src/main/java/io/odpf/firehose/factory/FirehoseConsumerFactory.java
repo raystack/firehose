@@ -109,9 +109,20 @@ public class FirehoseConsumerFactory {
     private KafkaConsumer build(Sink retrySink, SinkTracer firehoseTracer, GenericConsumer genericConsumer) {
         ConsumerOffsetManager consumerOffsetManager = new ConsumerOffsetManager(retrySink, genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerOffsetManager.class));
         if (kafkaConsumerConfig.getSourceKafkaConsumerMode().equals(KafkaConsumerMode.ASYNC)) {
-            return new FirehoseAsyncConsumer(retrySink, Executors.newFixedThreadPool(kafkaConsumerConfig.getSourceKafkaConsumerThreads()), consumerOffsetManager);
+            return new FirehoseAsyncConsumer(
+                    retrySink,
+                    clockInstance,
+                    firehoseTracer,
+                    consumerOffsetManager,
+                    new Instrumentation(statsDReporter, FirehoseAsyncConsumer.class),
+                    Executors.newFixedThreadPool(kafkaConsumerConfig.getSourceKafkaConsumerThreads()));
         }
-        return new FirehoseConsumer(retrySink, clockInstance, firehoseTracer, consumerOffsetManager, new Instrumentation(statsDReporter, FirehoseConsumer.class));
+        return new FirehoseConsumer(
+                retrySink,
+                clockInstance,
+                firehoseTracer,
+                consumerOffsetManager,
+                new Instrumentation(statsDReporter, FirehoseConsumer.class));
     }
 
     /**

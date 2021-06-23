@@ -1,7 +1,10 @@
 package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.filter.FilterException;
+import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.Sink;
+import io.odpf.firehose.tracer.SinkTracer;
+import io.odpf.firehose.util.Clock;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -21,6 +24,12 @@ public class FirehoseAsyncConsumerTest {
     @Mock
     private Sink sink;
     @Mock
+    private Clock clock;
+    @Mock
+    private SinkTracer tracer;
+    @Mock
+    private Instrumentation instrumentation;
+    @Mock
     private Future<List<Message>> future1;
     @Mock
     private Future<List<Message>> future2;
@@ -31,7 +40,7 @@ public class FirehoseAsyncConsumerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        this.asyncConsumer = new FirehoseAsyncConsumer(sink, executorService, consumerOffsetManager);
+        this.asyncConsumer = new FirehoseAsyncConsumer(sink, clock, tracer, consumerOffsetManager, instrumentation, executorService);
     }
 
     @Test

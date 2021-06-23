@@ -1,12 +1,16 @@
 package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.filter.FilterException;
+import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.Sink;
+import io.odpf.firehose.tracer.SinkTracer;
+import io.odpf.firehose.util.Clock;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import org.apache.kafka.common.TopicPartition;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,21 +22,31 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS;
+
 @AllArgsConstructor
 public class FirehoseAsyncConsumer implements KafkaConsumer {
     private final Sink sink;
+    private final Clock clock;
+    private final SinkTracer tracer;
+    private final ConsumerOffsetManager consumerOffsetManager;
+    private final Instrumentation instrumentation;
     private final ExecutorService executorService;
     private final Set<Future<?>> futures = new HashSet<>();
-    private final ConsumerOffsetManager consumerOffsetManager;
 
     @Override
     public void process() throws FilterException {
-        List<Message> messages = consumerOffsetManager.readMessagesFromKafka();
-        if (!messages.isEmpty()) {
-            pushMessages(messages);
+        Instant beforeCall = clock.now();
+        try {
+            List<Message> messages = consumerOffsetManager.readMessagesFromKafka();
+            if (!messages.isEmpty()) {
+                pushMessages(messages);
+            }
+            checkFinishedSinkTasks();
+            consumerOffsetManager.commit();
+        } finally {
+            instrumentation.captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS, beforeCall);
         }
-        checkFinishedSinkTasks();
-        consumerOffsetManager.commit();
     }
 
     private void checkFinishedSinkTasks() {
@@ -67,6 +81,8 @@ public class FirehoseAsyncConsumer implements KafkaConsumer {
     public void close() throws IOException {
         consumerOffsetManager.close();
         sink.close();
+        tracer.close();
+        instrumentation.close();
     }
 
     @AllArgsConstructor
