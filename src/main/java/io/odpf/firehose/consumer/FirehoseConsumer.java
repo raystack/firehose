@@ -24,20 +24,20 @@ public class FirehoseConsumer implements KafkaConsumer {
     private final Sink sink;
     private final Clock clock;
     private final SinkTracer tracer;
-    private final ConsumerOffsetManager consumerOffsetManager;
+    private final ConsumerAndOffsetManager consumerAndOffsetManager;
     private final Instrumentation instrumentation;
 
     @Override
     public void process() throws IOException, DeserializerException, FilterException {
         Instant beforeCall = clock.now();
         try {
-            List<Message> messages = consumerOffsetManager.readMessagesFromKafka();
+            List<Message> messages = consumerAndOffsetManager.readMessagesFromKafka();
             List<Span> spans = tracer.startTrace(messages);
             if (!messages.isEmpty()) {
                 sink.pushMessage(messages);
-                consumerOffsetManager.addOffsetsAndSetCommittable(messages);
+                consumerAndOffsetManager.addOffsetsAndSetCommittable(messages);
             }
-            consumerOffsetManager.commit();
+            consumerAndOffsetManager.commit();
             instrumentation.logInfo("Execution successful for {} records", messages.size());
             tracer.finishTrace(spans);
         } finally {
@@ -48,7 +48,7 @@ public class FirehoseConsumer implements KafkaConsumer {
     @Override
     public void close() throws IOException {
         tracer.close();
-        consumerOffsetManager.close();
+        consumerAndOffsetManager.close();
         instrumentation.close();
         sink.close();
     }

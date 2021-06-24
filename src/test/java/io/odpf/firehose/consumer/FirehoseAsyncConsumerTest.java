@@ -34,71 +34,61 @@ public class FirehoseAsyncConsumerTest {
     @Mock
     private Future<List<Message>> future2;
     @Mock
-    private ConsumerOffsetManager consumerOffsetManager;
+    private ConsumerAndOffsetManager consumerAndOffsetManager;
     private FirehoseAsyncConsumer asyncConsumer;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        this.asyncConsumer = new FirehoseAsyncConsumer(sink, clock, tracer, consumerOffsetManager, instrumentation, executorService);
+        this.asyncConsumer = new FirehoseAsyncConsumer(sink, clock, tracer, consumerAndOffsetManager, instrumentation, executorService);
     }
 
     @Test
-    public void shouldPushMessagesInParallelForEachPartition() throws FilterException, IOException {
-        Mockito.when(consumerOffsetManager.readMessagesFromKafka()).thenReturn(new ArrayList<Message>() {{
+    public void shouldPushMessagesInParallel() throws FilterException, IOException {
+        List<Message> messageList1 = new ArrayList<Message>() {{
             add(new Message(new byte[0], new byte[0], "topic1", 1, 10));
-            add(new Message(new byte[0], new byte[0], "topic1", 1, 11));
-            add(new Message(new byte[0], new byte[0], "topic1", 1, 12));
-
-            add(new Message(new byte[0], new byte[0], "topic1", 2, 5));
-            add(new Message(new byte[0], new byte[0], "topic1", 2, 6));
-        }});
-
-        List<Message> messagesFromPartition1 = new ArrayList<Message>() {{
-            add(new Message(new byte[0], new byte[0], "topic1", 1, 10));
-            add(new Message(new byte[0], new byte[0], "topic1", 1, 11));
-            add(new Message(new byte[0], new byte[0], "topic1", 1, 12));
+            add(new Message(new byte[0], new byte[0], "topic1", 2, 11));
+            add(new Message(new byte[0], new byte[0], "topic1", 3, 12));
         }};
-        List<Message> messagesFromPartition2 = new ArrayList<Message>() {{
+
+        List<Message> messageList2 = new ArrayList<Message>() {{
             add(new Message(new byte[0], new byte[0], "topic1", 2, 5));
             add(new Message(new byte[0], new byte[0], "topic1", 2, 6));
         }};
 
-        Mockito.when(sink.pushMessage(messagesFromPartition1)).thenReturn(new ArrayList<>());
-        Mockito.when(sink.pushMessage(messagesFromPartition2)).thenReturn(new ArrayList<>());
+        Mockito.when(consumerAndOffsetManager.readMessagesFromKafka()).thenReturn(messageList1);
+        Mockito.when(sink.pushMessage(messageList1)).thenReturn(new ArrayList<>());
+        Mockito.when(executorService.submit(new FirehoseAsyncConsumer.SinkTask(sink, messageList1))).thenReturn(future1);
+        Mockito.when(executorService.submit(new FirehoseAsyncConsumer.SinkTask(sink, messageList2))).thenReturn(future2);
 
-        Mockito.when(executorService.submit(new FirehoseAsyncConsumer.SinkTask(sink, messagesFromPartition1))).thenReturn(future1);
-        Mockito.when(executorService.submit(new FirehoseAsyncConsumer.SinkTask(sink, messagesFromPartition2))).thenReturn(future2);
         Mockito.when(future1.isDone()).thenReturn(false);
         Mockito.when(future2.isDone()).thenReturn(false);
         asyncConsumer.process();
 
-        Mockito.verify(consumerOffsetManager, Mockito.times(1)).addPartitionedOffsets(future1, messagesFromPartition1);
-        Mockito.verify(consumerOffsetManager, Mockito.times(1)).addPartitionedOffsets(future2, messagesFromPartition2);
-        Mockito.verify(consumerOffsetManager, Mockito.times(0)).setCommittable(Mockito.any());
+        Mockito.when(consumerAndOffsetManager.readMessagesFromKafka()).thenReturn(messageList2);
+        Mockito.when(sink.pushMessage(messageList2)).thenReturn(new ArrayList<>());
+        asyncConsumer.process();
+        Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).addOffsets(future1, messageList1);
+        Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).addOffsets(future2, messageList2);
+        Mockito.verify(consumerAndOffsetManager, Mockito.times(0)).setCommittable(Mockito.any());
     }
 
     @Test
     public void shouldCallSetCommittableForDoneFutures() throws FilterException, IOException {
-        Mockito.when(consumerOffsetManager.readMessagesFromKafka()).thenReturn(new ArrayList<Message>() {{
-            add(new Message(new byte[0], new byte[0], "topic1", 1, 10));
-            add(new Message(new byte[0], new byte[0], "topic1", 1, 11));
-            add(new Message(new byte[0], new byte[0], "topic1", 1, 12));
-        }});
-
-        List<Message> messagesFromPartition1 = new ArrayList<Message>() {{
+        List<Message> messages = new ArrayList<Message>() {{
             add(new Message(new byte[0], new byte[0], "topic1", 1, 10));
             add(new Message(new byte[0], new byte[0], "topic1", 1, 11));
             add(new Message(new byte[0], new byte[0], "topic1", 1, 12));
         }};
+        Mockito.when(consumerAndOffsetManager.readMessagesFromKafka()).thenReturn(messages);
 
-        Mockito.when(sink.pushMessage(messagesFromPartition1)).thenReturn(new ArrayList<>());
+        Mockito.when(sink.pushMessage(messages)).thenReturn(new ArrayList<>());
 
-        Mockito.when(executorService.submit(new FirehoseAsyncConsumer.SinkTask(sink, messagesFromPartition1))).thenReturn(future1);
+        Mockito.when(executorService.submit(new FirehoseAsyncConsumer.SinkTask(sink, messages))).thenReturn(future1);
         Mockito.when(future1.isDone()).thenReturn(true);
         asyncConsumer.process();
 
-        Mockito.verify(consumerOffsetManager, Mockito.times(1)).addPartitionedOffsets(future1, messagesFromPartition1);
-        Mockito.verify(consumerOffsetManager, Mockito.times(1)).setCommittable(future1);
+        Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).addOffsets(future1, messages);
+        Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).setCommittable(future1);
     }
 }

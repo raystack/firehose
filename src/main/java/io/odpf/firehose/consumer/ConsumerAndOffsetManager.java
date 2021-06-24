@@ -28,17 +28,13 @@ import java.util.List;
  * otherwise it commits offsets added to this class.
  */
 @AllArgsConstructor
-public class ConsumerOffsetManager implements AutoCloseable {
+public class ConsumerAndOffsetManager implements AutoCloseable {
     private static final String SYNC_BATCH_KEY = "sync_batch_key";
     private final OffsetManager manager = new OffsetManager();
     private final Sink sink;
     private final GenericConsumer consumer;
     private final KafkaConsumerConfig consumerConfig;
     private final Instrumentation instrumentation;
-
-    public void addPartitionedOffsets(Object key, List<Message> messages) {
-        manager.addOffsetToBatchForLastMessage(key, messages);
-    }
 
     public void addOffsets(Object key, List<Message> messages) {
         manager.addOffsetToBatch(key, messages);

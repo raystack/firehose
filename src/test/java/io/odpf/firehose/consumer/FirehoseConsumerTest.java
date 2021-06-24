@@ -52,8 +52,8 @@ public class FirehoseConsumerTest {
         messages = Arrays.asList(msg1, msg2);
 
         KafkaConsumerConfig kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, System.getenv());
-        ConsumerOffsetManager consumerOffsetManager = new ConsumerOffsetManager(sink, genericConsumer, kafkaConsumerConfig, instrumentation);
-        firehoseConsumer = new FirehoseConsumer(sink, clock, tracer, consumerOffsetManager, instrumentation);
+        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sink, genericConsumer, kafkaConsumerConfig, instrumentation);
+        firehoseConsumer = new FirehoseConsumer(sink, clock, tracer, consumerAndOffsetManager, instrumentation);
 
         when(genericConsumer.readMessages()).thenReturn(messages);
         when(clock.now()).thenReturn(Instant.now());
@@ -114,8 +114,8 @@ public class FirehoseConsumerTest {
     @Test
     public void shouldNotCloseConsumerIfConsumerIsNull() throws IOException {
         KafkaConsumerConfig kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, System.getenv());
-        ConsumerOffsetManager consumerOffsetManager = new ConsumerOffsetManager(sink, null, kafkaConsumerConfig, instrumentation);
-        firehoseConsumer = new FirehoseConsumer(sink, clock, tracer, consumerOffsetManager, instrumentation);
+        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sink, null, kafkaConsumerConfig, instrumentation);
+        firehoseConsumer = new FirehoseConsumer(sink, clock, tracer, consumerAndOffsetManager, instrumentation);
         firehoseConsumer.close();
 
         verify(instrumentation, times(0)).logInfo("closing consumer");

@@ -8,7 +8,7 @@ import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.config.enums.KafkaConsumerMode;
-import io.odpf.firehose.consumer.ConsumerOffsetManager;
+import io.odpf.firehose.consumer.ConsumerAndOffsetManager;
 import io.odpf.firehose.consumer.FirehoseAsyncConsumer;
 import io.odpf.firehose.consumer.FirehoseConsumer;
 import io.odpf.firehose.consumer.GenericConsumer;
@@ -43,7 +43,9 @@ import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 
 import java.util.Map;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Factory for Firehose consumer.
@@ -107,21 +109,24 @@ public class FirehoseConsumerFactory {
     }
 
     private KafkaConsumer build(Sink retrySink, SinkTracer firehoseTracer, GenericConsumer genericConsumer) {
-        ConsumerOffsetManager consumerOffsetManager = new ConsumerOffsetManager(retrySink, genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerOffsetManager.class));
+        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(retrySink, genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
         if (kafkaConsumerConfig.getSourceKafkaConsumerMode().equals(KafkaConsumerMode.ASYNC)) {
+            int nThreads = kafkaConsumerConfig.getSourceKafkaConsumerThreads();
             return new FirehoseAsyncConsumer(
                     retrySink,
                     clockInstance,
                     firehoseTracer,
-                    consumerOffsetManager,
+                    consumerAndOffsetManager,
                     new Instrumentation(statsDReporter, FirehoseAsyncConsumer.class),
-                    Executors.newFixedThreadPool(kafkaConsumerConfig.getSourceKafkaConsumerThreads()));
+                    new ThreadPoolExecutor(nThreads, nThreads,
+                            0L, TimeUnit.MILLISECONDS,
+                            new LinkedBlockingQueue<>(nThreads * 2)));
         }
         return new FirehoseConsumer(
                 retrySink,
                 clockInstance,
                 firehoseTracer,
-                consumerOffsetManager,
+                consumerAndOffsetManager,
                 new Instrumentation(statsDReporter, FirehoseConsumer.class));
     }
 

@@ -37,10 +37,6 @@ public class OffsetManager {
         messageList.forEach(m -> addOffsetToBatch(batch, m));
     }
 
-    public void addOffsetToBatchForLastMessage(Object batch, List<Message> messageList) {
-        addOffsetToBatch(batch, messageList.get(messageList.size() - 1));
-    }
-
     public void addOffsetToBatch(Object batch, OffsetNode node) {
         batchOffsets.computeIfAbsent(batch, x -> new HashSet<>()).add(node);
         sortedOffsets.computeIfAbsent(
