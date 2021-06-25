@@ -1,10 +1,13 @@
 package io.odpf.firehose.sink.objectstorage;
 
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.consumer.offset.OffsetManager;
+import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
 import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.writer.WriterOrchestrator;
+import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.junit.Before;
@@ -33,16 +36,21 @@ public class ObjectStorageSinkTest {
 
     @Mock
     private WriterOrchestrator writerOrchestrator;
-    private ObjectStorageSink objectStorageSink;
+
     @Mock
     private Instrumentation instrumentation;
 
     @Mock
     private MessageDeSerializer messageDeSerializer;
 
+    @Mock
+    private DlqWriter dlqWriter;
+
+    private ObjectStorageSink objectStorageSink;
+
     @Before
     public void setUp() throws Exception {
-        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer);
+        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer, dlqWriter);
     }
 
     @Test
@@ -100,5 +108,35 @@ public class ObjectStorageSinkTest {
         Map<TopicPartition, OffsetAndMetadata> committableOffsets = objectStorageSink.getCommittableOffset();
         assertEquals(1, committableOffsets.size());
         assertEquals(new OffsetAndMetadata(3), committableOffsets.get(new TopicPartition("booking", 1)));
+    }
+
+    @Test
+    public void shouldHandleInvalidMessageToDLQ() throws Exception {
+        OffsetManager offsetManager = mock(OffsetManager.class);
+        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer, offsetManager, dlqWriter);
+
+        Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
+        Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 1, 2);
+        Message message3 = new Message("".getBytes(), "".getBytes(), "booking", 1, 3);
+        Message message4 = new Message("".getBytes(), "".getBytes(), "booking", 1, 4);
+        Record record1 = mock(Record.class);
+        Record record2 = mock(Record.class);
+        String path1 = "/tmp/test1";
+        String path2 = "/tmp/test2";
+
+        when(messageDeSerializer.deSerialize(message1)).thenReturn(record1);
+        when(messageDeSerializer.deSerialize(message2)).thenReturn(record2);
+        when(messageDeSerializer.deSerialize(message3)).thenThrow(new DeserializerException(""));
+        when(messageDeSerializer.deSerialize(message4)).thenThrow(new DeserializerException(""));
+        when(writerOrchestrator.write(record1)).thenReturn(path1);
+        when(writerOrchestrator.write(record2)).thenReturn(path2);
+
+        List<Message> retryMessages = objectStorageSink.pushMessage(Arrays.asList(message1, message2, message3, message4));
+
+        verify(offsetManager).addOffsetToBatch(ObjectStorageSink.DLQ_BATCH_KEY, message3);
+        verify(offsetManager).addOffsetToBatch(ObjectStorageSink.DLQ_BATCH_KEY, message4);
+        verify(offsetManager).commitBatch(ObjectStorageSink.DLQ_BATCH_KEY);
+        verify(writerOrchestrator, times(2)).write(any(Record.class));
+        assertEquals(0, retryMessages.size());
     }
 }

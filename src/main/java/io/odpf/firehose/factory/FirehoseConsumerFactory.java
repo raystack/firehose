@@ -3,40 +3,41 @@ package io.odpf.firehose.factory;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
+import io.jaegertracing.Configuration;
 import io.odpf.firehose.config.AppConfig;
-import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.config.DlqConfig;
-import io.odpf.firehose.consumer.GenericConsumer;
+import io.odpf.firehose.config.KafkaConsumerConfig;
+import io.odpf.firehose.config.enums.SinkType;
 import io.odpf.firehose.consumer.FirehoseConsumer;
+import io.odpf.firehose.consumer.GenericConsumer;
 import io.odpf.firehose.exception.EglcConfigurationException;
-import io.odpf.firehose.filter.MessageFilter;
 import io.odpf.firehose.filter.Filter;
+import io.odpf.firehose.filter.MessageFilter;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
-import io.odpf.firehose.sink.objectstorage.ObjectStorageSinkFactory;
-import io.odpf.firehose.sink.jdbc.JdbcSinkFactory;
 import io.odpf.firehose.sink.elasticsearch.EsSinkFactory;
 import io.odpf.firehose.sink.grpc.GrpcSinkFactory;
 import io.odpf.firehose.sink.http.HttpSinkFactory;
 import io.odpf.firehose.sink.influxdb.InfluxSinkFactory;
+import io.odpf.firehose.sink.jdbc.JdbcSinkFactory;
 import io.odpf.firehose.sink.log.KeyOrMessageParser;
 import io.odpf.firehose.sink.log.LogSinkFactory;
+import io.odpf.firehose.sink.objectstorage.ObjectStorageSinkFactory;
 import io.odpf.firehose.sink.prometheus.PromSinkFactory;
 import io.odpf.firehose.sink.redis.RedisSinkFactory;
 import io.odpf.firehose.sinkdecorator.BackOff;
 import io.odpf.firehose.sinkdecorator.BackOffProvider;
 import io.odpf.firehose.sinkdecorator.ExponentialBackOffProvider;
-import io.odpf.firehose.sinkdecorator.SinkWithRetry;
 import io.odpf.firehose.sinkdecorator.SinkWithDlq;
+import io.odpf.firehose.sinkdecorator.SinkWithRetry;
+import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
+import io.odpf.firehose.sinkdecorator.dlq.DlqWriterFactory;
 import io.odpf.firehose.tracer.SinkTracer;
 import io.odpf.firehose.util.Clock;
-import io.jaegertracing.Configuration;
 import io.opentracing.Tracer;
-import io.opentracing.contrib.kafka.TracingKafkaProducer;
 import io.opentracing.noop.NoopTracerFactory;
 import org.aeonbits.owner.ConfigFactory;
-import org.apache.kafka.clients.producer.KafkaProducer;
 
 import java.util.Map;
 
@@ -95,7 +96,7 @@ public class FirehoseConsumerFactory {
         }
         GenericConsumer consumer = genericKafkaFactory.createConsumer(kafkaConsumerConfig, config,
                 statsDReporter, filter, tracer);
-        Sink retrySink = withRetry(getSink(), genericKafkaFactory, tracer);
+        Sink retrySink = withRetry(getSink(tracer), genericKafkaFactory, tracer);
         SinkTracer firehoseTracer = new SinkTracer(tracer, kafkaConsumerConfig.getSinkType().name() + " SINK",
                 kafkaConsumerConfig.isTraceJaegarEnable());
         return new FirehoseConsumer(consumer, retrySink, clockInstance, firehoseTracer, new Instrumentation(statsDReporter, FirehoseConsumer.class));
@@ -106,7 +107,7 @@ public class FirehoseConsumerFactory {
      *
      * @return Sink
      */
-    private Sink getSink() {
+    private Sink getSink(Tracer tracer) {
         instrumentation.logInfo("Sink Type: {}", kafkaConsumerConfig.getSinkType().toString());
         switch (kafkaConsumerConfig.getSinkType()) {
             case JDBC:
@@ -126,7 +127,7 @@ public class FirehoseConsumerFactory {
             case PROMETHEUS:
                 return new PromSinkFactory().create(config, statsDReporter, stencilClient);
             case OBJECTSTORAGE:
-                return new ObjectStorageSinkFactory().create(config, statsDReporter, stencilClient);
+                return new ObjectStorageSinkFactory(tracer).create(config, statsDReporter, stencilClient);
             default:
                 throw new EglcConfigurationException("Invalid Firehose SINK_TYPE");
 
@@ -150,18 +151,17 @@ public class FirehoseConsumerFactory {
                 new Instrumentation(statsDReporter, ExponentialBackOffProvider.class),
                 new BackOff(new Instrumentation(statsDReporter, BackOff.class)));
 
-        if (appConfig.isDlqEnable()) {
+        if (!appConfig.isDlqEnable() || appConfig.getSinkType() == SinkType.OBJECTSTORAGE) {
+            return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), parser);
+        } else {
             DlqConfig dlqConfig = ConfigFactory.create(DlqConfig.class, config);
 
-            KafkaProducer<byte[], byte[]> kafkaProducer = genericKafkaFactory.getKafkaProducer(dlqConfig);
-            TracingKafkaProducer<byte[], byte[]> tracingProducer = new TracingKafkaProducer<>(kafkaProducer, tracer);
-
+            DlqWriterFactory dlqWriterFactory = new DlqWriterFactory();
+            DlqWriter dlqWriter = dlqWriterFactory.create(config, statsDReporter, tracer);
             return SinkWithDlq.withInstrumentationFactory(
                     new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class),
                             dlqConfig.getDlqAttemptsToTrigger(), parser),
-                    tracingProducer, dlqConfig.getDlqKafkaTopic(), statsDReporter, backOffProvider);
-        } else {
-            return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), parser);
+                    dlqWriter, statsDReporter);
         }
     }
 }

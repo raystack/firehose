@@ -1,5 +1,8 @@
 package io.odpf.firehose.config;
 
+import io.odpf.firehose.config.converter.DlqWriterTypeConverter;
+import io.odpf.firehose.sinkdecorator.dlq.DLQWriterType;
+
 public interface DlqConfig extends AppConfig {
 
     @Key("DLQ_ATTEMPTS_TO_TRIGGER")
@@ -40,4 +43,18 @@ public interface DlqConfig extends AppConfig {
     @Key("DLQ_KAFKA_TOPIC")
     @DefaultValue("firehose-retry-topic")
     String getDlqKafkaTopic();
+
+    @Key("DLQ_WRITER_TYPE")
+    @ConverterClass(DlqWriterTypeConverter.class)
+    @DefaultValue("LOG")
+    DLQWriterType getDlqWriterType();
+
+    @Key("DLQ_OBJECT_STORAGE_BUCKET_NAME")
+    String getDlqObjectStorageBucketName();
+
+    @Key("DLQ_OBJECT_STORAGE_GCS_CREDENTIAL_PATH")
+    String getDlqGCSCredentialPath();
+
+    @Key("DLQ_OBJECT_STORAGE_GCLOUD_PROJECT_ID")
+    String getDlqGcsGcloudProjectID();
 }

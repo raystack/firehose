@@ -4,7 +4,7 @@ import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileChecker;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriter;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
-import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorage;
+import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageChecker;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterWorkerFuture;
 

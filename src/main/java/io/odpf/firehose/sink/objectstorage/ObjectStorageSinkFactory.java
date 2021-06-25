@@ -3,9 +3,12 @@ package io.odpf.firehose.sink.objectstorage;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.google.protobuf.Descriptors;
+import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.config.ObjectStorageSinkConfig;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.objectstorage.ObjectStorageType;
+import io.odpf.firehose.objectstorage.gcs.GCSConfig;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.objectstorage.message.KafkaMetadataUtils;
@@ -19,8 +22,12 @@ import io.odpf.firehose.sink.objectstorage.writer.local.TimePartitionPath;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.SizeBasedRotatingPolicy;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.TimeBasedRotatingPolicy;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
-import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorage;
-import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageFactory;
+import io.odpf.firehose.objectstorage.ObjectStorage;
+import io.odpf.firehose.objectstorage.ObjectStorageFactory;
+import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
+import io.odpf.firehose.sinkdecorator.dlq.DlqWriterFactory;
+import io.odpf.firehose.sinkdecorator.dlq.LogDlqWriter;
+import io.opentracing.Tracer;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.nio.file.Path;
@@ -30,6 +37,13 @@ import java.util.List;
 import java.util.Map;
 
 public class ObjectStorageSinkFactory implements SinkFactory {
+
+    private Tracer tracer;
+
+    public ObjectStorageSinkFactory(Tracer tracer) {
+        this.tracer = tracer;
+    }
+
     @Override
     public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         ObjectStorageSinkConfig sinkConfig = ConfigFactory.create(ObjectStorageSinkConfig.class, configuration);
@@ -38,11 +52,24 @@ public class ObjectStorageSinkFactory implements SinkFactory {
 
         LocalStorage localStorage = getLocalFileWriterWrapper(sinkConfig, stencilClient);
 
-        ObjectStorage objectStorage = ObjectStorageFactory.createObjectStorage(sinkConfig);
+        ObjectStorage sinkObjectStorage = createSinkObjectStorage(sinkConfig);
 
-        WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage);
+        WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, sinkObjectStorage);
         MessageDeSerializer messageDeSerializer = getMessageDeSerializer(sinkConfig, stencilClient);
-        return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer);
+
+        DlqConfig dlqConfig = ConfigFactory.create(DlqConfig.class, configuration);
+        DlqWriter dlqWriter = getDlqWriter(configuration, statsDReporter, dlqConfig);
+
+        return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer, dlqWriter);
+    }
+
+    private DlqWriter getDlqWriter(Map<String, String> configuration, StatsDReporter statsDReporter, DlqConfig dlqConfig) {
+        DlqWriter dlqWriter = new LogDlqWriter(new Instrumentation(statsDReporter, LogDlqWriter.class));
+        if (dlqConfig.isDlqEnable()) {
+            DlqWriterFactory dlqWriterFactory = new DlqWriterFactory();
+            dlqWriter = dlqWriterFactory.create(configuration, statsDReporter, tracer);
+        }
+        return dlqWriter;
     }
 
     private Descriptors.Descriptor getMetadataMessageDescriptor(ObjectStorageSinkConfig sinkConfig) {
@@ -87,5 +114,17 @@ public class ObjectStorageSinkFactory implements SinkFactory {
                 localBasePath,
                 writerPolicies,
                 timePartitionPath);
+    }
+
+    public ObjectStorage createSinkObjectStorage(ObjectStorageSinkConfig sinkConfig) {
+        if (sinkConfig.getObjectStorageType() == ObjectStorageType.GCS) {
+            GCSConfig gcsConfig = new GCSConfig(
+                    Paths.get(sinkConfig.getLocalDirectory()),
+                    sinkConfig.getGCSBucketName(),
+                    sinkConfig.getGCSCredentialPath(),
+                    sinkConfig.getGCloudProjectID());
+            return ObjectStorageFactory.createObjectStorage(sinkConfig.getObjectStorageType(), gcsConfig);
+        }
+        throw new IllegalArgumentException("Sink Object Storage type " + sinkConfig.getObjectStorageType() + "is not supported");
     }
 }

@@ -6,7 +6,7 @@ import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriter;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriterFailedException;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
 import io.odpf.firehose.sink.objectstorage.writer.local.TimePartitionPath;
-import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorage;
+import io.odpf.firehose.objectstorage.ObjectStorage;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
