@@ -1,20 +1,21 @@
 package io.odpf.firehose.sinkdecorator.dlq.kafka;
 
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.consumer.MessageWithError;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sinkdecorator.BackOffProvider;
-import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
+import io.odpf.firehose.sinkdecorator.dlq.ErrorWrapperDlqWriter;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
-public class KafkaDlqWriter implements DlqWriter {
+public class KafkaDlqWriter extends ErrorWrapperDlqWriter {
 
     private Producer<byte[], byte[]> kafkaProducer;
     private final String topic;
@@ -29,8 +30,9 @@ public class KafkaDlqWriter implements DlqWriter {
     }
 
     @Override
-    public List<Message> write(List<Message> messages) throws IOException {
-        List<Message> retryQueueMessages = new LinkedList<>(messages);
+    public List<MessageWithError> writeWithError(List<MessageWithError> messages) throws IOException {
+        List<Message> retryQueueMessages = messages.stream().map(MessageWithError::getMessage)
+                .collect(Collectors.toList());
         int attemptCount = 0;
 
         while (!retryQueueMessages.isEmpty()) {
@@ -39,7 +41,8 @@ public class KafkaDlqWriter implements DlqWriter {
             backOffProvider.backOff(attemptCount++);
         }
 
-        return retryQueueMessages;
+        return retryQueueMessages.stream().map(message -> new MessageWithError(message, null)).collect(Collectors.toList());
+
     }
 
     private ArrayList<Message> pushToKafka(List<Message> failedMessages) {

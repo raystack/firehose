@@ -3,8 +3,9 @@ package io.odpf.firehose.sinkdecorator.dlq.objectstorage;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.consumer.MessageWithError;
 import io.odpf.firehose.objectstorage.ObjectStorage;
-import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
+import io.odpf.firehose.sinkdecorator.dlq.ErrorWrapperDlqWriter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -20,7 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class ObjectStorageDlqWriter implements DlqWriter {
+public class ObjectStorageDlqWriter extends ErrorWrapperDlqWriter {
 
     private final ObjectStorage objectStorage;
     private final Gson gson;
@@ -33,12 +34,12 @@ public class ObjectStorageDlqWriter implements DlqWriter {
     }
 
     @Override
-    public List<Message> write(List<Message> messages) throws IOException {
-        Map<Path, List<Message>> messagesByPartition = messages.stream()
-                .collect(Collectors.groupingBy(ObjectStorageDlqWriter::createPartition));
+    public List<MessageWithError> writeWithError(List<MessageWithError> messages) throws IOException {
+        Map<Path, List<MessageWithError>> messagesByPartition = messages.stream()
+                .collect(Collectors.groupingBy(messageWithError -> createPartition(messageWithError.getMessage())));
 
-        List<Message> unProcessedMessages = new LinkedList<>();
-        for (Map.Entry<Path, List<Message>> entry : messagesByPartition.entrySet()) {
+        List<MessageWithError> unProcessedMessages = new LinkedList<>();
+        for (Map.Entry<Path, List<MessageWithError>> entry : messagesByPartition.entrySet()) {
             String fileName = UUID.randomUUID().toString();
             String objectName = entry.getKey().resolve(fileName).toString();
 
@@ -48,13 +49,23 @@ public class ObjectStorageDlqWriter implements DlqWriter {
         return unProcessedMessages;
     }
 
-    private void writeFile(String objectName, List<Message> messages) throws IOException {
-        List<DlqMessage> dlqMessages = messages.stream().map(message -> new DlqMessage(message.getLogKey(),
-                message.getLogMessage(),
-                message.getTopic(),
-                message.getPartition(),
-                message.getOffset(),
-                message.getConsumeTimestamp())).collect(Collectors.toList());
+    private void writeFile(String objectName, List<MessageWithError> messages) throws IOException {
+        List<DlqMessage> dlqMessages = messages.stream().map(messageWithError -> {
+            Message message = messageWithError.getMessage();
+
+            String error = "";
+            if (messageWithError.getErrorType() != null) {
+                error = messageWithError.getErrorType().toString();
+            }
+
+            return new DlqMessage(message.getLogKey(),
+                    message.getLogMessage(),
+                    message.getTopic(),
+                    message.getPartition(),
+                    message.getOffset(),
+                    message.getConsumeTimestamp(),
+                    error);
+        }).collect(Collectors.toList());
 
         String dlqJson = serialise(dlqMessages);
         objectStorage.store(objectName, dlqJson.getBytes(StandardCharsets.UTF_8));

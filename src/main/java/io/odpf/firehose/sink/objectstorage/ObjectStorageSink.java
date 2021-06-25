@@ -1,10 +1,12 @@
 package io.odpf.firehose.sink.objectstorage;
 
+import io.odpf.firehose.consumer.ErrorType;
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.consumer.MessageWithError;
 import io.odpf.firehose.consumer.offset.OffsetManager;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.sink.common.AbstractSinkWithDLQ;
+import io.odpf.firehose.sink.common.AbstractSinkWithDlq;
 import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
 import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.writer.WriterOrchestrator;
@@ -18,7 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class ObjectStorageSink extends AbstractSinkWithDLQ {
+public class ObjectStorageSink extends AbstractSinkWithDlq {
 
     public static final String DLQ_BATCH_KEY = "dlq";
     private final WriterOrchestrator writerOrchestrator;
@@ -40,23 +42,22 @@ public class ObjectStorageSink extends AbstractSinkWithDLQ {
 
     @Override
     protected List<Message> execute() throws Exception {
-        List<Message> nonDeserializedMessages = new LinkedList<>();
+        List<MessageWithError> nonDeserializedMessages = new LinkedList<>();
         for (Message message : messages) {
             try {
                 Record record = messageDeSerializer.deSerialize(message);
                 offsetManager.addOffsetToBatch(writerOrchestrator.write(record), message);
             } catch (DeserializerException e) {
-                nonDeserializedMessages.add(message);
+                nonDeserializedMessages.add(new MessageWithError(message, ErrorType.DESERIALIZATION_ERROR));
             }
         }
-
         writeToDLQ(nonDeserializedMessages);
         return new LinkedList<>();
     }
 
-    private void writeToDLQ(List<Message> nonDeserializedMessages) throws IOException {
+    private void writeToDLQ(List<MessageWithError> nonDeserializedMessages) throws IOException {
         nonDeserializedMessages
-                .forEach(message -> offsetManager.addOffsetToBatch(DLQ_BATCH_KEY, message));
+                .forEach(message -> offsetManager.addOffsetToBatch(DLQ_BATCH_KEY, message.getMessage()));
         sendToDLQ(nonDeserializedMessages);
         if (nonDeserializedMessages.size() > 0) {
             offsetManager.commitBatch(DLQ_BATCH_KEY);

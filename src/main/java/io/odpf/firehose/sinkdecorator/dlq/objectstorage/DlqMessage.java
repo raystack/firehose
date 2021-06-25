@@ -14,4 +14,5 @@ public class DlqMessage {
     private long offset;
 
     private long timestamp;
+    private String error;
 }
