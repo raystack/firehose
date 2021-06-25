@@ -6,7 +6,8 @@ import io.odpf.firehose.consumer.MessageWithError;
 import io.odpf.firehose.consumer.offset.OffsetManager;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.sink.common.AbstractSinkWithDlq;
+import io.odpf.firehose.sink.common.AbstractSinkWithDlqProcessor;
+import io.odpf.firehose.sink.ExecResult;
 import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
 import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.writer.WriterOrchestrator;
@@ -19,10 +20,11 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public class ObjectStorageSink extends AbstractSinkWithDlq {
+public class ObjectStorageSink extends AbstractSinkWithDlqProcessor {
 
-    public static final String DLQ_BATCH_KEY = "dlq";
     private final WriterOrchestrator writerOrchestrator;
     private final MessageDeSerializer messageDeSerializer;
     private final OffsetManager offsetManager;
@@ -41,7 +43,7 @@ public class ObjectStorageSink extends AbstractSinkWithDlq {
     }
 
     @Override
-    protected List<Message> execute() throws Exception {
+    public ExecResult executeWithError() throws Exception {
         List<MessageWithError> nonDeserializedMessages = new LinkedList<>();
         for (Message message : messages) {
             try {
@@ -49,19 +51,27 @@ public class ObjectStorageSink extends AbstractSinkWithDlq {
                 offsetManager.addOffsetToBatch(writerOrchestrator.write(record), message);
             } catch (DeserializerException e) {
                 nonDeserializedMessages.add(new MessageWithError(message, ErrorType.DESERIALIZATION_ERROR));
+            } catch (Exception e) {
+                throw new DeserializerException("failed to write record", e);
             }
         }
-        writeToDLQ(nonDeserializedMessages);
-        return new LinkedList<>();
+        return new ExecResult(new LinkedList<>(), nonDeserializedMessages);
     }
 
-    private void writeToDLQ(List<MessageWithError> nonDeserializedMessages) throws IOException {
-        nonDeserializedMessages
-                .forEach(message -> offsetManager.addOffsetToBatch(DLQ_BATCH_KEY, message.getMessage()));
-        sendToDLQ(nonDeserializedMessages);
-        if (nonDeserializedMessages.size() > 0) {
-            offsetManager.commitBatch(DLQ_BATCH_KEY);
-        }
+    @Override
+    public List<MessageWithError> processDlq(List<MessageWithError> messageWithErrors) throws IOException {
+        Set<TopicPartition> batchKeys = messageWithErrors
+                .stream().map(MessageWithError::getMessage).map(message -> {
+                    TopicPartition topicPartition = new TopicPartition(
+                            message.getTopic(),
+                            message.getPartition());
+                    offsetManager.addOffsetToBatch(topicPartition, message);
+                    return topicPartition;
+                }).collect(Collectors.toSet());
+
+        List<MessageWithError> failedToBeProcessed = super.processDlq(messageWithErrors);
+        batchKeys.forEach(offsetManager::commitBatch);
+        return failedToBeProcessed;
     }
 
     @Override

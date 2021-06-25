@@ -1,14 +1,15 @@
 package io.odpf.firehose.sink;
 
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.consumer.MessageWithError;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.EglcConfigurationException;
 import io.odpf.firehose.metrics.Instrumentation;
 import lombok.AllArgsConstructor;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -16,7 +17,7 @@ import java.util.List;
  * All other type of sink will implement this.
  */
 @AllArgsConstructor
-public abstract class AbstractSink implements Closeable, Sink {
+public abstract class AbstractSink implements Sink, DlqProcessor {
 
     private final Instrumentation instrumentation;
     private final String sinkType;
@@ -35,7 +36,10 @@ public abstract class AbstractSink implements Closeable, Sink {
             prepare(messages);
             instrumentation.capturePreExecutionLatencies(messages);
             instrumentation.startExecution();
-            failedMessages = execute();
+            ExecResult execResult = executeWithError();
+            List<MessageWithError> dlqResult = processDlq(execResult.getDeadLetterQueue());
+            instrumentation.logWarn("Failed to push {} messages to dlq", dlqResult.size());
+            failedMessages = execResult.getRetryAbleMessages();
             instrumentation.captureSuccessExecutionTelemetry(sinkType, messages.size());
         } catch (DeserializerException | EglcConfigurationException | NullPointerException e) {
             throw e;
@@ -47,6 +51,11 @@ public abstract class AbstractSink implements Closeable, Sink {
             return messages;
         }
         return failedMessages;
+    }
+
+    @Override
+    public ExecResult executeWithError() throws Exception {
+        return new ExecResult(execute(), new LinkedList<>());
     }
 
     /**
@@ -76,5 +85,8 @@ public abstract class AbstractSink implements Closeable, Sink {
      */
     protected abstract void prepare(List<Message> messages) throws DeserializerException, IOException, SQLException;
 
-
+    @Override
+    public List<MessageWithError> processDlq(List<MessageWithError> messages) throws IOException {
+        return new LinkedList<>();
+    }
 }

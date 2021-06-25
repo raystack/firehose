@@ -17,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -26,10 +25,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ObjectStorageSinkTest {
@@ -73,15 +69,14 @@ public class ObjectStorageSinkTest {
         assertEquals(0, retryMessages.size());
     }
 
-    @Test(expected = IOException.class)
-    public void shouldThrowIOExceptionWhenWritingRecordThrowException() throws Exception, SQLException {
+    @Test(expected = Exception.class)
+    public void shouldThrowExceptionWhenWritingRecordThrowIOException() throws Exception {
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
         Record record1 = mock(Record.class);
         when(messageDeSerializer.deSerialize(message1)).thenReturn(record1);
-        when(writerOrchestrator.write(record1)).thenThrow(new IOException(""));
+        when(writerOrchestrator.write(record1)).thenThrow(new IOException("error"));
 
-        objectStorageSink.prepare(Arrays.asList(message1));
-        objectStorageSink.execute();
+        objectStorageSink.pushMessage(Arrays.asList(message1));
     }
 
     @Test
@@ -115,10 +110,15 @@ public class ObjectStorageSinkTest {
         OffsetManager offsetManager = mock(OffsetManager.class);
         objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer, offsetManager, dlqWriter);
 
+        TopicPartition topicPartition1 = new TopicPartition("booking", 1);
+        TopicPartition topicPartition2 = new TopicPartition("booking", 2);
+
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
         Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 1, 2);
         Message message3 = new Message("".getBytes(), "".getBytes(), "booking", 1, 3);
         Message message4 = new Message("".getBytes(), "".getBytes(), "booking", 1, 4);
+        Message message5 = new Message("".getBytes(), "".getBytes(), "booking", 2, 1);
+        Message message6 = new Message("".getBytes(), "".getBytes(), "booking", 2, 2);
         Record record1 = mock(Record.class);
         Record record2 = mock(Record.class);
         String path1 = "/tmp/test1";
@@ -128,14 +128,21 @@ public class ObjectStorageSinkTest {
         when(messageDeSerializer.deSerialize(message2)).thenReturn(record2);
         when(messageDeSerializer.deSerialize(message3)).thenThrow(new DeserializerException(""));
         when(messageDeSerializer.deSerialize(message4)).thenThrow(new DeserializerException(""));
+        when(messageDeSerializer.deSerialize(message5)).thenThrow(new DeserializerException(""));
+        when(messageDeSerializer.deSerialize(message6)).thenThrow(new DeserializerException(""));
         when(writerOrchestrator.write(record1)).thenReturn(path1);
         when(writerOrchestrator.write(record2)).thenReturn(path2);
 
-        List<Message> retryMessages = objectStorageSink.pushMessage(Arrays.asList(message1, message2, message3, message4));
+        List<Message> retryMessages = objectStorageSink.pushMessage(Arrays.asList(message1, message2, message3, message4, message5, message6));
 
-        verify(offsetManager).addOffsetToBatch(ObjectStorageSink.DLQ_BATCH_KEY, message3);
-        verify(offsetManager).addOffsetToBatch(ObjectStorageSink.DLQ_BATCH_KEY, message4);
-        verify(offsetManager).commitBatch(ObjectStorageSink.DLQ_BATCH_KEY);
+        verify(offsetManager).addOffsetToBatch(path1, message1);
+        verify(offsetManager).addOffsetToBatch(path2, message2);
+        verify(offsetManager).addOffsetToBatch(topicPartition1, message3);
+        verify(offsetManager).addOffsetToBatch(topicPartition1, message4);
+        verify(offsetManager).addOffsetToBatch(topicPartition2, message5);
+        verify(offsetManager).addOffsetToBatch(topicPartition2, message6);
+        verify(offsetManager).commitBatch(topicPartition1);
+        verify(offsetManager).commitBatch(topicPartition2);
         verify(writerOrchestrator, times(2)).write(any(Record.class));
         assertEquals(0, retryMessages.size());
     }
