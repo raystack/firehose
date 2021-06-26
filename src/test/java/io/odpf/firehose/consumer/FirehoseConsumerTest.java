@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyList;
@@ -52,7 +53,7 @@ public class FirehoseConsumerTest {
         messages = Arrays.asList(msg1, msg2);
 
         KafkaConsumerConfig kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, System.getenv());
-        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sink, genericConsumer, kafkaConsumerConfig, instrumentation);
+        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), genericConsumer, kafkaConsumerConfig, instrumentation);
         firehoseConsumer = new FirehoseConsumer(sink, clock, tracer, consumerAndOffsetManager, instrumentation);
 
         when(genericConsumer.readMessages()).thenReturn(messages);
@@ -114,7 +115,7 @@ public class FirehoseConsumerTest {
     @Test
     public void shouldNotCloseConsumerIfConsumerIsNull() throws IOException {
         KafkaConsumerConfig kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, System.getenv());
-        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sink, null, kafkaConsumerConfig, instrumentation);
+        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), null, kafkaConsumerConfig, instrumentation);
         firehoseConsumer = new FirehoseConsumer(sink, clock, tracer, consumerAndOffsetManager, instrumentation);
         firehoseConsumer.close();
 

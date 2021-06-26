@@ -5,7 +5,6 @@ import io.odpf.firehose.consumer.offset.OffsetManager;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.Sink;
-import lombok.AllArgsConstructor;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,55 +19,71 @@ import java.util.List;
  * <p>
  * 2. FirehoseAsyncConsumer:
  * consumerOffsetManager.readMessagesFromKafka();
- * consumerOffsetManager.addOffsets(key, messages); or consumerOffsetManager.addPartitionedOffsets(key, messages)
+ * consumerOffsetManager.addOffsets(key, messages);
  * consumerOffsetManager.setCommittable(key);
  * consumerOffsetManager.commit();
  * <p>
  * consumerOffsetManager.commit() commits offsets returned from sink if the sink can manages its own offsets
  * otherwise it commits offsets added to this class.
  */
-@AllArgsConstructor
 public class ConsumerAndOffsetManager implements AutoCloseable {
     private static final String SYNC_BATCH_KEY = "sync_batch_key";
-    private final OffsetManager manager = new OffsetManager();
-    private final Sink sink;
-    private final GenericConsumer consumer;
-    private final KafkaConsumerConfig consumerConfig;
+    private final OffsetManager offsetManager = new OffsetManager();
+    private final List<Sink> sinks;
+    private final GenericConsumer genericConsumer;
+    private final KafkaConsumerConfig kafkaConsumerConfig;
     private final Instrumentation instrumentation;
+    private final boolean canSinkManageOffsets;
+
+    public ConsumerAndOffsetManager(
+            List<Sink> sinks,
+            GenericConsumer genericConsumer,
+            KafkaConsumerConfig kafkaConsumerConfig,
+            Instrumentation instrumentation) {
+        this.sinks = sinks;
+        this.genericConsumer = genericConsumer;
+        this.kafkaConsumerConfig = kafkaConsumerConfig;
+        this.instrumentation = instrumentation;
+        this.canSinkManageOffsets = sinks.get(0).canManageOffsets();
+    }
 
     public void addOffsets(Object key, List<Message> messages) {
-        manager.addOffsetToBatch(key, messages);
+        offsetManager.addOffsetToBatch(key, messages);
     }
 
 
     public void addOffsetsAndSetCommittable(List<Message> messages) {
-        if (!sink.canManageOffsets()) {
+        if (!canSinkManageOffsets) {
             addOffsets(SYNC_BATCH_KEY, messages);
             setCommittable(SYNC_BATCH_KEY);
         }
     }
 
     public void setCommittable(Object key) {
-        manager.setCommittable(key);
+        offsetManager.setCommittable(key);
     }
 
     public List<Message> readMessagesFromKafka() throws FilterException {
-        return consumer.readMessages();
+        return genericConsumer.readMessages();
     }
 
     public void commit() {
-        if (consumerConfig.isSourceKafkaCommitOnlyCurrentPartitionsEnable()) {
-            consumer.commit(sink.canManageOffsets() ? sink.getCommittableOffsets() : manager.getCommittableOffset());
+        if (kafkaConsumerConfig.isSourceKafkaCommitOnlyCurrentPartitionsEnable()) {
+            if (canSinkManageOffsets) {
+                sinks.forEach(s -> genericConsumer.commit(s.getCommittableOffsets()));
+            } else {
+                genericConsumer.commit(offsetManager.getCommittableOffset());
+            }
         } else {
-            consumer.commit();
+            genericConsumer.commit();
         }
     }
 
     @Override
     public void close() throws IOException {
-        if (consumer != null) {
+        if (genericConsumer != null) {
             instrumentation.logInfo("closing consumer");
-            consumer.close();
+            genericConsumer.close();
         }
     }
 

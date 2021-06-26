@@ -52,4 +52,9 @@ public interface KafkaConsumerConfig extends AppConfig {
     @Key("SOURCE_KAFKA_CONSUMER_THREADS")
     @DefaultValue("1")
     int getSourceKafkaConsumerThreads();
+
+    @Key("SOURCE_KAFKA_CONSUMER_SINK_POLL_TIMEOUT_MILLIS")
+    @DefaultValue("1000")
+    int getSourceKafkaConsumerSinkPollTimeoutMillis();
+
 }

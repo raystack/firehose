@@ -13,6 +13,7 @@ import io.odpf.firehose.consumer.FirehoseAsyncConsumer;
 import io.odpf.firehose.consumer.FirehoseConsumer;
 import io.odpf.firehose.consumer.GenericConsumer;
 import io.odpf.firehose.consumer.KafkaConsumer;
+import io.odpf.firehose.consumer.SinkPool;
 import io.odpf.firehose.exception.EglcConfigurationException;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.MessageFilter;
@@ -42,10 +43,12 @@ import io.opentracing.noop.NoopTracerFactory;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Factory for Firehose consumer.
@@ -102,32 +105,35 @@ public class FirehoseConsumerFactory {
         }
         GenericConsumer genericConsumer = genericKafkaFactory.createConsumer(kafkaConsumerConfig, config,
                 statsDReporter, filter, tracer);
-        Sink retrySink = withRetry(getSink(), genericKafkaFactory, tracer);
         SinkTracer firehoseTracer = new SinkTracer(tracer, kafkaConsumerConfig.getSinkType().name() + " SINK",
                 kafkaConsumerConfig.isTraceJaegarEnable());
-        return build(retrySink, firehoseTracer, genericConsumer);
-    }
-
-    private KafkaConsumer build(Sink retrySink, SinkTracer firehoseTracer, GenericConsumer genericConsumer) {
-        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(retrySink, genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
-        if (kafkaConsumerConfig.getSourceKafkaConsumerMode().equals(KafkaConsumerMode.ASYNC)) {
-            int nThreads = kafkaConsumerConfig.getSourceKafkaConsumerThreads();
-            return new FirehoseAsyncConsumer(
+        if (kafkaConsumerConfig.getSourceKafkaConsumerMode().equals(KafkaConsumerMode.SYNC)) {
+            Sink retrySink = withRetry(getSink(), genericKafkaFactory, tracer);
+            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(retrySink), genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
+            return new FirehoseConsumer(
                     retrySink,
                     clockInstance,
                     firehoseTracer,
                     consumerAndOffsetManager,
-                    new Instrumentation(statsDReporter, FirehoseAsyncConsumer.class),
-                    new ThreadPoolExecutor(nThreads, nThreads,
-                            0L, TimeUnit.MILLISECONDS,
-                            new LinkedBlockingQueue<>(nThreads * 2)));
+                    new Instrumentation(statsDReporter, FirehoseConsumer.class));
+        } else {
+            int nThreads = kafkaConsumerConfig.getSourceKafkaConsumerThreads();
+            List<Sink> sinks = new ArrayList<>(nThreads);
+            for (int ii = 0; ii < nThreads; ii++) {
+                sinks.add(withRetry(getSink(), genericKafkaFactory, tracer));
+            }
+            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
+            SinkPool sinkPool = new SinkPool(
+                    new LinkedBlockingQueue<>(sinks),
+                    Executors.newCachedThreadPool(),
+                    kafkaConsumerConfig.getSourceKafkaConsumerSinkPollTimeoutMillis());
+            return new FirehoseAsyncConsumer(
+                    sinkPool,
+                    clockInstance,
+                    firehoseTracer,
+                    consumerAndOffsetManager,
+                    new Instrumentation(statsDReporter, FirehoseAsyncConsumer.class));
         }
-        return new FirehoseConsumer(
-                retrySink,
-                clockInstance,
-                firehoseTracer,
-                consumerAndOffsetManager,
-                new Instrumentation(statsDReporter, FirehoseConsumer.class));
     }
 
     /**
