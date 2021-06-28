@@ -14,14 +14,13 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -66,7 +65,7 @@ public class ObjectStorageSinkTest {
     }
 
     @Test(expected = IOException.class)
-    public void shouldThrowIOExceptionWhenWritingRecordThrowException() throws Exception, SQLException {
+    public void shouldThrowIOExceptionWhenWritingRecordThrowException() throws Exception {
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
         Record record1 = mock(Record.class);
         when(messageDeSerializer.deSerialize(message1)).thenReturn(record1);
@@ -91,13 +90,13 @@ public class ObjectStorageSinkTest {
         when(writerOrchestrator.getFlushedPaths()).thenReturn(new HashSet<>());
         objectStorageSink.pushMessage(Arrays.asList(message1, message2));
 
-        assertFalse(objectStorageSink.canSyncCommit());
-        assertEquals(0, objectStorageSink.getCommittableOffset().size());
+        assertTrue(objectStorageSink.canManageOffsets());
+        assertEquals(0, objectStorageSink.getCommittableOffsets().size());
 
         when(writerOrchestrator.getFlushedPaths()).thenReturn(new HashSet<String>() {{
             add(path1);
         }});
-        Map<TopicPartition, OffsetAndMetadata> committableOffsets = objectStorageSink.getCommittableOffset();
+        Map<TopicPartition, OffsetAndMetadata> committableOffsets = objectStorageSink.getCommittableOffsets();
         assertEquals(1, committableOffsets.size());
         assertEquals(new OffsetAndMetadata(3), committableOffsets.get(new TopicPartition("booking", 1)));
     }

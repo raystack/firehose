@@ -27,11 +27,11 @@ public interface Sink extends Closeable {
      */
     List<Message> pushMessage(List<Message> message) throws IOException, DeserializerException;
 
-    default Map<TopicPartition, OffsetAndMetadata> getCommittableOffset() {
+    default Map<TopicPartition, OffsetAndMetadata> getCommittableOffsets() {
         return new HashMap<>();
     }
 
-    default boolean canSyncCommit() {
-        return true;
+    default boolean canManageOffsets() {
+        return false;
     }
 }

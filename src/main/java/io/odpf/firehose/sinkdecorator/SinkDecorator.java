@@ -37,13 +37,13 @@ public class SinkDecorator implements Sink {
     }
 
     @Override
-    public Map<TopicPartition, OffsetAndMetadata> getCommittableOffset() {
-        return sink.getCommittableOffset();
+    public Map<TopicPartition, OffsetAndMetadata> getCommittableOffsets() {
+        return sink.getCommittableOffsets();
     }
 
     @Override
-    public boolean canSyncCommit() {
-        return sink.canSyncCommit();
+    public boolean canManageOffsets() {
+        return sink.canManageOffsets();
 
     }
 }

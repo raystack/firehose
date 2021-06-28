@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -29,10 +30,18 @@ public class OffsetManager {
         OffsetNode currentNode = new OffsetNode(
                 new TopicPartition(message.getTopic(), message.getPartition()),
                 new OffsetAndMetadata(message.getOffset() + 1));
-        batchOffsets.computeIfAbsent(batch, x -> new HashSet<>()).add(currentNode);
+        addOffsetToBatch(batch, currentNode);
+    }
+
+    public void addOffsetToBatch(Object batch, List<Message> messageList) {
+        messageList.forEach(m -> addOffsetToBatch(batch, m));
+    }
+
+    public void addOffsetToBatch(Object batch, OffsetNode node) {
+        batchOffsets.computeIfAbsent(batch, x -> new HashSet<>()).add(node);
         sortedOffsets.computeIfAbsent(
-                currentNode.getTopicPartition(),
-                x -> new TreeSet<>(Comparator.comparingLong(node -> node.getOffsetAndMetadata().offset()))).add(currentNode);
+                node.getTopicPartition(),
+                x -> new TreeSet<>(Comparator.comparingLong(n -> n.getOffsetAndMetadata().offset()))).add(node);
     }
 
     public Set<OffsetNode> getOffsetsForBatch(Object key) {
@@ -42,7 +51,7 @@ public class OffsetManager {
     /**
      * @param batch key for which all offsets can be committed.
      */
-    public void commitBatch(Object batch) {
+    public void setCommittable(Object batch) {
         batchOffsets.get(batch).forEach(x -> x.setCommittable(true));
         batchOffsets.remove(batch);
     }
