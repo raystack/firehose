@@ -70,7 +70,7 @@ public class ObjectStorageSink extends AbstractSinkWithDlqProcessor {
                 }).collect(Collectors.toSet());
 
         List<MessageWithError> failedToBeProcessed = super.processDlq(messageWithErrors);
-        batchKeys.forEach(offsetManager::commitBatch);
+        batchKeys.forEach(offsetManager::setCommittable);
         return failedToBeProcessed;
     }
 
@@ -85,13 +85,13 @@ public class ObjectStorageSink extends AbstractSinkWithDlqProcessor {
     }
 
     @Override
-    public Map<TopicPartition, OffsetAndMetadata> getCommittableOffset() {
-        writerOrchestrator.getFlushedPaths().forEach(offsetManager::commitBatch);
+    public Map<TopicPartition, OffsetAndMetadata> getCommittableOffsets() {
+        writerOrchestrator.getFlushedPaths().forEach(offsetManager::setCommittable);
         return offsetManager.getCommittableOffset();
     }
 
     @Override
-    public boolean canSyncCommit() {
-        return false;
+    public boolean canManageOffsets() {
+        return true;
     }
 }

@@ -26,8 +26,7 @@ lombok {
 }
 
 group 'io.odpf'
-version '1.2.3'
-
+version '0.1.0'
 
 def projName = "firehose"
 
@@ -92,6 +91,8 @@ dependencies {
     compile group: 'com.gojek', name: 'stencil', version: '4.2.1'
     implementation platform('com.google.cloud:libraries-bom:20.5.0')
     compile 'com.google.cloud:google-cloud-storage:1.114.0'
+    compile 'com.google.cloud:google-cloud-bigquery:1.115.0'
+
 
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile 'org.mockito:mockito-core:2.0.99-beta'

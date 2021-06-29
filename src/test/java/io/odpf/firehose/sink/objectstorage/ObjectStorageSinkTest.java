@@ -23,9 +23,12 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ObjectStorageSinkTest {
@@ -94,13 +97,13 @@ public class ObjectStorageSinkTest {
         when(writerOrchestrator.getFlushedPaths()).thenReturn(new HashSet<>());
         objectStorageSink.pushMessage(Arrays.asList(message1, message2));
 
-        assertFalse(objectStorageSink.canSyncCommit());
-        assertEquals(0, objectStorageSink.getCommittableOffset().size());
+        assertTrue(objectStorageSink.canManageOffsets());
+        assertEquals(0, objectStorageSink.getCommittableOffsets().size());
 
         when(writerOrchestrator.getFlushedPaths()).thenReturn(new HashSet<String>() {{
             add(path1);
         }});
-        Map<TopicPartition, OffsetAndMetadata> committableOffsets = objectStorageSink.getCommittableOffset();
+        Map<TopicPartition, OffsetAndMetadata> committableOffsets = objectStorageSink.getCommittableOffsets();
         assertEquals(1, committableOffsets.size());
         assertEquals(new OffsetAndMetadata(3), committableOffsets.get(new TopicPartition("booking", 1)));
     }
@@ -141,8 +144,8 @@ public class ObjectStorageSinkTest {
         verify(offsetManager).addOffsetToBatch(topicPartition1, message4);
         verify(offsetManager).addOffsetToBatch(topicPartition2, message5);
         verify(offsetManager).addOffsetToBatch(topicPartition2, message6);
-        verify(offsetManager).commitBatch(topicPartition1);
-        verify(offsetManager).commitBatch(topicPartition2);
+        verify(offsetManager).setCommittable(topicPartition1);
+        verify(offsetManager).setCommittable(topicPartition2);
         verify(writerOrchestrator, times(2)).write(any(Record.class));
         assertEquals(0, retryMessages.size());
     }

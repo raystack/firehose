@@ -291,7 +291,7 @@ public class OffsetManagerTest {
         offsetsForBatch1.forEach(node -> Assert.assertFalse(node.isCommittable()));
         offsetsForBatch2.forEach(node -> Assert.assertFalse(node.isCommittable()));
 
-        manger.commitBatch(key1);
+        manger.setCommittable(key1);
         offsetsForBatch1.forEach(node -> Assert.assertTrue(node.isCommittable()));
 
         Message newMessage = createMessage("topic1", 10, 20);
@@ -362,11 +362,11 @@ public class OffsetManagerTest {
         OffsetBatchKey key3 = new OffsetBatchKey("test3", 100);
         messageList3.forEach(message -> manger.addOffsetToBatch(key3, message));
 
-        manger.commitBatch(key2);
+        manger.setCommittable(key2);
         Map<TopicPartition, OffsetAndMetadata> committableOffset = manger.getCommittableOffset();
         Assert.assertTrue(committableOffset.isEmpty());
 
-        manger.commitBatch(key1);
+        manger.setCommittable(key1);
         committableOffset = manger.getCommittableOffset();
         Assert.assertEquals(2, committableOffset.size());
 
@@ -381,7 +381,7 @@ public class OffsetManagerTest {
         Assert.assertEquals(new OffsetAndMetadata(5), committableOffset.get(new TopicPartition("topic2", 1)));
 
 
-        manger.commitBatch(key3);
+        manger.setCommittable(key3);
         committableOffset = manger.getCommittableOffset();
         Assert.assertEquals(3, committableOffset.size());
 

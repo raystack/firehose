@@ -1,13 +1,14 @@
 package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.consumer.committer.OffsetCommitter;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.apache.kafka.common.record.TimestampType;
@@ -21,8 +22,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
@@ -45,9 +48,6 @@ public class GenericConsumerTest {
     private ConsumerRecords consumerRecords;
 
     @Mock
-    private OffsetCommitter offsetCommitter;
-
-    @Mock
     private Filter filter;
 
     @Mock
@@ -67,7 +67,7 @@ public class GenericConsumerTest {
         MockitoAnnotations.initMocks(this);
         message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
-        genericConsumer = new GenericConsumer(kafkaConsumer, consumerConfig, filter, offsetCommitter, instrumentation);
+        genericConsumer = new GenericConsumer(kafkaConsumer, consumerConfig, filter, instrumentation);
         when(consumerConfig.getSourceKafkaPollTimeoutMs()).thenReturn(500L);
         when(kafkaConsumer.poll(Duration.ofMillis(500L))).thenReturn(consumerRecords);
     }
@@ -155,13 +155,26 @@ public class GenericConsumerTest {
     }
 
     @Test
-    public void shouldCallCommitOnOffsets() throws FilterException {
+    public void shouldCallCommit() throws FilterException {
         Iterator iteratorMock = Mockito.mock(Iterator.class);
         when(iteratorMock.hasNext()).thenReturn(false);
         when(consumerRecords.iterator()).thenReturn(iteratorMock);
         genericConsumer.readMessages();
         genericConsumer.commit();
-        verify(offsetCommitter, times(1)).commit(consumerRecords);
+        verify(kafkaConsumer, times(0)).commitAsync();
+        verify(kafkaConsumer, times(1)).commitSync();
+    }
+
+    @Test
+    public void shouldAsyncCommit() throws FilterException {
+        when(consumerConfig.isSourceKafkaAsyncCommitEnable()).thenReturn(true);
+        Iterator iteratorMock = Mockito.mock(Iterator.class);
+        when(iteratorMock.hasNext()).thenReturn(false);
+        when(consumerRecords.iterator()).thenReturn(iteratorMock);
+        genericConsumer.readMessages();
+        genericConsumer.commit();
+        verify(kafkaConsumer, times(1)).commitAsync(any());
+        verify(kafkaConsumer, times(0)).commitSync();
     }
 
     @Test
@@ -189,5 +202,53 @@ public class GenericConsumerTest {
         doThrow(new RuntimeException()).when(kafkaConsumer).close();
         genericConsumer.close();
         verify(instrumentation, times(1)).captureNonFatalError(any(), eq("Exception while closing consumer"));
+    }
+
+    @Test
+    public void shouldCallAsyncCommitWithOffsets() {
+        when(consumerConfig.isSourceKafkaAsyncCommitEnable()).thenReturn(true);
+        Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(1));
+        }};
+        genericConsumer.commit(offsets);
+        verify(kafkaConsumer, times(1)).commitAsync(eq(offsets), any());
+        verify(kafkaConsumer, times(0)).commitSync(offsets);
+    }
+
+    @Test
+    public void shouldCommitLatestOffsets() {
+        when(consumerConfig.isSourceKafkaAsyncCommitEnable()).thenReturn(false);
+        Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(1));
+        }};
+        genericConsumer.commit(offsets);
+        genericConsumer.commit(offsets);
+        verify(kafkaConsumer, times(1)).commitSync(offsets);
+
+        offsets = new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(2));
+        }};
+        genericConsumer.commit(offsets);
+        verify(kafkaConsumer, times(1)).commitSync(new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(2));
+        }});
+
+        offsets = new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(5));
+            put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(2));
+            put(new TopicPartition("topic1", 4), new OffsetAndMetadata(5));
+        }};
+        genericConsumer.commit(offsets);
+        verify(kafkaConsumer, times(1)).commitSync(new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(5));
+            put(new TopicPartition("topic1", 4), new OffsetAndMetadata(5));
+        }});
     }
 }

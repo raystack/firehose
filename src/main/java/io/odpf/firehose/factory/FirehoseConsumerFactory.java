@@ -10,6 +10,11 @@ import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.config.enums.SinkType;
 import io.odpf.firehose.consumer.FirehoseConsumer;
 import io.odpf.firehose.consumer.GenericConsumer;
+import io.odpf.firehose.config.enums.KafkaConsumerMode;
+import io.odpf.firehose.consumer.ConsumerAndOffsetManager;
+import io.odpf.firehose.consumer.FirehoseAsyncConsumer;
+import io.odpf.firehose.consumer.KafkaConsumer;
+import io.odpf.firehose.consumer.SinkPool;
 import io.odpf.firehose.exception.EglcConfigurationException;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.MessageFilter;
@@ -39,20 +44,25 @@ import io.opentracing.Tracer;
 import io.opentracing.noop.NoopTracerFactory;
 import org.aeonbits.owner.ConfigFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Factory for Firehose consumer.
  */
 public class FirehoseConsumerFactory {
 
-    private Map<String, String> config = System.getenv();
     private final KafkaConsumerConfig kafkaConsumerConfig;
-    private StatsDReporter statsDReporter;
     private final Clock clockInstance;
-    private StencilClient stencilClient;
-    private Instrumentation instrumentation;
-    private KeyOrMessageParser parser;
+    private final Map<String, String> config = System.getenv();
+    private final StatsDReporter statsDReporter;
+    private final StencilClient stencilClient;
+    private final Instrumentation instrumentation;
+    private final KeyOrMessageParser parser;
 
     /**
      * Instantiates a new Firehose consumer factory.
@@ -66,8 +76,8 @@ public class FirehoseConsumerFactory {
         instrumentation = new Instrumentation(this.statsDReporter, FirehoseConsumerFactory.class);
 
         String additionalConsumerConfig = String.format(""
-                        + "\n\tEnable Async Commit: %s"
-                        + "\n\tCommit Only Current Partition: %s",
+                                                        + "\n\tEnable Async Commit: %s"
+                                                        + "\n\tCommit Only Current Partition: %s",
                 this.kafkaConsumerConfig.isSourceKafkaAsyncCommitEnable(),
                 this.kafkaConsumerConfig.isSourceKafkaCommitOnlyCurrentPartitionsEnable());
         instrumentation.logDebug(additionalConsumerConfig);
@@ -86,7 +96,7 @@ public class FirehoseConsumerFactory {
      *
      * @return FirehoseConsumer firehose consumer
      */
-    public FirehoseConsumer buildConsumer() {
+    public KafkaConsumer buildConsumer() {
 
         Filter filter = new MessageFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, MessageFilter.class));
         GenericKafkaFactory genericKafkaFactory = new GenericKafkaFactory();
@@ -94,12 +104,37 @@ public class FirehoseConsumerFactory {
         if (kafkaConsumerConfig.isTraceJaegarEnable()) {
             tracer = Configuration.fromEnv("Firehose" + ": " + kafkaConsumerConfig.getSourceKafkaConsumerGroupId()).getTracer();
         }
-        GenericConsumer consumer = genericKafkaFactory.createConsumer(kafkaConsumerConfig, config,
+        GenericConsumer genericConsumer = genericKafkaFactory.createConsumer(kafkaConsumerConfig, config,
                 statsDReporter, filter, tracer);
-        Sink retrySink = withRetry(getSink(tracer), genericKafkaFactory, tracer);
         SinkTracer firehoseTracer = new SinkTracer(tracer, kafkaConsumerConfig.getSinkType().name() + " SINK",
                 kafkaConsumerConfig.isTraceJaegarEnable());
-        return new FirehoseConsumer(consumer, retrySink, clockInstance, firehoseTracer, new Instrumentation(statsDReporter, FirehoseConsumer.class));
+        if (kafkaConsumerConfig.getSourceKafkaConsumerMode().equals(KafkaConsumerMode.SYNC)) {
+            Sink retrySink = withRetry(getSink(tracer), genericKafkaFactory, tracer);
+            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(retrySink), genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
+            return new FirehoseConsumer(
+                    retrySink,
+                    clockInstance,
+                    firehoseTracer,
+                    consumerAndOffsetManager,
+                    new Instrumentation(statsDReporter, FirehoseConsumer.class));
+        } else {
+            int nThreads = kafkaConsumerConfig.getSourceKafkaConsumerThreads();
+            List<Sink> sinks = new ArrayList<>(nThreads);
+            for (int ii = 0; ii < nThreads; ii++) {
+                sinks.add(withRetry(getSink(tracer), genericKafkaFactory, tracer));
+            }
+            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
+            SinkPool sinkPool = new SinkPool(
+                    new LinkedBlockingQueue<>(sinks),
+                    Executors.newCachedThreadPool(),
+                    kafkaConsumerConfig.getSourceKafkaConsumerSinkPollTimeoutMillis());
+            return new FirehoseAsyncConsumer(
+                    sinkPool,
+                    clockInstance,
+                    firehoseTracer,
+                    consumerAndOffsetManager,
+                    new Instrumentation(statsDReporter, FirehoseAsyncConsumer.class));
+        }
     }
 
     /**
