@@ -35,33 +35,33 @@ public class ObjectStorageDlqWriterTest {
     @Test
     public void shouldWriteMessagesWithoutErrorToObjectStorage() throws IOException {
         long timestamp1 = Instant.parse("2020-01-01T00:00:00Z").toEpochMilli();
-        Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1, null, 0, timestamp1);
-        Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 1, 2, null, 0, timestamp1);
+        Message message1 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 1, null, 0, timestamp1);
+        Message message2 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 2, null, 0, timestamp1);
 
         long timestamp2 = Instant.parse("2020-01-02T00:00:00Z").toEpochMilli();
-        Message message3 = new Message("".getBytes(), "".getBytes(), "booking", 1, 3, null, 0, timestamp2);
-        Message message4 = new Message("".getBytes(), "".getBytes(), "booking", 1, 4, null, 0, timestamp2);
+        Message message3 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 3, null, 0, timestamp2);
+        Message message4 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 4, null, 0, timestamp2);
 
         List<Message> messages = Arrays.asList(message1, message2, message3, message4);
         objectStorageDLQWriter.write(messages);
 
         verify(objectStorage).store(contains("booking/2020-01-02"),
-                eq(("{\"key\":[],\"value\":[],\"topic\":\"booking\",\"partition\":1,\"offset\":3,\"timestamp\":1577923200000,\"error\":\"\"}\n"
-                        + "{\"key\":[],\"value\":[],\"topic\":\"booking\",\"partition\":1,\"offset\":4,\"timestamp\":1577923200000,\"error\":\"\"}").getBytes()));
+                eq(("{\"key\":\"123\",\"value\":\"abc\",\"topic\":\"booking\",\"partition\":1,\"offset\":3,\"timestamp\":1577923200000,\"error\":\"\"}\n"
+                        + "{\"key\":\"123\",\"value\":\"abc\",\"topic\":\"booking\",\"partition\":1,\"offset\":4,\"timestamp\":1577923200000,\"error\":\"\"}").getBytes()));
         verify(objectStorage).store(contains("booking/2020-01-01"),
-                eq(("{\"key\":[],\"value\":[],\"topic\":\"booking\",\"partition\":1,\"offset\":1,\"timestamp\":1577836800000,\"error\":\"\"}\n"
-                        + "{\"key\":[],\"value\":[],\"topic\":\"booking\",\"partition\":1,\"offset\":2,\"timestamp\":1577836800000,\"error\":\"\"}").getBytes()));
+                eq(("{\"key\":\"123\",\"value\":\"abc\",\"topic\":\"booking\",\"partition\":1,\"offset\":1,\"timestamp\":1577836800000,\"error\":\"\"}\n"
+                        + "{\"key\":\"123\",\"value\":\"abc\",\"topic\":\"booking\",\"partition\":1,\"offset\":2,\"timestamp\":1577836800000,\"error\":\"\"}").getBytes()));
     }
 
     @Test
     public void shouldWriteMessagesWithErrorToObjectStorage() throws IOException {
         long timestamp1 = Instant.parse("2020-01-01T00:00:00Z").toEpochMilli();
-        Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1, null, 0, timestamp1);
-        Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 1, 2, null, 0, timestamp1);
+        Message message1 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 1, null, 0, timestamp1);
+        Message message2 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 2, null, 0, timestamp1);
 
         long timestamp2 = Instant.parse("2020-01-02T00:00:00Z").toEpochMilli();
-        Message message3 = new Message("".getBytes(), "".getBytes(), "booking", 1, 3, null, 0, timestamp2);
-        Message message4 = new Message("".getBytes(), "".getBytes(), "booking", 1, 4, null, 0, timestamp2);
+        Message message3 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 3, null, 0, timestamp2);
+        Message message4 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 4, null, 0, timestamp2);
 
         List<MessageWithError> messages = Arrays.asList(
                 new MessageWithError(message1, ErrorType.DESERIALIZATION_ERROR),
@@ -71,22 +71,22 @@ public class ObjectStorageDlqWriterTest {
         objectStorageDLQWriter.writeWithError(messages);
 
         verify(objectStorage).store(contains("booking/2020-01-02"),
-                eq(("{\"key\":[],\"value\":[],\"topic\":\"booking\",\"partition\":1,\"offset\":3,\"timestamp\":1577923200000,\"error\":\"DESERIALIZATION_ERROR\"}\n"
-                        + "{\"key\":[],\"value\":[],\"topic\":\"booking\",\"partition\":1,\"offset\":4,\"timestamp\":1577923200000,\"error\":\"UNKNOWN_ERROR\"}").getBytes()));
+                eq(("{\"key\":\"123\",\"value\":\"abc\",\"topic\":\"booking\",\"partition\":1,\"offset\":3,\"timestamp\":1577923200000,\"error\":\"DESERIALIZATION_ERROR\"}\n"
+                        + "{\"key\":\"123\",\"value\":\"abc\",\"topic\":\"booking\",\"partition\":1,\"offset\":4,\"timestamp\":1577923200000,\"error\":\"UNKNOWN_ERROR\"}").getBytes()));
         verify(objectStorage).store(contains("booking/2020-01-01"),
-                eq(("{\"key\":[],\"value\":[],\"topic\":\"booking\",\"partition\":1,\"offset\":1,\"timestamp\":1577836800000,\"error\":\"DESERIALIZATION_ERROR\"}\n"
-                        + "{\"key\":[],\"value\":[],\"topic\":\"booking\",\"partition\":1,\"offset\":2,\"timestamp\":1577836800000,\"error\":\"UNKNOWN_ERROR\"}").getBytes()));
+                eq(("{\"key\":\"123\",\"value\":\"abc\",\"topic\":\"booking\",\"partition\":1,\"offset\":1,\"timestamp\":1577836800000,\"error\":\"DESERIALIZATION_ERROR\"}\n"
+                        + "{\"key\":\"123\",\"value\":\"abc\",\"topic\":\"booking\",\"partition\":1,\"offset\":2,\"timestamp\":1577836800000,\"error\":\"UNKNOWN_ERROR\"}").getBytes()));
     }
 
     @Test(expected = IOException.class)
     public void shouldThrowIOExceptionWhenWriteFileThrowIOException() throws IOException {
         long timestamp1 = Instant.parse("2020-01-01T00:00:00Z").toEpochMilli();
-        Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1, null, 0, timestamp1);
-        Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 1, 2, null, 0, timestamp1);
+        Message message1 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 1, null, 0, timestamp1);
+        Message message2 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 2, null, 0, timestamp1);
 
         long timestamp2 = Instant.parse("2020-01-02T00:00:00Z").toEpochMilli();
-        Message message3 = new Message("".getBytes(), "".getBytes(), "booking", 1, 3, null, 0, timestamp2);
-        Message message4 = new Message("".getBytes(), "".getBytes(), "booking", 1, 4, null, 0, timestamp2);
+        Message message3 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 3, null, 0, timestamp2);
+        Message message4 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 4, null, 0, timestamp2);
 
         doThrow(new IOException()).when(objectStorage).store(anyString(), any());
 

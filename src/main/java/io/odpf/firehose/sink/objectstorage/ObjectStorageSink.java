@@ -5,6 +5,7 @@ import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.consumer.MessageWithError;
 import io.odpf.firehose.consumer.offset.OffsetManager;
 import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.exception.WriterIOException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.common.AbstractSinkWithDlqProcessor;
 import io.odpf.firehose.sink.ExecResult;
@@ -52,7 +53,7 @@ public class ObjectStorageSink extends AbstractSinkWithDlqProcessor {
             } catch (DeserializerException e) {
                 nonDeserializedMessages.add(new MessageWithError(message, ErrorType.DESERIALIZATION_ERROR));
             } catch (Exception e) {
-                throw new DeserializerException("failed to write record", e);
+                throw new WriterIOException(e);
             }
         }
         return new ExecResult(new LinkedList<>(), nonDeserializedMessages);

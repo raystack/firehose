@@ -4,6 +4,7 @@ import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.consumer.MessageWithError;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.EglcConfigurationException;
+import io.odpf.firehose.exception.WriterIOException;
 import io.odpf.firehose.metrics.Instrumentation;
 import lombok.AllArgsConstructor;
 
@@ -41,7 +42,7 @@ public abstract class AbstractSink implements Sink, DlqProcessor {
             instrumentation.logWarn("Failed to push {} messages to dlq", dlqResult.size());
             failedMessages = execResult.getRetryAbleMessages();
             instrumentation.captureSuccessExecutionTelemetry(sinkType, messages.size());
-        } catch (DeserializerException | EglcConfigurationException | NullPointerException e) {
+        } catch (DeserializerException | EglcConfigurationException | NullPointerException | WriterIOException e) {
             throw e;
         } catch (Exception e) {
             if (!messages.isEmpty()) {

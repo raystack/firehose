@@ -58,8 +58,8 @@ public class ObjectStorageDlqWriter extends ErrorWrapperDlqWriter {
                 error = messageWithError.getErrorType().toString();
             }
 
-            return new DlqMessage(message.getLogKey(),
-                    message.getLogMessage(),
+            return new DlqMessage(new String(message.getLogKey()),
+                    new String(message.getLogMessage()),
                     message.getTopic(),
                     message.getPartition(),
                     message.getOffset(),

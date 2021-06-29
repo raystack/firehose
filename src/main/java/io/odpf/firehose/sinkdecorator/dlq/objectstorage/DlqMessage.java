@@ -6,9 +6,9 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class DlqMessage {
-    private byte[] key;
+    private String key;
 
-    private byte[] value;
+    private String value;
     private String topic;
     private int partition;
     private long offset;

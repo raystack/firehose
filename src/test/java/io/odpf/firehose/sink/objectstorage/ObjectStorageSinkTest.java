@@ -3,6 +3,7 @@ package io.odpf.firehose.sink.objectstorage;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.consumer.offset.OffsetManager;
 import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.exception.WriterIOException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
 import io.odpf.firehose.sink.objectstorage.message.Record;
@@ -72,8 +73,8 @@ public class ObjectStorageSinkTest {
         assertEquals(0, retryMessages.size());
     }
 
-    @Test(expected = Exception.class)
-    public void shouldThrowExceptionWhenWritingRecordThrowIOException() throws Exception {
+    @Test(expected = WriterIOException.class)
+    public void shouldThrowWriterIOExceptionWhenWritingRecordThrowIOException() throws Exception {
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
         Record record1 = mock(Record.class);
         when(messageDeSerializer.deSerialize(message1)).thenReturn(record1);

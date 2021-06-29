@@ -4,6 +4,7 @@ import io.odpf.firehose.consumer.MessageWithError;
 import io.odpf.firehose.metrics.Instrumentation;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 
 public class LogDlqWriter extends ErrorWrapperDlqWriter {
@@ -21,7 +22,7 @@ public class LogDlqWriter extends ErrorWrapperDlqWriter {
             String error = message.getErrorType().toString();
             instrumentation.logInfo("key: {}\nvalue: {}\nerror: {}", key, value, error);
         }
-        return null;
+        return new LinkedList<>();
     }
 
 }
