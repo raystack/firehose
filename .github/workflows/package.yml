@@ -45,4 +45,4 @@ jobs:
           push: true
           tags: |
             odpf/firehose:latest
-            odpf/firehose:${{ steps.get_version.outputs.version }}
+            odpf/firehose:${{ steps.get_version.outputs.version-without-v }}
