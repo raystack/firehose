@@ -1,13 +1,13 @@
 package io.odpf.firehose.sinkdecorator.dlq;
 
-import io.odpf.firehose.consumer.MessageWithError;
+import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.metrics.Instrumentation;
 
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-public class LogDlqWriter extends ErrorWrapperDlqWriter {
+public class LogDlqWriter implements DlqWriter {
     private final Instrumentation instrumentation;
 
     public LogDlqWriter(Instrumentation instrumentation) {
@@ -15,10 +15,10 @@ public class LogDlqWriter extends ErrorWrapperDlqWriter {
     }
 
     @Override
-    public List<MessageWithError> writeWithError(List<MessageWithError> messages) throws IOException {
-        for (MessageWithError message : messages) {
-            String key = new String(message.getMessage().getLogKey());
-            String value = new String(message.getMessage().getLogMessage());
+    public List<Message> write(List<Message> messages) throws IOException {
+        for (Message message : messages) {
+            String key = new String(message.getLogKey());
+            String value = new String(message.getLogMessage());
             String error = message.getErrorType().toString();
             instrumentation.logInfo("key: {}\nvalue: {}\nerror: {}", key, value, error);
         }

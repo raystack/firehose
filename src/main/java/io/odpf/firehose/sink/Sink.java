@@ -2,19 +2,15 @@ package io.odpf.firehose.sink;
 
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.common.TopicPartition;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * An interface for developing custom Sinks to FirehoseConsumer.
  */
-public interface Sink extends Closeable {
+public interface Sink extends Closeable, CommitOffsetManager {
 
     /**
      * method to write batch of messages read from kafka.
@@ -27,10 +23,10 @@ public interface Sink extends Closeable {
      */
     List<Message> pushMessage(List<Message> message) throws IOException, DeserializerException;
 
-    default Map<TopicPartition, OffsetAndMetadata> getCommittableOffsets() {
-        return new HashMap<>();
-    }
-
+    /**
+     *
+     * @return
+     */
     default boolean canManageOffsets() {
         return false;
     }

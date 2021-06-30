@@ -2,17 +2,14 @@ package io.odpf.firehose.sink.objectstorage;
 
 import io.odpf.firehose.consumer.ErrorType;
 import io.odpf.firehose.consumer.Message;
-import io.odpf.firehose.consumer.MessageWithError;
 import io.odpf.firehose.consumer.offset.OffsetManager;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.WriterIOException;
 import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.sink.common.AbstractSinkWithDlqProcessor;
-import io.odpf.firehose.sink.ExecResult;
+import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
 import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.writer.WriterOrchestrator;
-import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 
@@ -21,10 +18,8 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-public class ObjectStorageSink extends AbstractSinkWithDlqProcessor {
+public class ObjectStorageSink extends AbstractSink {
 
     private final WriterOrchestrator writerOrchestrator;
     private final MessageDeSerializer messageDeSerializer;
@@ -32,47 +27,32 @@ public class ObjectStorageSink extends AbstractSinkWithDlqProcessor {
 
     private List<Message> messages;
 
-    public ObjectStorageSink(Instrumentation instrumentation, String sinkType, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer, DlqWriter dlqWriter) {
-        this(instrumentation, sinkType, writerOrchestrator, messageDeSerializer, new OffsetManager(), dlqWriter);
+    public ObjectStorageSink(Instrumentation instrumentation, String sinkType, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer) {
+        this(instrumentation, sinkType, writerOrchestrator, messageDeSerializer, new OffsetManager());
     }
 
-    public ObjectStorageSink(Instrumentation instrumentation, String sinkType, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer, OffsetManager offsetManager, DlqWriter dlqWriter) {
-        super(instrumentation, sinkType, dlqWriter);
+    public ObjectStorageSink(Instrumentation instrumentation, String sinkType, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer, OffsetManager offsetManager) {
+        super(instrumentation, sinkType);
         this.writerOrchestrator = writerOrchestrator;
         this.offsetManager = offsetManager;
         this.messageDeSerializer = messageDeSerializer;
     }
 
     @Override
-    public ExecResult executeWithError() throws Exception {
-        List<MessageWithError> nonDeserializedMessages = new LinkedList<>();
+    public List<Message> execute() throws Exception {
+        List<Message> deserializationFailedMessages = new LinkedList<>();
         for (Message message : messages) {
             try {
                 Record record = messageDeSerializer.deSerialize(message);
                 offsetManager.addOffsetToBatch(writerOrchestrator.write(record), message);
             } catch (DeserializerException e) {
-                nonDeserializedMessages.add(new MessageWithError(message, ErrorType.DESERIALIZATION_ERROR));
+                message.setErrorType(ErrorType.DESERIALIZATION_ERROR);
+                deserializationFailedMessages.add(message);
             } catch (Exception e) {
                 throw new WriterIOException(e);
             }
         }
-        return new ExecResult(new LinkedList<>(), nonDeserializedMessages);
-    }
-
-    @Override
-    public List<MessageWithError> processDlq(List<MessageWithError> messageWithErrors) throws IOException {
-        Set<TopicPartition> batchKeys = messageWithErrors
-                .stream().map(MessageWithError::getMessage).map(message -> {
-                    TopicPartition topicPartition = new TopicPartition(
-                            message.getTopic(),
-                            message.getPartition());
-                    offsetManager.addOffsetToBatch(topicPartition, message);
-                    return topicPartition;
-                }).collect(Collectors.toSet());
-
-        List<MessageWithError> failedToBeProcessed = super.processDlq(messageWithErrors);
-        batchKeys.forEach(offsetManager::setCommittable);
-        return failedToBeProcessed;
+        return deserializationFailedMessages;
     }
 
     @Override
@@ -94,5 +74,15 @@ public class ObjectStorageSink extends AbstractSinkWithDlqProcessor {
     @Override
     public boolean canManageOffsets() {
         return true;
+    }
+
+    @Override
+    public void addOffsetToBatch(Object batch, List<Message> messageList) {
+        this.offsetManager.addOffsetToBatch(batch, messageList);
+    }
+
+    @Override
+    public void setCommittable(Object batch) {
+        this.offsetManager.setCommittable(batch);
     }
 }

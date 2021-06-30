@@ -4,6 +4,7 @@ package io.odpf.firehose.consumer;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.kafka.common.header.Headers;
 
 import java.util.Base64;
@@ -24,6 +25,9 @@ public class Message {
     private long timestamp;
     private long consumeTimestamp;
 
+    @Setter
+    private ErrorType errorType;
+
     /**
      * Instantiates a new Message.
      *
@@ -39,6 +43,29 @@ public class Message {
         this.topic = topic;
         this.partition = partition;
         this.offset = offset;
+    }
+
+    /**
+     * Instantiates a new Message without providing errorType.
+     *
+     * @param logKey
+     * @param logMessage
+     * @param topic
+     * @param partition
+     * @param offset
+     * @param headers
+     * @param timestamp
+     * @param consumeTimestamp
+     */
+    public Message(byte[] logKey, byte[] logMessage, String topic, int partition, long offset, Headers headers, long timestamp, long consumeTimestamp) {
+        this.logKey = logKey;
+        this.logMessage = logMessage;
+        this.topic = topic;
+        this.partition = partition;
+        this.offset = offset;
+        this.headers = headers;
+        this.timestamp = timestamp;
+        this.consumeTimestamp = consumeTimestamp;
     }
 
     /**

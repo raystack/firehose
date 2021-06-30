@@ -3,10 +3,11 @@ package io.odpf.firehose.sink.objectstorage;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.google.protobuf.Descriptors;
-import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.config.ObjectStorageSinkConfig;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.objectstorage.ObjectStorage;
+import io.odpf.firehose.objectstorage.ObjectStorageFactory;
 import io.odpf.firehose.objectstorage.ObjectStorageType;
 import io.odpf.firehose.objectstorage.gcs.GCSConfig;
 import io.odpf.firehose.sink.Sink;
@@ -22,12 +23,6 @@ import io.odpf.firehose.sink.objectstorage.writer.local.TimePartitionPath;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.SizeBasedRotatingPolicy;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.TimeBasedRotatingPolicy;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
-import io.odpf.firehose.objectstorage.ObjectStorage;
-import io.odpf.firehose.objectstorage.ObjectStorageFactory;
-import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
-import io.odpf.firehose.sinkdecorator.dlq.DlqWriterFactory;
-import io.odpf.firehose.sinkdecorator.dlq.LogDlqWriter;
-import io.opentracing.Tracer;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.nio.file.Path;
@@ -38,10 +33,7 @@ import java.util.Map;
 
 public class ObjectStorageSinkFactory implements SinkFactory {
 
-    private Tracer tracer;
-
-    public ObjectStorageSinkFactory(Tracer tracer) {
-        this.tracer = tracer;
+    public ObjectStorageSinkFactory() {
     }
 
     @Override
@@ -57,19 +49,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
         WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, sinkObjectStorage);
         MessageDeSerializer messageDeSerializer = getMessageDeSerializer(sinkConfig, stencilClient);
 
-        DlqConfig dlqConfig = ConfigFactory.create(DlqConfig.class, configuration);
-        DlqWriter dlqWriter = getDlqWriter(configuration, statsDReporter, dlqConfig);
-
-        return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer, dlqWriter);
-    }
-
-    private DlqWriter getDlqWriter(Map<String, String> configuration, StatsDReporter statsDReporter, DlqConfig dlqConfig) {
-        DlqWriter dlqWriter = new LogDlqWriter(new Instrumentation(statsDReporter, LogDlqWriter.class));
-        if (dlqConfig.isDlqEnable()) {
-            DlqWriterFactory dlqWriterFactory = new DlqWriterFactory();
-            dlqWriter = dlqWriterFactory.create(configuration, statsDReporter, tracer);
-        }
-        return dlqWriter;
+        return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer);
     }
 
     private Descriptors.Descriptor getMetadataMessageDescriptor(ObjectStorageSinkConfig sinkConfig) {

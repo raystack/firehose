@@ -15,6 +15,7 @@ import java.util.List;
  */
 public class SinkWithDlq extends SinkDecorator {
 
+    public static final String DLQ_BATCH_KEY = "dlq-batch-key";
     private final DlqWriter writer;
     private Instrumentation instrumentation;
 
@@ -39,7 +40,16 @@ public class SinkWithDlq extends SinkDecorator {
     @Override
     public List<Message> pushMessage(List<Message> message) throws IOException, DeserializerException {
         List<Message> retryQueueMessages = super.pushMessage(message);
-        List<Message> unsuccessfulDLQWrite = writer.write(retryQueueMessages);
+
+        List<Message> unsuccessfulDLQWrite;
+        if (super.canManageOffsets()) {
+            super.addOffsetToBatch(DLQ_BATCH_KEY, retryQueueMessages);
+            unsuccessfulDLQWrite = writer.write(retryQueueMessages);
+            super.setCommittable(DLQ_BATCH_KEY);
+        } else {
+            unsuccessfulDLQWrite = writer.write(retryQueueMessages);
+        }
+
         instrumentation.logError("failed to write {} number messages to DLQ", unsuccessfulDLQWrite.size());
         return unsuccessfulDLQWrite;
     }

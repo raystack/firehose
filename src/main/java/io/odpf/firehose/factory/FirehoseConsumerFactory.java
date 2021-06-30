@@ -7,7 +7,6 @@ import io.jaegertracing.Configuration;
 import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.config.enums.SinkType;
 import io.odpf.firehose.consumer.FirehoseConsumer;
 import io.odpf.firehose.consumer.GenericConsumer;
 import io.odpf.firehose.config.enums.KafkaConsumerMode;
@@ -76,8 +75,8 @@ public class FirehoseConsumerFactory {
         instrumentation = new Instrumentation(this.statsDReporter, FirehoseConsumerFactory.class);
 
         String additionalConsumerConfig = String.format(""
-                                                        + "\n\tEnable Async Commit: %s"
-                                                        + "\n\tCommit Only Current Partition: %s",
+                        + "\n\tEnable Async Commit: %s"
+                        + "\n\tCommit Only Current Partition: %s",
                 this.kafkaConsumerConfig.isSourceKafkaAsyncCommitEnable(),
                 this.kafkaConsumerConfig.isSourceKafkaCommitOnlyCurrentPartitionsEnable());
         instrumentation.logDebug(additionalConsumerConfig);
@@ -109,7 +108,7 @@ public class FirehoseConsumerFactory {
         SinkTracer firehoseTracer = new SinkTracer(tracer, kafkaConsumerConfig.getSinkType().name() + " SINK",
                 kafkaConsumerConfig.isTraceJaegarEnable());
         if (kafkaConsumerConfig.getSourceKafkaConsumerMode().equals(KafkaConsumerMode.SYNC)) {
-            Sink retrySink = withRetry(getSink(tracer), genericKafkaFactory, tracer);
+            Sink retrySink = withRetry(getSink(), genericKafkaFactory, tracer);
             ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(retrySink), genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
             return new FirehoseConsumer(
                     retrySink,
@@ -121,7 +120,7 @@ public class FirehoseConsumerFactory {
             int nThreads = kafkaConsumerConfig.getSourceKafkaConsumerThreads();
             List<Sink> sinks = new ArrayList<>(nThreads);
             for (int ii = 0; ii < nThreads; ii++) {
-                sinks.add(withRetry(getSink(tracer), genericKafkaFactory, tracer));
+                sinks.add(withRetry(getSink(), genericKafkaFactory, tracer));
             }
             ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
             SinkPool sinkPool = new SinkPool(
@@ -142,7 +141,7 @@ public class FirehoseConsumerFactory {
      *
      * @return Sink
      */
-    private Sink getSink(Tracer tracer) {
+    private Sink getSink() {
         instrumentation.logInfo("Sink Type: {}", kafkaConsumerConfig.getSinkType().toString());
         switch (kafkaConsumerConfig.getSinkType()) {
             case JDBC:
@@ -162,7 +161,7 @@ public class FirehoseConsumerFactory {
             case PROMETHEUS:
                 return new PromSinkFactory().create(config, statsDReporter, stencilClient);
             case OBJECTSTORAGE:
-                return new ObjectStorageSinkFactory(tracer).create(config, statsDReporter, stencilClient);
+                return new ObjectStorageSinkFactory().create(config, statsDReporter, stencilClient);
             default:
                 throw new EglcConfigurationException("Invalid Firehose SINK_TYPE");
 
@@ -186,17 +185,16 @@ public class FirehoseConsumerFactory {
                 new Instrumentation(statsDReporter, ExponentialBackOffProvider.class),
                 new BackOff(new Instrumentation(statsDReporter, BackOff.class)));
 
-        if (!appConfig.isDlqEnable() || appConfig.getSinkType() == SinkType.OBJECTSTORAGE) {
-            return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), parser);
-        } else {
+        if (appConfig.isDlqEnable()) {
             DlqConfig dlqConfig = ConfigFactory.create(DlqConfig.class, config);
-
             DlqWriterFactory dlqWriterFactory = new DlqWriterFactory();
             DlqWriter dlqWriter = dlqWriterFactory.create(config, statsDReporter, tracer);
             return SinkWithDlq.withInstrumentationFactory(
                     new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class),
                             dlqConfig.getDlqAttemptsToTrigger(), parser),
                     dlqWriter, statsDReporter);
+        } else {
+            return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), parser);
         }
     }
 }

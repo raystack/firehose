@@ -2,7 +2,6 @@ package io.odpf.firehose.sinkdecorator.dlq.objectstorage;
 
 import io.odpf.firehose.consumer.ErrorType;
 import io.odpf.firehose.consumer.Message;
-import io.odpf.firehose.consumer.MessageWithError;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,19 +55,15 @@ public class ObjectStorageDlqWriterTest {
     @Test
     public void shouldWriteMessagesWithErrorToObjectStorage() throws IOException {
         long timestamp1 = Instant.parse("2020-01-01T00:00:00Z").toEpochMilli();
-        Message message1 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 1, null, 0, timestamp1);
-        Message message2 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 2, null, 0, timestamp1);
+        Message message1 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 1, null, 0, timestamp1, ErrorType.DESERIALIZATION_ERROR);
+        Message message2 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 2, null, 0, timestamp1, ErrorType.UNKNOWN_ERROR);
 
         long timestamp2 = Instant.parse("2020-01-02T00:00:00Z").toEpochMilli();
-        Message message3 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 3, null, 0, timestamp2);
-        Message message4 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 4, null, 0, timestamp2);
+        Message message3 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 3, null, 0, timestamp2, ErrorType.DESERIALIZATION_ERROR);
+        Message message4 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 4, null, 0, timestamp2, ErrorType.UNKNOWN_ERROR);
 
-        List<MessageWithError> messages = Arrays.asList(
-                new MessageWithError(message1, ErrorType.DESERIALIZATION_ERROR),
-                new MessageWithError(message2, ErrorType.UNKNOWN_ERROR),
-                new MessageWithError(message3, ErrorType.DESERIALIZATION_ERROR),
-                new MessageWithError(message4, ErrorType.UNKNOWN_ERROR));
-        objectStorageDLQWriter.writeWithError(messages);
+        List<Message> messages = Arrays.asList(message1, message2, message3, message4);
+        objectStorageDLQWriter.write(messages);
 
         verify(objectStorage).store(contains("booking/2020-01-02"),
                 eq(("{\"key\":\"123\",\"value\":\"abc\",\"topic\":\"booking\",\"partition\":1,\"offset\":3,\"timestamp\":1577923200000,\"error\":\"DESERIALIZATION_ERROR\"}\n"
