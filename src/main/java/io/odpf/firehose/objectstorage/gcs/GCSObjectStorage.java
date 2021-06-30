@@ -32,11 +32,9 @@ public class GCSObjectStorage implements ObjectStorage {
     @Override
     public void store(String localPath) {
         String objectName = gcsConfig.getLocalBasePath().relativize(Paths.get(localPath)).toString();
-        BlobId blobId = BlobId.of(gcsConfig.getGcsBucketName(), objectName);
-        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
         try {
-            storage.create(blobInfo, Files.readAllBytes(Paths.get(localPath)));
-            LOGGER.info("Created object in GCS " + blobInfo.getBucket() + "/" + blobInfo.getName());
+            byte[] content = Files.readAllBytes(Paths.get(localPath));
+            store(objectName, content);
         } catch (IOException e) {
             e.printStackTrace();
             throw new ObjectStorageFailedException(e);
