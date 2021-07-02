@@ -1,7 +1,9 @@
 package io.odpf.firehose.sinkdecorator.dlq.objectstorage;
 
+import io.odpf.firehose.consumer.ErrorInfo;
 import io.odpf.firehose.consumer.ErrorType;
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +34,7 @@ public class ObjectStorageDlqWriterTest {
     }
 
     @Test
-    public void shouldWriteMessagesWithoutErrorToObjectStorage() throws IOException {
+    public void shouldWriteMessagesWithoutErrorInfoToObjectStorage() throws IOException {
         long timestamp1 = Instant.parse("2020-01-01T00:00:00Z").toEpochMilli();
         Message message1 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 1, null, 0, timestamp1);
         Message message2 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 2, null, 0, timestamp1);
@@ -53,14 +55,14 @@ public class ObjectStorageDlqWriterTest {
     }
 
     @Test
-    public void shouldWriteMessagesWithErrorToObjectStorage() throws IOException {
+    public void shouldWriteMessageErrorTypesToObjectStorage() throws IOException {
         long timestamp1 = Instant.parse("2020-01-01T00:00:00Z").toEpochMilli();
-        Message message1 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 1, null, 0, timestamp1, ErrorType.DESERIALIZATION_ERROR);
-        Message message2 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 2, null, 0, timestamp1, ErrorType.UNKNOWN_ERROR);
+        Message message1 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 1, null, 0, timestamp1, new ErrorInfo(new DeserializerException(""), ErrorType.DESERIALIZATION_ERROR));
+        Message message2 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 2, null, 0, timestamp1, new ErrorInfo(new NullPointerException(), ErrorType.UNKNOWN_ERROR));
 
         long timestamp2 = Instant.parse("2020-01-02T00:00:00Z").toEpochMilli();
-        Message message3 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 3, null, 0, timestamp2, ErrorType.DESERIALIZATION_ERROR);
-        Message message4 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 4, null, 0, timestamp2, ErrorType.UNKNOWN_ERROR);
+        Message message3 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 3, null, 0, timestamp2, new ErrorInfo(new DeserializerException(""), ErrorType.DESERIALIZATION_ERROR));
+        Message message4 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 4, null, 0, timestamp2, new ErrorInfo(new DeserializerException(""), ErrorType.UNKNOWN_ERROR));
 
         List<Message> messages = Arrays.asList(message1, message2, message3, message4);
         objectStorageDLQWriter.write(messages);

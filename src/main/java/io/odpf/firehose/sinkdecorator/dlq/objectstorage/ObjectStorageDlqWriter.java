@@ -2,6 +2,7 @@ package io.odpf.firehose.sinkdecorator.dlq.objectstorage;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
+import io.odpf.firehose.consumer.ErrorInfo;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
@@ -34,25 +35,35 @@ public class ObjectStorageDlqWriter implements DlqWriter {
 
     @Override
     public List<Message> write(List<Message> messages) throws IOException {
-        Map<Path, List<Message>> messagesByPartition = messages.stream()
-                .collect(Collectors.groupingBy(ObjectStorageDlqWriter::createPartition));
+        Map<Path, List<Message>> messagesByPartition = groupByPartition(messages);
 
         List<Message> unProcessedMessages = new LinkedList<>();
         for (Map.Entry<Path, List<Message>> entry : messagesByPartition.entrySet()) {
+            List<DlqMessage> dlqMessages = createDlqMessages(entry.getValue());
+            String dlqJson = serialise(dlqMessages);
+
             String fileName = UUID.randomUUID().toString();
             String objectName = entry.getKey().resolve(fileName).toString();
 
-            writeFile(objectName, entry.getValue());
+            objectStorage.store(objectName, dlqJson.getBytes(StandardCharsets.UTF_8));
         }
 
         return unProcessedMessages;
     }
 
-    private void writeFile(String objectName, List<Message> messages) throws IOException {
+    private Map<Path, List<Message>> groupByPartition(List<Message> messages) {
+        return messages.stream()
+                .collect(Collectors.groupingBy(ObjectStorageDlqWriter::createPartition));
+    }
+
+    private List<DlqMessage> createDlqMessages(List<Message> messages) {
         List<DlqMessage> dlqMessages = messages.stream().map(message -> {
             String error = "";
-            if (message.getErrorType() != null) {
-                error = message.getErrorType().toString();
+            ErrorInfo errorInfo = message.getErrorInfo();
+            if (errorInfo != null) {
+                if (errorInfo.getErrorType() != null) {
+                    error = errorInfo.getErrorType().toString();
+                }
             }
 
             return new DlqMessage(new String(message.getLogKey()),
@@ -63,9 +74,7 @@ public class ObjectStorageDlqWriter implements DlqWriter {
                     message.getConsumeTimestamp(),
                     error);
         }).collect(Collectors.toList());
-
-        String dlqJson = serialise(dlqMessages);
-        objectStorage.store(objectName, dlqJson.getBytes(StandardCharsets.UTF_8));
+        return dlqMessages;
     }
 
     public String serialise(List<DlqMessage> messages) {

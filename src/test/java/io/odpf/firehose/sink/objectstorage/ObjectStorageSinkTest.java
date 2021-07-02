@@ -23,8 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -104,7 +104,7 @@ public class ObjectStorageSinkTest {
     }
 
     @Test
-    public void shouldReturnNonDeserializedMessages() throws Exception {
+    public void shouldReturnFailedMessageWithErrorWhenDeserializationThrowDeserialzerException() throws Exception {
         OffsetManager offsetManager = mock(OffsetManager.class);
         objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer, offsetManager);
 
@@ -131,7 +131,8 @@ public class ObjectStorageSinkTest {
         List<Message> retryMessages = objectStorageSink.pushMessage(Arrays.asList(message1, message2, message3, message4, message5, message6));
 
         verify(writerOrchestrator, times(2)).write(any(Record.class));
-        assertEquals(4, retryMessages.size());
+        assertEquals(retryMessages.size(), 4);
+        retryMessages.forEach(message -> assertNotNull(message.getErrorInfo()));
     }
 
     @Test

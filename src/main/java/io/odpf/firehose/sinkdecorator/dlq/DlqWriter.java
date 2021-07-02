@@ -11,7 +11,7 @@ public interface DlqWriter {
      *
      * @param messages
      * @return
-     * @throws IOException
+     * @throws IOException any exception that thrown here intended to stop the pipeline from running
      */
     List<Message> write(List<Message> messages) throws IOException;
 }

@@ -5,7 +5,6 @@ import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.sinkdecorator.BackOffProvider;
 import io.odpf.firehose.sinkdecorator.dlq.kafka.KafkaDlqWriter;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -22,6 +21,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -42,15 +42,11 @@ public class KafkaDlqWriterTest {
     @Mock
     private Instrumentation instrumentation;
 
-    @Mock
-    private BackOffProvider backOffProvider;
-
     private KafkaDlqWriter kafkaDlqWriter;
-
 
     @Before
     public void setUp() throws Exception {
-        kafkaDlqWriter = new KafkaDlqWriter(kafkaProducer, "test-topic", backOffProvider, instrumentation);
+        kafkaDlqWriter = new KafkaDlqWriter(kafkaProducer, "test-topic", instrumentation);
     }
 
     @Test
@@ -161,34 +157,7 @@ public class KafkaDlqWriterTest {
     }
 
     @Test
-    public void shouldRetryPublishToKafka() throws Exception {
-        ArrayList<Message> messages = new ArrayList<>();
-        messages.add(message);
-        messages.add(message);
-
-        Thread thread = new Thread(() -> {
-            try {
-                kafkaDlqWriter.write(messages);
-            } catch (IOException | DeserializerException e) {
-                e.printStackTrace();
-            }
-        });
-
-        thread.start();
-
-        ArgumentCaptor<Callback> callbacks = ArgumentCaptor.forClass(Callback.class);
-        verify(kafkaProducer, timeout(1000).times(2)).send(any(), callbacks.capture());
-        List<Callback> calls = callbacks.getAllValues();
-        calls.get(0).onCompletion(null, null);
-        calls.get(1).onCompletion(null, new Exception());
-        verify(kafkaProducer, timeout(200).times(3)).send(any(), callbacks.capture());
-        calls = callbacks.getAllValues();
-        calls.get(2).onCompletion(null, null);
-    }
-
-
-    @Test
-    public void shouldRecordMessagesToRetryQueue() throws Exception {
+    public void shouldRecordMessagesToBeSendToKafkaRetryQueue() throws Exception {
         ArrayList<Message> messages = new ArrayList<>();
         CountDownLatch completedLatch = new CountDownLatch(1);
         messages.add(message);
@@ -211,22 +180,22 @@ public class KafkaDlqWriterTest {
         calls.get(0).onCompletion(null, null);
         calls.get(1).onCompletion(null, null);
         completedLatch.await();
-        verify(instrumentation, times(1)).captureRetryAttempts();
         verify(instrumentation, times(1)).logInfo("Pushing {} messages to retry queue topic : {}", 2, "test-topic");
-        verify(instrumentation, times(2)).incrementMessageSucceedCount();
         verify(instrumentation, times(1)).logInfo("Successfully pushed {} messages to {}", 2, "test-topic");
     }
 
     @Test
-    public void shouldRecordRetriesIfKafkaThrowsException() throws Exception {
+    public void shouldReturnFailedMessagesWhenExceptionThrown() throws InterruptedException {
         ArrayList<Message> messages = new ArrayList<>();
         CountDownLatch completedLatch = new CountDownLatch(1);
         messages.add(message);
         messages.add(message);
 
+        final List<Message> retryMessages = new LinkedList<>();
         Thread thread = new Thread(() -> {
             try {
-                kafkaDlqWriter.write(messages);
+                List<Message> result = kafkaDlqWriter.write(messages);
+                retryMessages.addAll(result);
                 completedLatch.countDown();
             } catch (IOException | DeserializerException e) {
                 e.printStackTrace();
@@ -234,23 +203,13 @@ public class KafkaDlqWriterTest {
         });
 
         thread.start();
-        Thread.sleep(1000L);
 
         ArgumentCaptor<Callback> callbacks = ArgumentCaptor.forClass(Callback.class);
-        verify(kafkaProducer, timeout(1000).times(2)).send(any(), callbacks.capture());
+        verify(kafkaProducer, timeout(200).times(2)).send(any(), callbacks.capture());
         List<Callback> calls = callbacks.getAllValues();
         calls.get(0).onCompletion(null, null);
         calls.get(1).onCompletion(null, new Exception());
-        verify(kafkaProducer, timeout(200).times(3)).send(any(), callbacks.capture());
-        calls = callbacks.getAllValues();
-        calls.get(2).onCompletion(null, null);
         completedLatch.await();
-
-        verify(instrumentation, times(2)).captureRetryAttempts();
-        verify(instrumentation, times(1)).logInfo("Pushing {} messages to retry queue topic : {}", 1, "test-topic");
-        verify(instrumentation, times(1)).logInfo("Pushing {} messages to retry queue topic : {}", 2, "test-topic");
-        verify(instrumentation, times(2)).incrementMessageSucceedCount();
-        verify(instrumentation, times(1)).incrementMessageFailCount(any(), any());
-        verify(instrumentation, times(2)).logInfo("Successfully pushed {} messages to {}", 1, "test-topic");
+        assertEquals(1, retryMessages.size());
     }
 }

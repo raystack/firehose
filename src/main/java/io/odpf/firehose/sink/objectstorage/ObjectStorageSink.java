@@ -1,5 +1,6 @@
 package io.odpf.firehose.sink.objectstorage;
 
+import io.odpf.firehose.consumer.ErrorInfo;
 import io.odpf.firehose.consumer.ErrorType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.consumer.offset.OffsetManager;
@@ -46,8 +47,7 @@ public class ObjectStorageSink extends AbstractSink {
                 Record record = messageDeSerializer.deSerialize(message);
                 offsetManager.addOffsetToBatch(writerOrchestrator.write(record), message);
             } catch (DeserializerException e) {
-                message.setErrorType(ErrorType.DESERIALIZATION_ERROR);
-                deserializationFailedMessages.add(message);
+                deserializationFailedMessages.add(new Message(message, new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR)));
             } catch (Exception e) {
                 throw new WriterIOException(e);
             }

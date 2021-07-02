@@ -1,7 +1,10 @@
-package io.odpf.firehose.sinkdecorator.dlq;
+package io.odpf.firehose.sinkdecorator.dlq.log;
 
+import io.odpf.firehose.consumer.ErrorInfo;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -19,7 +22,15 @@ public class LogDlqWriter implements DlqWriter {
         for (Message message : messages) {
             String key = new String(message.getLogKey());
             String value = new String(message.getLogMessage());
-            String error = message.getErrorType().toString();
+
+            String error = "";
+            ErrorInfo errorInfo = message.getErrorInfo();
+            if (errorInfo != null) {
+                if (errorInfo.getException() != null) {
+                    error = ExceptionUtils.getStackTrace(errorInfo.getException());
+                }
+            }
+
             instrumentation.logInfo("key: {}\nvalue: {}\nerror: {}", key, value, error);
         }
         return new LinkedList<>();
