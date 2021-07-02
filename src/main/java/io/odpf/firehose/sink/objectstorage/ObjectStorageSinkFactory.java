@@ -103,7 +103,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
                     sinkConfig.getGCSBucketName(),
                     sinkConfig.getGCSCredentialPath(),
                     sinkConfig.getGCloudProjectID());
-            return ObjectStorageFactory.createObjectStorage(sinkConfig.getObjectStorageType(), gcsConfig);
+            return ObjectStorageFactory.createObjectStorage(sinkConfig.getObjectStorageType(), gcsConfig.toMap());
         }
         throw new IllegalArgumentException("Sink Object Storage type " + sinkConfig.getObjectStorageType() + "is not supported");
     }
