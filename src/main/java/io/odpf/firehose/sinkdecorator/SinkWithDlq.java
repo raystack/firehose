@@ -19,18 +19,20 @@ public class SinkWithDlq extends SinkDecorator {
     public static final String DLQ_BATCH_KEY = "dlq-batch-key";
     private final DlqWriter writer;
     private final BackOffProvider backOffProvider;
+    private final int maxRetryAttempts;
 
     private Instrumentation instrumentation;
 
-    public SinkWithDlq(Sink sink, DlqWriter writer, BackOffProvider backOffProvider, Instrumentation instrumentation) {
+    public SinkWithDlq(Sink sink, DlqWriter writer, BackOffProvider backOffProvider, int maxRetryAttempts, Instrumentation instrumentation) {
         super(sink);
         this.writer = writer;
         this.backOffProvider = backOffProvider;
+        this.maxRetryAttempts = maxRetryAttempts;
         this.instrumentation = instrumentation;
     }
 
-    public static SinkWithDlq withInstrumentationFactory(Sink sink, DlqWriter dlqWriter, BackOffProvider backOffProvider, StatsDReporter statsDReporter) {
-        return new SinkWithDlq(sink, dlqWriter, backOffProvider, new Instrumentation(statsDReporter, SinkWithDlq.class));
+    public static SinkWithDlq withInstrumentationFactory(Sink sink, DlqWriter dlqWriter, BackOffProvider backOffProvider, int maxRetryAttempts, StatsDReporter statsDReporter) {
+        return new SinkWithDlq(sink, dlqWriter, backOffProvider, maxRetryAttempts, new Instrumentation(statsDReporter, SinkWithDlq.class));
     }
 
     /**
@@ -53,7 +55,7 @@ public class SinkWithDlq extends SinkDecorator {
         List<Message> retryQueueMessages = super.pushMessage(messages);
 
         int attemptCount = 0;
-        while (!retryQueueMessages.isEmpty()) {
+        while (attemptCount < maxRetryAttempts && !retryQueueMessages.isEmpty()) {
             instrumentation.captureRetryAttempts();
             int remainingRetryMessagesCount = retryQueueMessages.size();
 

@@ -36,6 +36,8 @@ public class SinkWithDlqTest {
     @Mock
     private DlqWriter dlqWriter;
 
+    private final int maxRetryAttempts = 5;
+
     @Before
     public void setup() {
         initMocks(this);
@@ -49,7 +51,7 @@ public class SinkWithDlqTest {
         messages.add(message);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, maxRetryAttempts, instrumentation);
 
         List<Message> pushResult = sinkWithDlq.pushMessage(messages);
         verify(dlqWriter, times(1)).write(messages);
@@ -65,13 +67,13 @@ public class SinkWithDlqTest {
         messages.add(message);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, maxRetryAttempts, instrumentation);
 
         sinkWithDlq.pushMessage(messages);
     }
 
     @Test
-    public void shouldRetryWriteMessagesToDlq() throws IOException {
+    public void shouldRetryWriteMessagesToDlqUntilRetryMessagesEmpty() throws IOException {
         Message messageWithError = new Message(message, new ErrorInfo(new IOException(), ErrorType.UNKNOWN_ERROR));
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(messageWithError);
@@ -84,7 +86,7 @@ public class SinkWithDlqTest {
         when(dlqWriter.write(messages)).thenReturn(retryMessages);
         when(dlqWriter.write(retryMessages)).thenReturn(new ArrayList<>());
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, maxRetryAttempts, instrumentation);
 
         sinkWithDlq.pushMessage(messages);
 
@@ -103,11 +105,36 @@ public class SinkWithDlqTest {
         messages.add(message);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, maxRetryAttempts, instrumentation);
 
         List<Message> pushResult = sinkWithDlq.pushMessage(messages);
         verify(sinkWithRetry, times(1)).addOffsetToBatch(SinkWithDlq.DLQ_BATCH_KEY, messages);
         verify(sinkWithRetry, times(1)).setCommittable(SinkWithDlq.DLQ_BATCH_KEY);
         assertEquals(0, pushResult.size());
+    }
+
+    @Test
+    public void shouldRetryUntilMaxRetryAttempts() throws IOException {
+        Message messageWithError = new Message(message, new ErrorInfo(new IOException(), ErrorType.UNKNOWN_ERROR));
+        ArrayList<Message> messages = new ArrayList<>();
+        messages.add(messageWithError);
+        messages.add(messageWithError);
+
+        List<Message> retryMessages = new LinkedList<>();
+        retryMessages.add(messageWithError);
+
+        when(sinkWithRetry.pushMessage(messages)).thenReturn(messages);
+        when(dlqWriter.write(messages)).thenReturn(retryMessages);
+        when(dlqWriter.write(retryMessages)).thenReturn(retryMessages);
+
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, maxRetryAttempts, instrumentation);
+
+        sinkWithDlq.pushMessage(messages);
+
+        verify(dlqWriter, times(1)).write(messages);
+        verify(dlqWriter, times(4)).write(retryMessages);
+        verify(instrumentation, times(5)).captureRetryAttempts();
+        verify(instrumentation, times(1)).incrementMessageSucceedCount();
+        verify(instrumentation, times(5)).incrementMessageFailCount(any(), any());
     }
 }

@@ -7,11 +7,11 @@ import io.jaegertracing.Configuration;
 import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.consumer.FirehoseConsumer;
-import io.odpf.firehose.consumer.GenericConsumer;
 import io.odpf.firehose.config.enums.KafkaConsumerMode;
 import io.odpf.firehose.consumer.ConsumerAndOffsetManager;
 import io.odpf.firehose.consumer.FirehoseAsyncConsumer;
+import io.odpf.firehose.consumer.FirehoseConsumer;
+import io.odpf.firehose.consumer.GenericConsumer;
 import io.odpf.firehose.consumer.KafkaConsumer;
 import io.odpf.firehose.consumer.SinkPool;
 import io.odpf.firehose.exception.EglcConfigurationException;
@@ -192,7 +192,7 @@ public class FirehoseConsumerFactory {
             return SinkWithDlq.withInstrumentationFactory(
                     new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class),
                             dlqConfig.getDlqAttemptsToTrigger(), parser),
-                    dlqWriter, backOffProvider, statsDReporter);
+                    dlqWriter, backOffProvider, dlqConfig.getDlqMaxRetryAttempts(), statsDReporter);
         } else {
             return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), parser);
         }

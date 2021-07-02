@@ -57,4 +57,8 @@ public interface DlqConfig extends AppConfig {
 
     @Key("DLQ_OBJECT_STORAGE_GCLOUD_PROJECT_ID")
     String getDlqGcsGcloudProjectID();
+
+    @Key("DLQ_MAX_RETRY_ATTEMPTS")
+    @DefaultValue("2147483647")
+    Integer getDlqMaxRetryAttempts();
 }
