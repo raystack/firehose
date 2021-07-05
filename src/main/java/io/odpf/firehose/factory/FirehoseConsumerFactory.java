@@ -192,7 +192,11 @@ public class FirehoseConsumerFactory {
             return SinkWithDlq.withInstrumentationFactory(
                     new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class),
                             dlqConfig.getDlqAttemptsToTrigger(), parser),
-                    dlqWriter, backOffProvider, dlqConfig.getDlqMaxRetryAttempts(), statsDReporter);
+                    dlqWriter,
+                    backOffProvider,
+                    dlqConfig.getDlqMaxRetryAttempts(),
+                    dlqConfig.getFailOnMaxRetryAttemptsExceeded(),
+                    statsDReporter);
         } else {
             return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), parser);
         }

@@ -37,6 +37,7 @@ public class SinkWithDlqTest {
     private DlqWriter dlqWriter;
 
     private final int maxRetryAttempts = 10;
+    private final boolean isFailOnMaxRetryAttemptsExceeded = true;
 
     @Before
     public void setup() {
@@ -51,7 +52,7 @@ public class SinkWithDlqTest {
         messages.add(message);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, maxRetryAttempts, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, maxRetryAttempts, isFailOnMaxRetryAttemptsExceeded, instrumentation);
 
         List<Message> pushResult = sinkWithDlq.pushMessage(messages);
         verify(dlqWriter, times(1)).write(messages);
@@ -67,7 +68,7 @@ public class SinkWithDlqTest {
         messages.add(message);
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, maxRetryAttempts, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, maxRetryAttempts, isFailOnMaxRetryAttemptsExceeded, instrumentation);
 
         sinkWithDlq.pushMessage(messages);
     }
@@ -86,7 +87,7 @@ public class SinkWithDlqTest {
         when(dlqWriter.write(messages)).thenReturn(retryMessages);
         when(dlqWriter.write(retryMessages)).thenReturn(new ArrayList<>());
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, maxRetryAttempts, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, maxRetryAttempts, isFailOnMaxRetryAttemptsExceeded, instrumentation);
 
         sinkWithDlq.pushMessage(messages);
 
@@ -116,8 +117,28 @@ public class SinkWithDlqTest {
         when(dlqWriter.write(retryMessages)).thenReturn(retryMessages);
         when(dlqWriter.write(retryMessages)).thenReturn(retryMessages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, currentMaxRetryAttempts, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, currentMaxRetryAttempts, isFailOnMaxRetryAttemptsExceeded, instrumentation);
 
+        sinkWithDlq.pushMessage(messages);
+    }
+
+    @Test
+    public void shouldNotThrowIOExceptionWhenFailOnMaxRetryAttemptDisabled() throws IOException {
+        int currentMaxRetryAttempts = 2;
+        Message messageWithError = new Message(message, new ErrorInfo(new IOException(), ErrorType.UNKNOWN_ERROR));
+        ArrayList<Message> messages = new ArrayList<>();
+        messages.add(messageWithError);
+        messages.add(messageWithError);
+
+        List<Message> retryMessages = new LinkedList<>();
+        retryMessages.add(messageWithError);
+
+        when(sinkWithRetry.pushMessage(messages)).thenReturn(messages);
+        when(dlqWriter.write(messages)).thenReturn(retryMessages);
+        when(dlqWriter.write(retryMessages)).thenReturn(retryMessages);
+        when(dlqWriter.write(retryMessages)).thenReturn(retryMessages);
+
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, currentMaxRetryAttempts, false, instrumentation);
         sinkWithDlq.pushMessage(messages);
     }
 
@@ -135,7 +156,7 @@ public class SinkWithDlqTest {
         messages.add(message);
         when(sinkWithRetry.pushMessage(messages)).thenReturn(retryMessages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, maxRetryAttempts, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, maxRetryAttempts, isFailOnMaxRetryAttemptsExceeded, instrumentation);
 
         List<Message> pushResult = sinkWithDlq.pushMessage(messages);
         verify(sinkWithRetry, times(1)).addOffsets(SinkWithDlq.DLQ_BATCH_KEY, retryMessages);

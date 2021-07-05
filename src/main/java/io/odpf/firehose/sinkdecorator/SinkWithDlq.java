@@ -20,19 +20,21 @@ public class SinkWithDlq extends SinkDecorator {
     private final DlqWriter writer;
     private final BackOffProvider backOffProvider;
     private final int maxRetryAttempts;
+    private final boolean isFailOnMaxRetryAttemptsExceeded;
 
     private Instrumentation instrumentation;
 
-    public SinkWithDlq(Sink sink, DlqWriter writer, BackOffProvider backOffProvider, int maxRetryAttempts, Instrumentation instrumentation) {
+    public SinkWithDlq(Sink sink, DlqWriter writer, BackOffProvider backOffProvider, int maxRetryAttempts, boolean isFailOnMaxRetryAttemptsExceeded, Instrumentation instrumentation) {
         super(sink);
         this.writer = writer;
         this.backOffProvider = backOffProvider;
         this.maxRetryAttempts = maxRetryAttempts;
+        this.isFailOnMaxRetryAttemptsExceeded = isFailOnMaxRetryAttemptsExceeded;
         this.instrumentation = instrumentation;
     }
 
-    public static SinkWithDlq withInstrumentationFactory(Sink sink, DlqWriter dlqWriter, BackOffProvider backOffProvider, int maxRetryAttempts, StatsDReporter statsDReporter) {
-        return new SinkWithDlq(sink, dlqWriter, backOffProvider, maxRetryAttempts, new Instrumentation(statsDReporter, SinkWithDlq.class));
+    public static SinkWithDlq withInstrumentationFactory(Sink sink, DlqWriter dlqWriter, BackOffProvider backOffProvider, int maxRetryAttempts, boolean isFailOnMaxRetryAttemptsExceeded, StatsDReporter statsDReporter) {
+        return new SinkWithDlq(sink, dlqWriter, backOffProvider, maxRetryAttempts, isFailOnMaxRetryAttemptsExceeded, new Instrumentation(statsDReporter, SinkWithDlq.class));
     }
 
     /**
@@ -71,8 +73,8 @@ public class SinkWithDlq extends SinkDecorator {
             backOffProvider.backOff(attemptCount++);
         }
 
-        if (!retryQueueMessages.isEmpty()) {
-            throw new IOException("exhausted maximum number of allowed retry attempts to write DLQ");
+        if (!retryQueueMessages.isEmpty() && isFailOnMaxRetryAttemptsExceeded) {
+            throw new IOException("exhausted maximum number of allowed retry attempts to write messages to DLQ");
         }
 
         return retryQueueMessages;

@@ -61,4 +61,8 @@ public interface DlqConfig extends AppConfig {
     @Key("DLQ_MAX_RETRY_ATTEMPTS")
     @DefaultValue("2147483647")
     Integer getDlqMaxRetryAttempts();
+
+    @Key("DLQ_FAIL_ON_MAX_RETRY_ATTEMPTS_EXCEEDED")
+    @DefaultValue("true")
+    boolean getFailOnMaxRetryAttemptsExceeded();
 }
