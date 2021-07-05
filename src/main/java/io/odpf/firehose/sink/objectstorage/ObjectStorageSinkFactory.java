@@ -49,7 +49,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
         WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, sinkObjectStorage);
         MessageDeSerializer messageDeSerializer = getMessageDeSerializer(sinkConfig, stencilClient);
 
-        return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer);
+        return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), sinkConfig.getFailOnDeserializationError(), writerOrchestrator, messageDeSerializer);
     }
 
     private Descriptors.Descriptor getMetadataMessageDescriptor(ObjectStorageSinkConfig sinkConfig) {
@@ -103,7 +103,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
                     sinkConfig.getGCSBucketName(),
                     sinkConfig.getGCSCredentialPath(),
                     sinkConfig.getGCloudProjectID());
-            return ObjectStorageFactory.createObjectStorage(sinkConfig.getObjectStorageType(), gcsConfig.toMap());
+            return ObjectStorageFactory.createObjectStorage(sinkConfig.getObjectStorageType(), gcsConfig.getProperties());
         }
         throw new IllegalArgumentException("Sink Object Storage type " + sinkConfig.getObjectStorageType() + "is not supported");
     }

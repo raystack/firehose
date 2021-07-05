@@ -40,7 +40,7 @@ public class DlqWriterFactory {
                         dlqConfig.getDlqGCSCredentialPath(),
                         dlqConfig.getDlqGcsGcloudProjectID());
 
-                ObjectStorage objectStorage = ObjectStorageFactory.createObjectStorage(ObjectStorageType.GCS, gcsConfig.toMap());
+                ObjectStorage objectStorage = ObjectStorageFactory.createObjectStorage(ObjectStorageType.GCS, gcsConfig.getProperties());
                 return new ObjectStorageDlqWriter(objectStorage);
 
             case LOG:

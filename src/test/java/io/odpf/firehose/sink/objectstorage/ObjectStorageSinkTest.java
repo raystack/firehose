@@ -1,7 +1,6 @@
 package io.odpf.firehose.sink.objectstorage;
 
 import io.odpf.firehose.consumer.Message;
-import io.odpf.firehose.consumer.offset.OffsetManager;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.WriterIOException;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -23,7 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -41,10 +39,11 @@ public class ObjectStorageSinkTest {
     private MessageDeSerializer messageDeSerializer;
 
     private ObjectStorageSink objectStorageSink;
+    private final boolean isFailOnDeserializationError = false;
 
     @Before
     public void setUp() throws Exception {
-        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer);
+        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", isFailOnDeserializationError, writerOrchestrator, messageDeSerializer);
     }
 
     @Test
@@ -104,9 +103,8 @@ public class ObjectStorageSinkTest {
     }
 
     @Test
-    public void shouldReturnFailedMessageWithErrorWhenDeserializationThrowDeserialzerException() throws Exception {
-        OffsetManager offsetManager = mock(OffsetManager.class);
-        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer, offsetManager);
+    public void shouldReturnFailedMessageWithErrorWhenFailOnDeserializationErrorIsDisabled() throws Exception {
+        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", isFailOnDeserializationError, writerOrchestrator, messageDeSerializer);
 
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
         Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 1, 2);
@@ -135,6 +133,27 @@ public class ObjectStorageSinkTest {
         retryMessages.forEach(message -> assertNotNull(message.getErrorInfo()));
     }
 
+    @Test(expected = DeserializerException.class)
+    public void shouldThrowExceptionWhenFailOnDeserializationErrorIsEnabled() throws Exception {
+        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", true, writerOrchestrator, messageDeSerializer);
+
+        Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
+        Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 1, 2);
+        Message message3 = new Message("".getBytes(), "".getBytes(), "booking", 1, 3);
+        Record record1 = mock(Record.class);
+        Record record2 = mock(Record.class);
+        String path1 = "/tmp/test1";
+        String path2 = "/tmp/test2";
+
+        when(messageDeSerializer.deSerialize(message1)).thenReturn(record1);
+        when(messageDeSerializer.deSerialize(message2)).thenReturn(record2);
+        when(messageDeSerializer.deSerialize(message3)).thenThrow(new DeserializerException(""));
+        when(writerOrchestrator.write(record1)).thenReturn(path1);
+        when(writerOrchestrator.write(record2)).thenReturn(path2);
+
+        objectStorageSink.pushMessage(Arrays.asList(message1, message2, message3));
+    }
+
     @Test
     public void shouldManageOffset() {
         TopicPartition topicPartition1 = new TopicPartition("booking", 1);
@@ -155,7 +174,7 @@ public class ObjectStorageSinkTest {
         offsetAndMetadataHashMap.put(topicPartition2, new OffsetAndMetadata(3));
         offsetAndMetadataHashMap.put(topicPartition3, new OffsetAndMetadata(7));
 
-        objectStorageSink.addOffsetToBatch("key", messages);
+        objectStorageSink.addOffsets("key", messages);
         objectStorageSink.setCommittable("key");
 
         Map<TopicPartition, OffsetAndMetadata> result = objectStorageSink.getCommittableOffsets();

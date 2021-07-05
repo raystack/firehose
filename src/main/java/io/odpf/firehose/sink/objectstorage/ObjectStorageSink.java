@@ -22,21 +22,19 @@ import java.util.Map;
 
 public class ObjectStorageSink extends AbstractSink {
 
+    private final boolean isFailOnDeserializationError;
     private final WriterOrchestrator writerOrchestrator;
     private final MessageDeSerializer messageDeSerializer;
     private final OffsetManager offsetManager;
 
     private List<Message> messages;
 
-    public ObjectStorageSink(Instrumentation instrumentation, String sinkType, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer) {
-        this(instrumentation, sinkType, writerOrchestrator, messageDeSerializer, new OffsetManager());
-    }
-
-    public ObjectStorageSink(Instrumentation instrumentation, String sinkType, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer, OffsetManager offsetManager) {
+    public ObjectStorageSink(Instrumentation instrumentation, String sinkType, boolean isFailOnDeserializationError, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer) {
         super(instrumentation, sinkType);
+        this.isFailOnDeserializationError = isFailOnDeserializationError;
         this.writerOrchestrator = writerOrchestrator;
-        this.offsetManager = offsetManager;
         this.messageDeSerializer = messageDeSerializer;
+        this.offsetManager = new OffsetManager();
     }
 
     @Override
@@ -47,7 +45,11 @@ public class ObjectStorageSink extends AbstractSink {
                 Record record = messageDeSerializer.deSerialize(message);
                 offsetManager.addOffsetToBatch(writerOrchestrator.write(record), message);
             } catch (DeserializerException e) {
-                deserializationFailedMessages.add(new Message(message, new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR)));
+                if (isFailOnDeserializationError) {
+                    throw e;
+                } else {
+                    deserializationFailedMessages.add(new Message(message, new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR)));
+                }
             } catch (Exception e) {
                 throw new WriterIOException(e);
             }
@@ -77,7 +79,7 @@ public class ObjectStorageSink extends AbstractSink {
     }
 
     @Override
-    public void addOffsetToBatch(Object batch, List<Message> messageList) {
+    public void addOffsets(Object batch, List<Message> messageList) {
         this.offsetManager.addOffsetToBatch(batch, messageList);
     }
 

@@ -45,15 +45,18 @@ public class SinkWithDlq extends SinkDecorator {
      */
     @Override
     public List<Message> pushMessage(List<Message> messages) throws IOException, DeserializerException {
-        super.addOffsetToBatch(DLQ_BATCH_KEY, messages);
-        List<Message> retryMessages = push(messages);
-        super.setCommittable(DLQ_BATCH_KEY);
-        return retryMessages;
+        List<Message> retryQueueMessages = super.pushMessage(messages);
+        if (super.canManageOffsets()) {
+            super.addOffsets(DLQ_BATCH_KEY, retryQueueMessages);
+            retryQueueMessages = pushToWriter(retryQueueMessages);
+            super.setCommittable(DLQ_BATCH_KEY);
+        } else {
+            retryQueueMessages = pushToWriter(retryQueueMessages);
+        }
+        return retryQueueMessages;
     }
 
-    private List<Message> push(List<Message> messages) throws IOException {
-        List<Message> retryQueueMessages = super.pushMessage(messages);
-
+    private List<Message> pushToWriter(List<Message> retryQueueMessages) throws IOException {
         int attemptCount = 0;
         while (attemptCount < maxRetryAttempts && !retryQueueMessages.isEmpty()) {
             instrumentation.captureRetryAttempts();
@@ -66,6 +69,10 @@ public class SinkWithDlq extends SinkDecorator {
             IntStream.range(0, processedMessagesCount).forEach(value -> instrumentation.incrementMessageSucceedCount());
 
             backOffProvider.backOff(attemptCount++);
+        }
+
+        if (!retryQueueMessages.isEmpty()) {
+            throw new IOException("exhausted maximum number of allowed retry attempts to write DLQ");
         }
 
         return retryQueueMessages;

@@ -47,8 +47,8 @@ public class SinkDecorator implements Sink {
     }
 
     @Override
-    public void addOffsetToBatch(Object batch, List<Message> messageList) {
-        sink.addOffsetToBatch(batch, messageList);
+    public void addOffsets(Object batch, List<Message> messageList) {
+        sink.addOffsets(batch, messageList);
     }
 
     @Override

@@ -4,8 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
 
 @AllArgsConstructor
 @Data
@@ -21,8 +20,8 @@ public class GCSConfig {
     private String credentialPath;
     private String gcsProjectId;
 
-    public Map<String, Object> toMap() {
-        HashMap<String, Object> properties = new HashMap<>();
+    public Properties getProperties() {
+        Properties properties = new Properties();
         properties.put(LOCAL_BASE_PATH_KEY, localBasePath);
         properties.put(GCS_BUCKET_NAME_KEY, gcsBucketName);
         properties.put(CREDENTIAL_PATH_KEY, credentialPath);
@@ -30,11 +29,11 @@ public class GCSConfig {
         return properties;
     }
 
-    public static GCSConfig create(Map<String, Object> properties) {
-        Path localBasePath = (Path) properties.get(LOCAL_BASE_PATH_KEY);
-        String gcsBucketName = (String) properties.get(GCS_BUCKET_NAME_KEY);
-        String credentialPath = (String) properties.get(CREDENTIAL_PATH_KEY);
-        String gcsProjectId = (String) properties.get(GCS_PROJECT_ID_KEY);
+    public static GCSConfig create(Properties config) {
+        Path localBasePath = (Path) config.get(LOCAL_BASE_PATH_KEY);
+        String gcsBucketName = (String) config.get(GCS_BUCKET_NAME_KEY);
+        String credentialPath = (String) config.get(CREDENTIAL_PATH_KEY);
+        String gcsProjectId = (String) config.get(GCS_PROJECT_ID_KEY);
         return new GCSConfig(localBasePath, gcsBucketName, credentialPath, gcsProjectId);
     }
 }

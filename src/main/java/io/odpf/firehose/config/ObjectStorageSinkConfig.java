@@ -50,6 +50,10 @@ public interface ObjectStorageSinkConfig extends AppConfig {
     @DefaultValue("dt=")
     String getTimePartitioningDatePrefix();
 
+    @Key("SINK_OBJECT_STORAGE_FAIL_ON_DESERIALIZATION_ERROR")
+    @DefaultValue("true")
+    boolean getFailOnDeserializationError();
+
     @Key("SINK_OBJECT_STORAGE_TIME_PARTITIONING_TYPE")
     @DefaultValue("day")
     @ConverterClass(ObjectStorageSinkPartitioningTypeConverter.class)
