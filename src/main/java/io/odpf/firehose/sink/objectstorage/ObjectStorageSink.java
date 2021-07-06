@@ -23,8 +23,8 @@ import java.util.Map;
 public class ObjectStorageSink extends AbstractSink {
 
     private final WriterOrchestrator writerOrchestrator;
-    private final MessageDeSerializer messageDeSerializer;
     private final OffsetManager offsetManager = new OffsetManager();
+    private final MessageDeSerializer messageDeSerializer;
 
     private List<Message> messages;
 
