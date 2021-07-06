@@ -33,9 +33,6 @@ import java.util.Map;
 
 public class ObjectStorageSinkFactory implements SinkFactory {
 
-    public ObjectStorageSinkFactory() {
-    }
-
     @Override
     public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         ObjectStorageSinkConfig sinkConfig = ConfigFactory.create(ObjectStorageSinkConfig.class, configuration);
@@ -49,7 +46,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
         WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, sinkObjectStorage);
         MessageDeSerializer messageDeSerializer = getMessageDeSerializer(sinkConfig, stencilClient);
 
-        return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), sinkConfig.getFailOnDeserializationError(), writerOrchestrator, messageDeSerializer);
+        return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer);
     }
 
     private Descriptors.Descriptor getMetadataMessageDescriptor(ObjectStorageSinkConfig sinkConfig) {

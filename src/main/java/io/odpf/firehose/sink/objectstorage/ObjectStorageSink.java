@@ -22,34 +22,27 @@ import java.util.Map;
 
 public class ObjectStorageSink extends AbstractSink {
 
-    private final boolean isFailOnDeserializationError;
     private final WriterOrchestrator writerOrchestrator;
     private final MessageDeSerializer messageDeSerializer;
-    private final OffsetManager offsetManager;
+    private final OffsetManager offsetManager = new OffsetManager();
 
     private List<Message> messages;
 
-    public ObjectStorageSink(Instrumentation instrumentation, String sinkType, boolean isFailOnDeserializationError, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer) {
+    public ObjectStorageSink(Instrumentation instrumentation, String sinkType, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer) {
         super(instrumentation, sinkType);
-        this.isFailOnDeserializationError = isFailOnDeserializationError;
         this.writerOrchestrator = writerOrchestrator;
         this.messageDeSerializer = messageDeSerializer;
-        this.offsetManager = new OffsetManager();
     }
 
     @Override
-    public List<Message> execute() throws Exception {
+    protected List<Message> execute() throws Exception {
         List<Message> deserializationFailedMessages = new LinkedList<>();
         for (Message message : messages) {
             try {
                 Record record = messageDeSerializer.deSerialize(message);
                 offsetManager.addOffsetToBatch(writerOrchestrator.write(record), message);
             } catch (DeserializerException e) {
-                if (isFailOnDeserializationError) {
-                    throw e;
-                } else {
-                    deserializationFailedMessages.add(new Message(message, new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR)));
-                }
+                deserializationFailedMessages.add(new Message(message, new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR)));
             } catch (Exception e) {
                 throw new WriterIOException(e);
             }

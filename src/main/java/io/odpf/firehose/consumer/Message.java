@@ -55,14 +55,7 @@ public class Message {
      * @param consumeTimestamp
      */
     public Message(byte[] logKey, byte[] logMessage, String topic, int partition, long offset, Headers headers, long timestamp, long consumeTimestamp) {
-        this.logKey = logKey;
-        this.logMessage = logMessage;
-        this.topic = topic;
-        this.partition = partition;
-        this.offset = offset;
-        this.headers = headers;
-        this.timestamp = timestamp;
-        this.consumeTimestamp = consumeTimestamp;
+        this(logKey, logMessage, topic, partition, offset, headers, timestamp, consumeTimestamp, null);
     }
 
     public Message(Message message, ErrorInfo errorInfo) {

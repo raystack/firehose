@@ -17,6 +17,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -39,11 +40,10 @@ public class ObjectStorageSinkTest {
     private MessageDeSerializer messageDeSerializer;
 
     private ObjectStorageSink objectStorageSink;
-    private final boolean isFailOnDeserializationError = false;
 
     @Before
     public void setUp() throws Exception {
-        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", isFailOnDeserializationError, writerOrchestrator, messageDeSerializer);
+        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer);
     }
 
     @Test
@@ -73,7 +73,7 @@ public class ObjectStorageSinkTest {
         when(messageDeSerializer.deSerialize(message1)).thenReturn(record1);
         when(writerOrchestrator.write(record1)).thenThrow(new IOException("error"));
 
-        objectStorageSink.pushMessage(Arrays.asList(message1));
+        objectStorageSink.pushMessage(Collections.singletonList(message1));
     }
 
     @Test
@@ -103,8 +103,8 @@ public class ObjectStorageSinkTest {
     }
 
     @Test
-    public void shouldReturnFailedMessageWithErrorWhenFailOnDeserializationErrorIsDisabled() throws Exception {
-        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", isFailOnDeserializationError, writerOrchestrator, messageDeSerializer);
+    public void shouldReturnFailedMessageWithErrorInfo() throws Exception {
+        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer);
 
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
         Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 1, 2);
@@ -131,27 +131,6 @@ public class ObjectStorageSinkTest {
         verify(writerOrchestrator, times(2)).write(any(Record.class));
         assertEquals(retryMessages.size(), 4);
         retryMessages.forEach(message -> assertNotNull(message.getErrorInfo()));
-    }
-
-    @Test(expected = DeserializerException.class)
-    public void shouldThrowExceptionWhenFailOnDeserializationErrorIsEnabled() throws Exception {
-        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", true, writerOrchestrator, messageDeSerializer);
-
-        Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
-        Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 1, 2);
-        Message message3 = new Message("".getBytes(), "".getBytes(), "booking", 1, 3);
-        Record record1 = mock(Record.class);
-        Record record2 = mock(Record.class);
-        String path1 = "/tmp/test1";
-        String path2 = "/tmp/test2";
-
-        when(messageDeSerializer.deSerialize(message1)).thenReturn(record1);
-        when(messageDeSerializer.deSerialize(message2)).thenReturn(record2);
-        when(messageDeSerializer.deSerialize(message3)).thenThrow(new DeserializerException(""));
-        when(writerOrchestrator.write(record1)).thenReturn(path1);
-        when(writerOrchestrator.write(record2)).thenReturn(path2);
-
-        objectStorageSink.pushMessage(Arrays.asList(message1, message2, message3));
     }
 
     @Test

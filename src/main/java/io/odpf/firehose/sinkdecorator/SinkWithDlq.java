@@ -8,7 +8,10 @@ import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 /**
@@ -40,25 +43,48 @@ public class SinkWithDlq extends SinkDecorator {
     /**
      * Pushes all the failed messages to kafka as DLQ.
      *
-     * @param messages list of messages to push
+     * @param inputMessages list of messages to push
      * @return list of failed messaged
      * @throws IOException
      * @throws DeserializerException
      */
     @Override
-    public List<Message> pushMessage(List<Message> messages) throws IOException, DeserializerException {
-        List<Message> retryQueueMessages = super.pushMessage(messages);
+    public List<Message> pushMessage(List<Message> inputMessages) throws IOException, DeserializerException {
+        List<Message> dlqMessages = super.pushMessage(inputMessages);
+
+        List<Message> dlqWriteFailedMessages;
         if (super.canManageOffsets()) {
-            super.addOffsets(DLQ_BATCH_KEY, retryQueueMessages);
-            retryQueueMessages = pushToWriter(retryQueueMessages);
+            dlqWriteFailedMessages = pushToWriter(dlqMessages);
+            LinkedList<Message> dlqProcessedMessages = relativeComplementSet(dlqMessages, dlqWriteFailedMessages);
+            super.addOffsets(DLQ_BATCH_KEY, dlqProcessedMessages);
             super.setCommittable(DLQ_BATCH_KEY);
         } else {
-            retryQueueMessages = pushToWriter(retryQueueMessages);
+            dlqWriteFailedMessages = pushToWriter(dlqMessages);
         }
-        return retryQueueMessages;
+
+        if (!dlqWriteFailedMessages.isEmpty()) {
+            if (isFailOnMaxRetryAttemptsExceeded) {
+                throw new IOException("exhausted maximum number of allowed retry attempts to write messages to DLQ");
+            }
+            if (super.canManageOffsets()) {
+                super.addOffsets(DLQ_BATCH_KEY, dlqWriteFailedMessages);
+                super.setCommittable(DLQ_BATCH_KEY);
+            }
+        }
+
+        return dlqWriteFailedMessages;
     }
 
-    private List<Message> pushToWriter(List<Message> retryQueueMessages) throws IOException {
+    private LinkedList<Message> relativeComplementSet(List<Message> left, List<Message> right) {
+        HashSet<Message> leftMessages = new HashSet<>(left);
+        HashSet<Message> rightMessages = new HashSet<>(right);
+        leftMessages.removeAll(rightMessages);
+
+        return new LinkedList<>(leftMessages);
+    }
+
+    private List<Message> pushToWriter(List<Message> messages) throws IOException {
+        List<Message> retryQueueMessages = new LinkedList<>(messages);
         int attemptCount = 0;
         while (attemptCount < maxRetryAttempts && !retryQueueMessages.isEmpty()) {
             instrumentation.captureRetryAttempts();
@@ -66,15 +92,14 @@ public class SinkWithDlq extends SinkDecorator {
 
             retryQueueMessages = writer.write(retryQueueMessages);
 
-            retryQueueMessages.forEach(message -> instrumentation.incrementMessageFailCount(message, message.getErrorInfo().getException()));
+            retryQueueMessages.forEach(message -> Optional.ofNullable(message.getErrorInfo())
+                    .flatMap(errorInfo -> Optional.ofNullable(errorInfo.getException()))
+                    .ifPresent(e -> instrumentation.incrementMessageFailCount(message, e)));
+
             int processedMessagesCount = remainingRetryMessagesCount - retryQueueMessages.size();
             IntStream.range(0, processedMessagesCount).forEach(value -> instrumentation.incrementMessageSucceedCount());
 
             backOffProvider.backOff(attemptCount++);
-        }
-
-        if (!retryQueueMessages.isEmpty() && isFailOnMaxRetryAttemptsExceeded) {
-            throw new IOException("exhausted maximum number of allowed retry attempts to write messages to DLQ");
         }
 
         return retryQueueMessages;
