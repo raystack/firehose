@@ -39,18 +39,18 @@ public interface Sink extends Closeable {
      * Method to register kafka offsets that need to be committed.
      * This method should be implemented when sink manages the commit offsets by themself.
      * Or when {@link Sink#canManageOffsets()} return true
-     * @param batch
+     * @param key
      * @param messageList
      */
-    default void addOffsets(Object batch, List<Message> messageList) {
+    default void addOffsets(Object key, List<Message> messageList) {
     }
 
     /**
      * Method to mark the registered offsets ready to be committed.
      * This method should be implemented when sink manages the commit offsets by themself.
-     * @param batch
+     * @param key
      */
-    default void setCommittable(Object batch) {
+    default void setCommittable(Object key) {
     }
 
     /**

@@ -72,12 +72,12 @@ public class ObjectStorageSink extends AbstractSink {
     }
 
     @Override
-    public void addOffsets(Object batch, List<Message> messageList) {
-        this.offsetManager.addOffsetToBatch(batch, messageList);
+    public void addOffsets(Object key, List<Message> messageList) {
+        this.offsetManager.addOffsetToBatch(key, messageList);
     }
 
     @Override
-    public void setCommittable(Object batch) {
-        this.offsetManager.setCommittable(batch);
+    public void setCommittable(Object key) {
+        this.offsetManager.setCommittable(key);
     }
 }
