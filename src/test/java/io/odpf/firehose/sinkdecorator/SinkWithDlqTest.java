@@ -210,4 +210,17 @@ public class SinkWithDlqTest {
         verify(sinkWithRetry, times(1)).setCommittable(SinkWithDlq.DLQ_BATCH_KEY);
         assertEquals(0, pushResult.size());
     }
+
+    @Test
+    public void shouldNotRegisterAndCommitOffsetWhenNoMessagesIsProcessedByDLQ() throws IOException {
+        when(dlqWriter.write(anyList())).thenReturn(new LinkedList<>());
+        ArrayList<Message> messages = new ArrayList<>();
+        when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
+
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, maxRetryAttempts, isFailOnMaxRetryAttemptsExceeded, instrumentation);
+
+        sinkWithDlq.pushMessage(messages);
+        verify(sinkWithRetry, never()).addOffsets(anyString(), anyList());
+        verify(sinkWithRetry, never()).setCommittable(anyString());
+    }
 }

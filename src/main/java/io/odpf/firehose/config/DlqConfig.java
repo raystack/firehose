@@ -1,6 +1,8 @@
 package io.odpf.firehose.config;
 
 import io.odpf.firehose.config.converter.DlqWriterTypeConverter;
+import io.odpf.firehose.config.converter.ObjectStorageTypeConverter;
+import io.odpf.firehose.objectstorage.ObjectStorageType;
 import io.odpf.firehose.sinkdecorator.dlq.DLQWriterType;
 
 public interface DlqConfig extends AppConfig {
@@ -48,6 +50,11 @@ public interface DlqConfig extends AppConfig {
     @ConverterClass(DlqWriterTypeConverter.class)
     @DefaultValue("LOG")
     DLQWriterType getDlqWriterType();
+
+    @Key("DLQ_OBJECT_STORAGE_TYPE")
+    @DefaultValue("GCS")
+    @ConverterClass(ObjectStorageTypeConverter.class)
+    ObjectStorageType getObjectStorageType();
 
     @Key("DLQ_OBJECT_STORAGE_BUCKET_NAME")
     String getDlqObjectStorageBucketName();

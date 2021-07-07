@@ -6,7 +6,6 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.objectstorage.ObjectStorageFactory;
-import io.odpf.firehose.objectstorage.ObjectStorageType;
 import io.odpf.firehose.objectstorage.gcs.GCSConfig;
 import io.odpf.firehose.sinkdecorator.dlq.kafka.KafkaDlqWriter;
 import io.odpf.firehose.sinkdecorator.dlq.log.LogDlqWriter;
@@ -40,7 +39,7 @@ public class DlqWriterFactory {
                         dlqConfig.getDlqGCSCredentialPath(),
                         dlqConfig.getDlqGcsGcloudProjectID());
 
-                ObjectStorage objectStorage = ObjectStorageFactory.createObjectStorage(ObjectStorageType.GCS, gcsConfig.getProperties());
+                ObjectStorage objectStorage = ObjectStorageFactory.createObjectStorage(dlqConfig.getObjectStorageType(), gcsConfig.getProperties());
                 return new ObjectStorageDlqWriter(objectStorage);
 
             case LOG:

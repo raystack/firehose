@@ -55,11 +55,17 @@ public class SinkWithDlq extends SinkDecorator {
         List<Message> dlqWriteFailedMessages;
         if (super.canManageOffsets()) {
             dlqWriteFailedMessages = pushToWriter(dlqMessages);
+
             LinkedList<Message> dlqProcessedMessages = relativeComplementSet(dlqMessages, dlqWriteFailedMessages);
-            super.addOffsets(DLQ_BATCH_KEY, dlqProcessedMessages);
-            super.setCommittable(DLQ_BATCH_KEY);
+            if (!dlqProcessedMessages.isEmpty()) {
+                super.addOffsets(DLQ_BATCH_KEY, dlqProcessedMessages);
+                super.setCommittable(DLQ_BATCH_KEY);
+            }
+            instrumentation.logInfo("DLQ processed messages: {}", dlqProcessedMessages.size());
         } else {
             dlqWriteFailedMessages = pushToWriter(dlqMessages);
+            LinkedList<Message> dlqProcessedMessages = relativeComplementSet(dlqMessages, dlqWriteFailedMessages);
+            instrumentation.logInfo("DLQ processed messages: {}", dlqProcessedMessages.size());
         }
 
         if (!dlqWriteFailedMessages.isEmpty()) {
@@ -70,6 +76,7 @@ public class SinkWithDlq extends SinkDecorator {
                 super.addOffsets(DLQ_BATCH_KEY, dlqWriteFailedMessages);
                 super.setCommittable(DLQ_BATCH_KEY);
             }
+            instrumentation.logInfo("failed to be processed by DLQ messages: {}", dlqWriteFailedMessages.size());
         }
 
         return dlqWriteFailedMessages;
