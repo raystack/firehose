@@ -1,4 +1,4 @@
-# Configurations
+# Configuration
 
 This page contains reference for all the application configurations for Firehose.
 
@@ -16,28 +16,84 @@ This page contains reference for all the application configurations for Firehose
 
 ## Generic
 
-A log sink firehose requires the following variables to be set
+All sinks in Firehose requires the following variables to be set
 
 ### `SOURCE_KAFKA_BROKERS`
 
-Deifnes the bootstrap server of kafka brokers to consume from.
+Defines the bootstrap server of Kafka brokers to consume from.
 
 * Example value: `localhost:9092`
 * Type: `required`
 
 ### `SOURCE_KAFKA_TOPIC`
 
-Defines the list of kafka topics to consume from.
+Defines the list of Kafka topics to consume from.
 
 * Example value: `test-topic`
 * Type: `required`
 
+### `SOURCE_KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS`
+
+Defines the batch size of Kafka messages
+
+* Example value: `705`
+* Type: `optional`
+* Default value: `500`
+
+### `SOURCE_KAFKA_ASYNC_COMMIT_ENABLE`
+
+Defines whether to enable async commit for Kafka consumer
+
+* Example value: `false`
+* Type: `optional`
+* Default value: `true`
+
+### `SOURCE_KAFKA_CONSUMER_CONFIG_SESSION_TIMEOUT_MS`
+
+Defines the duration of session timeout in milliseconds
+
+* Example value: `700`
+* Type: `optional`
+* Default value: `10000`
+
+### `SOURCE_KAFKA_COMMIT_ONLY_CURRENT_PARTITIONS_ENABLE`
+
+Defines whether to commit only current partitions
+
+* Example value: `false`
+* Type: `optional`
+* Default value: `true`
+
+### `SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_COMMIT_ENABLE`
+
+Defines whether to enable auto commit for Kafka consumer
+
+* Example value: `705`
+* Type: `optional`
+* Default value: `500`
+
 ### `SOURCE_KAFKA_CONSUMER_GROUP_ID`
 
-Deifnes the Kafka consumer group ID for your Firehose deployment.
+Defines the Kafka consumer group ID for your Firehose deployment.
 
 * Example value: `sample-group-id`
 * Type: `required`
+
+### `SOURCE_KAFKA_POLL_TIMEOUT_MS`
+
+Defines the duration of poll timeout for Kafka messages in milliseconds
+
+* Example value: `80000`
+* Type: `required`
+* Default: `9223372036854775807`
+
+### `SOURCE_KAFKA_CONSUMER_CONFIG_METADATA_MAX_AGE_MS`
+
+Defines the maximum age of config metadata in milliseconds
+
+* Example value: `700`
+* Type: `optional`
+* Default value: `500`
 
 ### `KAFKA_RECORD_PARSER_MODE`
 
@@ -48,17 +104,32 @@ Decides whether to parse key or message \(as per your input proto\) from incomin
 
 ### `SINK_TYPE`
 
-Deifnes the Firehose sink type.
+Defines the Firehose sink type.
 
 * Example value: `log`
 * Type: `required`
 
 ### `INPUT_SCHEMA_PROTO_CLASS`
 
-Deifnes the fully qualified name of the input proto class.
+Defines the fully qualified name of the input proto class.
 
 * Example value: `com.tests.TestMessage`
 * Type: `required`
+
+### `SCHEMA_REGISTRY_STENCIL_ENABLE`
+
+Defines whether to enable Stencil Schema registry
+
+* Example value: `true`
+* Type: `optional`
+* Default value: `false`
+
+### `SCHEMA_REGISTRY_STENCIL_URLS`
+
+Defines the URL of the Proto Descriptor set file in the Stencil Server
+
+* Example value: `http://localhost:8000/v1/namespaces/quickstart/descriptors/example/versions/latest`
+* Type: `optional`
 
 ## HTTP Sink
 
@@ -196,7 +267,7 @@ Space-delimited scope overrides. If scope override is not provided, no scopes wi
 
 ## JDBC Sink
 
-A JDBC sink firehose \(`SINK_TYPE`=`jdbc`\) requires the following variables to be set along with Generic ones
+A JDBC sink Firehose \(`SINK_TYPE`=`jdbc`\) requires the following variables to be set along with Generic ones
 
 ### `SINK_JDBC_URL`
 
@@ -274,7 +345,7 @@ Defines the maximum size for the database connection pool.
 
 ## Influx Sink
 
-An Influx sink firehose \(`SINK_TYPE`=`influxdb`\) requires the following variables to be set along with Generic ones
+An Influx sink Firehose \(`SINK_TYPE`=`influxdb`\) requires the following variables to be set along with Generic ones
 
 ### `SINK_INFLUX_URL`
 
@@ -343,7 +414,7 @@ This field is used to give away the name of the measurement that needs to be use
 
 ## Redis Sink
 
-A Redis sink firehose \(`SINK_TYPE`=`redis`\) requires the following variables to be set along with Generic ones
+A Redis sink Firehose \(`SINK_TYPE`=`redis`\) requires the following variables to be set along with Generic ones
 
 ### `SINK_REDIS_URLS`
 
@@ -414,7 +485,7 @@ The Redis deployment you are using. At present, we support `Standalone` and `Clu
 
 ## Elasticsearch Sink
 
-An ES sink firehose \(`SINK_TYPE`=`elasticsearch`\) requires the following variables to be set along with Generic ones
+An ES sink Firehose \(`SINK_TYPE`=`elasticsearch`\) requires the following variables to be set along with Generic ones
 
 ### `SINK_ES_CONNECTION_URLS`
 
@@ -488,7 +559,7 @@ Defines the number of shard copies that must be active before proceeding with th
 
 ### `SINK_ES_RETRY_STATUS_CODE_BLACKLIST`
 
-List of comma-separated status codes for which firehose should not retry in case of UPDATE ONLY mode is TRUE
+List of comma-separated status codes for which Firehose should not retry in case of UPDATE ONLY mode is TRUE
 
 * Example value: `404,400`
 * Type: `optional`
@@ -502,7 +573,7 @@ Defines the proto field whose value will be used for routing documents to a part
 
 ## GRPC Sink
 
-A GRPC sink firehose \(`SINK_TYPE`=`grpc`\) requires the following variables to be set along with Generic ones
+A GRPC sink Firehose \(`SINK_TYPE`=`grpc`\) requires the following variables to be set along with Generic ones
 
 ### `SINK_GRPC_SERVICE_HOST`
 
@@ -534,7 +605,7 @@ Defines the Proto which would be the response of the GRPC Method.
 
 ## Prometheus Sink
 
-A Prometheus sink firehose (`SINK_TYPE`=`prometheus`) requires the following variables to be set along with Generic ones.
+A Prometheus sink Firehose \(`SINK_TYPE`=`prometheus`\) requires the following variables to be set along with Generic ones.
 
 ### `SINK_PROM_SERVICE_URL`
 
@@ -579,20 +650,19 @@ Defines the HTTP headers required to push the data to the above URL.
 The mapping of fields and the corresponding proto index which will be set as the metric name on Cortex. This is a JSON field.
 
 * Example value: `{"2":"tip_amount","1":"feedback_ratings"}`
-	- Proto field value with index 2 will be stored as metric named `tip_amount` in Cortex and so on
+  * Proto field value with index 2 will be stored as metric named `tip_amount` in Cortex and so on
 * Type: `required`
 
 ### `SINK_PROM_LABEL_NAME_PROTO_INDEX_MAPPING`
 
-The mapping of proto fields to metric lables. This is a JSON field.
-Each metric defined in `SINK_PROM_METRIC_NAME_PROTO_INDEX_MAPPING` will have all the labels defined here.
+The mapping of proto fields to metric lables. This is a JSON field. Each metric defined in `SINK_PROM_METRIC_NAME_PROTO_INDEX_MAPPING` will have all the labels defined here.
 
 * Example value: `{"6":"customer_id"}`
 * Type: `optional`
 
 ### `SINK_PROM_WITH_EVENT_TIMESTAMP`
 
-If set to true, metric timestamp will using event timestamp otherwise it will using timestamp when firehose push to endpoint.
+If set to true, metric timestamp will using event timestamp otherwise it will using timestamp when Firehose push to endpoint.
 
 * Example value: `false`
 * Type: `optional`

@@ -18,19 +18,19 @@ Service-level Indicators \(SLIs\) are the measurements used to calculate the per
 
 ## Type Details
 
-Collection of all the generic configurations in a firehose.
+Collection of all the generic configurations in a Firehose.
 
 ### `Sink`
 
-* The type of sink of the firehose. It could be 'log', 'HTTP', 'DB', 'redis', 'influx' or 'Elasticsearch'
+* The type of sink of the Firehose. It could be 'log', 'HTTP', 'DB', 'redis', 'influx' or 'Elasticsearch'
 
 ### `Team`
 
-* Team who has the ownership for the given firehose.
+* Team who has the ownership for the given Firehose.
 
 ### `Proto Schema`
 
-* The proto class used for creating the firehose
+* The proto class used for creating the Firehose
 
 ### `Stream`
 
@@ -38,7 +38,7 @@ Collection of all the generic configurations in a firehose.
 
 ## Overview
 
-Some of the most important metrics related to firehose that gives you an overview of the current state of it.
+Some of the most important metrics related to Firehose that gives you an overview of the current state of it.
 
 ### `ConsumerLag: MaxLag`
 
@@ -64,9 +64,9 @@ Some of the most important metrics related to firehose that gives you an overvie
 
 * 99p of batch size distribution for pulled and pushed messages per pod. 
 
-### `Time spent in firehose`
+### `Time spent in Firehose`
 
-* Latency introduced by firehose \(time before sending to sink - time when reading from Kafka\). Note: It could be high if the response time of the sink is higher as subsequent batches could be delayed. 
+* Latency introduced by Firehose \(time before sending to sink - time when reading from Kafka\). Note: It could be high if the response time of the sink is higher as subsequent batches could be delayed. 
 
 ### `Time spent in pipeline`
 
@@ -78,7 +78,7 @@ Some of the most important metrics related to firehose that gives you an overvie
 
 ## Pods Health
 
-Since firehose runs on Kube, this gives a nice health details of each pods.
+Since Firehose runs on Kube, this gives a nice health details of each pods.
 
 ### `JVM Lifetime`
 
@@ -190,19 +190,19 @@ Listing some of the Kafka consumer metrics here.
 
 ## Error
 
-This gives you a nice insight about the critical and noncritical exceptions happened in the firehose.
+This gives you a nice insight about the critical and noncritical exceptions happened in the Firehose.
 
 ### `Fatal Error`
 
-* Count of all the exception raised by the pods which can restart the firehose.
+* Count of all the exception raised by the pods which can restart the Firehose.
 
 ### `Nonfatal Error`
 
-* Count of all the exception raised by the firehose which will not restart the firehose and firehose will keep retrying.
+* Count of all the exception raised by the Firehose which will not restart the Firehose and Firehose will keep retrying.
 
 ## Memory
 
-Details on memory used by the firehose for different tasks.
+Details on memory used by the Firehose for different tasks.
 
 ### `Heap Memory Usage`
 
@@ -305,27 +305,27 @@ HTTP Sink response code details.
 
 ### `2XX Response Count`
 
-* Total number of 2xx response received by firehose from the HTTP service,
+* Total number of 2xx response received by Firehose from the HTTP service,
 
 ### `4XX Response Count`
 
-* Total number of 4xx response received by firehose from the HTTP service.
+* Total number of 4xx response received by Firehose from the HTTP service.
 
 ### `5XX Response Count`
 
-* Total number of 5xx response received by firehose from the HTTP service.
+* Total number of 5xx response received by Firehose from the HTTP service.
 
 ### `No Response Count`
 
-* Total number of No response received by firehose from the HTTP service.
+* Total number of No response received by Firehose from the HTTP service.
 
 ## Filter
 
-Since firehose supports filtration based on some data, these metrics give some information related to that.
+Since Firehose supports filtration based on some data, these metrics give some information related to that.
 
 ### `Filter Type`
 
-* Type of filter in the firehose. It will be one of the "none", "key", "message".
+* Type of filter in the Firehose. It will be one of the "none", "key", "message".
 
 ### `Total Messages filtered`
 

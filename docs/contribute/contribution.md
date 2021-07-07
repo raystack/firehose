@@ -1,10 +1,29 @@
 # Contribution Process
 
-The following is a set of guidelines for contributing to Firehose. These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request. Here are some important resources:
+The following is a set of guidelines for contributing to Firehose. These are mostly guidelines, not rules. Use your best judgement, and feel free to propose changes to this document in a pull request. Here are some important resources:
 
 * [Concepts](https://github.com/odpf/firehose/tree/main/docs/concepts) section will explain you about Firehose architecture,
 * Our [roadmap](https://github.com/odpf/firehose/blob/main/docs/roadmap.md) is the 10k foot view of where we're going, and
 * Github [issues](https://github.com/odpf/firehose/issues) track the ongoing and reported issues.
+
+Development of Firehose happens in the open on GitHub, and we are grateful to the community for contributing bugfixes and improvements. Read below to learn how you can take part in improving Firehose.
+
+## What to contribute
+
+Your contribution might make it easier for other people to use this product. Better usability often means a bigger user base, which results in more contributors, which in turn can lead to higher-quality software in the long run.
+
+You don’t have to be a developer to make a contribution. We also need technical writers to improve our documentation and designers to make our interface more intuitive and attractive. In fact, We are actively looking for contributors who have these skill sets.
+
+The following parts are open for contribution:
+
+* Adding a new functionality
+* Improve an existing functionality
+* Adding a new sink
+* Improve an existing sink
+* Provide suggestion to make the user experience better
+* Provide suggestions to Improve the documentation
+
+To help you get your feet wet and get you familiar with our contribution process, we have a list of [good first issues](https://github.com/odpf/firehose/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started.
 
 ## How can I contribute?
 

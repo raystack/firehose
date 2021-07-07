@@ -10,7 +10,7 @@ Discover why users choose Firehose as their main Kafka Consumer
 
 * **Sinks** Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB\(JDBC\), InfluxDB, Elastic Search & Redis.
 * **Scale** Firehose scales in an instant, both vertically and horizontally, for high-performance streaming sink and zero data drops.
-* **Extensibility** Add your own sink to firehose with a clearly defined interface or choose from already provided ones.
+* **Extensibility** Add your own sink to Firehose with a clearly defined interface or choose from already provided ones.
 * **Runtime** Firehose can run inside containers or VMs in a fully managed runtime environment like Kubernetes.
 * **Metrics** Always know what’s going on with your deployment with built-in monitoring of throughput, response times, errors, and more.
 
@@ -40,8 +40,8 @@ Following sinks are supported in the Firehose
 
 Explore the following resources to get started with Firehose:
 
-* [Guides](guides/create_firehose.md) provide guidance on creating Firehose with different sinks.
-* [Concepts](concepts/architecture.md) describe all important Firehose concepts.
-* [Reference](https://github.com/odpf/firehose/tree/285cecbf817c90ade70bc11a184bb3698d3b6e86/docs/reference/cofiguration.md) contains details about configurations, metrics, and other aspects of Firehose.
+* [Guides](guides/overview.md) provide guidance on creating Firehose with different sinks.
+* [Concepts](concepts/overview.md) describe all important Firehose concepts.
+* [Reference](reference/configuration.md) contains details about configurations, metrics, FAQs and other aspects of Firehose.
 * [Contributing](contribute/contribution.md) contains resources for anyone who wants to contribute to Firehose.
 
