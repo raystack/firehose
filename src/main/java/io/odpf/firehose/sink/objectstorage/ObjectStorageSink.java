@@ -1,11 +1,15 @@
 package io.odpf.firehose.sink.objectstorage;
 
+import io.odpf.firehose.consumer.ErrorInfo;
+import io.odpf.firehose.consumer.ErrorType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.consumer.offset.OffsetManager;
 import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.exception.WriterIOException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
+import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.writer.WriterOrchestrator;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
@@ -21,6 +25,7 @@ public class ObjectStorageSink extends AbstractSink {
     private final WriterOrchestrator writerOrchestrator;
     private final OffsetManager offsetManager = new OffsetManager();
     private final MessageDeSerializer messageDeSerializer;
+
     private List<Message> messages;
 
     public ObjectStorageSink(Instrumentation instrumentation, String sinkType, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer) {
@@ -31,10 +36,18 @@ public class ObjectStorageSink extends AbstractSink {
 
     @Override
     protected List<Message> execute() throws Exception {
+        List<Message> deserializationFailedMessages = new LinkedList<>();
         for (Message message : messages) {
-            offsetManager.addOffsetToBatch(writerOrchestrator.write(messageDeSerializer.deSerialize(message)), message);
+            try {
+                Record record = messageDeSerializer.deSerialize(message);
+                offsetManager.addOffsetToBatch(writerOrchestrator.write(record), message);
+            } catch (DeserializerException e) {
+                deserializationFailedMessages.add(new Message(message, new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR)));
+            } catch (Exception e) {
+                throw new WriterIOException(e);
+            }
         }
-        return new LinkedList<>();
+        return deserializationFailedMessages;
     }
 
     @Override
@@ -58,4 +71,13 @@ public class ObjectStorageSink extends AbstractSink {
         return true;
     }
 
+    @Override
+    public void addOffsets(Object key, List<Message> messageList) {
+        this.offsetManager.addOffsetToBatch(key, messageList);
+    }
+
+    @Override
+    public void setCommittable(Object key) {
+        this.offsetManager.setCommittable(key);
+    }
 }

@@ -19,7 +19,7 @@ public interface Sink extends Closeable {
     /**
      * method to write batch of messages read from kafka.
      * The logic of how to persist the data goes in here.
-     *
+     * in the future this method should return Response object instead of list of messages
      * @param message list of {@see EsbMessage}
      * @return the list of messages
      * @throws IOException           in case of error conditions while persisting it to the custom sink.
@@ -27,11 +27,38 @@ public interface Sink extends Closeable {
      */
     List<Message> pushMessage(List<Message> message) throws IOException, DeserializerException;
 
-    default Map<TopicPartition, OffsetAndMetadata> getCommittableOffsets() {
-        return new HashMap<>();
-    }
-
+    /**
+     * Method that inform that sink is managing kafka offset to be committed by its own.
+     * @return
+     */
     default boolean canManageOffsets() {
         return false;
+    }
+
+    /**
+     * Method to register kafka offsets that need to be committed.
+     * This method should be implemented when sink manages the commit offsets by themself.
+     * Or when {@link Sink#canManageOffsets()} return true
+     * @param key
+     * @param messageList
+     */
+    default void addOffsets(Object key, List<Message> messageList) {
+    }
+
+    /**
+     * Method to mark the registered offsets ready to be committed.
+     * This method should be implemented when sink manages the commit offsets by themself.
+     * @param key
+     */
+    default void setCommittable(Object key) {
+    }
+
+    /**
+     * Method to obtain offsets ready to be committed
+     * This method should be implemented when sink manages the commit offsets by themself.
+     * @return
+     */
+    default Map<TopicPartition, OffsetAndMetadata> getCommittableOffsets() {
+        return new HashMap<>();
     }
 }
