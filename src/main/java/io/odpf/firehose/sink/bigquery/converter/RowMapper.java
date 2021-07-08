@@ -22,6 +22,10 @@ public class RowMapper {
     private final Properties mapping;
     private final boolean failOnUnknownFields;
 
+    public RowMapper(Properties mappings) {
+        this(mappings, false);
+    }
+
     public Map<String, Object> map(DynamicMessage message) {
         if (mapping == null) {
             throw new RuntimeException("BQ_PROTO_COLUMN_MAPPING is not configured");

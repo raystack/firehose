@@ -12,7 +12,6 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TimePartitioning;
 import io.odpf.firehose.config.BigQuerySinkConfig;
-import io.odpf.firehose.metrics.Instrumentation;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
@@ -23,15 +22,13 @@ public class BigQueryClient {
     private final BigQuery bigquery;
     private final TableId tableID;
     private final BigQuerySinkConfig bqConfig;
-    private final Instrumentation instrumentation;
     private final BQTableDefinition bqTableDefinition;
 
-    public BigQueryClient(BigQuery bigquery, BigQuerySinkConfig bqConfig, Instrumentation instrumentation) {
+    public BigQueryClient(BigQuery bigquery, BigQuerySinkConfig bqConfig) {
         this.bigquery = bigquery;
         this.bqConfig = bqConfig;
         this.tableID = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
         this.bqTableDefinition = new BQTableDefinition(bqConfig);
-        this.instrumentation = instrumentation;
     }
 
     public void upsertTable(List<Field> bqSchemaFields) throws BigQueryException {
