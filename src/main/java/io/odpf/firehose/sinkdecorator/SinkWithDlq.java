@@ -24,7 +24,7 @@ public class SinkWithDlq extends SinkDecorator {
     private final int maxRetryAttempts;
     private final boolean isFailOnMaxRetryAttemptsExceeded;
 
-    private Instrumentation instrumentation;
+    private final Instrumentation instrumentation;
 
     public SinkWithDlq(Sink sink, DlqWriter writer, BackOffProvider backOffProvider, int maxRetryAttempts, boolean isFailOnMaxRetryAttemptsExceeded, Instrumentation instrumentation) {
         super(sink);
@@ -51,7 +51,7 @@ public class SinkWithDlq extends SinkDecorator {
     public List<Message> pushMessage(List<Message> inputMessages) throws IOException, DeserializerException {
         List<Message> dlqMessages = super.pushMessage(inputMessages);
         if (dlqMessages.isEmpty()) {
-            return new LinkedList<>();
+            return dlqMessages;
         }
 
         List<Message> dlqWriteFailedMessages = pushToWriter(dlqMessages);
@@ -69,7 +69,7 @@ public class SinkWithDlq extends SinkDecorator {
             super.setCommittable(DLQ_BATCH_KEY);
         }
 
-        return new LinkedList<>();
+        return dlqWriteFailedMessages;
     }
 
     private List<Message> pushToWriter(List<Message> messages) throws IOException {
