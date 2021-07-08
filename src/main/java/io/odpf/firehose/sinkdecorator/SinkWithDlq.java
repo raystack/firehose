@@ -5,97 +5,93 @@ import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Optional;
+import java.util.stream.IntStream;
 
 /**
  * This Sink pushes failed messages to kafka after retries are exhausted.
  */
 public class SinkWithDlq extends SinkDecorator {
 
-    private Producer<byte[], byte[]> kafkaProducer;
-    private final String topic;
-    private BackOffProvider backOffProvider;
-    private Instrumentation instrumentation;
+    public static final String DLQ_BATCH_KEY = "dlq-batch-key";
+    private final DlqWriter writer;
+    private final BackOffProvider backOffProvider;
+    private final int maxRetryAttempts;
+    private final boolean isFailOnMaxRetryAttemptsExceeded;
 
-    public SinkWithDlq(Sink sink, Producer<byte[], byte[]> kafkaProducer, String topic,
-                       Instrumentation instrumentation, BackOffProvider backOffProvider) {
+    private final Instrumentation instrumentation;
+
+    public SinkWithDlq(Sink sink, DlqWriter writer, BackOffProvider backOffProvider, int maxRetryAttempts, boolean isFailOnMaxRetryAttemptsExceeded, Instrumentation instrumentation) {
         super(sink);
-        this.kafkaProducer = kafkaProducer;
-        this.topic = topic;
+        this.writer = writer;
         this.backOffProvider = backOffProvider;
+        this.maxRetryAttempts = maxRetryAttempts;
+        this.isFailOnMaxRetryAttemptsExceeded = isFailOnMaxRetryAttemptsExceeded;
         this.instrumentation = instrumentation;
     }
 
-    public static SinkWithDlq withInstrumentationFactory(Sink sink, Producer<byte[], byte[]> kafkaProducer, String topic,
-                                                         StatsDReporter statsDReporter, BackOffProvider backOffProvider) {
-        return new SinkWithDlq(sink, kafkaProducer, topic, new Instrumentation(statsDReporter, SinkWithDlq.class), backOffProvider);
+    public static SinkWithDlq withInstrumentationFactory(Sink sink, DlqWriter dlqWriter, BackOffProvider backOffProvider, int maxRetryAttempts, boolean isFailOnMaxRetryAttemptsExceeded, StatsDReporter statsDReporter) {
+        return new SinkWithDlq(sink, dlqWriter, backOffProvider, maxRetryAttempts, isFailOnMaxRetryAttemptsExceeded, new Instrumentation(statsDReporter, SinkWithDlq.class));
     }
 
     /**
      * Pushes all the failed messages to kafka as DLQ.
      *
-     * @param message list of messages to push
+     * @param inputMessages list of messages to push
      * @return list of failed messaged
      * @throws IOException
      * @throws DeserializerException
      */
     @Override
-    public List<Message> pushMessage(List<Message> message) throws IOException, DeserializerException {
-        List<Message> retryQueueMessages = super.pushMessage(message);
-        int attemptCount = 0;
+    public List<Message> pushMessage(List<Message> inputMessages) throws IOException, DeserializerException {
+        List<Message> dlqMessages = super.pushMessage(inputMessages);
+        if (dlqMessages.isEmpty()) {
+            return dlqMessages;
+        }
 
-        while (!retryQueueMessages.isEmpty()) {
+        List<Message> dlqWriteFailedMessages = pushToWriter(dlqMessages);
+        instrumentation.logInfo("DLQ processed messages: {}", dlqMessages.size() - dlqWriteFailedMessages.size());
+
+        if (!dlqWriteFailedMessages.isEmpty()) {
+            if (isFailOnMaxRetryAttemptsExceeded) {
+                throw new IOException("exhausted maximum number of allowed retry attempts to write messages to DLQ");
+            }
+            instrumentation.logInfo("failed to be processed by DLQ messages: {}", dlqWriteFailedMessages.size());
+        }
+
+        if (super.canManageOffsets()) {
+            super.addOffsets(DLQ_BATCH_KEY, dlqMessages);
+            super.setCommittable(DLQ_BATCH_KEY);
+        }
+
+        return dlqWriteFailedMessages;
+    }
+
+    private List<Message> pushToWriter(List<Message> messages) throws IOException {
+        List<Message> retryQueueMessages = new LinkedList<>(messages);
+        int attemptCount = 0;
+        while (attemptCount < maxRetryAttempts && !retryQueueMessages.isEmpty()) {
             instrumentation.captureRetryAttempts();
-            retryQueueMessages = pushToKafka(retryQueueMessages);
+            int remainingRetryMessagesCount = retryQueueMessages.size();
+
+            retryQueueMessages = writer.write(retryQueueMessages);
+
+            retryQueueMessages.forEach(message -> Optional.ofNullable(message.getErrorInfo())
+                    .flatMap(errorInfo -> Optional.ofNullable(errorInfo.getException()))
+                    .ifPresent(e -> instrumentation.incrementMessageFailCount(message, e)));
+
+            int processedMessagesCount = remainingRetryMessagesCount - retryQueueMessages.size();
+            IntStream.range(0, processedMessagesCount).forEach(value -> instrumentation.incrementMessageSucceedCount());
+
             backOffProvider.backOff(attemptCount++);
         }
 
         return retryQueueMessages;
-    }
-
-    private ArrayList<Message> pushToKafka(List<Message> failedMessages) {
-        CountDownLatch completedLatch = new CountDownLatch(1);
-        AtomicInteger recordsProcessed = new AtomicInteger();
-        ArrayList<Message> retryMessages = new ArrayList<>();
-
-        instrumentation.logInfo("Pushing {} messages to retry queue topic : {}", failedMessages.size(), topic);
-        for (Message message : failedMessages) {
-            kafkaProducer.send(new ProducerRecord<>(topic, null, null, message.getLogKey(), message.getLogMessage(),
-                    message.getHeaders()), (metadata, e) -> {
-                recordsProcessed.incrementAndGet();
-
-                if (e != null) {
-                    instrumentation.incrementMessageFailCount(message, e);
-                    addToFailedRecords(retryMessages, message);
-                } else {
-                    instrumentation.incrementMessageSucceedCount();
-                }
-                if (recordsProcessed.get() == failedMessages.size()) {
-                    completedLatch.countDown();
-                }
-            });
-        }
-        try {
-            completedLatch.await();
-        } catch (InterruptedException e) {
-            instrumentation.logWarn(e.getMessage());
-            instrumentation.captureNonFatalError(e);
-        }
-        instrumentation.logInfo("Successfully pushed {} messages to {}", failedMessages.size() - retryMessages.size(), topic);
-        return retryMessages;
-    }
-
-    private void addToFailedRecords(ArrayList<Message> retryMessages, Message message) {
-        synchronized (this) {
-            retryMessages.add(message);
-        }
     }
 
     @Override

@@ -1,5 +1,6 @@
 package io.odpf.firehose.sink.objectstorage.writer.remote;
 
+import io.odpf.firehose.objectstorage.ObjectStorage;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -23,6 +23,7 @@ public class Message {
     private Headers headers;
     private long timestamp;
     private long consumeTimestamp;
+    private ErrorInfo errorInfo;
 
     /**
      * Instantiates a new Message.
@@ -39,6 +40,34 @@ public class Message {
         this.topic = topic;
         this.partition = partition;
         this.offset = offset;
+    }
+
+    /**
+     * Instantiates a new Message without providing errorType.
+     *
+     * @param logKey
+     * @param logMessage
+     * @param topic
+     * @param partition
+     * @param offset
+     * @param headers
+     * @param timestamp
+     * @param consumeTimestamp
+     */
+    public Message(byte[] logKey, byte[] logMessage, String topic, int partition, long offset, Headers headers, long timestamp, long consumeTimestamp) {
+        this(logKey, logMessage, topic, partition, offset, headers, timestamp, consumeTimestamp, null);
+    }
+
+    public Message(Message message, ErrorInfo errorInfo) {
+        this(message.getLogKey(),
+                message.getLogMessage(),
+                message.getTopic(),
+                message.getPartition(),
+                message.getOffset(),
+                message.getHeaders(),
+                message.getTimestamp(),
+                message.getConsumeTimestamp(),
+                errorInfo);
     }
 
     /**

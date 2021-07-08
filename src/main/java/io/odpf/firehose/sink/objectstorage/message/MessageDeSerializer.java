@@ -24,7 +24,7 @@ public class MessageDeSerializer {
             }
             return new Record(dynamicMessage, kafkaMetadata);
         } catch (InvalidProtocolBufferException e) {
-            throw new DeserializerException("", e);
+            throw new DeserializerException("failed to parse message", e);
         }
     }
 }

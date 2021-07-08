@@ -3,6 +3,7 @@ package io.odpf.firehose.sink;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.EglcConfigurationException;
+import io.odpf.firehose.exception.WriterIOException;
 import io.odpf.firehose.metrics.Instrumentation;
 import lombok.AllArgsConstructor;
 
@@ -37,7 +38,7 @@ public abstract class AbstractSink implements Closeable, Sink {
             instrumentation.startExecution();
             failedMessages = execute();
             instrumentation.captureSuccessExecutionTelemetry(sinkType, messages.size());
-        } catch (DeserializerException | EglcConfigurationException | NullPointerException e) {
+        } catch (DeserializerException | EglcConfigurationException | NullPointerException | WriterIOException e) {
             throw e;
         } catch (Exception e) {
             if (!messages.isEmpty()) {
@@ -75,6 +76,4 @@ public abstract class AbstractSink implements Closeable, Sink {
      * @throws SQLException          the sql exception
      */
     protected abstract void prepare(List<Message> messages) throws DeserializerException, IOException, SQLException;
-
-
 }

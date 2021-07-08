@@ -3,6 +3,7 @@ package io.odpf.firehose.config;
 import io.odpf.firehose.config.converter.ObjectStorageSinkLocalFileWriterTypeConverter;
 import io.odpf.firehose.config.converter.ObjectStorageSinkPartitioningTypeConverter;
 import io.odpf.firehose.config.converter.ObjectStorageTypeConverter;
+import io.odpf.firehose.objectstorage.ObjectStorageType;
 import io.odpf.firehose.sink.objectstorage.Constants;
 
 public interface ObjectStorageSinkConfig extends AppConfig {
@@ -61,7 +62,7 @@ public interface ObjectStorageSinkConfig extends AppConfig {
     @Key("SINK_OBJECT_STORAGE_TYPE")
     @DefaultValue("GCS")
     @ConverterClass(ObjectStorageTypeConverter.class)
-    Constants.ObjectStorageType getObjectStorageType();
+    ObjectStorageType getObjectStorageType();
 
     @Key("SINK_OBJECT_STORAGE_GOOGLE_CLOUD_PROJECT_ID")
     String getGCloudProjectID();
@@ -71,6 +72,5 @@ public interface ObjectStorageSinkConfig extends AppConfig {
 
     @Key("SINK_OBJECT_STORAGE_GCS_CREDENTIAL_PATH")
     String getGCSCredentialPath();
-
 
 }

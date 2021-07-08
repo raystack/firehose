@@ -44,6 +44,15 @@ public class SinkDecorator implements Sink {
     @Override
     public boolean canManageOffsets() {
         return sink.canManageOffsets();
+    }
 
+    @Override
+    public void addOffsets(Object key, List<Message> messages) {
+        sink.addOffsets(key, messages);
+    }
+
+    @Override
+    public void setCommittable(Object key) {
+        sink.setCommittable(key);
     }
 }

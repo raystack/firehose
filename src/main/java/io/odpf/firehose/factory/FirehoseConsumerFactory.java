@@ -36,13 +36,13 @@ import io.odpf.firehose.sinkdecorator.BackOffProvider;
 import io.odpf.firehose.sinkdecorator.ExponentialBackOffProvider;
 import io.odpf.firehose.sinkdecorator.SinkWithDlq;
 import io.odpf.firehose.sinkdecorator.SinkWithRetry;
+import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
+import io.odpf.firehose.sinkdecorator.dlq.DlqWriterFactory;
 import io.odpf.firehose.tracer.SinkTracer;
 import io.odpf.firehose.util.Clock;
 import io.opentracing.Tracer;
-import io.opentracing.contrib.kafka.TracingKafkaProducer;
 import io.opentracing.noop.NoopTracerFactory;
 import org.aeonbits.owner.ConfigFactory;
-import org.apache.kafka.clients.producer.KafkaProducer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,8 +76,8 @@ public class FirehoseConsumerFactory {
         instrumentation = new Instrumentation(this.statsDReporter, FirehoseConsumerFactory.class);
 
         String additionalConsumerConfig = String.format(""
-                                                        + "\n\tEnable Async Commit: %s"
-                                                        + "\n\tCommit Only Current Partition: %s",
+                        + "\n\tEnable Async Commit: %s"
+                        + "\n\tCommit Only Current Partition: %s",
                 this.kafkaConsumerConfig.isSourceKafkaAsyncCommitEnable(),
                 this.kafkaConsumerConfig.isSourceKafkaCommitOnlyCurrentPartitionsEnable());
         instrumentation.logDebug(additionalConsumerConfig);
@@ -190,14 +190,16 @@ public class FirehoseConsumerFactory {
 
         if (appConfig.isDlqEnable()) {
             DlqConfig dlqConfig = ConfigFactory.create(DlqConfig.class, config);
-
-            KafkaProducer<byte[], byte[]> kafkaProducer = genericKafkaFactory.getKafkaProducer(dlqConfig);
-            TracingKafkaProducer<byte[], byte[]> tracingProducer = new TracingKafkaProducer<>(kafkaProducer, tracer);
-
+            DlqWriterFactory dlqWriterFactory = new DlqWriterFactory();
+            DlqWriter dlqWriter = dlqWriterFactory.create(config, statsDReporter, tracer);
             return SinkWithDlq.withInstrumentationFactory(
                     new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class),
                             dlqConfig.getDlqAttemptsToTrigger(), parser),
-                    tracingProducer, dlqConfig.getDlqKafkaTopic(), statsDReporter, backOffProvider);
+                    dlqWriter,
+                    backOffProvider,
+                    dlqConfig.getDlqMaxRetryAttempts(),
+                    dlqConfig.getFailOnMaxRetryAttemptsExceeded(),
+                    statsDReporter);
         } else {
             return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), parser);
         }
