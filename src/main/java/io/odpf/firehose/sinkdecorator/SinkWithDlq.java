@@ -8,7 +8,6 @@ import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -51,43 +50,26 @@ public class SinkWithDlq extends SinkDecorator {
     @Override
     public List<Message> pushMessage(List<Message> inputMessages) throws IOException, DeserializerException {
         List<Message> dlqMessages = super.pushMessage(inputMessages);
-
-        List<Message> dlqWriteFailedMessages;
-        if (super.canManageOffsets()) {
-            dlqWriteFailedMessages = pushToWriter(dlqMessages);
-
-            LinkedList<Message> dlqProcessedMessages = relativeComplementSet(dlqMessages, dlqWriteFailedMessages);
-            if (!dlqProcessedMessages.isEmpty()) {
-                super.addOffsets(DLQ_BATCH_KEY, dlqProcessedMessages);
-                super.setCommittable(DLQ_BATCH_KEY);
-            }
-            instrumentation.logInfo("DLQ processed messages: {}", dlqProcessedMessages.size());
-        } else {
-            dlqWriteFailedMessages = pushToWriter(dlqMessages);
-            LinkedList<Message> dlqProcessedMessages = relativeComplementSet(dlqMessages, dlqWriteFailedMessages);
-            instrumentation.logInfo("DLQ processed messages: {}", dlqProcessedMessages.size());
+        if (dlqMessages.isEmpty()) {
+            return new LinkedList<>();
         }
+
+        List<Message> dlqWriteFailedMessages = pushToWriter(dlqMessages);
+        instrumentation.logInfo("DLQ processed messages: {}", dlqMessages.size() - dlqWriteFailedMessages.size());
 
         if (!dlqWriteFailedMessages.isEmpty()) {
             if (isFailOnMaxRetryAttemptsExceeded) {
                 throw new IOException("exhausted maximum number of allowed retry attempts to write messages to DLQ");
             }
-            if (super.canManageOffsets()) {
-                super.addOffsets(DLQ_BATCH_KEY, dlqWriteFailedMessages);
-                super.setCommittable(DLQ_BATCH_KEY);
-            }
             instrumentation.logInfo("failed to be processed by DLQ messages: {}", dlqWriteFailedMessages.size());
         }
 
-        return dlqWriteFailedMessages;
-    }
+        if (super.canManageOffsets()) {
+            super.addOffsets(DLQ_BATCH_KEY, dlqMessages);
+            super.setCommittable(DLQ_BATCH_KEY);
+        }
 
-    private LinkedList<Message> relativeComplementSet(List<Message> left, List<Message> right) {
-        HashSet<Message> leftMessages = new HashSet<>(left);
-        HashSet<Message> rightMessages = new HashSet<>(right);
-        leftMessages.removeAll(rightMessages);
-
-        return new LinkedList<>(leftMessages);
+        return new LinkedList<>();
     }
 
     private List<Message> pushToWriter(List<Message> messages) throws IOException {

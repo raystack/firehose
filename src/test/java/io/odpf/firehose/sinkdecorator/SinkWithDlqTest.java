@@ -63,6 +63,16 @@ public class SinkWithDlqTest {
         assertEquals(0, pushResult.size());
     }
 
+    @Test
+    public void shouldNotWriteToDLQWhenDlqMessagesIsEmpty() throws IOException {
+        ArrayList<Message> messages = new ArrayList<>();
+        when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
+
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, maxRetryAttempts, isFailOnMaxRetryAttemptsExceeded, instrumentation);
+
+        sinkWithDlq.pushMessage(messages);
+        verify(dlqWriter, never()).write(messages);
+    }
 
     @Test(expected = IOException.class)
     public void shouldThrowIOExceptionWhenWriterThrowIOException() throws IOException {
@@ -147,40 +157,7 @@ public class SinkWithDlqTest {
     }
 
     @Test
-    public void shouldCommitOffsetsOfFailedToBeProcessedByDlqMessagesWhenSinkManagesOffsetAndFailOnMaxRetryAttemptDisabled() throws IOException {
-        int currentMaxRetryAttempts = 2;
-        long timestamp = Instant.parse("2020-01-01T00:00:00Z").toEpochMilli();
-        Message message1 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 1, null, 0, timestamp, new ErrorInfo(new IOException(), ErrorType.UNKNOWN_ERROR));
-        Message message2 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 2, null, 0, timestamp, new ErrorInfo(new IOException(), ErrorType.UNKNOWN_ERROR));
-
-        ArrayList<Message> messages = new ArrayList<>();
-        messages.add(message1);
-        messages.add(message2);
-
-        LinkedList<Message> sinkProcessed = new LinkedList<>();
-        sinkProcessed.add(message1);
-
-        List<Message> dlqRetryMessages = new LinkedList<>();
-        dlqRetryMessages.add(message2);
-
-        when(sinkWithRetry.canManageOffsets()).thenReturn(true);
-        when(sinkWithRetry.pushMessage(messages)).thenReturn(messages);
-
-        when(dlqWriter.write(messages)).thenReturn(dlqRetryMessages);
-        when(dlqWriter.write(dlqRetryMessages)).thenReturn(dlqRetryMessages);
-        when(dlqWriter.write(dlqRetryMessages)).thenReturn(dlqRetryMessages);
-
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, currentMaxRetryAttempts, false, instrumentation);
-        sinkWithDlq.pushMessage(messages);
-
-        verify(sinkWithRetry, times(2)).canManageOffsets();
-        verify(sinkWithRetry, times(1)).addOffsets(SinkWithDlq.DLQ_BATCH_KEY, sinkProcessed);
-        verify(sinkWithRetry, times(1)).addOffsets(SinkWithDlq.DLQ_BATCH_KEY, dlqRetryMessages);
-        verify(sinkWithRetry, times(2)).setCommittable(SinkWithDlq.DLQ_BATCH_KEY);
-    }
-
-    @Test
-    public void shouldCommitOffsetsOfDlqProcessedMessagesWhenSinkManageOffset() throws IOException {
+    public void shouldCommitOffsetsOfDlqMessagesWhenSinkManageOffset() throws IOException {
         long timestamp = Instant.parse("2020-01-01T00:00:00Z").toEpochMilli();
         Message message1 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 1, null, 0, timestamp, new ErrorInfo(new IOException(), ErrorType.UNKNOWN_ERROR));
         Message message2 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 2, null, 0, timestamp, new ErrorInfo(new IOException(), ErrorType.UNKNOWN_ERROR));
