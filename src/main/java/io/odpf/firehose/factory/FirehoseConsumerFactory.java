@@ -20,6 +20,7 @@ import io.odpf.firehose.filter.MessageFilter;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
+import io.odpf.firehose.sink.bigquery.BigQuerySinkFactory;
 import io.odpf.firehose.sink.elasticsearch.EsSinkFactory;
 import io.odpf.firehose.sink.grpc.GrpcSinkFactory;
 import io.odpf.firehose.sink.http.HttpSinkFactory;
@@ -162,6 +163,8 @@ public class FirehoseConsumerFactory {
                 return new PromSinkFactory().create(config, statsDReporter, stencilClient);
             case OBJECTSTORAGE:
                 return new ObjectStorageSinkFactory().create(config, statsDReporter, stencilClient);
+            case BIGQUEY:
+                return new BigQuerySinkFactory().create(config, statsDReporter, stencilClient);
             default:
                 throw new EglcConfigurationException("Invalid Firehose SINK_TYPE");
 
