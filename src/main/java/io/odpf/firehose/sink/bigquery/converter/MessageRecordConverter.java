@@ -27,7 +27,7 @@ public class MessageRecordConverter {
     private final Parser parser;
     private final BigQuerySinkConfig config;
 
-    public Records convert(List<Message> messages) throws InvalidProtocolBufferException {
+    public Records convert(List<Message> messages, Instant now) throws InvalidProtocolBufferException {
         ArrayList<Record> validRecords = new ArrayList<>();
         ArrayList<Record> invalidRecords = new ArrayList<>();
         for (Message message : messages) {
@@ -42,7 +42,7 @@ public class MessageRecordConverter {
                 invalidRecords.add(new Record(message, columns));
                 continue;
             }
-            addMetadata(columns, message);
+            addMetadata(columns, message, now);
             validRecords.add(new Record(message, columns));
         }
         return new Records(validRecords, invalidRecords);
@@ -63,13 +63,13 @@ public class MessageRecordConverter {
         return columns;
     }
 
-    private void addMetadata(Map<String, Object> columns, Message message) {
+    private void addMetadata(Map<String, Object> columns, Message message, Instant now) {
         Map<String, Object> offsetMetadata = new HashMap<>();
         offsetMetadata.put(Constants.PARTITION_COLUMN_NAME, message.getPartition());
         offsetMetadata.put(Constants.OFFSET_COLUMN_NAME, message.getOffset());
         offsetMetadata.put(Constants.TOPIC_COLUMN_NAME, message.getTopic());
         offsetMetadata.put(Constants.TIMESTAMP_COLUMN_NAME, new DateTime(message.getTimestamp()));
-        offsetMetadata.put(Constants.LOAD_TIME_COLUMN_NAME, new DateTime(Date.from(Instant.now())));
+        offsetMetadata.put(Constants.LOAD_TIME_COLUMN_NAME, new DateTime(Date.from(now)));
 
         if (config.getBqMetadataNamespace().isEmpty()) {
             columns.putAll(offsetMetadata);
