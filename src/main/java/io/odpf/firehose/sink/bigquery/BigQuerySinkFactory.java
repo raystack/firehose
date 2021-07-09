@@ -37,7 +37,7 @@ public class BigQuerySinkFactory implements SinkFactory {
             BigQuery bq = getBigQueryInstance(sinkConfig);
             BigQueryClient bigQueryClient = new BigQueryClient(bq, sinkConfig);
             MessageRecordConverterWrapper recordConverterWrapper = new MessageRecordConverterWrapper();
-            ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(sinkConfig, bigQueryClient, recordConverterWrapper, new Instrumentation(statsDReporter, ProtoUpdateListener.class));
+            ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(sinkConfig, bigQueryClient, recordConverterWrapper);
             StencilClient client = sinkConfig.isSchemaRegistryStencilEnable()
                     ? (sinkConfig.isAutoSchemaUpdateEnabled()
                                ? StencilClientFactory.getClient(sinkConfig.getSchemaRegistryStencilUrls(), env, statsDReporter.getClient(), protoUpdateListener)

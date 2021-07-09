@@ -6,7 +6,6 @@ import com.gojek.de.stencil.utils.StencilUtils;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
 import io.odpf.firehose.config.BigQuerySinkConfig;
-import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverter;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterWrapper;
 import io.odpf.firehose.sink.bigquery.converter.RowMapper;
@@ -29,17 +28,15 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
     private final Converter protoMappingConverter = new Converter();
     private final ProtoFieldParser protoMappingParser = new ProtoFieldParser();
     private final BigQueryClient bqClient;
-    private final Instrumentation instrumentation;
     private final MessageRecordConverterWrapper messageRecordConverterWrapper;
     @Setter
     private Parser stencilParser;
 
-    public ProtoUpdateListener(BigQuerySinkConfig config, BigQueryClient bqClient, MessageRecordConverterWrapper messageRecordConverterWrapper, Instrumentation instrumentation) {
+    public ProtoUpdateListener(BigQuerySinkConfig config, BigQueryClient bqClient, MessageRecordConverterWrapper messageRecordConverterWrapper) {
         super(config.getInputSchemaProtoClass());
         this.config = config;
         this.bqClient = bqClient;
         this.messageRecordConverterWrapper = messageRecordConverterWrapper;
-        this.instrumentation = instrumentation;
     }
 
     public void update(Map<String, DescriptorAndTypeName> newDescriptors) {
@@ -56,7 +53,6 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
         } catch (BigQueryException | IOException e) {
             String errMsg = "Error while updating bigquery table on callback:" + e.getMessage();
             log.error(errMsg);
-            instrumentation.incrementCounter("bq.table.upsert.failures");
             throw new RuntimeException(errMsg, e);
         }
     }
@@ -92,7 +88,7 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
     private void setProtoParser(Properties columnMapping) {
         messageRecordConverterWrapper.setMessageRecordConverter(
                 new MessageRecordConverter(new RowMapper(columnMapping, config.getFailOnUnknownFields()),
-                        stencilParser, instrumentation, config));
+                        stencilParser, config));
     }
 
     public void close() throws IOException {

@@ -5,7 +5,6 @@ import com.google.api.client.util.DateTime;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.odpf.firehose.config.BigQuerySinkConfig;
 import io.odpf.firehose.consumer.Message;
-import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.bigquery.models.Constants;
 import io.odpf.firehose.sink.bigquery.models.Record;
 import io.odpf.firehose.sink.bigquery.models.Records;
@@ -26,7 +25,6 @@ import java.util.Map;
 public class MessageRecordConverter {
     private final RowMapper rowMapper;
     private final Parser parser;
-    private final Instrumentation instrumentation;
     private final BigQuerySinkConfig config;
 
     public Records convert(List<Message> messages) throws InvalidProtocolBufferException {
