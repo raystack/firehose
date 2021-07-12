@@ -26,6 +26,6 @@ public class EnumField implements ProtoField {
 
     @Override
     public boolean matches() {
-        return descriptor.getJavaType().name().equals("ENUM");
+        return descriptor.getType() == Descriptors.FieldDescriptor.Type.ENUM;
     }
 }

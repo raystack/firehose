@@ -21,9 +21,9 @@ import java.util.stream.IntStream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class ConverterTest {
+public class ProtoMapperTest {
 
-    private final Converter converter = new Converter();
+    private final ProtoMapper protoMapper = new ProtoMapper();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final Map<DescriptorProtos.FieldDescriptorProto.Type, LegacySQLTypeName> expectedType = new HashMap<DescriptorProtos.FieldDescriptorProto.Type, LegacySQLTypeName>() {{
@@ -52,7 +52,7 @@ public class ConverterTest {
         objNode.put("4", "created_at");
         objNode.put("5", "status");
 
-        String columnMapping = converter.generateColumnMappings(protoField.getFields());
+        String columnMapping = protoMapper.generateColumnMappings(protoField.getFields());
 
         String expectedProtoMapping = objectMapper.writeValueAsString(objNode);
         assertEquals(expectedProtoMapping, columnMapping);
@@ -79,14 +79,14 @@ public class ConverterTest {
         objNode.put("3", "order_details");
 
 
-        String columnMapping = converter.generateColumnMappings(protoField.getFields());
+        String columnMapping = protoMapper.generateColumnMappings(protoField.getFields());
         String expectedProtoMapping = objectMapper.writeValueAsString(objNode);
         assertEquals(expectedProtoMapping, columnMapping);
     }
 
     @Test
     public void generateColumnMappingsForNoFields() throws IOException {
-        String protoMapping = converter.generateColumnMappings(new ArrayList<>());
+        String protoMapping = protoMapper.generateColumnMappings(new ArrayList<>());
         assertEquals(protoMapping, "{}");
     }
 
@@ -101,7 +101,7 @@ public class ConverterTest {
         nestedBQFields.add(new ProtoField("field5_float", DescriptorProtos.FieldDescriptorProto.Type.TYPE_FLOAT, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
 
 
-        List<Field> fields = converter.generateBigquerySchema(new ProtoField(nestedBQFields));
+        List<Field> fields = protoMapper.generateBigquerySchema(new ProtoField(nestedBQFields));
         assertEquals(nestedBQFields.size(), fields.size());
         IntStream.range(0, nestedBQFields.size())
                 .forEach(index -> {
@@ -132,7 +132,7 @@ public class ConverterTest {
                 .collect(Collectors.toList());
 
 
-        List<Field> fields = converter.generateBigquerySchema(new ProtoField(nestedBQFields));
+        List<Field> fields = protoMapper.generateBigquerySchema(new ProtoField(nestedBQFields));
         assertEquals(nestedBQFields.size(), fields.size());
         IntStream.range(0, nestedBQFields.size())
                 .forEach(index -> {
@@ -160,7 +160,7 @@ public class ConverterTest {
         }});
 
 
-        List<Field> fields = converter.generateBigquerySchema(protoField);
+        List<Field> fields = protoMapper.generateBigquerySchema(protoField);
 
         assertEquals(protoField.getFields().size(), fields.size());
         assertEquals(nestedBQFields.size(), fields.get(1).getSubFields().size());
@@ -218,7 +218,7 @@ public class ConverterTest {
             ));
         }});
 
-        List<Field> fields = converter.generateBigquerySchema(protoField);
+        List<Field> fields = protoMapper.generateBigquerySchema(protoField);
 
 
         assertEquals(protoField.getFields().size(), fields.size());
@@ -238,7 +238,7 @@ public class ConverterTest {
                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
         }});
 
-        List<Field> fields = converter.generateBigquerySchema(protoField);
+        List<Field> fields = protoMapper.generateBigquerySchema(protoField);
 
         assertEquals(protoField.getFields().size(), fields.size());
         assertBqField(protoField.getFields().get(0).getName(), LegacySQLTypeName.TIMESTAMP, Field.Mode.NULLABLE, fields.get(0));
@@ -295,7 +295,7 @@ public class ConverterTest {
 
         }});
 
-        List<Field> fields = converter.generateBigquerySchema(protoField);
+        List<Field> fields = protoMapper.generateBigquerySchema(protoField);
 
         assertEquals(protoField.getFields().size(), fields.size());
         assertBqField(protoField.getFields().get(0).getName(), LegacySQLTypeName.STRING, Field.Mode.NULLABLE, fields.get(0));
@@ -315,7 +315,7 @@ public class ConverterTest {
 
     @Test
     public void shouldTestConverterToSchemaForNullFields() {
-        List<Field> fields = converter.generateBigquerySchema(null);
+        List<Field> fields = protoMapper.generateBigquerySchema(null);
         assertNull(fields);
     }
 
@@ -331,7 +331,7 @@ public class ConverterTest {
 
         }});
 
-        List<Field> fields = converter.generateBigquerySchema(protoField);
+        List<Field> fields = protoMapper.generateBigquerySchema(protoField);
 
         assertEquals(protoField.getFields().size(), fields.size());
         assertBqField(protoField.getFields().get(0).getName(), LegacySQLTypeName.INTEGER, Field.Mode.REPEATED, fields.get(0));

@@ -16,7 +16,7 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.SinkFactory;
-import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterWrapper;
+import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryClient;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryRow;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryRowWithInsertId;
@@ -36,7 +36,7 @@ public class BigQuerySinkFactory implements SinkFactory {
         try {
             BigQuery bq = getBigQueryInstance(sinkConfig);
             BigQueryClient bigQueryClient = new BigQueryClient(bq, sinkConfig);
-            MessageRecordConverterWrapper recordConverterWrapper = new MessageRecordConverterWrapper();
+            MessageRecordConverterCache recordConverterWrapper = new MessageRecordConverterCache();
             ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(sinkConfig, bigQueryClient, recordConverterWrapper);
             StencilClient client = sinkConfig.isSchemaRegistryStencilEnable()
                     ? (sinkConfig.isAutoSchemaUpdateEnabled()
@@ -59,7 +59,7 @@ public class BigQuerySinkFactory implements SinkFactory {
             TableId tableId = TableId.of(sinkConfig.getDatasetName(), sinkConfig.getTableName());
             return new BigQuerySink(
                     new Instrumentation(statsDReporter, BigQuerySink.class),
-                    SinkType.BIGQUEY.name(),
+                    SinkType.BIGQUERY.name(),
                     bq,
                     tableId,
                     recordConverterWrapper,

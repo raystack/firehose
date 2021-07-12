@@ -21,6 +21,6 @@ public class ByteField implements ProtoField {
 
     @Override
     public boolean matches() {
-        return descriptor.getType().name().equals("BYTES");
+        return descriptor.getType() == Descriptors.FieldDescriptor.Type.BYTES;
     }
 }

@@ -18,7 +18,6 @@ public class NestedField implements ProtoField {
 
     @Override
     public boolean matches() {
-        return descriptor.getJavaType().name().equals("MESSAGE")
-                && !(fieldValue instanceof List);
+        return descriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE && !(fieldValue instanceof List);
     }
 }

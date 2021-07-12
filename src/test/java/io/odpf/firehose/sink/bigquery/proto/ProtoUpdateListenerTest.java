@@ -10,7 +10,7 @@ import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import io.odpf.firehose.TestKeyBQ;
 import io.odpf.firehose.config.BigQuerySinkConfig;
-import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterWrapper;
+import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryClient;
 import io.odpf.firehose.sink.bigquery.models.BQField;
 import io.odpf.firehose.sink.bigquery.models.ProtoField;
@@ -45,14 +45,14 @@ public class ProtoUpdateListenerTest {
 
     private BigQuerySinkConfig config;
 
-    private MessageRecordConverterWrapper converterWrapper;
+    private MessageRecordConverterCache converterWrapper;
 
     @Before
     public void setUp() {
         System.setProperty("INPUT_SCHEMA_PROTO_CLASS", "io.odpf.firehose.TestKeyBQ");
         System.setProperty("SINK_BIGQUERY_ENABLE_AUTO_SCHEMA_UPDATE", "false");
         config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
-        converterWrapper = new MessageRecordConverterWrapper();
+        converterWrapper = new MessageRecordConverterCache();
         objectMapper = new ObjectMapper();
     }
 

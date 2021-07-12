@@ -20,7 +20,7 @@ public class StructField implements ProtoField {
         try {
             if (fieldValue instanceof Collection<?>) {
                 List<String> structStrValues = new ArrayList<>();
-                for (Object field: (Collection<?>) fieldValue) {
+                for (Object field : (Collection<?>) fieldValue) {
                     structStrValues.add(getString(field));
                 }
                 return structStrValues;
@@ -39,7 +39,7 @@ public class StructField implements ProtoField {
 
     @Override
     public boolean matches() {
-        return descriptor.getJavaType().name().equals("MESSAGE")
-                && descriptor.getMessageType().getFullName().equals(com.google.protobuf.Struct.getDescriptor().getFullName());
+        return descriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE
+               && descriptor.getMessageType().getFullName().equals(com.google.protobuf.Struct.getDescriptor().getFullName());
     }
 }

@@ -163,7 +163,7 @@ public class FirehoseConsumerFactory {
                 return new PromSinkFactory().create(config, statsDReporter, stencilClient);
             case OBJECTSTORAGE:
                 return new ObjectStorageSinkFactory().create(config, statsDReporter, stencilClient);
-            case BIGQUEY:
+            case BIGQUERY:
                 return new BigQuerySinkFactory().create(config, statsDReporter, stencilClient);
             default:
                 throw new EglcConfigurationException("Invalid Firehose SINK_TYPE");

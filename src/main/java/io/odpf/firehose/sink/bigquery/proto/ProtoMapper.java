@@ -12,10 +12,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Converter {
+public class ProtoMapper {
     private ObjectMapper objectMapper;
 
-    public Converter() {
+    public ProtoMapper() {
         objectMapper = new ObjectMapper();
     }
 

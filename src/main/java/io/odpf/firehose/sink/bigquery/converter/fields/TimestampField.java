@@ -19,7 +19,7 @@ public class TimestampField implements ProtoField {
     public Object getValue() {
         if (fieldValue instanceof Collection<?>) {
             List<DateTime> tsValues = new ArrayList<>();
-            for (Object field: (Collection<?>) fieldValue) {
+            for (Object field : (Collection<?>) fieldValue) {
                 tsValues.add(getTime(field));
             }
             return tsValues;
@@ -39,7 +39,7 @@ public class TimestampField implements ProtoField {
 
     @Override
     public boolean matches() {
-        return descriptor.getJavaType().name().equals("MESSAGE")
-                && descriptor.getMessageType().getFullName().equals(com.google.protobuf.Timestamp.getDescriptor().getFullName());
+        return descriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE
+               && descriptor.getMessageType().getFullName().equals(com.google.protobuf.Timestamp.getDescriptor().getFullName());
     }
 }
