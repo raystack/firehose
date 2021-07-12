@@ -32,8 +32,10 @@ import io.odpf.firehose.sink.prometheus.PromSinkFactory;
 import io.odpf.firehose.sink.redis.RedisSinkFactory;
 import io.odpf.firehose.sinkdecorator.BackOff;
 import io.odpf.firehose.sinkdecorator.BackOffProvider;
+import io.odpf.firehose.sinkdecorator.ErrorMatcher;
 import io.odpf.firehose.sinkdecorator.ExponentialBackOffProvider;
 import io.odpf.firehose.sinkdecorator.SinkWithDlq;
+import io.odpf.firehose.sinkdecorator.SinkWithFailHandler;
 import io.odpf.firehose.sinkdecorator.SinkWithRetry;
 import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
 import io.odpf.firehose.sinkdecorator.dlq.DlqWriterFactory;
@@ -108,10 +110,10 @@ public class FirehoseConsumerFactory {
         SinkTracer firehoseTracer = new SinkTracer(tracer, kafkaConsumerConfig.getSinkType().name() + " SINK",
                 kafkaConsumerConfig.isTraceJaegarEnable());
         if (kafkaConsumerConfig.getSourceKafkaConsumerMode().equals(KafkaConsumerMode.SYNC)) {
-            Sink retrySink = withRetry(getSink(), genericKafkaFactory, tracer);
-            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(retrySink), genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
+            Sink sink = createSink(tracer);
+            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
             return new FirehoseConsumer(
-                    retrySink,
+                    sink,
                     clockInstance,
                     firehoseTracer,
                     consumerAndOffsetManager,
@@ -120,7 +122,7 @@ public class FirehoseConsumerFactory {
             int nThreads = kafkaConsumerConfig.getSourceKafkaConsumerThreads();
             List<Sink> sinks = new ArrayList<>(nThreads);
             for (int ii = 0; ii < nThreads; ii++) {
-                sinks.add(withRetry(getSink(), genericKafkaFactory, tracer));
+                sinks.add(createSink(tracer));
             }
             ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
             SinkPool sinkPool = new SinkPool(
@@ -168,37 +170,61 @@ public class FirehoseConsumerFactory {
         }
     }
 
+    private Sink createSink(Tracer tracer) {
+        AppConfig appConfig = ConfigFactory.create(AppConfig.class,
+                config);
+        Sink withRetry = withRetry(withFailOnError(getSink()));
+        if (appConfig.isDlqEnable()) {
+            return withDlq(withRetry, tracer);
+        }
+        return withRetry;
+    }
+
+    public Sink withDlq(Sink sink, Tracer tracer) {
+        DlqConfig dlqConfig = ConfigFactory.create(DlqConfig.class,
+                config);
+        DlqWriterFactory dlqWriterFactory = new DlqWriterFactory();
+        DlqWriter dlqWriter = dlqWriterFactory.create(config, statsDReporter, tracer);
+
+        BackOffProvider backOffProvider = getBackOffProvider();
+        return SinkWithDlq.withInstrumentationFactory(
+                sink,
+                dlqWriter,
+                backOffProvider,
+                dlqConfig,
+                statsDReporter);
+    }
+
+    public Sink withFailOnError(Sink sink) {
+        AppConfig appConfig = ConfigFactory.create(AppConfig.class,
+                config);
+        ErrorMatcher failErrorMatcher = new ErrorMatcher(appConfig.getFailOnErrorTypes());
+        return new SinkWithFailHandler(sink, failErrorMatcher);
+    }
+
     /**
      * to enable the retry feature for the basic sinks based on the config.
      *
      * @param basicSink
-     * @param genericKafkaFactory
      * @return Sink
      */
-    private Sink withRetry(Sink basicSink, GenericKafkaFactory genericKafkaFactory, Tracer tracer) {
+    private Sink withRetry(Sink basicSink) {
         AppConfig appConfig = ConfigFactory.create(AppConfig.class,
                 config);
-        BackOffProvider backOffProvider = new ExponentialBackOffProvider(
+        BackOffProvider backOffProvider = getBackOffProvider();
+
+        ErrorMatcher skipRetryErrorMatcher = new ErrorMatcher(appConfig.getRetrySkipErrorTypes());
+        return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), appConfig, parser, skipRetryErrorMatcher);
+    }
+
+    private BackOffProvider getBackOffProvider() {
+        AppConfig appConfig = ConfigFactory.create(AppConfig.class,
+                config);
+        return new ExponentialBackOffProvider(
                 appConfig.getRetryExponentialBackoffInitialMs(),
                 appConfig.getRetryExponentialBackoffRate(),
                 appConfig.getRetryExponentialBackoffMaxMs(),
                 new Instrumentation(statsDReporter, ExponentialBackOffProvider.class),
                 new BackOff(new Instrumentation(statsDReporter, BackOff.class)));
-
-        if (appConfig.isDlqEnable()) {
-            DlqConfig dlqConfig = ConfigFactory.create(DlqConfig.class, config);
-            DlqWriterFactory dlqWriterFactory = new DlqWriterFactory();
-            DlqWriter dlqWriter = dlqWriterFactory.create(config, statsDReporter, tracer);
-            return SinkWithDlq.withInstrumentationFactory(
-                    new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class),
-                            dlqConfig.getDlqAttemptsToTrigger(), parser),
-                    dlqWriter,
-                    backOffProvider,
-                    dlqConfig.getDlqMaxRetryAttempts(),
-                    dlqConfig.getFailOnMaxRetryAttemptsExceeded(),
-                    statsDReporter);
-        } else {
-            return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), parser);
-        }
     }
 }
