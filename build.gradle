@@ -117,6 +117,12 @@ protobuf {
         all()*.plugins {
             grpc {}
         }
+        all().each { task ->
+            task.generateDescriptorSet = true
+            task.descriptorSetOptions.includeSourceInfo = false
+            task.descriptorSetOptions.includeImports = true
+            task.descriptorSetOptions.path = "$projectDir/src/test/resources/__files/descriptors.bin"
+        }
     }
 }
 

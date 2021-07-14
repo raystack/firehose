@@ -11,4 +11,5 @@ public enum SinkType {
     GRPC,
     PROMETHEUS,
     OBJECTSTORAGE,
+    BIGQUERY,
 }
