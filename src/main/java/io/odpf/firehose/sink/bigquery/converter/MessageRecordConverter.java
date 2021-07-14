@@ -56,7 +56,6 @@ public class MessageRecordConverter {
             log.info("failed to deserialize message: {} at offset: {}, partition: {}", UnknownProtoFields.toString(message.getLogMessage()),
                     message.getOffset(), message.getPartition());
             if (config.getFailOnDeserializeError()) {
-                //statsClient.gauge("record.processing.failure,type=deserialize," + statsClient.getBqTags(), 1);
                 throw new InvalidProtocolBufferException(e);
             }
         }

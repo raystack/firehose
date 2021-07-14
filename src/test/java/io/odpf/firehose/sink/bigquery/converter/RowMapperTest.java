@@ -19,7 +19,7 @@ import io.odpf.firehose.TestMessageBQ;
 import io.odpf.firehose.TestMessageChildBQ;
 import io.odpf.firehose.TestNestedMessageBQ;
 import io.odpf.firehose.TestNestedRepeatedMessageBQ;
-import io.odpf.firehose.sink.bigquery.util.ProtoUtil;
+import io.odpf.firehose.sink.bigquery.proto.ProtoUtil;
 import org.apache.commons.codec.DecoderException;
 import org.junit.Before;
 import org.junit.Test;

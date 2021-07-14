@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.bigquery.util;
+package io.odpf.firehose.sink.bigquery.proto;
 
 import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
