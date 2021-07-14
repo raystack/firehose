@@ -4,7 +4,6 @@ import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.Parser;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.de.stencil.parser.ProtoParserWithRefresh;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.TransportOptions;
 import com.google.cloud.bigquery.BigQuery;
@@ -39,15 +38,10 @@ public class BigQuerySinkFactory implements SinkFactory {
             MessageRecordConverterCache recordConverterWrapper = new MessageRecordConverterCache();
             ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(sinkConfig, bigQueryClient, recordConverterWrapper);
             StencilClient client = sinkConfig.isSchemaRegistryStencilEnable()
-                    ? (sinkConfig.isAutoSchemaUpdateEnabled()
-                               ? StencilClientFactory.getClient(sinkConfig.getSchemaRegistryStencilUrls(), env, statsDReporter.getClient(), protoUpdateListener)
-                               : StencilClientFactory.getClient(sinkConfig.getSchemaRegistryStencilUrls(), env, statsDReporter.getClient()))
-                    :
-                    StencilClientFactory.getClient();
+                    ? StencilClientFactory.getClient(sinkConfig.getSchemaRegistryStencilUrls(), env, statsDReporter.getClient(), protoUpdateListener)
+                    : StencilClientFactory.getClient();
 
-            Parser parser = sinkConfig.getAutoRefreshCache()
-                    ? new ProtoParser(client, sinkConfig.getInputSchemaProtoClass())
-                    : new ProtoParserWithRefresh(client, sinkConfig.getInputSchemaProtoClass());
+            Parser parser = new ProtoParser(client, sinkConfig.getInputSchemaProtoClass());
             protoUpdateListener.setStencilParser(parser);
             protoUpdateListener.update(client.getAllDescriptorAndTypeName());
             BigQueryRow rowCreator;

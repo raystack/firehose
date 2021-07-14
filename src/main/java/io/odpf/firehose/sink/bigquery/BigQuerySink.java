@@ -16,8 +16,8 @@ import io.odpf.firehose.sink.bigquery.models.Records;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class BigQuerySink extends AbstractSink {
 
@@ -45,10 +45,14 @@ public class BigQuerySink extends AbstractSink {
     @Override
     protected List<Message> execute() throws Exception {
         Instant now = Instant.now();
+        System.out.println("**** Converting ***");
         Records records = converterCache.getMessageRecordConverter().convert(messageList, now);
+        System.out.println("**** SENDING ***");
         InsertAllResponse response = insertIntoBQ(records.getValidRecords());
+        System.out.println("**** FINISHED ***");
+        System.out.println(response);
         //parse the response.
-        return records.getInvalidRecords().stream().map(Record::getMessage).collect(Collectors.toList());
+        return new ArrayList<>();
     }
 
     @Override

@@ -5,6 +5,8 @@ import com.gojek.de.stencil.parser.Parser;
 import com.gojek.de.stencil.utils.StencilUtils;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.odpf.firehose.config.BigQuerySinkConfig;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverter;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterCache;
@@ -12,10 +14,12 @@ import io.odpf.firehose.sink.bigquery.converter.RowMapper;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryClient;
 import io.odpf.firehose.sink.bigquery.models.BQField;
 import io.odpf.firehose.sink.bigquery.models.ProtoField;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +32,7 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
     private final ProtoMapper protoMapper = new ProtoMapper();
     private final ProtoFieldParser protoMappingParser = new ProtoFieldParser();
     private final BigQueryClient bqClient;
+    @Getter
     private final MessageRecordConverterCache messageRecordConverterCache;
     @Setter
     private Parser stencilParser;
@@ -64,8 +69,27 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
         List<Field> bqSchemaFields = protoMapper.generateBigquerySchema(protoField);
         addMetadataFields(bqSchemaFields);
         bqClient.upsertTable(bqSchemaFields);
-        config.setProperty("SINK_BIGQUERY_PROTO_COLUMN_MAPPING", protoMappingString);
-        setProtoParser(config.getProtoColumnMapping());
+        setProtoParser(convert(protoMappingString));
+    }
+
+    private Properties convert(String input) {
+        Type type = new TypeToken<Map<String, Object>>() {
+        }.getType();
+        Map<String, Object> m = new Gson().fromJson(input, type);
+        return getProperties(m);
+    }
+
+    private Properties getProperties(Map<String, Object> inputMap) {
+        Properties properties = new Properties();
+        for (String key : inputMap.keySet()) {
+            Object value = inputMap.get(key);
+            if (value instanceof String) {
+                properties.put(key, value);
+            } else if (value instanceof Map) {
+                properties.put(key, getProperties((Map) value));
+            }
+        }
+        return properties;
     }
 
     private void addMetadataFields(List<Field> bqSchemaFields) {

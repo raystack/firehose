@@ -1,6 +1,5 @@
 package io.odpf.firehose.sink.bigquery.proto;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gojek.de.stencil.client.StencilClient;
@@ -26,7 +25,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Properties;
 
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -40,8 +38,6 @@ public class ProtoUpdateListenerTest {
     private BigQueryClient bigQueryClient;
     @Mock
     private StencilClient stencilClient;
-    @Mock
-    private ObjectMapper objectMapper;
 
     private BigQuerySinkConfig config;
 
@@ -53,7 +49,6 @@ public class ProtoUpdateListenerTest {
         System.setProperty("SINK_BIGQUERY_ENABLE_AUTO_SCHEMA_UPDATE", "false");
         config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
         converterWrapper = new MessageRecordConverterCache();
-        objectMapper = new ObjectMapper();
     }
 
     @Test
@@ -81,9 +76,6 @@ public class ProtoUpdateListenerTest {
 
         protoUpdateListener.onProtoUpdate("", descriptorsMap);
 
-        Properties actualNewProtoMapping = config.getProtoColumnMapping();
-        Assert.assertEquals("order_number", actualNewProtoMapping.getProperty("1"));
-        Assert.assertEquals("order_url", actualNewProtoMapping.getProperty("2"));
     }
 
 
@@ -91,14 +83,12 @@ public class ProtoUpdateListenerTest {
     public void shouldThrowExceptionIfParserFails() {
         ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper);
 
-        ProtoField returnedProtoField = new ProtoField();
         HashMap<String, DescriptorAndTypeName> descriptorsMap = new HashMap<String, DescriptorAndTypeName>() {{
             put(String.format("%s.%s", TestKeyBQ.class.getPackage(), TestKeyBQ.class.getName()), new DescriptorAndTypeName(TestKeyBQ.getDescriptor(), String.format(".%s.%s", TestKeyBQ.getDescriptor().getFile().getPackage(), TestKeyBQ.getDescriptor().getName())));
         }};
         ObjectNode objNode = JsonNodeFactory.instance.objectNode();
         objNode.put("1", "order_number");
         objNode.put("2", "order_url");
-
 
         protoUpdateListener.onProtoUpdate("", descriptorsMap);
     }
@@ -116,7 +106,6 @@ public class ProtoUpdateListenerTest {
         ObjectNode objNode = JsonNodeFactory.instance.objectNode();
         objNode.put("1", "order_number");
         objNode.put("2", "order_url");
-
 
         ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
             add(Field.newBuilder("order_number", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
@@ -168,7 +157,6 @@ public class ProtoUpdateListenerTest {
         ObjectNode objNode = JsonNodeFactory.instance.objectNode();
         objNode.put("1", "order_number");
         objNode.put("2", "order_url");
-        String expectedProtoMapping = objectMapper.writeValueAsString(objNode);
 
         ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
             add(Field.newBuilder("order_number", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
@@ -176,12 +164,7 @@ public class ProtoUpdateListenerTest {
             addAll(BQField.getMetadataFields()); // metadata fields are not namespaced
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
-
         protoUpdateListener.onProtoUpdate("", descriptorsMap);
-
-        Properties actualNewProtoMapping = config.getProtoColumnMapping();
-        Assert.assertEquals("order_number", actualNewProtoMapping.getProperty("1"));
-        Assert.assertEquals("order_url", actualNewProtoMapping.getProperty("2"));
         verify(bigQueryClient, times(1)).upsertTable(bqSchemaFields); // assert that metadata fields were not namespaced
     }
 
@@ -212,9 +195,6 @@ public class ProtoUpdateListenerTest {
 
         protoUpdateListener.onProtoUpdate("", descriptorsMap);
 
-        Properties actualNewProtoMapping = config.getProtoColumnMapping();
-        Assert.assertEquals("order_number", actualNewProtoMapping.getProperty("1"));
-        Assert.assertEquals("order_url", actualNewProtoMapping.getProperty("2"));
         verify(bigQueryClient, times(1)).upsertTable(bqSchemaFields);
         System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "");
     }

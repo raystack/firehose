@@ -1,11 +1,9 @@
 package io.odpf.firehose.config;
 
 import io.odpf.firehose.config.converter.LabelMapConverter;
-import io.odpf.firehose.config.converter.ProtoIndexToFieldMapConverter;
 import org.aeonbits.owner.Mutable;
 
 import java.util.Map;
-import java.util.Properties;
 
 public interface BigQuerySinkConfig extends AppConfig, Mutable {
 
@@ -27,10 +25,6 @@ public interface BigQuerySinkConfig extends AppConfig, Mutable {
 
     @Key("SINK_BIGQUERY_DATASET_NAME")
     String getDatasetName();
-
-
-    @Key("SCHEMA_REGISTRY_STENCIL_URLS")
-    String getSchemaRegistryStencilUrls();
 
     @Key("SINK_BIGQUERY_CREDENTIAL_PATH")
     String getBigQueryCredentialPath();
@@ -62,15 +56,8 @@ public interface BigQuerySinkConfig extends AppConfig, Mutable {
     @Key("SINK_BIGQUERY_DATASET_LOCATION")
     String getBigQueryDatasetLocation();
 
+
     @DefaultValue("false")
-    @Key("SINK_BIGQUERY_ENABLE_AUTO_SCHEMA_UPDATE")
-    Boolean isAutoSchemaUpdateEnabled();
-
-    @Key("SINK_BIGQUERY_PROTO_COLUMN_MAPPING")
-    @ConverterClass(ProtoIndexToFieldMapConverter.class)
-    Properties getProtoColumnMapping();
-
-    @DefaultValue("true")
     @Key("SINK_BIGQUERY_FAIL_ON_UNKNOWN_FIELDS")
     Boolean getFailOnUnknownFields();
 

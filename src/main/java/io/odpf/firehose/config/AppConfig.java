@@ -42,10 +42,6 @@ public interface AppConfig extends Config {
     @Key("SCHEMA_REGISTRY_STENCIL_URLS")
     String getSchemaRegistryStencilUrls();
 
-    @Key("SCHEMA_REGISTRY_STENCIL_REFRESH_CACHE")
-    @DefaultValue("false")
-    Boolean getAutoRefreshCache();
-
     @Key("INPUT_SCHEMA_PROTO_CLASS")
     String getInputSchemaProtoClass();
 
