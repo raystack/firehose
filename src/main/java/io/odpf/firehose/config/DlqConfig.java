@@ -2,8 +2,12 @@ package io.odpf.firehose.config;
 
 import io.odpf.firehose.config.converter.DlqWriterTypeConverter;
 import io.odpf.firehose.config.converter.ObjectStorageTypeConverter;
+import io.odpf.firehose.config.converter.SetErrorTypeConverter;
+import io.odpf.firehose.consumer.ErrorType;
 import io.odpf.firehose.objectstorage.ObjectStorageType;
 import io.odpf.firehose.sinkdecorator.dlq.DLQWriterType;
+
+import java.util.Set;
 
 public interface DlqConfig extends AppConfig {
 
@@ -72,4 +76,9 @@ public interface DlqConfig extends AppConfig {
     @Key("DLQ_FAIL_ON_MAX_RETRY_ATTEMPTS_EXCEEDED")
     @DefaultValue("true")
     boolean getDlqFailOnMaxRetryAttemptsExceeded();
+
+    @ConverterClass(SetErrorTypeConverter.class)
+    @Key("DLQ_ENABLED_ERROR_TYPES")
+    @DefaultValue("DESERIALIZATION_ERROR")
+    Set<ErrorType> getDlqEnabledErrorTypes();
 }

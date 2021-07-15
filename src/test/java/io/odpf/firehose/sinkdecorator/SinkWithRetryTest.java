@@ -1,22 +1,27 @@
 package io.odpf.firehose.sinkdecorator;
 
 import io.odpf.firehose.config.DlqConfig;
+import io.odpf.firehose.consumer.ErrorInfo;
+import io.odpf.firehose.consumer.ErrorType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.log.KeyOrMessageParser;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -38,7 +43,6 @@ public class SinkWithRetryTest {
     @Mock
     private KeyOrMessageParser parser;
 
-    @Mock
     private ErrorMatcher errorMatcher;
 
     @Mock
@@ -49,6 +53,9 @@ public class SinkWithRetryTest {
         initMocks(this);
         when(dlqConfig.getDlqAttemptsToTrigger()).thenReturn(3);
         when(dlqConfig.getFailOnMaxRetryAttempts()).thenReturn(false);
+        HashSet<ErrorType> errorTypes = new HashSet<>();
+        errorTypes.add(ErrorType.DESERIALIZATION_ERROR);
+        errorMatcher = new ErrorMatcher(true, errorTypes);
     }
 
     @Test
@@ -144,5 +151,31 @@ public class SinkWithRetryTest {
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, dlqConfig, parser, errorMatcher);
 
         sinkWithRetry.pushMessage(Collections.singletonList(message));
+    }
+
+    @Test
+    public void shouldRetryMessagesWhenErrorTypesConfigured() throws IOException {
+        Message messageWithError = new Message("key".getBytes(), "value".getBytes(), "topic", 1, 1, null, 0, 0, new ErrorInfo(null, ErrorType.DESERIALIZATION_ERROR));
+
+        ArrayList<Message> messages = new ArrayList<>();
+        messages.add(messageWithError);
+        messages.add(new Message(message, new ErrorInfo(null, ErrorType.UNKNOWN_ERROR)));
+        when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(new LinkedList<>());
+
+        HashSet<ErrorType> errorTypes = new HashSet<>();
+        errorTypes.add(ErrorType.DESERIALIZATION_ERROR);
+        ErrorMatcher retryErrorMatcher = new ErrorMatcher(true, errorTypes);
+        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, dlqConfig, parser, retryErrorMatcher);
+
+        List<Message> messageList = sinkWithRetry.pushMessage(messages);
+
+        assertEquals(1, messageList.size());
+        ArgumentCaptor<List<Message>> argumentCaptor = ArgumentCaptor.forClass(List.class);
+        verify(sinkDecorator, times(2)).pushMessage(argumentCaptor.capture());
+        List<List<Message>> args = argumentCaptor.getAllValues();
+
+        assertEquals(2, args.get(0).size());
+        assertEquals(1, args.get(1).size());
+        assertThat(args.get(1), Matchers.contains(messageWithError));
     }
 }

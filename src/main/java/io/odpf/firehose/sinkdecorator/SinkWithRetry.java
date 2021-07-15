@@ -25,15 +25,15 @@ public class SinkWithRetry extends SinkDecorator {
     private final Instrumentation instrumentation;
     private final AppConfig appConfig;
     private final KeyOrMessageParser parser;
-    private final ErrorMatcher skipRetryMatcher;
+    private final ErrorMatcher retryErrorMatcher;
 
-    public SinkWithRetry(Sink sink, BackOffProvider backOffProvider, Instrumentation instrumentation, AppConfig appConfig, KeyOrMessageParser parser, ErrorMatcher skipRetryMatcher) {
+    public SinkWithRetry(Sink sink, BackOffProvider backOffProvider, Instrumentation instrumentation, AppConfig appConfig, KeyOrMessageParser parser, ErrorMatcher retryErrorMatcher) {
         super(sink);
         this.backOffProvider = backOffProvider;
         this.instrumentation = instrumentation;
         this.appConfig = appConfig;
         this.parser = parser;
-        this.skipRetryMatcher = skipRetryMatcher;
+        this.retryErrorMatcher = retryErrorMatcher;
     }
 
     /**
@@ -54,10 +54,10 @@ public class SinkWithRetry extends SinkDecorator {
         List<Message> retryMessages = new LinkedList<>();
         List<Message> skipMessages = new LinkedList<>();
         failedMessages.forEach(message -> {
-            if (skipRetryMatcher.isMatch(message)) {
-                skipMessages.add(message);
-            } else {
+            if (retryErrorMatcher.isMatch(message)) {
                 retryMessages.add(message);
+            } else {
+                skipMessages.add(message);
             }
         });
 

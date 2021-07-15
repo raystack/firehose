@@ -84,18 +84,18 @@ public interface AppConfig extends Config {
     Integer getRetryExponentialBackoffMaxMs();
 
     @ConverterClass(SetErrorTypeConverter.class)
-    @Key("RETRY_SKIP_ERROR_TYPES")
+    @Key("RETRY_ENABLED_ERROR_TYPES")
     @DefaultValue("")
-    Set<ErrorType> getRetrySkipErrorTypes();
+    Set<ErrorType> getRetryEnabledErrorTypes();
 
     @Key("FAIL_ON_MAX_RETRY_ATTEMPTS")
     @DefaultValue("true")
     boolean getFailOnMaxRetryAttempts();
 
     @ConverterClass(SetErrorTypeConverter.class)
-    @Key("FAIL_ON_ERROR_TYPES")
+    @Key("SINK_FAIL_ENABLED_ERROR_TYPES")
     @DefaultValue("")
-    Set<ErrorType> getFailOnErrorTypes();
+    Set<ErrorType> getSinkFailEnabledErrorTypes();
 
     @Key("DLQ_ENABLE")
     @DefaultValue("false")

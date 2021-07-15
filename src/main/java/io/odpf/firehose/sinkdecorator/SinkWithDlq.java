@@ -23,19 +23,21 @@ public class SinkWithDlq extends SinkDecorator {
     private final DlqWriter writer;
     private final BackOffProvider backOffProvider;
     private final DlqConfig dlqConfig;
+    private final ErrorMatcher errorMatcher;
 
     private final Instrumentation instrumentation;
 
-    public SinkWithDlq(Sink sink, DlqWriter writer, BackOffProvider backOffProvider, DlqConfig dlqConfig, Instrumentation instrumentation) {
+    public SinkWithDlq(Sink sink, DlqWriter writer, BackOffProvider backOffProvider, DlqConfig dlqConfig, ErrorMatcher errorMatcher, Instrumentation instrumentation) {
         super(sink);
         this.writer = writer;
         this.backOffProvider = backOffProvider;
+        this.errorMatcher = errorMatcher;
         this.instrumentation = instrumentation;
         this.dlqConfig = dlqConfig;
     }
 
-    public static SinkWithDlq withInstrumentationFactory(Sink sink, DlqWriter dlqWriter, BackOffProvider backOffProvider, DlqConfig dlqConfig, StatsDReporter statsDReporter) {
-        return new SinkWithDlq(sink, dlqWriter, backOffProvider, dlqConfig, new Instrumentation(statsDReporter, SinkWithDlq.class));
+    public static SinkWithDlq withInstrumentationFactory(Sink sink, DlqWriter dlqWriter, BackOffProvider backOffProvider, DlqConfig dlqConfig, ErrorMatcher errorMatcher, StatsDReporter statsDReporter) {
+        return new SinkWithDlq(sink, dlqWriter, backOffProvider, dlqConfig, errorMatcher, new Instrumentation(statsDReporter, SinkWithDlq.class));
     }
 
     /**
@@ -53,7 +55,17 @@ public class SinkWithDlq extends SinkDecorator {
             return dlqMessages;
         }
 
-        List<Message> dlqWriteFailedMessages = pushToWriter(dlqMessages);
+        List<Message> dlqList = new LinkedList<>();
+        List<Message> skipList = new LinkedList<>();
+        dlqMessages.forEach(message -> {
+            if (errorMatcher.isMatch(message)) {
+                dlqList.add(message);
+            } else {
+                skipList.add(message);
+            }
+        });
+
+        List<Message> dlqWriteFailedMessages = pushToWriter(dlqList);
         instrumentation.logInfo("DLQ processed messages: {}", dlqMessages.size() - dlqWriteFailedMessages.size());
 
         if (!dlqWriteFailedMessages.isEmpty()) {
@@ -67,7 +79,7 @@ public class SinkWithDlq extends SinkDecorator {
             super.addOffsets(DLQ_BATCH_KEY, dlqMessages);
             super.setCommittable(DLQ_BATCH_KEY);
         }
-
+        dlqWriteFailedMessages.addAll(skipList);
         return dlqWriteFailedMessages;
     }
 

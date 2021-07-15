@@ -9,6 +9,8 @@ import java.util.Set;
 
 @AllArgsConstructor
 public class ErrorMatcher {
+
+    private final boolean nullErrorIncluded;
     private final Set<ErrorType> errorTypes;
 
     public boolean isMatch(Message message) {
@@ -18,6 +20,7 @@ public class ErrorMatcher {
                 return errorTypes.contains(errorInfo.getErrorType());
             }
         }
-        return false;
+
+        return nullErrorIncluded;
     }
 }

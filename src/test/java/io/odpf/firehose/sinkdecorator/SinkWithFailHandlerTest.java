@@ -25,7 +25,7 @@ public class SinkWithFailHandlerTest {
     @Mock
     private Sink sink;
 
-    private final ErrorMatcher errorMatcher = new ErrorMatcher(new HashSet<>());
+    private final ErrorMatcher errorMatcher = new ErrorMatcher(false, new HashSet<>());
     private SinkWithFailHandler sinkWithFailHandler;
 
     @Before
@@ -45,7 +45,7 @@ public class SinkWithFailHandlerTest {
 
         when(sink.pushMessage(anyList())).thenReturn(messages);
 
-        sinkWithFailHandler = new SinkWithFailHandler(sink, new ErrorMatcher(failErrors));
+        sinkWithFailHandler = new SinkWithFailHandler(sink, new ErrorMatcher(false, failErrors));
         sinkWithFailHandler.pushMessage(messages);
     }
 
@@ -61,7 +61,7 @@ public class SinkWithFailHandlerTest {
 
         when(sink.pushMessage(anyList())).thenReturn(messages);
 
-        sinkWithFailHandler = new SinkWithFailHandler(sink, new ErrorMatcher(failErrors));
+        sinkWithFailHandler = new SinkWithFailHandler(sink, new ErrorMatcher(false, failErrors));
         sinkWithFailHandler.pushMessage(messages);
     }
 
@@ -76,7 +76,7 @@ public class SinkWithFailHandlerTest {
 
         when(sink.pushMessage(anyList())).thenReturn(messages);
 
-        sinkWithFailHandler = new SinkWithFailHandler(sink, new ErrorMatcher(failErrors));
+        sinkWithFailHandler = new SinkWithFailHandler(sink, new ErrorMatcher(false, failErrors));
         sinkWithFailHandler.pushMessage(messages);
     }
 

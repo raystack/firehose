@@ -171,13 +171,7 @@ public class FirehoseConsumerFactory {
     }
 
     private Sink createSink(Tracer tracer) {
-        AppConfig appConfig = ConfigFactory.create(AppConfig.class,
-                config);
-        Sink withRetry = withRetry(withFailOnError(getSink()));
-        if (appConfig.isDlqEnable()) {
-            return withDlq(withRetry, tracer);
-        }
-        return withRetry;
+        return withDlq(withRetry(withFailOnError(getSink())), tracer);
     }
 
     public Sink withDlq(Sink sink, Tracer tracer) {
@@ -186,19 +180,22 @@ public class FirehoseConsumerFactory {
         DlqWriterFactory dlqWriterFactory = new DlqWriterFactory();
         DlqWriter dlqWriter = dlqWriterFactory.create(config, statsDReporter, tracer);
 
+        ErrorMatcher dlqErrorMatcher = new ErrorMatcher(true, dlqConfig.getDlqEnabledErrorTypes());
+
         BackOffProvider backOffProvider = getBackOffProvider();
         return SinkWithDlq.withInstrumentationFactory(
                 sink,
                 dlqWriter,
                 backOffProvider,
                 dlqConfig,
+                dlqErrorMatcher,
                 statsDReporter);
     }
 
     public Sink withFailOnError(Sink sink) {
         AppConfig appConfig = ConfigFactory.create(AppConfig.class,
                 config);
-        ErrorMatcher failErrorMatcher = new ErrorMatcher(appConfig.getFailOnErrorTypes());
+        ErrorMatcher failErrorMatcher = new ErrorMatcher(false, appConfig.getSinkFailEnabledErrorTypes());
         return new SinkWithFailHandler(sink, failErrorMatcher);
     }
 
@@ -213,8 +210,8 @@ public class FirehoseConsumerFactory {
                 config);
         BackOffProvider backOffProvider = getBackOffProvider();
 
-        ErrorMatcher skipRetryErrorMatcher = new ErrorMatcher(appConfig.getRetrySkipErrorTypes());
-        return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), appConfig, parser, skipRetryErrorMatcher);
+        ErrorMatcher retryErrorMatcher = new ErrorMatcher(true, appConfig.getRetryEnabledErrorTypes());
+        return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), appConfig, parser, retryErrorMatcher);
     }
 
     private BackOffProvider getBackOffProvider() {
