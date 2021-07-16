@@ -93,9 +93,9 @@ public interface AppConfig extends Config {
     boolean getFailOnMaxRetryAttempts();
 
     @ConverterClass(SetErrorTypeConverter.class)
-    @Key("SINK_FAIL_ENABLED_ERROR_TYPES")
+    @Key("SINK_FAIL_ON_ERROR_TYPES")
     @DefaultValue("")
-    Set<ErrorType> getSinkFailEnabledErrorTypes();
+    Set<ErrorType> getSinkFailOnErrorTypes();
 
     @Key("DLQ_ENABLE")
     @DefaultValue("false")

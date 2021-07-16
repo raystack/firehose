@@ -198,7 +198,7 @@ public class FirehoseConsumerFactory {
     public Sink withFailOnError(Sink sink) {
         AppConfig appConfig = ConfigFactory.create(AppConfig.class,
                 config);
-        ErrorMatcher failErrorMatcher = new ErrorMatcher(false, appConfig.getSinkFailEnabledErrorTypes());
+        ErrorMatcher failErrorMatcher = new ErrorMatcher(false, appConfig.getSinkFailOnErrorTypes());
         return new SinkWithFailHandler(sink, failErrorMatcher);
     }
 
