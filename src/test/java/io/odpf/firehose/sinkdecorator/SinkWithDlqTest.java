@@ -1,11 +1,14 @@
 package io.odpf.firehose.sinkdecorator;
 
 import io.odpf.firehose.config.DlqConfig;
-import io.odpf.firehose.consumer.ErrorInfo;
-import io.odpf.firehose.consumer.ErrorType;
+import io.odpf.firehose.config.ErrorConfig;
+import io.odpf.firehose.error.ErrorInfo;
+import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.error.ErrorHandler;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
+import org.aeonbits.owner.ConfigFactory;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,10 +18,9 @@ import org.mockito.Mock;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -46,16 +48,16 @@ public class SinkWithDlqTest {
     @Mock
     private DlqConfig dlqConfig;
 
-    private ErrorMatcher errorMatcher;
+    private ErrorHandler errorHandler;
 
     @Before
     public void setup() {
         initMocks(this);
         when(dlqConfig.getDlqMaxRetryAttempts()).thenReturn(10);
         when(dlqConfig.getDlqFailOnMaxRetryAttemptsExceeded()).thenReturn(true);
-        Set<ErrorType> errorTypes = new HashSet<>();
-        errorTypes.add(ErrorType.DESERIALIZATION_ERROR);
-        errorMatcher = new ErrorMatcher(true, errorTypes);
+        errorHandler = new ErrorHandler(ConfigFactory.create(ErrorConfig.class, new HashMap<String, String>() {{
+            put("ERROR_TYPES_FOR_DLQ", ErrorType.DESERIALIZATION_ERROR.name());
+        }}));
     }
 
     @Test
@@ -64,9 +66,10 @@ public class SinkWithDlqTest {
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
         messages.add(message);
+        when(message.getErrorInfo()).thenReturn(new ErrorInfo(new RuntimeException(), ErrorType.DESERIALIZATION_ERROR));
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorMatcher, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
 
         List<Message> pushResult = sinkWithDlq.pushMessage(messages);
         verify(dlqWriter, times(1)).write(messages);
@@ -78,7 +81,7 @@ public class SinkWithDlqTest {
         ArrayList<Message> messages = new ArrayList<>();
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorMatcher, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
 
         sinkWithDlq.pushMessage(messages);
         verify(dlqWriter, never()).write(messages);
@@ -90,9 +93,10 @@ public class SinkWithDlqTest {
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
         messages.add(message);
+        when(message.getErrorInfo()).thenReturn(new ErrorInfo(new RuntimeException(), ErrorType.DESERIALIZATION_ERROR));
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorMatcher, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
 
         sinkWithDlq.pushMessage(messages);
     }
@@ -111,7 +115,7 @@ public class SinkWithDlqTest {
         when(dlqWriter.write(messages)).thenReturn(dlqRetryMessages);
         when(dlqWriter.write(dlqRetryMessages)).thenReturn(new ArrayList<>());
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorMatcher, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
 
         sinkWithDlq.pushMessage(messages);
 
@@ -142,7 +146,7 @@ public class SinkWithDlqTest {
         when(dlqWriter.write(dlqRetryMessages)).thenReturn(dlqRetryMessages);
         when(dlqWriter.write(dlqRetryMessages)).thenReturn(dlqRetryMessages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorMatcher, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
 
         sinkWithDlq.pushMessage(messages);
     }
@@ -164,7 +168,7 @@ public class SinkWithDlqTest {
         when(dlqWriter.write(dlqRetryMessages)).thenReturn(dlqRetryMessages);
         when(dlqWriter.write(dlqRetryMessages)).thenReturn(dlqRetryMessages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorMatcher, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
         sinkWithDlq.pushMessage(messages);
     }
 
@@ -188,7 +192,7 @@ public class SinkWithDlqTest {
         when(sinkWithRetry.pushMessage(messages)).thenReturn(dlqProcessedMessages);
         when(dlqWriter.write(anyList())).thenReturn(new LinkedList<>());
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorMatcher, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
         List<Message> pushResult = sinkWithDlq.pushMessage(messages);
 
         ArgumentCaptor<List<Message>> argumentCaptor = ArgumentCaptor.forClass(List.class);
@@ -206,7 +210,7 @@ public class SinkWithDlqTest {
         ArrayList<Message> messages = new ArrayList<>();
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorMatcher, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
 
         sinkWithDlq.pushMessage(messages);
         verify(sinkWithRetry, never()).addOffsets(anyString(), anyList());
@@ -221,7 +225,7 @@ public class SinkWithDlqTest {
         messages.add(messageWithError);
         messages.add(new Message(message, new ErrorInfo(null, ErrorType.UNKNOWN_ERROR)));
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorMatcher, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
 
         List<Message> pushResult = sinkWithDlq.pushMessage(messages);
         ArgumentCaptor<List<Message>> argumentCaptor = ArgumentCaptor.forClass(List.class);

@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.objectstorage;
 
-import io.odpf.firehose.consumer.ErrorInfo;
-import io.odpf.firehose.consumer.ErrorType;
+import io.odpf.firehose.error.ErrorInfo;
+import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.consumer.offset.OffsetManager;
 import io.odpf.firehose.exception.DeserializerException;
