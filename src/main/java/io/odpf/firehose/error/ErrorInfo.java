@@ -1,4 +1,4 @@
-package io.odpf.firehose.consumer;
+package io.odpf.firehose.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

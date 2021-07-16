@@ -2,15 +2,12 @@ package io.odpf.firehose.config;
 
 import io.odpf.firehose.config.converter.FilterTypeConverter;
 import io.odpf.firehose.config.converter.ProtoIndexToFieldMapConverter;
-import io.odpf.firehose.config.converter.SetErrorTypeConverter;
 import io.odpf.firehose.config.converter.SinkTypeConverter;
 import io.odpf.firehose.config.enums.FilterType;
 import io.odpf.firehose.config.enums.SinkType;
-import io.odpf.firehose.consumer.ErrorType;
 import org.aeonbits.owner.Config;
 
 import java.util.Properties;
-import java.util.Set;
 
 public interface AppConfig extends Config {
 
@@ -83,21 +80,7 @@ public interface AppConfig extends Config {
     @DefaultValue("60000")
     Integer getRetryExponentialBackoffMaxMs();
 
-    @ConverterClass(SetErrorTypeConverter.class)
-    @Key("RETRY_ENABLED_ERROR_TYPES")
-    @DefaultValue("")
-    Set<ErrorType> getRetryEnabledErrorTypes();
-
     @Key("FAIL_ON_MAX_RETRY_ATTEMPTS")
     @DefaultValue("true")
     boolean getFailOnMaxRetryAttempts();
-
-    @ConverterClass(SetErrorTypeConverter.class)
-    @Key("SINK_FAIL_ENABLED_ERROR_TYPES")
-    @DefaultValue("")
-    Set<ErrorType> getSinkFailEnabledErrorTypes();
-
-    @Key("DLQ_ENABLE")
-    @DefaultValue("false")
-    Boolean isDlqEnable();
 }

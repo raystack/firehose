@@ -6,6 +6,7 @@ import com.gojek.de.stencil.parser.ProtoParser;
 import io.jaegertracing.Configuration;
 import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.config.DlqConfig;
+import io.odpf.firehose.config.ErrorConfig;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.config.enums.KafkaConsumerMode;
 import io.odpf.firehose.consumer.ConsumerAndOffsetManager;
@@ -33,7 +34,7 @@ import io.odpf.firehose.sink.prometheus.PromSinkFactory;
 import io.odpf.firehose.sink.redis.RedisSinkFactory;
 import io.odpf.firehose.sinkdecorator.BackOff;
 import io.odpf.firehose.sinkdecorator.BackOffProvider;
-import io.odpf.firehose.sinkdecorator.ErrorMatcher;
+import io.odpf.firehose.error.ErrorHandler;
 import io.odpf.firehose.sinkdecorator.ExponentialBackOffProvider;
 import io.odpf.firehose.sinkdecorator.SinkWithDlq;
 import io.odpf.firehose.sinkdecorator.SinkWithFailHandler;
@@ -78,8 +79,8 @@ public class FirehoseConsumerFactory {
         instrumentation = new Instrumentation(this.statsDReporter, FirehoseConsumerFactory.class);
 
         String additionalConsumerConfig = String.format(""
-                        + "\n\tEnable Async Commit: %s"
-                        + "\n\tCommit Only Current Partition: %s",
+                                                        + "\n\tEnable Async Commit: %s"
+                                                        + "\n\tCommit Only Current Partition: %s",
                 this.kafkaConsumerConfig.isSourceKafkaAsyncCommitEnable(),
                 this.kafkaConsumerConfig.isSourceKafkaCommitOnlyCurrentPartitionsEnable());
         instrumentation.logDebug(additionalConsumerConfig);
@@ -174,32 +175,25 @@ public class FirehoseConsumerFactory {
     }
 
     private Sink createSink(Tracer tracer) {
-        return withDlq(withRetry(withFailOnError(getSink())), tracer);
+        ErrorHandler errorHandler = new ErrorHandler(ConfigFactory.create(ErrorConfig.class, config));
+        Sink baseSink = getSink();
+        Sink sinkWithFailHandler = new SinkWithFailHandler(baseSink, errorHandler);
+        Sink sinkWithRetry = withRetry(sinkWithFailHandler, errorHandler);
+        return withDlq(sinkWithRetry, tracer, errorHandler);
     }
 
-    public Sink withDlq(Sink sink, Tracer tracer) {
-        DlqConfig dlqConfig = ConfigFactory.create(DlqConfig.class,
-                config);
+    public Sink withDlq(Sink sink, Tracer tracer, ErrorHandler errorHandler) {
+        DlqConfig dlqConfig = ConfigFactory.create(DlqConfig.class, config);
         DlqWriterFactory dlqWriterFactory = new DlqWriterFactory();
         DlqWriter dlqWriter = dlqWriterFactory.create(config, statsDReporter, tracer);
-
-        ErrorMatcher dlqErrorMatcher = new ErrorMatcher(true, dlqConfig.getDlqEnabledErrorTypes());
-
         BackOffProvider backOffProvider = getBackOffProvider();
         return SinkWithDlq.withInstrumentationFactory(
                 sink,
                 dlqWriter,
                 backOffProvider,
                 dlqConfig,
-                dlqErrorMatcher,
+                errorHandler,
                 statsDReporter);
-    }
-
-    public Sink withFailOnError(Sink sink) {
-        AppConfig appConfig = ConfigFactory.create(AppConfig.class,
-                config);
-        ErrorMatcher failErrorMatcher = new ErrorMatcher(false, appConfig.getSinkFailEnabledErrorTypes());
-        return new SinkWithFailHandler(sink, failErrorMatcher);
     }
 
     /**
@@ -208,18 +202,14 @@ public class FirehoseConsumerFactory {
      * @param basicSink
      * @return Sink
      */
-    private Sink withRetry(Sink basicSink) {
-        AppConfig appConfig = ConfigFactory.create(AppConfig.class,
-                config);
+    private Sink withRetry(Sink basicSink, ErrorHandler errorHandler) {
+        AppConfig appConfig = ConfigFactory.create(AppConfig.class, config);
         BackOffProvider backOffProvider = getBackOffProvider();
-
-        ErrorMatcher retryErrorMatcher = new ErrorMatcher(true, appConfig.getRetryEnabledErrorTypes());
-        return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), appConfig, parser, retryErrorMatcher);
+        return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), appConfig, parser, errorHandler);
     }
 
     private BackOffProvider getBackOffProvider() {
-        AppConfig appConfig = ConfigFactory.create(AppConfig.class,
-                config);
+        AppConfig appConfig = ConfigFactory.create(AppConfig.class, config);
         return new ExponentialBackOffProvider(
                 appConfig.getRetryExponentialBackoffInitialMs(),
                 appConfig.getRetryExponentialBackoffRate(),
