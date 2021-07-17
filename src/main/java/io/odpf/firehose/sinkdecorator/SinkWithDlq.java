@@ -1,6 +1,9 @@
 package io.odpf.firehose.sinkdecorator;
 
+import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.error.ErrorHandler;
+import io.odpf.firehose.error.ErrorScope;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
@@ -10,6 +13,7 @@ import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
@@ -21,22 +25,22 @@ public class SinkWithDlq extends SinkDecorator {
     public static final String DLQ_BATCH_KEY = "dlq-batch-key";
     private final DlqWriter writer;
     private final BackOffProvider backOffProvider;
-    private final int maxRetryAttempts;
-    private final boolean isFailOnMaxRetryAttemptsExceeded;
+    private final DlqConfig dlqConfig;
+    private final ErrorHandler errorHandler;
 
     private final Instrumentation instrumentation;
 
-    public SinkWithDlq(Sink sink, DlqWriter writer, BackOffProvider backOffProvider, int maxRetryAttempts, boolean isFailOnMaxRetryAttemptsExceeded, Instrumentation instrumentation) {
+    public SinkWithDlq(Sink sink, DlqWriter writer, BackOffProvider backOffProvider, DlqConfig dlqConfig, ErrorHandler errorHandler, Instrumentation instrumentation) {
         super(sink);
         this.writer = writer;
         this.backOffProvider = backOffProvider;
-        this.maxRetryAttempts = maxRetryAttempts;
-        this.isFailOnMaxRetryAttemptsExceeded = isFailOnMaxRetryAttemptsExceeded;
+        this.errorHandler = errorHandler;
         this.instrumentation = instrumentation;
+        this.dlqConfig = dlqConfig;
     }
 
-    public static SinkWithDlq withInstrumentationFactory(Sink sink, DlqWriter dlqWriter, BackOffProvider backOffProvider, int maxRetryAttempts, boolean isFailOnMaxRetryAttemptsExceeded, StatsDReporter statsDReporter) {
-        return new SinkWithDlq(sink, dlqWriter, backOffProvider, maxRetryAttempts, isFailOnMaxRetryAttemptsExceeded, new Instrumentation(statsDReporter, SinkWithDlq.class));
+    public static SinkWithDlq withInstrumentationFactory(Sink sink, DlqWriter dlqWriter, BackOffProvider backOffProvider, DlqConfig dlqConfig, ErrorHandler errorHandler, StatsDReporter statsDReporter) {
+        return new SinkWithDlq(sink, dlqWriter, backOffProvider, dlqConfig, errorHandler, new Instrumentation(statsDReporter, SinkWithDlq.class));
     }
 
     /**
@@ -49,33 +53,29 @@ public class SinkWithDlq extends SinkDecorator {
      */
     @Override
     public List<Message> pushMessage(List<Message> inputMessages) throws IOException, DeserializerException {
-        List<Message> dlqMessages = super.pushMessage(inputMessages);
-        if (dlqMessages.isEmpty()) {
-            return dlqMessages;
+        List<Message> messages = super.pushMessage(inputMessages);
+        if (messages.isEmpty()) {
+            return messages;
         }
+        Map<Boolean, List<Message>> splitLists = errorHandler.split(messages, ErrorScope.DLQ);
 
-        List<Message> dlqWriteFailedMessages = pushToWriter(dlqMessages);
-        instrumentation.logInfo("DLQ processed messages: {}", dlqMessages.size() - dlqWriteFailedMessages.size());
+        List<Message> returnedMessages = doDLQ(splitLists.get(Boolean.TRUE));
 
-        if (!dlqWriteFailedMessages.isEmpty()) {
-            if (isFailOnMaxRetryAttemptsExceeded) {
-                throw new IOException("exhausted maximum number of allowed retry attempts to write messages to DLQ");
-            }
-            instrumentation.logInfo("failed to be processed by DLQ messages: {}", dlqWriteFailedMessages.size());
+        if (!returnedMessages.isEmpty() && dlqConfig.getDlqFailOnMaxRetryAttemptsExceeded()) {
+            throw new IOException("exhausted maximum number of allowed retry attempts to write messages to DLQ");
         }
-
         if (super.canManageOffsets()) {
-            super.addOffsets(DLQ_BATCH_KEY, dlqMessages);
+            super.addOffsets(DLQ_BATCH_KEY, messages);
             super.setCommittable(DLQ_BATCH_KEY);
         }
-
-        return dlqWriteFailedMessages;
+        returnedMessages.addAll(splitLists.get(Boolean.FALSE));
+        return returnedMessages;
     }
 
-    private List<Message> pushToWriter(List<Message> messages) throws IOException {
+    private List<Message> doDLQ(List<Message> messages) throws IOException {
         List<Message> retryQueueMessages = new LinkedList<>(messages);
         int attemptCount = 0;
-        while (attemptCount < maxRetryAttempts && !retryQueueMessages.isEmpty()) {
+        while (attemptCount < this.dlqConfig.getDlqMaxRetryAttempts() && !retryQueueMessages.isEmpty()) {
             instrumentation.captureRetryAttempts();
             int remainingRetryMessagesCount = retryQueueMessages.size();
 
@@ -90,7 +90,9 @@ public class SinkWithDlq extends SinkDecorator {
 
             backOffProvider.backOff(attemptCount++);
         }
-
+        if (!retryQueueMessages.isEmpty()) {
+            instrumentation.logInfo("failed to be processed by DLQ messages: {}", retryQueueMessages.size());
+        }
         return retryQueueMessages;
     }
 

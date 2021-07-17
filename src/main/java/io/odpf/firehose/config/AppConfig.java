@@ -80,7 +80,11 @@ public interface AppConfig extends Config {
     @DefaultValue("60000")
     Integer getRetryExponentialBackoffMaxMs();
 
-    @Key("DLQ_ENABLE")
-    @DefaultValue("false")
-    Boolean isDlqEnable();
+    @Key("FAIL_ON_MAX_RETRY_ATTEMPTS")
+    @DefaultValue("true")
+    boolean getFailOnMaxRetryAttempts();
+
+    @Key("SINK_MAX_RETRY_ATTEMPTS")
+    @DefaultValue("1")
+    Integer getSinkMaxRetryAttempts();
 }

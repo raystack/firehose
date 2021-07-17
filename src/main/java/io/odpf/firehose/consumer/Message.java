@@ -1,6 +1,7 @@
 package io.odpf.firehose.consumer;
 
 
+import io.odpf.firehose.error.ErrorInfo;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

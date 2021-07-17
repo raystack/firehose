@@ -1,4 +1,4 @@
-package io.odpf.firehose.consumer;
+package io.odpf.firehose.error;
 
 public enum ErrorType {
     DESERIALIZATION_ERROR,
