@@ -1,11 +1,11 @@
 package io.odpf.firehose.sinkdecorator;
 
-import io.odpf.firehose.config.DlqConfig;
+import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.config.ErrorConfig;
-import io.odpf.firehose.error.ErrorInfo;
-import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorHandler;
+import io.odpf.firehose.error.ErrorInfo;
+import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.log.KeyOrMessageParser;
@@ -50,13 +50,13 @@ public class SinkWithRetryTest {
     private ErrorHandler errorHandler;
 
     @Mock
-    private DlqConfig dlqConfig;
+    private AppConfig appConfig;
 
     @Before
     public void setUp() {
         initMocks(this);
-        when(dlqConfig.getDlqAttemptsToTrigger()).thenReturn(3);
-        when(dlqConfig.getFailOnMaxRetryAttempts()).thenReturn(false);
+        when(appConfig.getSinkMaxRetryAttempts()).thenReturn(3);
+        when(appConfig.getFailOnMaxRetryAttempts()).thenReturn(false);
         errorHandler = new ErrorHandler(ConfigFactory.create(ErrorConfig.class, new HashMap<String, String>() {{
             put("ERROR_TYPES_FOR_RETRY", ErrorType.DESERIALIZATION_ERROR.name());
         }}));
@@ -66,7 +66,7 @@ public class SinkWithRetryTest {
     @Test
     public void shouldReturnEmptyListIfSuperReturnsEmptyList() throws IOException, DeserializerException {
         when(sinkDecorator.pushMessage(anyList())).thenReturn(new ArrayList<>());
-        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, dlqConfig, parser, errorHandler);
+        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, appConfig, parser, errorHandler);
         List<Message> messages = sinkWithRetry.pushMessage(
                 Collections.singletonList(new Message("key".getBytes(), "value".getBytes(), "topic", 1, 1)));
 
@@ -81,7 +81,7 @@ public class SinkWithRetryTest {
         messages.add(message);
         when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages)
                 .thenReturn(messages);
-        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, dlqConfig, parser, errorHandler);
+        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, appConfig, parser, errorHandler);
 
         List<Message> messageList = sinkWithRetry.pushMessage(Collections.singletonList(message));
 
@@ -96,7 +96,7 @@ public class SinkWithRetryTest {
         messages.add(message);
         when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages)
                 .thenReturn(new ArrayList<>());
-        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, dlqConfig, parser, errorHandler);
+        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, appConfig, parser, errorHandler);
 
         List<Message> messageList = sinkWithRetry.pushMessage(Collections.singletonList(message));
 
@@ -106,14 +106,14 @@ public class SinkWithRetryTest {
 
     @Test
     public void shouldRetryUntilSuccess() throws IOException, DeserializerException {
-        when(dlqConfig.getDlqAttemptsToTrigger()).thenReturn(Integer.MAX_VALUE);
+        when(appConfig.getSinkMaxRetryAttempts()).thenReturn(Integer.MAX_VALUE);
 
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
         messages.add(message);
         when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages)
                 .thenReturn(messages).thenReturn(messages).thenReturn(new ArrayList<>());
-        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, dlqConfig, parser, errorHandler);
+        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, appConfig, parser, errorHandler);
 
         List<Message> messageList = sinkWithRetry.pushMessage(Collections.singletonList(message));
 
@@ -123,13 +123,13 @@ public class SinkWithRetryTest {
 
     @Test
     public void shouldLogRetriesMessages() throws IOException, DeserializerException {
-        when(dlqConfig.getDlqAttemptsToTrigger()).thenReturn(10);
+        when(appConfig.getSinkMaxRetryAttempts()).thenReturn(10);
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
         messages.add(message);
         when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages)
                 .thenReturn(messages).thenReturn(messages).thenReturn(new ArrayList<>());
-        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, dlqConfig, parser, errorHandler);
+        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, appConfig, parser, errorHandler);
 
         List<Message> messageList = sinkWithRetry.pushMessage(Collections.singletonList(message));
         assertTrue(messageList.isEmpty());
@@ -145,15 +145,15 @@ public class SinkWithRetryTest {
 
     @Test(expected = IOException.class)
     public void shouldThrowIOExceptionWhenExceedMaximumRetryAttempts() throws IOException {
-        when(dlqConfig.getDlqAttemptsToTrigger()).thenReturn(4);
-        when(dlqConfig.getFailOnMaxRetryAttempts()).thenReturn(true);
+        when(appConfig.getSinkMaxRetryAttempts()).thenReturn(4);
+        when(appConfig.getFailOnMaxRetryAttempts()).thenReturn(true);
 
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
         messages.add(message);
         when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages)
                 .thenReturn(messages).thenReturn(messages).thenReturn(new ArrayList<>());
-        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, dlqConfig, parser, errorHandler);
+        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, appConfig, parser, errorHandler);
 
         sinkWithRetry.pushMessage(Collections.singletonList(message));
     }
@@ -169,7 +169,7 @@ public class SinkWithRetryTest {
 
         HashSet<ErrorType> errorTypes = new HashSet<>();
         errorTypes.add(ErrorType.DESERIALIZATION_ERROR);
-        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, dlqConfig, parser, errorHandler);
+        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, appConfig, parser, errorHandler);
 
         List<Message> messageList = sinkWithRetry.pushMessage(messages);
 

@@ -83,4 +83,8 @@ public interface AppConfig extends Config {
     @Key("FAIL_ON_MAX_RETRY_ATTEMPTS")
     @DefaultValue("true")
     boolean getFailOnMaxRetryAttempts();
+
+    @Key("SINK_MAX_RETRY_ATTEMPTS")
+    @DefaultValue("1")
+    Integer getSinkMaxRetryAttempts();
 }

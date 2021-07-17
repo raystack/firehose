@@ -7,10 +7,6 @@ import io.odpf.firehose.sinkdecorator.dlq.DLQWriterType;
 
 public interface DlqConfig extends AppConfig {
 
-    @Key("DLQ_ATTEMPTS_TO_TRIGGER")
-    @DefaultValue("1")
-    Integer getDlqAttemptsToTrigger();
-
     @Key("DLQ_KAFKA_ACKS")
     @DefaultValue("all")
     String getDlqKafkaAcks();
