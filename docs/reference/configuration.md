@@ -5,6 +5,7 @@ This page contains reference for all the application configurations for Firehose
 ## Table of Contents
 
 * [Generic](configuration.md#generic)
+* [Kafka Consumer ](configuration.md#kafka-consumer)
 * [HTTP Sink](configuration.md#http-sink)
 * [JDBC Sink](configuration.md#jdbc-sink)
 * [Influx Sink](configuration.md#influx-sink)
@@ -12,11 +13,49 @@ This page contains reference for all the application configurations for Firehose
 * [Elasticsearch Sink](configuration.md#elasticsearch-sink)
 * [GRPC Sink](configuration.md#grpc-sink)
 * [Prometheus Sink](configuration.md#prometheus-sink)
-* [Standard](configuration.md#standard)
+* [Retries](configuration.md#retries)
 
 ## Generic
 
 All sinks in Firehose requires the following variables to be set
+
+### `KAFKA_RECORD_PARSER_MODE`
+
+Decides whether to parse key or message \(as per your input proto\) from incoming data.
+
+* Example value: `message`
+* Type: `required`
+
+### `SINK_TYPE`
+
+Defines the Firehose sink type.
+
+* Example value: `log`
+* Type: `required`
+
+### `INPUT_SCHEMA_PROTO_CLASS`
+
+Defines the fully qualified name of the input proto class.
+
+* Example value: `com.tests.TestMessage`
+* Type: `required`
+
+### `SCHEMA_REGISTRY_STENCIL_ENABLE`
+
+Defines whether to enable Stencil Schema registry
+
+* Example value: `true`
+* Type: `optional`
+* Default value: `false`
+
+### `SCHEMA_REGISTRY_STENCIL_URLS`
+
+Defines the URL of the Proto Descriptor set file in the Stencil Server
+
+* Example value: `http://localhost:8000/v1/namespaces/quickstart/descriptors/example/versions/latest`
+* Type: `optional`
+
+## Kafka Consumer
 
 ### `SOURCE_KAFKA_BROKERS`
 
@@ -94,42 +133,6 @@ Defines the maximum age of config metadata in milliseconds
 * Example value: `700`
 * Type: `optional`
 * Default value: `500`
-
-### `KAFKA_RECORD_PARSER_MODE`
-
-Decides whether to parse key or message \(as per your input proto\) from incoming data.
-
-* Example value: `message`
-* Type: `required`
-
-### `SINK_TYPE`
-
-Defines the Firehose sink type.
-
-* Example value: `log`
-* Type: `required`
-
-### `INPUT_SCHEMA_PROTO_CLASS`
-
-Defines the fully qualified name of the input proto class.
-
-* Example value: `com.tests.TestMessage`
-* Type: `required`
-
-### `SCHEMA_REGISTRY_STENCIL_ENABLE`
-
-Defines whether to enable Stencil Schema registry
-
-* Example value: `true`
-* Type: `optional`
-* Default value: `false`
-
-### `SCHEMA_REGISTRY_STENCIL_URLS`
-
-Defines the URL of the Proto Descriptor set file in the Stencil Server
-
-* Example value: `http://localhost:8000/v1/namespaces/quickstart/descriptors/example/versions/latest`
-* Type: `optional`
 
 ## HTTP Sink
 
@@ -675,15 +678,7 @@ Defines the proto index of a field that can be used as the timestamp.
 * Example value: `2`
 * Type: `required (if SINK_PROM_WITH_EVENT_TIMESTAMP=true)`
 
-## Standard
-
-### `SOURCE_KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS`
-
-Defines the maximum number of records, the consumer will fetch from Kafka in one request.
-
-* Example value: `500`
-* Type: `required`
-* Default value: `500`
+## Retries
 
 ### `RETRY_EXPONENTIAL_BACKOFF_INITIAL_MS`
 
