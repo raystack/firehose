@@ -18,6 +18,8 @@
 
 [DLQ](core-faqs.md#what-is-the-retry-mechanism-in-firehose-what-kind-of-retry-strategies-are-supported)
 
+[Docker deployment](../guides/deployment.md#deploy-on-docker)
+
 ## E
 
 [Elasticsearch sink](../guides/create_firehose.md#create-an-elasticsearch-sink)
@@ -71,6 +73,8 @@
 ## K
 
 [Kafka Client configs](configuration.md#generic)
+
+[Kubernetes deployment](../guides/deployment.md#deploy-on-kubernetes)
 
 ## L
 

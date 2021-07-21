@@ -1,8 +1,8 @@
 # FAQs
 
-## What problems does Firehose solve ?
+## What problems does Firehose solve?
 
-Every micro-service needs its own sink to be developed for such common operations as streaming data from Kafka to data lakes or other endpoints, along with real-time filtering, parsing and monitoring of the sink.
+Every micro-service needs its own sink to be developed for such common operations as streaming data from Kafka to data lakes or other endpoints, along with real-time filtering, parsing, and monitoring of the sink.
 
 With Firehose, you don't need to write sink code for every such microservice, or manage resources to sink data from Kafka server to your database/service endpoint. Having provided all the configuration parameters of the sink, Firehose will create, manage and monitor one for you. It also automatically scales to match the throughput of your data and requires no ongoing administration.
 
@@ -17,6 +17,9 @@ Firehose has the capability to run parallelly on threads. Each thread does the f
 * Get messages from Kafka
 * Filter the messages \(optional\)
 * Push these messages to sink
+* All the existing sink types follow the same contract/lifecycle defined in `AbstractSink.java`. It consists of two stages:
+  * Prepare: Transformation over-filtered messages’ list to prepare the sink-specific insert/update client requests.
+  * Execute: Requests created in the Prepare stage are executed at this step and a list of failed messages is returned \(if any\) for retry.
 * In case push fails and DLQ is:
   * enabled: Firehose keeps on retrying for the configured number of attempts before the messages got pushed to DLQ Kafka topic
   * disabled: Firehose keeps on retrying until it receives a success code

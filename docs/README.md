@@ -21,11 +21,11 @@ Following sinks are supported in the Firehose
 * [Log](https://en.wikipedia.org/wiki/Log_file) - Standard Output
 * [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol) - HTTP services
 * [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity) - Postgres DB
-* [InfluxDB](https://en.wikipedia.org/wiki/InfluxDB) - A time series database 
+* [InfluxDB](https://en.wikipedia.org/wiki/InfluxDB) - A time-series database 
 * [Redis](https://en.wikipedia.org/wiki/Redis) - An in-memory Key value store
 * [ElasticSearch](https://en.wikipedia.org/wiki/Elasticsearch) - A search database
 * [GRPC](https://en.wikipedia.org/wiki/GRPC) - GRPC based services
-* [Prometheus](https://en.wikipedia.org/wiki/Prometheus_%28software) - A time series database
+* [Prometheus](https://en.wikipedia.org/wiki/Prometheus_%28software) - A time-series database
 
 ## How is Firehose different from Kafka-Connect?
 
@@ -42,6 +42,6 @@ Explore the following resources to get started with Firehose:
 
 * [Guides](guides/overview.md) provide guidance on creating Firehose with different sinks.
 * [Concepts](concepts/overview.md) describe all important Firehose concepts.
-* [Reference](reference/configuration.md) contains details about configurations, metrics, FAQs and other aspects of Firehose.
+* [Reference](reference/configuration.md) contains details about configurations, metrics, FAQs, and other aspects of Firehose.
 * [Contributing](contribute/contribution.md) contains resources for anyone who wants to contribute to Firehose.
 

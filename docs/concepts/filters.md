@@ -8,7 +8,7 @@ Instead, use this Filter feature provided in Firehose which allows you to apply 
 
 However, understand that you are ignoring some data/messages and if that ignored value is important for your sink, you might lose/skip data that is essential. So it is best to verify that your filter condition is not skipping essential data, for example, payment transactions.
 
-Firehose uses the Apache Commons JEXL library for parsing the filter expressions. Refer the [Using Filters](../guides/filters.md) section for details on how to configure filters.
+Firehose uses the Apache Commons JEXL library for parsing the filter expressions. Refer to the [Using Filters](../guides/filters.md) section for details on how to configure filters.
 
 ## JEXL \(Java EXpressions Language\)
 
@@ -28,7 +28,7 @@ Read more about Apache Commons JEXL project [here](https://commons.apache.org/pr
 
 The filtering occurs in the following steps - 
 
-* Firehose Consumer creates a Filter object and initializes it with the values of -`FILTER_JEXL_DATA_SOURCE` i.e. key/message ,`FILTER_JEXL_EXPRESSION` and `FILTER_JEXL_SCHEMA_PROTO_CLASS`as configured in the environment variables. 
+* Firehose Consumer creates a Filter object and initializes it with the values of -`FILTER_JEXL_DATA_SOURCE` i.e. key/message,`FILTER_JEXL_EXPRESSION` and `FILTER_JEXL_SCHEMA_PROTO_CLASS`as configured in the environment variables. 
 
 
 
@@ -40,11 +40,11 @@ The filtering occurs in the following steps -
 
 
 
-* The `JEXLExpression` is then evaluated for each of these parsed events. The messages for which the `JEXLExpression` evaluates to `true`, are added to the output List of messages and returned by the Filter. Rest of the messages are discarded by the Filter
+* The `JEXLExpression` is then evaluated for each of these parsed events. The messages for which the `JEXLExpression` evaluates to `true`, are added to the output List of messages and returned by the Filter. The rest of the messages are discarded by the Filter
 
 ## Why Use Filters 
 
-Filters enable you to consume only a smaller subset of incoming messages fulfilling a particular set of criteria, while discarding other messages. This is helpful in cases like for e.g.- processing status of drivers riding a bike, obtaining data of drivers within a particular city, etc.
+Filters enable you to consume only a smaller subset of incoming messages fulfilling a particular set of criteria while discarding other messages. This is helpful in cases like for e.g.- processing the status of drivers riding a bike, obtaining data of drivers within a particular city, etc.
 
 Additionally, Filters can also help to significantly decrease consumer lag when the rate of incoming messages is too high, thus providing significant performance improvements for your sink.
 

@@ -28,11 +28,11 @@ Filter expressions are JEXL expressions used to filter messages just after readi
 
 
 
-* Start with the object reference of the schema proto class of the key/message on which you wish to apply the filter. Make sure to change the first letter of the proto class to lower case .                                                                                                                                                               eg - `sampleLogMessage`  \(if `FILTER_JEXL_SCHEMA_PROTO_CLASS=com.xyz.SampleLogMessage` \)
+* Start with the object reference of the schema proto class of the key/message on which you wish to apply the filter. Make sure to change the first letter of the proto class to lower case.                                                                                                                                                               eg - `sampleLogMessage`  \(if `FILTER_JEXL_SCHEMA_PROTO_CLASS=com.xyz.SampleLogMessage` \)
 
 
 
-* Access a particular field by calling getter method on the proto object. The name of the getter method will be the field name , changed to camel-case, with all underscore \( `_`\) characters removed , and prefixed by the string `get`                                                                                                                                    eg - if the field name is `vehicle_type` , then the getter method name would be `getVehicleType()`
+* Access a particular field by calling the getter method on the proto object. The name of the getter method will be the field name, changed to camel-case, with all underscore \( `_`\) characters removed, and prefixed by the string `get`                                                                                                                                    eg - if the field name is `vehicle_type` , then the getter method name would be `getVehicleType()`
 
 
 

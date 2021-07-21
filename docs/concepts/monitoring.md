@@ -10,19 +10,19 @@ The Firehose Grafana dashboard provides detailed visualization of all Firehose m
 
 ### StatsD Client
 
-StatsD is a simple protocol for sending application metrics via UDP. StatsD is simple and has a tiny footprint,. It can’t crash your application and has become the standard for large-scale metric collection.Firehose uses the [StatsD client](https://github.com/tim-group/java-statsd-client) library to send metrics to the Telegraf StatsD host. 
+StatsD is a simple protocol for sending application metrics via UDP. StatsD is simple and has a tiny footprint. It can’t crash your application and has become the standard for large-scale metric collection. Firehose uses the [StatsD client](https://github.com/tim-group/java-statsd-client) library to send metrics to the Telegraf StatsD host. 
 
 ### Telegraf
 
-[Telegraf](https://www.influxdata.com/time-series-platform/telegraf/) is an agent written in Go and accepts StatsD protocol metrics over UDP. It works as a metrics aggregator and then periodically flushes the metrics to InfluxDB database. Telegraf is deployed  in a container along with Firehose container in the Kubernetes pod.
+[Telegraf](https://www.influxdata.com/time-series-platform/telegraf/) is an agent written in Go and accepts StatsD protocol metrics over UDP. It works as a metrics aggregator and then periodically flushes the metrics to InfluxDB database. Telegraf is deployed in a container along with Firehose container in the Kubernetes pod.
 
 ### InfluxDB
 
-[InfluxDB](https://www.influxdata.com/) is a time-series database where all Firehose metrics are stored. It accepts metrics flushed from Telegraf agent. InfluxDB stores the metrics along with corresponding metric tags, e.g. - `SUCCESS_TAG` , `FAILURE_TAG` InfluxDB is deployed on a separate Kubernetes cluster.
+[InfluxDB](https://www.influxdata.com/) is a time-series database where all Firehose metrics are stored. It accepts metrics flushed from the Telegraf agent. InfluxDB stores the metrics along with corresponding metric tags, e.g. - `SUCCESS_TAG` , `FAILURE_TAG` InfluxDB is deployed on a separate Kubernetes cluster.
 
 ### Grafana
 
-[Grafana](https://grafana.com/) is a multi-platform open source analytics and interactive visualization web app. It pulls metrics data from InfluxDB database and provides detailed visualization of all Firehose metrics in real-time. Metrics visualisation can be obtained for all or specific pods.
+[Grafana](https://grafana.com/) is a multi-platform open-source analytics and interactive visualization web app. It pulls metrics data from the InfluxDB database and provides detailed visualization of all Firehose metrics in real-time. Metrics visualization can be obtained for all or specific pods.
 
 
 
@@ -30,7 +30,7 @@ StatsD is a simple protocol for sending application metrics via UDP. StatsD is s
 
 ### Set Up Grafana
 
-Create a [Grafana Cloud](https://grafana.com/products/cloud/) account, to set up Grafana metrics dashboard on cloud, or  [download Grafana ](https://grafana.com/grafana/download)to set up Grafana dashboard locally.
+Create a [Grafana Cloud](https://grafana.com/products/cloud/) account, to set up Grafana metrics dashboard on the cloud, or [download Grafana ](https://grafana.com/grafana/download)to set up Grafana dashboard locally.
 
 ### Set Up InfluxDB
 
@@ -42,7 +42,7 @@ Lastly, set up Telegraf to send metrics to InfluxDB, following the corresponding
 
 #### **Firehose in Docker or deployed locally** 
 
-1. Follow [this guide](https://www.influxdata.com/blog/getting-started-with-sending-statsd-metrics-to-telegraf-influxdb/) to install and setup Telegraf as the StatsD host. 
+1. Follow [this guide](https://www.influxdata.com/blog/getting-started-with-sending-statsd-metrics-to-telegraf-influxdb/) to install and set up Telegraf as the StatsD host. 
 2. Configure the Firehose environment variables `METRIC_STATSD_HOST` and `METRIC_STATSD_PORT`  to the IP address and port on which Telegraf is listening. By default, `METRIC_STATSD_HOST` is set to `localhost` and `METRIC_STATSD_PORT` is set to the default listener port of Telegraf, i.e.`8125` 
 3.  Configure the IP address and port of the InfluxDB server in the file `~/.telegraf/telegraf.conf`
 
@@ -67,7 +67,7 @@ $ helm install my-release -f values.yaml odpf/firehose
 
 ## Grafana Dashboard
 
-[Grafana](https://grafana.com/) is a multi-platform open source analytics and interactive visualisation web application. It provides charts, graphs, and alerts for the web when connected to supported data sources. A licensed Grafana Enterprise version with additional capabilities is also available as a self-hosted installation or an account on the Grafana Labs cloud service.
+[Grafana](https://grafana.com/) is a multi-platform open-source analytics and interactive visualization web application. It provides charts, graphs, and alerts for the web when connected to supported data sources. A licensed Grafana Enterprise version with additional capabilities is also available as a self-hosted installation or an account on the Grafana Labs cloud service.
 
 Grafana dashboard can be loaded on your Grafana cloud account by importing the JSON file `firehose-grafana-dashboard.json` in the `docs/assets/` directory. 
 
@@ -77,16 +77,16 @@ Load a Firehose dashboard by configuring the following parameters -
 
 * **Data Source** - name of InfluxDB database for metrics
 * **Prometheus Data Source** - Prometheus cluster name if any
-* **Organisation** - name of the organisation
+* **Organization** - name of the organization
 * **Landscape** - id/th/vn/gl
-* **Firehose Name** - name of the firehose
+* **Firehose Name** - name of the Firehose
 * **Pod** - specify a particular Kubernetes pod ID or select **All** to track all pods.
 
 ## Features of Grafana dashboard
 
 * metrics of every pod at any point of time can be obtained by hovering over that time coordinate.
 * each pod has its own color code to distinguish it from other pods, in the visualization graph.
-* minimum, maximum and average values of the metrics is displayed for every pod.
+* minimum, maximum, and average values of the metrics are displayed for every pod.
 
 ## Dashboard Sections
 
