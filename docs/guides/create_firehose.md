@@ -3,7 +3,7 @@
 This page contains how-to guides for creating Firehose with different sinks along with their features.
 
 {% hint style="info" %}
-If you'd like to connect to a sink which is not yet supported, you can create a new sink by following through [contribution guidelines](../contribute/contribution.md) 
+If you'd like to connect to a sink which is not yet supported, you can create a new sink by following the [contribution guidelines](../contribute/contribution.md)
 {% endhint %}
 
 ## Create a Log Sink
@@ -13,12 +13,12 @@ Firehose provides a log sink to make it easy to consume messages in [standard ou
 An example log sink configurations:
 
 ```text
-SOURCE_KAFKA_BROKERS = localhost:9092
-SOURCE_KAFKA_TOPIC = test-topic
-KAFKA_RECOED_CONSUMER_GROUP_ID = sample-group-id
-KAFKA_RECORD_PARSER_MODE = message
-SINK_TYPE = log
-INPUT_SCHEMA_PROTO_CLASS = com.tests.TestMessage
+SOURCE_KAFKA_BROKERS=localhost:9092
+SOURCE_KAFKA_TOPIC=test-topic
+KAFKA_RECOED_CONSUMER_GROUP_ID=sample-group-id
+KAFKA_RECORD_PARSER_MODE=message
+SINK_TYPE=log
+INPUT_SCHEMA_PROTO_CLASS=com.tests.TestMessage
 ```
 
 Sample output of a Firehose log sink:
@@ -116,62 +116,5 @@ _**Note:**_ [_**DATABASE**_](../reference/configuration.md#-sink_influx_db_name)
 * These are the configurations that remain common across all the Sink Types.
 * You don’t need to modify them necessarily, It is recommended to use them with the default values. More details [here](../reference/configuration.md#-standard).
 
-## Filter Expressions
-
-* Filter expressions are allowed to filter messages just after reading from Kafka and before sending to Sink.
-
-### Rules to write expressions:
-
-* All the expressions are like a piece of Java code.
-* Follow rules for every data type, as like writing a Java code.
-* Access nested fields by `.` and `()`, i.e., `sampleLogMessage.getVehicleType()`
-
-**Example**
-
-Sample proto message:
-
-```text
-===================KEY==========================
-driver_id: "abcde12345"
-vehicle_type: BIKE
-event_timestamp {
-  seconds: 186178
-  nanos: 323080
-}
-driver_status: UNAVAILABLE
-
-================= MESSAGE=======================
-driver_id: "abcde12345"
-vehicle_type: BIKE
-event_timestamp {
-  seconds: 186178
-  nanos: 323080
-}
-driver_status: UNAVAILABLE
-app_version: "1.0.0"
-driver_location {
-  latitude: 0.6487193703651428
-  longitude: 0.791822075843811
-  altitude_in_meters: 0.9949166178703308
-  accuracy_in_meters: 0.39277541637420654
-  speed_in_meters_per_second: 0.28804516792297363
-}
-gcm_key: "abc123"
-```
-
-_**Key**_-_**based filter expressions examples:**_
-
-* `sampleLogKey.getDriverId()=="abcde12345"`
-* `sampleLogKey.getVehicleType()=="BIKE"`
-* `sampleLogKey.getEventTimestamp().getSeconds()==186178`
-* `sampleLogKey.getDriverId()=="abcde12345"&&sampleLogKey.getVehicleType=="BIKE"` \(multiple conditions example 1\)
-* `sampleLogKey.getVehicleType()=="BIKE"||sampleLogKey.getEventTimestamp().getSeconds()==186178` \(multiple conditions example 2\)
-
-_**Message -ased filter expressions examples:**_
-
-* `sampleLogMessage.getGcmKey()=="abc123"`
-* `sampleLogMessage.getDriverId()=="abcde12345"&&sampleLogMessage.getDriverLocation().getLatitude()>0.6487193703651428`
-* `sampleLogMessage.getDriverLocation().getAltitudeInMeters>0.9949166178703308`
-
-_**Note: Use `log` sink for testing the applied filtering**_
+## 
 

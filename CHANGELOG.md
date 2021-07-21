@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [1.1.0](https://github.com/odpf/firehose/releases/tag/v0.1.0) (2021-03-20)
+## [0.1.0](https://github.com/odpf/firehose/releases/tag/v0.1.0) (2021-06-21)
 
 ### Features
 
@@ -13,4 +13,4 @@ All notable changes to this project will be documented in this file. See [standa
 - Add Redis sink
 - Add ElasticSearch sink
 - Add GRPC sink
-- Add prometheus sink 
+- Add Prometheus sink 
