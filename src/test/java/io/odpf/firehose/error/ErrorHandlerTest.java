@@ -30,7 +30,7 @@ public class ErrorHandlerTest {
     @Test
     public void shouldFilterMessageIfErrorInfoIsNull() {
         ErrorHandler handler = new ErrorHandler(ConfigFactory.create(ErrorConfig.class, new HashMap<String, String>() {{
-            put("ERROR_TYPES_FOR_DLQ", ErrorType.DESERIALIZATION_ERROR.name() + "," + ErrorType.UNKNOWN_ERROR.name());
+            put("ERROR_TYPES_FOR_DLQ", ErrorType.DESERIALIZATION_ERROR.name() + "," + ErrorType.SINK_UNKNOWN_ERROR.name());
             put("ERROR_TYPES_FOR_RETRY", ErrorType.DESERIALIZATION_ERROR.name());
             put("ERROR_TYPES_FOR_FAILING", ErrorType.DESERIALIZATION_ERROR.name());
         }}));
@@ -44,7 +44,7 @@ public class ErrorHandlerTest {
     @Test
     public void shouldFilterMessage() {
         ErrorHandler handler = new ErrorHandler(ConfigFactory.create(ErrorConfig.class, new HashMap<String, String>() {{
-            put("ERROR_TYPES_FOR_DLQ", ErrorType.DESERIALIZATION_ERROR.name() + "," + ErrorType.UNKNOWN_ERROR.name());
+            put("ERROR_TYPES_FOR_DLQ", ErrorType.DESERIALIZATION_ERROR.name() + "," + ErrorType.SINK_UNKNOWN_ERROR.name());
             put("ERROR_TYPES_FOR_RETRY", ErrorType.DESERIALIZATION_ERROR.name());
             put("ERROR_TYPES_FOR_FAILING", ErrorType.DESERIALIZATION_ERROR.name());
         }}));
@@ -53,7 +53,7 @@ public class ErrorHandlerTest {
         Assert.assertTrue(handler.filter(message, ErrorScope.DLQ));
         Assert.assertTrue(handler.filter(message, ErrorScope.FAIL));
 
-        Mockito.when(message.getErrorInfo()).thenReturn(new ErrorInfo(new RuntimeException(), ErrorType.UNKNOWN_ERROR));
+        Mockito.when(message.getErrorInfo()).thenReturn(new ErrorInfo(new RuntimeException(), ErrorType.SINK_UNKNOWN_ERROR));
         Assert.assertFalse(handler.filter(message, ErrorScope.RETRY));
         Assert.assertTrue(handler.filter(message, ErrorScope.DLQ));
         Assert.assertFalse(handler.filter(message, ErrorScope.FAIL));
@@ -73,8 +73,8 @@ public class ErrorHandlerTest {
 
         Mockito.when(m1.getErrorInfo()).thenReturn(new ErrorInfo(new RuntimeException(), ErrorType.DESERIALIZATION_ERROR));
         Mockito.when(m3.getErrorInfo()).thenReturn(new ErrorInfo(new RuntimeException(), ErrorType.DESERIALIZATION_ERROR));
-        Mockito.when(m2.getErrorInfo()).thenReturn(new ErrorInfo(new RuntimeException(), ErrorType.UNKNOWN_ERROR));
-        Mockito.when(m4.getErrorInfo()).thenReturn(new ErrorInfo(new RuntimeException(), ErrorType.UNKNOWN_ERROR));
+        Mockito.when(m2.getErrorInfo()).thenReturn(new ErrorInfo(new RuntimeException(), ErrorType.SINK_UNKNOWN_ERROR));
+        Mockito.when(m4.getErrorInfo()).thenReturn(new ErrorInfo(new RuntimeException(), ErrorType.SINK_UNKNOWN_ERROR));
         Mockito.when(m5.getErrorInfo()).thenReturn(new ErrorInfo(new RuntimeException(), ErrorType.DESERIALIZATION_ERROR));
 
         Map<Boolean, List<Message>> split = handler.split(new ArrayList<Message>() {{

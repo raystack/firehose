@@ -5,6 +5,7 @@ import io.odpf.firehose.error.ErrorInfo;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.kafka.common.header.Headers;
 
 import java.util.Base64;
@@ -24,6 +25,7 @@ public class Message {
     private Headers headers;
     private long timestamp;
     private long consumeTimestamp;
+    @Setter
     private ErrorInfo errorInfo;
 
     /**

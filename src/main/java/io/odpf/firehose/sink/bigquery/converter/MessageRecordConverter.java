@@ -5,6 +5,8 @@ import com.google.api.client.util.DateTime;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.odpf.firehose.config.BigQuerySinkConfig;
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.error.ErrorInfo;
+import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.sink.bigquery.models.Constants;
 import io.odpf.firehose.sink.bigquery.models.Record;
 import io.odpf.firehose.sink.bigquery.models.Records;
@@ -53,6 +55,7 @@ public class MessageRecordConverter {
         try {
             columns = rowMapper.map(parser.parse(message.getLogMessage()));
         } catch (InvalidProtocolBufferException e) {
+            message.setErrorInfo(new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR));
             log.info("failed to deserialize message: {} at offset: {}, partition: {}", UnknownProtoFields.toString(message.getLogMessage()),
                     message.getOffset(), message.getPartition());
             if (config.getFailOnDeserializeError()) {

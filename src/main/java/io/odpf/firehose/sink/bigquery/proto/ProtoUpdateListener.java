@@ -69,24 +69,16 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
         List<Field> bqSchemaFields = protoMapper.generateBigquerySchema(protoField);
         addMetadataFields(bqSchemaFields);
         bqClient.upsertTable(bqSchemaFields);
-        setProtoParser(convert(protoMappingString));
+        setProtoParser(protoMappingString);
     }
 
-    private Properties convert(String input) {
-        Type type = new TypeToken<Map<String, Object>>() {
-        }.getType();
-        Map<String, Object> m = new Gson().fromJson(input, type);
-        return getProperties(m);
-    }
-
-    private Properties getProperties(Map<String, Object> inputMap) {
+    private Properties mapToProperties(Map<String, Object> inputMap) {
         Properties properties = new Properties();
-        for (String key : inputMap.keySet()) {
-            Object value = inputMap.get(key);
-            if (value instanceof String) {
-                properties.put(key, value);
-            } else if (value instanceof Map) {
-                properties.put(key, getProperties((Map) value));
+        for (Map.Entry<String, Object> kv : inputMap.entrySet()) {
+            if (kv.getValue() instanceof String) {
+                properties.put(kv.getKey(), kv.getValue());
+            } else if (kv.getValue() instanceof Map) {
+                properties.put(kv.getKey(), mapToProperties((Map) kv.getValue()));
             }
         }
         return properties;
@@ -109,7 +101,11 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
         bqSchemaFields.addAll(bqMetadataFields);
     }
 
-    private void setProtoParser(Properties columnMapping) {
+    private void setProtoParser(String protoMapping) {
+        Type type = new TypeToken<Map<String, Object>>() {
+        }.getType();
+        Map<String, Object> m = new Gson().fromJson(protoMapping, type);
+        Properties columnMapping = mapToProperties(m);
         messageRecordConverterCache.setMessageRecordConverter(
                 new MessageRecordConverter(new RowMapper(columnMapping, config.getFailOnUnknownFields()),
                         stencilParser, config));
