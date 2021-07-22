@@ -2,25 +2,30 @@
 
 * [Introduction](README.md)
 * [Roadmap](roadmap.md)
-* [Changelog](https://github.com/odpf/firehose/blob/main/CHANGELOG.md)
+* [Changelog](https://github.com/odpf/Firehose/blob/main/CHANGELOG.md)
 
 ## Guides
 
 * [Overview](guides/overview.md)
 * [Creating Firehose](guides/create_firehose.md)
+* [Using Filters](guides/filters.md)
 * [Deployment](guides/deployment.md)
-* [Monitoring](guides/monitoring.md)
 * [Troubleshooting](guides/manage.md)
 
 ## Concepts
 
 * [Overview](concepts/overview.md)
 * [Architecture](concepts/architecture.md)
+* [Filters](concepts/filters.md)
+* [Monitoring](concepts/monitoring.md)
+* [Templating](concepts/templating.md)
 
 ## Reference
 
-* [Configurations](reference/configuration.md)
+* [Configuration](reference/configuration.md)
 * [Metrics](reference/metrics.md)
+* [FAQs](reference/core-faqs.md)
+* [Glossary](reference/glossary.md)
 
 ## Contribute
 
