@@ -5,6 +5,7 @@ import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.exception.EmptyMessageException;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -16,7 +17,15 @@ public class MessageDeSerializer {
 
     public Record deSerialize(Message message) throws DeserializerException {
         try {
+            if (message.getLogMessage() == null || message.getLogMessage().length == 0) {
+                throw new DeserializerException("empty log message", new EmptyMessageException());
+            }
+
             DynamicMessage dynamicMessage = protoParser.parse(message.getLogMessage());
+
+            if (isUnknownFieldExist(dynamicMessage)) {
+                throw new DeserializerException("unknown fields exist");
+            }
 
             DynamicMessage kafkaMetadata = null;
             if (doWriteKafkaMetadata) {
@@ -26,5 +35,9 @@ public class MessageDeSerializer {
         } catch (InvalidProtocolBufferException e) {
             throw new DeserializerException("failed to parse message", e);
         }
+    }
+
+    private boolean isUnknownFieldExist(DynamicMessage dynamicMessage) {
+        return dynamicMessage.getUnknownFields().asMap().size() > 0;
     }
 }

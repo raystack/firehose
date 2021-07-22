@@ -1,7 +1,9 @@
 package io.odpf.firehose.sink.objectstorage;
 
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.exception.EmptyMessageException;
 import io.odpf.firehose.exception.WriterIOException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
@@ -159,5 +161,21 @@ public class ObjectStorageSinkTest {
         Map<TopicPartition, OffsetAndMetadata> result = objectStorageSink.getCommittableOffsets();
 
         assertEquals(offsetAndMetadataHashMap, result);
+    }
+
+    @Test
+    public void shouldReturnMessagesWhenMessagesHasErrorCausedByEmptyMessageException() {
+        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer);
+
+        Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 2, 1);
+        Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 2, 2);
+
+        when(messageDeSerializer.deSerialize(message1)).thenThrow(new DeserializerException("", new EmptyMessageException()));
+
+        List<Message> retryMessages = objectStorageSink.pushMessage(Arrays.asList(message1, message2));
+
+        assertEquals(retryMessages.size(), 1);
+        assertEquals(ErrorType.EMPTY_MESSAGE_ERROR, retryMessages.get(0).getErrorInfo().getErrorType());
+        retryMessages.forEach(message -> assertNotNull(message.getErrorInfo()));
     }
 }

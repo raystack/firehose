@@ -3,15 +3,16 @@ package io.odpf.firehose.config;
 import io.odpf.firehose.config.converter.SetErrorTypeConverter;
 import io.odpf.firehose.error.ErrorType;
 import org.aeonbits.owner.Config;
+import org.aeonbits.owner.Mutable;
 
 import java.util.Set;
 
-public interface ErrorConfig extends Config {
+public interface ErrorConfig extends Config, Mutable {
 
     @ConverterClass(SetErrorTypeConverter.class)
     @Key("ERROR_TYPES_FOR_DLQ")
     @Separator(",")
-    @DefaultValue("DESERIALIZATION_ERROR")
+    @DefaultValue("")
     Set<ErrorType> getErrorTypesForDLQ();
 
     @ConverterClass(SetErrorTypeConverter.class)
@@ -23,7 +24,7 @@ public interface ErrorConfig extends Config {
     @ConverterClass(SetErrorTypeConverter.class)
     @Key("ERROR_TYPES_FOR_FAILING")
     @Separator(",")
-    @DefaultValue("")
+    @DefaultValue("DESERIALIZATION_ERROR,EMPTY_MESSAGE_ERROR")
     Set<ErrorType> getErrorTypesForFailing();
 
 }

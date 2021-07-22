@@ -6,6 +6,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.StringValue;
 import com.gojek.de.stencil.parser.Parser;
 
+import com.google.protobuf.UnknownFieldSet;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import org.junit.Before;
@@ -40,7 +41,6 @@ public class MessageDeSerializerTest {
 
     @Test
     public void shouldCreateRecord() throws InvalidProtocolBufferException {
-
         DynamicMessage dynamicMessage = DynamicMessage.newBuilder(StringValue.of("abc")).build();
         DynamicMessage metadataMessage = DynamicMessage.newBuilder(Int64Value.of(112)).build();
 
@@ -61,6 +61,32 @@ public class MessageDeSerializerTest {
         InvalidProtocolBufferException invalidProtocolBufferException = new InvalidProtocolBufferException("");
         when(protoParser.parse(logMessage)).thenThrow(invalidProtocolBufferException);
 
-        Record record = deSerializer.deSerialize(message);
+        deSerializer.deSerialize(message);
+    }
+
+    @Test(expected = DeserializerException.class)
+    public void shouldThrowExceptionWhenLogMessageIsEmpty() {
+        Message emptyMessage = new Message("".getBytes(), "".getBytes(), "default", 1, 1);
+        deSerializer.deSerialize(emptyMessage);
+    }
+
+    @Test(expected = DeserializerException.class)
+    public void shouldThrowExceptionWhenLogMessageIsNull() {
+        Message emptyMessage = new Message("".getBytes(), null, "default", 1, 1);
+        deSerializer.deSerialize(emptyMessage);
+    }
+
+    @Test(expected = DeserializerException.class)
+    public void shouldThrowExceptionWhenUnknownFieldExist() throws InvalidProtocolBufferException {
+        DynamicMessage dynamicMessage = DynamicMessage.newBuilder(new KafkaMetadataUtils("").getMetadataDescriptor())
+                .setUnknownFields(UnknownFieldSet.newBuilder()
+                        .addField(1, UnknownFieldSet.Field.getDefaultInstance())
+                        .addField(2, UnknownFieldSet.Field.getDefaultInstance())
+                        .build())
+                .build();
+
+        when(protoParser.parse(logMessage)).thenReturn(dynamicMessage);
+
+        deSerializer.deSerialize(message);
     }
 }

@@ -5,6 +5,7 @@ import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.consumer.offset.OffsetManager;
 import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.exception.EmptyMessageException;
 import io.odpf.firehose.exception.WriterIOException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
@@ -42,7 +43,11 @@ public class ObjectStorageSink extends AbstractSink {
                 Record record = messageDeSerializer.deSerialize(message);
                 offsetManager.addOffsetToBatch(writerOrchestrator.write(record), message);
             } catch (DeserializerException e) {
-                deserializationFailedMessages.add(new Message(message, new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR)));
+                if (e.getCause() instanceof EmptyMessageException) {
+                    deserializationFailedMessages.add(new Message(message, new ErrorInfo(e, ErrorType.EMPTY_MESSAGE_ERROR)));
+                } else {
+                    deserializationFailedMessages.add(new Message(message, new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR)));
+                }
             } catch (Exception e) {
                 throw new WriterIOException(e);
             }
