@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.bigquery.converter;
+package io.odpf.firehose.sink.bigquery;
 
 import com.google.api.client.util.DateTime;
 import io.odpf.firehose.TestKeyBQ;
@@ -12,35 +12,35 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class ConverterUtil {
+public class MessageUtils {
     private long timestamp;
     private String topic;
     private int partition;
     private long offset;
 
-    public ConverterUtil() {
+    public MessageUtils() {
         this.topic = "default-topic";
         this.partition = 1;
         this.offset = 1;
         this.timestamp = Instant.now().toEpochMilli();
     }
 
-    public ConverterUtil withOffset(int value) {
+    public MessageUtils withOffset(int value) {
         offset = value;
         return this;
     }
 
-    public ConverterUtil withPartition(int value) {
+    public MessageUtils withPartition(int value) {
         partition = value;
         return this;
     }
 
-    public ConverterUtil withTopic(String value) {
+    public MessageUtils withTopic(String value) {
         topic = value;
         return this;
     }
 
-    public ConverterUtil withOffsetInfo(OffsetInfo offsetInfo) {
+    public MessageUtils withOffsetInfo(OffsetInfo offsetInfo) {
         this.topic = offsetInfo.getTopic();
         this.partition = offsetInfo.getPartition();
         this.offset = offsetInfo.getOffset();

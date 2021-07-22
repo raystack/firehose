@@ -7,6 +7,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.odpf.firehose.TestMessageBQ;
 import io.odpf.firehose.config.BigQuerySinkConfig;
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.sink.bigquery.MessageUtils;
+import io.odpf.firehose.sink.bigquery.OffsetInfo;
 import io.odpf.firehose.sink.bigquery.models.Records;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
@@ -26,7 +28,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageRecordConverterTest {
-    private final ConverterUtil util = new ConverterUtil();
+    private final MessageUtils util = new MessageUtils();
     private MessageRecordConverter recordConverter;
     private MessageRecordConverter recordConverterWithFailOnDeserializeError;
     private MessageRecordConverter recordConverterWithFailOnNull;
