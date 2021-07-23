@@ -38,7 +38,6 @@ public class RowMapper {
             return new HashMap<>();
         }
         if (failOnUnknownFields && message.getUnknownFields().asMap().size() > 0) {
-            // statsClient.increment("kafka.protobuf.unknownfields.errors");
             String serializedUnknownFields = message.getUnknownFields().asMap().keySet().toString();
             String serializedMessage = UnknownProtoFields.toString(message.toByteArray());
             throw new RuntimeException(serializedUnknownFields + " " + serializedMessage);

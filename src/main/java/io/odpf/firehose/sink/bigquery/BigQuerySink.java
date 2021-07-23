@@ -71,7 +71,6 @@ public class BigQuerySink extends AbstractSink {
         records.forEach((Record m) -> builder.addRow(rowCreator.of(m)));
         InsertAllRequest rows = builder.build();
         InsertAllResponse response = bigQueryInstance.insertAll(rows);
-
         instrumentation.logInfo("Pushed a batch of {} records to BQ. Insert success?: {}", records.size(), !response.hasErrors());
         records.forEach(m -> instrumentation.incrementCounter("bq.sink.push.records"));
         instrumentation.captureDurationSince("bq.sink.push.time", start);
