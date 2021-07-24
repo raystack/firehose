@@ -3,24 +3,26 @@ package io.odpf.firehose.factory;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
+import io.jaegertracing.Configuration;
 import io.odpf.firehose.config.AppConfig;
-import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.config.DlqConfig;
-import io.odpf.firehose.consumer.GenericConsumer;
+import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.consumer.FirehoseConsumer;
+import io.odpf.firehose.consumer.GenericConsumer;
 import io.odpf.firehose.exception.EglcConfigurationException;
-import io.odpf.firehose.filter.MessageFilter;
 import io.odpf.firehose.filter.Filter;
+import io.odpf.firehose.filter.MessageFilter;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
-import io.odpf.firehose.sink.jdbc.JdbcSinkFactory;
 import io.odpf.firehose.sink.elasticsearch.EsSinkFactory;
 import io.odpf.firehose.sink.grpc.GrpcSinkFactory;
 import io.odpf.firehose.sink.http.HttpSinkFactory;
 import io.odpf.firehose.sink.influxdb.InfluxSinkFactory;
+import io.odpf.firehose.sink.jdbc.JdbcSinkFactory;
 import io.odpf.firehose.sink.log.KeyOrMessageParser;
 import io.odpf.firehose.sink.log.LogSinkFactory;
+import io.odpf.firehose.sink.mongodb.MongoSinkFactory;
 import io.odpf.firehose.sink.prometheus.PromSinkFactory;
 import io.odpf.firehose.sink.redis.RedisSinkFactory;
 import io.odpf.firehose.sinkdecorator.BackOff;
@@ -30,7 +32,6 @@ import io.odpf.firehose.sinkdecorator.SinkWithRetry;
 import io.odpf.firehose.sinkdecorator.SinkWithDlq;
 import io.odpf.firehose.tracer.SinkTracer;
 import io.odpf.firehose.util.Clock;
-import io.jaegertracing.Configuration;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.kafka.TracingKafkaProducer;
 import io.opentracing.noop.NoopTracerFactory;
@@ -124,6 +125,9 @@ public class FirehoseConsumerFactory {
                 return new GrpcSinkFactory().create(config, statsDReporter, stencilClient);
             case PROMETHEUS:
                 return new PromSinkFactory().create(config, statsDReporter, stencilClient);
+            case MONGODB:
+                return new MongoSinkFactory().create(config, statsDReporter, stencilClient);
+
             default:
                 throw new EglcConfigurationException("Invalid Firehose SINK_TYPE");
 
