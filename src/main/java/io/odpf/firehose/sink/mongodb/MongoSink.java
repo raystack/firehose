@@ -20,7 +20,7 @@ import java.util.List;
 import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_DROP_TOTAL;
 
 /**
- * Elastic search sink.
+ * MongoDB sink
  */
 public class MongoSink extends AbstractSink {
     private MongoRequestHandler mongoRequestHandler;
@@ -31,13 +31,13 @@ public class MongoSink extends AbstractSink {
     private MongoClient mongoClient;
 
     /**
-     * Instantiates a new Es sink.
+     * Instantiates a new Mongo sink.
      *
      * @param instrumentation            the instrumentation
      * @param sinkType                   the sink type
      * @param mongoCollection                     the client
-     * @param mongoRequestHandler        the es request handler
-     * @param mongoRequestTimeoutInMs       the es request timeout in ms
+     * @param mongoRequestHandler        the mongo request handler
+     * @param mongoRequestTimeoutInMs       the mongo request timeout in ms
      */
     public MongoSink(Instrumentation instrumentation, String sinkType, MongoCollection<Document> mongoCollection,MongoClient mongoClient, MongoRequestHandler mongoRequestHandler,
                      long mongoRequestTimeoutInMs) {
