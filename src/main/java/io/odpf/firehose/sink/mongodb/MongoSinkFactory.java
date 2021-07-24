@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Sink factory to configuration and create Elastic search sink.
+ * Sink factory to configue and create MongoDB sink.
  */
 public class MongoSinkFactory implements SinkFactory {
 
