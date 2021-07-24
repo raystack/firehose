@@ -24,7 +24,7 @@ public class MongoRequestHandlerFactory {
 
     public MongoRequestHandler getRequestHandler() {
         MongoSinkRequestType mongoSinkRequestType = mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable() ? UPDATE_ONLY : INSERT_OR_UPDATE;
-        instrumentation.logInfo("ES request mode: {}", mongoSinkRequestType);
+        instrumentation.logInfo("Mongo request mode: {}", mongoSinkRequestType);
 
         ArrayList<MongoRequestHandler> mongoRequestHandlers = new ArrayList<>();
         mongoRequestHandlers.add(new MongoUpdateRequestHandler(messageType, jsonSerializer,  mongoSinkRequestType, mongoPrimaryKey));
