@@ -3,6 +3,7 @@ package io.odpf.firehose.sink.mongodb;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.mongodb.MongoClient;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.odpf.firehose.config.MongoSinkConfig;
@@ -15,9 +16,9 @@ import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.mongodb.request.MongoRequestHandler;
 import io.odpf.firehose.sink.mongodb.request.MongoRequestHandlerFactory;
 import org.aeonbits.owner.ConfigFactory;
-import org.apache.http.HttpHost;
 import org.bson.Document;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -56,30 +57,30 @@ public class MongoSinkFactory implements SinkFactory {
         )
                 .getRequestHandler();
 
-        HttpHost[] httpHosts = getHttpHosts(mongoSinkConfig.getSinkMongoConnectionUrls(), instrumentation);
-        MongoClient mongoClient = new MongoClient( "localhost",27017);
+        List<ServerAddress> serverAddresses = getHttpHosts(mongoSinkConfig.getSinkMongoConnectionUrls(), instrumentation);
+        MongoClient mongoClient = new MongoClient(serverAddresses);
         MongoDatabase database = mongoClient.getDatabase(mongoSinkConfig.getSinkMongoDBName());
 
 
         MongoCollection<Document> collection = database.getCollection(mongoSinkConfig.getSinkMongoCollectionName());
 
         instrumentation.logInfo("MONGO connection established");
-        return new MongoSink(new Instrumentation(statsDReporter, MongoSink.class), SinkType.MONGODB.name().toLowerCase(), collection,mongoClient, mongoRequestHandler,
+        return new MongoSink(new Instrumentation(statsDReporter, MongoSink.class), SinkType.MONGODB.name().toLowerCase(), collection, mongoClient, mongoRequestHandler,
                 mongoSinkConfig.getSinkMongoRequestTimeoutMs());
     }
 
-    HttpHost[] getHttpHosts(String mongoConnectionUrls, Instrumentation instrumentation) {
+    List<ServerAddress> getHttpHosts(String mongoConnectionUrls, Instrumentation instrumentation) {
         if (mongoConnectionUrls != null && !mongoConnectionUrls.isEmpty()) {
-            String[] mongoNodes = mongoConnectionUrls.trim().split(",");
-            HttpHost[] httpHosts = new HttpHost[mongoNodes.length];
-            for (int i = 0; i < mongoNodes.length; i++) {
-                String[] node = mongoNodes[i].trim().split(":");
+            List<String> mongoNodes = Arrays.asList(mongoConnectionUrls.trim().split(","));
+            List<ServerAddress> serverAddresses = new ArrayList<>(mongoNodes.size());
+            mongoNodes.forEach((String mongoNode) -> {
+                String[] node = mongoNode.trim().split(":");
                 if (node.length <= 1) {
                     throw new IllegalArgumentException("SINK_MONGO_CONNECTION_URLS should contain host and port both");
                 }
-                httpHosts[i] = new HttpHost(node[0].trim(), Integer.parseInt(node[1].trim()));
-            }
-            return httpHosts;
+                serverAddresses.add(new ServerAddress(node[0].trim(), Integer.parseInt(node[1].trim())));
+            });
+            return serverAddresses;
         } else {
             instrumentation.logError("No connection URL found");
             throw new IllegalArgumentException("SINK_MONGO_CONNECTION_URLS is empty or null");
