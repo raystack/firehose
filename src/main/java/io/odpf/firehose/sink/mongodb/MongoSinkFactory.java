@@ -57,7 +57,7 @@ public class MongoSinkFactory implements SinkFactory {
         )
                 .getRequestHandler();
 
-        List<ServerAddress> serverAddresses = getHttpHosts(mongoSinkConfig.getSinkMongoConnectionUrls(), instrumentation);
+        List<ServerAddress> serverAddresses = getServerAddresses(mongoSinkConfig.getSinkMongoConnectionUrls(), instrumentation);
         MongoClient mongoClient = new MongoClient(serverAddresses);
         MongoDatabase database = mongoClient.getDatabase(mongoSinkConfig.getSinkMongoDBName());
 
@@ -69,7 +69,7 @@ public class MongoSinkFactory implements SinkFactory {
                 mongoSinkConfig.getSinkMongoRequestTimeoutMs());
     }
 
-    List<ServerAddress> getHttpHosts(String mongoConnectionUrls, Instrumentation instrumentation) {
+    List<ServerAddress> getServerAddresses(String mongoConnectionUrls, Instrumentation instrumentation) {
         if (mongoConnectionUrls != null && !mongoConnectionUrls.isEmpty()) {
             List<String> mongoNodes = Arrays.asList(mongoConnectionUrls.trim().split(","));
             List<ServerAddress> serverAddresses = new ArrayList<>(mongoNodes.size());
