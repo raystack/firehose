@@ -1,0 +1,255 @@
+package io.odpf.firehose.sink.mongodb;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.BulkWriteError;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.ReplaceOneModel;
+import io.odpf.firehose.config.enums.SinkType;
+import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.exception.NeedToRetry;
+import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.sink.mongodb.request.MongoRequestHandler;
+import org.bson.Document;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.List;
+
+import static org.mockito.Mockito.*;
+import static org.mockito.MockitoAnnotations.initMocks;
+
+public class MongoSinkTest {
+
+    @Mock
+    private Instrumentation instrumentation;
+    @Mock
+    private MongoClient client;
+    @Mock
+    private MongoRequestHandler mongoRequestHandler;
+    @Mock
+    private ReplaceOneModel<Document> replaceOneModel;
+    @Mock
+    private List<BulkWriteError> bulkWriteErrors;
+    @Mock
+    private MongoCollection<Document> mongoCollection;
+    @Mock
+    private DBObject dbObject;
+
+    private List<Message> messages;
+    private List<String> mongoRetryStatusCodeBlacklist = new ArrayList<>();
+
+    @Before
+    public void setUp() {
+        initMocks(this);
+
+        String jsonString = "{\"customer_id\":\"544131618\",\"categories\":[{\"category\":\"COFFEE_SHOP\",\"merchant_visits_4_weeks\":1,\"orders_4_weeks\":0,\"orders_24_weeks\":0,\"allocated\":0.0,\"redeemed\":0.0},{\"category\":\"PIZZA_PASTA\",\"merchant_visits_4_weeks\":0,\"orders_4_weeks\":1,\"orders_24_weeks\":1,\"allocated\":0.0,\"redeemed\":0.0},{\"category\":\"ROTI\",\"merchant_visits_4_weeks\":1,\"orders_4_weeks\":0,\"orders_24_weeks\":0,\"allocated\":0.0,\"redeemed\":0.0},{\"category\":\"FASTFOOD\",\"merchant_visits_4_weeks\":0,\"orders_4_weeks\":1,\"orders_24_weeks\":1,\"allocated\":0.0,\"redeemed\":0.0}],\"merchants\":[{\"merchant_id\":\"542629489\",\"merchant_uuid\":\"62598e60-1e5b-497c-b971-5a2bb0efb745\",\"merchant_visits_4_weeks\":1,\"orders_4_weeks\":0,\"orders_24_weeks\":0,\"allocated\":0.0,\"redeemed\":0.0,\"days_since_last_order\":2000},{\"merchant_id\":\"542777412\",\"merchant_uuid\":\"0a84a08b-8a53-47f4-9e62-7b7c2316dd08\",\"merchant_visits_4_weeks\":1,\"orders_4_weeks\":0,\"orders_24_weeks\":0,\"allocated\":0.0,\"redeemed\":0.0,\"days_since_last_order\":2000},{\"merchant_id\":\"542675785\",\"merchant_uuid\":\"daf41597-27d4-4475-b7c7-4f11563adcdb\",\"merchant_visits_4_weeks\":0,\"orders_4_weeks\":1,\"orders_24_weeks\":1,\"allocated\":0.0,\"redeemed\":0.0,\"days_since_last_order\":1},{\"merchant_id\":\"542704646\",\"merchant_uuid\":\"9b522ca0-3ff0-4591-b60b-0e84b48d6d12\",\"merchant_visits_4_weeks\":1,\"orders_4_weeks\":0,\"orders_24_weeks\":0,\"allocated\":0.0,\"redeemed\":0.0,\"days_since_last_order\":2000},{\"merchant_id\":\"542809106\",\"merchant_uuid\":\"b902f7ba-ab5e-4de1-9755-56648f556265\",\"merchant_visits_4_weeks\":0,\"orders_4_weeks\":1,\"orders_24_weeks\":1,\"allocated\":0.0,\"redeemed\":0.0,\"days_since_last_order\":1}],\"brands\":[{\"brand_id\":\"e9f7c4b2-4fa6-489a-ab20-a1bb4638ad29\",\"merchant_visits_4_weeks\":1,\"orders_4_weeks\":0,\"orders_24_weeks\":0,\"allocated\":0.0,\"redeemed\":0.0},{\"brand_id\":\"336eb59c-621a-4704-811c-e1024f970e2e\",\"merchant_visits_4_weeks\":0,\"orders_4_weeks\":1,\"orders_24_weeks\":1,\"allocated\":0.0,\"redeemed\":0.0},{\"brand_id\":\"0f30e2ca-f97f-43ec-895c-0d9d729e4cca\",\"merchant_visits_4_weeks\":0,\"orders_4_weeks\":1,\"orders_24_weeks\":1,\"allocated\":0.0,\"redeemed\":0.0},{\"brand_id\":\"901af18e-f5b7-43c5-9e67-4906d6ccce51\",\"merchant_visits_4_weeks\":1,\"orders_4_weeks\":0,\"orders_24_weeks\":0,\"allocated\":0.0,\"redeemed\":0.0},{\"brand_id\":\"da07057d-7fe1-47de-8713-4c1edcfc9afc\",\"merchant_visits_4_weeks\":1,\"orders_4_weeks\":0,\"orders_24_weeks\":0,\"allocated\":0.0,\"redeemed\":0.0}],\"orders_4_weeks\":2,\"orders_24_weeks\":2,\"merchant_visits_4_weeks\":4,\"app_version_major\":\"3\",\"app_version_minor\":\"30\",\"app_version_patch\":\"2\",\"current_country\":\"ID\",\"os\":\"Android\",\"wallet_id\":\"16230097256391350739\",\"dag_run_time\":\"2019-06-27T07:27:00+00:00\"}";
+        Message messageWithJSON = new Message(null, jsonString.getBytes(), "", 0, 1);
+
+        String logMessage = "CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM\u003d";
+        Message messageWithProto = new Message(null, Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
+
+        messages = new ArrayList<>();
+        this.messages.add(messageWithJSON);
+        this.messages.add(messageWithProto);
+
+        mongoRetryStatusCodeBlacklist.add("404");
+        mongoRetryStatusCodeBlacklist.add("502");
+
+        when(mongoRequestHandler.getRequest(messageWithJSON)).thenReturn(replaceOneModel);
+        when(mongoRequestHandler.getRequest(messageWithProto)).thenReturn(replaceOneModel);
+    }
+
+    @Test
+    public void shouldGetRequestForEachMessageInEsbMessagesList() {
+        MongoSink mongoSink = new MongoSink(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
+                5000, mongoRetryStatusCodeBlacklist);
+
+        mongoSink.prepare(messages);
+        verify(mongoRequestHandler, times(1)).getRequest(messages.get(0));
+        verify(mongoRequestHandler, times(1)).getRequest(messages.get(1));
+    }
+
+    @Test
+    public void shouldReturnEmptyArrayListWhenBulkResponseExecutedSuccessfully() throws IOException {
+        List<BulkWriteError> bulkWriteErrors = new ArrayList<>();
+        MongoSinkMock mongoSinkMock = new MongoSinkMock(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
+                5000, mongoRetryStatusCodeBlacklist);
+        mongoSinkMock.setBulkWriteErrors(bulkWriteErrors);
+
+
+        List<Message> failedMessages = mongoSinkMock.pushMessage(this.messages);
+        Assert.assertEquals(0, failedMessages.size());
+    }
+
+    @Test
+    public void shouldThrowNeedToRetryExceptionWhenBulkResponseHasFailuresExceptMentionedInBlacklist() {
+        BulkWriteErrorMock bulkWriteErrorMock1 = new BulkWriteErrorMock(400);
+        BulkWriteErrorMock bulkWriteErrorMock2 = new BulkWriteErrorMock(400);
+        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteErrorMock1, bulkWriteErrorMock2);
+        MongoSinkMock mongoSinkMock = new MongoSinkMock(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
+                5000, new ArrayList<>());
+        mongoSinkMock.setBulkWriteErrors(bulkWriteErrors);
+
+
+        mongoSinkMock.prepare(messages);
+        try {
+            mongoSinkMock.execute();
+        } catch (Exception e) {
+            Assert.assertEquals(NeedToRetry.class, e.getClass());
+            Assert.assertEquals("Status code fall under retry range. StatusCode: 400", e.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldReturnEsbMessagesListWhenBulkResponseHasFailuresAndEmptyBlacklist() throws IOException {
+        BulkWriteErrorMock bulkWriteErrorMock1 = new BulkWriteErrorMock(400);
+        BulkWriteErrorMock bulkWriteErrorMock2 = new BulkWriteErrorMock(400);
+        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteErrorMock1, bulkWriteErrorMock2);
+        MongoSinkMock mongoSinkMock = new MongoSinkMock(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
+                5000, new ArrayList<>());
+        mongoSinkMock.setBulkWriteErrors(bulkWriteErrors);
+
+
+        List<Message> failedMessages = mongoSinkMock.pushMessage(this.messages);
+        Assert.assertEquals(messages.get(0), failedMessages.get(0));
+        Assert.assertEquals(messages.get(1), failedMessages.get(1));
+    }
+
+    @Test
+    public void shouldReturnEsbMessagesListWhenBulkResponseHasFailuresWithStatusOtherThanBlacklist() throws IOException {
+        BulkWriteErrorMock bulkWriteErrorMock1 = new BulkWriteErrorMock(400);
+        BulkWriteErrorMock bulkWriteErrorMock2 = new BulkWriteErrorMock(400);
+        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteErrorMock1, bulkWriteErrorMock2);
+        MongoSinkMock mongoSinkMock = new MongoSinkMock(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
+                5000, mongoRetryStatusCodeBlacklist);
+        mongoSinkMock.setBulkWriteErrors(bulkWriteErrors);
+
+
+        List<Message> failedMessages = mongoSinkMock.pushMessage(this.messages);
+        Assert.assertEquals(messages.get(0), failedMessages.get(0));
+        Assert.assertEquals(messages.get(1), failedMessages.get(1));
+    }
+
+    @Test
+    public void shouldReturnEmptyMessageListIfAllTheResponsesBelongToBlacklistStatusCode() throws IOException {
+        BulkWriteErrorMock bulkWriteErrorMock1 = new BulkWriteErrorMock(404);
+        BulkWriteErrorMock bulkWriteErrorMock2 = new BulkWriteErrorMock(404);
+        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteErrorMock1, bulkWriteErrorMock2);
+        MongoSinkMock mongoSinkMock = new MongoSinkMock(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
+                5000, mongoRetryStatusCodeBlacklist);
+        mongoSinkMock.setBulkWriteErrors(bulkWriteErrors);
+
+
+        List<Message> failedMessages = mongoSinkMock.pushMessage(this.messages);
+
+        Assert.assertEquals(0, failedMessages.size());
+    }
+
+    @Test
+    public void shouldReportTelemetryIfTheResponsesBelongToBlacklistStatusCode() throws IOException {
+        BulkWriteErrorMock bulkWriteErrorMock1 = new BulkWriteErrorMock(404);
+        BulkWriteErrorMock bulkWriteErrorMock2 = new BulkWriteErrorMock(404);
+        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteErrorMock1, bulkWriteErrorMock2);
+        MongoSinkMock mongoSinkMock = new MongoSinkMock(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
+                5000, mongoRetryStatusCodeBlacklist);
+        mongoSinkMock.setBulkWriteErrors(bulkWriteErrors);
+
+        mongoSinkMock.pushMessage(this.messages);
+        verify(instrumentation, times(2)).logInfo("Not retrying due to response status: {} is under blacklisted status code", "404");
+        verify(instrumentation, times(2)).logInfo("Message dropped because of status code: 404");
+        verify(instrumentation, times(2)).incrementCounterWithTags("firehose_sink_messages_drop_total", "cause=NOT_FOUND");
+    }
+
+    @Test
+    public void shouldThrowNeedToRetryExceptionIfSomeOfTheFailuresDontBelongToBlacklist() throws IOException {
+        BulkWriteErrorMock bulkWriteErrorMock1 = new BulkWriteErrorMock(404);
+        BulkWriteErrorMock bulkWriteErrorMock2 = new BulkWriteErrorMock(400);
+        BulkWriteErrorMock bulkWriteErrorMock3 = new BulkWriteErrorMock(502);
+
+        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteErrorMock1, bulkWriteErrorMock2, bulkWriteErrorMock3);
+        MongoSinkMock mongoSinkMock = new MongoSinkMock(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
+                5000, mongoRetryStatusCodeBlacklist);
+        mongoSinkMock.setBulkWriteErrors(bulkWriteErrors);
+
+        String logMessage = "CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM\u003d";
+        Message messageWithProto = new Message(null, Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
+        messages.add(messageWithProto);
+        List<Message> failedMessages = mongoSinkMock.pushMessage(this.messages);
+
+        verify(instrumentation, times(2)).incrementCounterWithTags(any(String.class), any(String.class));
+        Assert.assertEquals(3, failedMessages.size());
+    }
+
+    @Test
+    public void shouldLogBulkRequestFailedWhenBulkResponsesHasFailures() {
+        BulkWriteErrorMock bulkWriteErrorMock1 = new BulkWriteErrorMock(404);
+        BulkWriteErrorMock bulkWriteErrorMock2 = new BulkWriteErrorMock(404);
+        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteErrorMock1, bulkWriteErrorMock2);
+        MongoSinkMock mongoSinkMock = new MongoSinkMock(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
+                5000, mongoRetryStatusCodeBlacklist);
+        mongoSinkMock.setBulkWriteErrors(bulkWriteErrors);
+
+        mongoSinkMock.pushMessage(this.messages);
+        verify(instrumentation, times(1)).logWarn("Bulk request failed");
+        verify(instrumentation, times(1)).logWarn("Bulk request failed count: {}", 2);
+    }
+
+    @Test
+    public void shouldNotLogBulkRequestFailedWhenBulkResponsesHasNoFailures() {
+        BulkWriteErrorMock bulkWriteErrorMock1 = new BulkWriteErrorMock(404);
+        BulkWriteErrorMock bulkWriteErrorMock2 = new BulkWriteErrorMock(404);
+        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteErrorMock1, bulkWriteErrorMock2);
+        bulkWriteErrors = new ArrayList<>();
+        MongoSinkMock mongoSinkMock = new MongoSinkMock(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
+                5000, mongoRetryStatusCodeBlacklist);
+        mongoSinkMock.setBulkWriteErrors(bulkWriteErrors);
+
+        mongoSinkMock.pushMessage(this.messages);
+        verify(instrumentation, times(0)).logWarn("Bulk request failed");
+        verify(instrumentation, times(0)).logWarn("Bulk request failed count: {}", 2);
+    }
+
+    public static class MongoSinkMock extends MongoSink {
+
+        private List<BulkWriteError> bulkWriteErrors;
+
+        public MongoSinkMock(Instrumentation instrumentation, String sinkType, MongoCollection<Document> mongoCollection, MongoClient mongoClient,
+                             MongoRequestHandler mongoRequestHandler, long mongoRequestTimeoutInMs, List<String> mongoRetryStatusCodeBlacklist) {
+            super(instrumentation, sinkType, mongoCollection, mongoClient, mongoRequestHandler, mongoRequestTimeoutInMs, mongoRetryStatusCodeBlacklist);
+        }
+
+        public void setBulkWriteErrors(List<BulkWriteError> bulkWriteErrors) {
+            this.bulkWriteErrors = bulkWriteErrors;
+        }
+
+        @Override
+        List<BulkWriteError> getBulkWriteErrors() {
+            return bulkWriteErrors;
+        }
+    }
+
+    private static class BulkWriteErrorMock extends BulkWriteError {
+        private int status;
+
+        BulkWriteErrorMock(int status) {
+            super(status, "", new BasicDBObject(), 0);
+            this.status = status;
+        }
+
+        @Override
+        public int getCode() {
+            return status;
+        }
+
+    }
+
+}
+
