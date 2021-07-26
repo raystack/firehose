@@ -1,6 +1,6 @@
 # Introduction
 
-Firehose is a cloud-native service for delivering real-time streaming data to destinations such as service endpoints \(HTTP or GRPC\) & managed databases \(Postgres, InfluxDB, Redis, & ElasticSearch\). With Firehose, you don't need to write applications or manage resources. It automatically scales to match the throughput of your data and requires no ongoing administration. If your data is present in Kafka, Firehose delivers it to the destination\(SINK\) that you specified.
+Firehose is a cloud-native service for delivering real-time streaming data to destinations such as service endpoints \(HTTP or GRPC\) & managed databases \(MongoDB, Prometheus, Postgres, InfluxDB, Redis, & ElasticSearch\). With Firehose, you don't need to write applications or manage resources. It automatically scales to match the throughput of your data and requires no ongoing administration. If your data is present in Kafka, Firehose delivers it to the destination\(SINK\) that you specified.
 
 ![](.gitbook/assets/overview%20%283%29.svg)
 
