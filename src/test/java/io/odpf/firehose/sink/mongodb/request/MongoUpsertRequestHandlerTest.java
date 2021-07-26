@@ -46,15 +46,15 @@ public class MongoUpsertRequestHandlerTest {
     }
 
     @Test
-    public void shouldReturnTrueForUpsertOnlyMode() {
-        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
+    public void shouldReturnTrueForInsertMode() {
+        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.INSERT_OR_UPDATE,
                 "customer_id");
 
         assertTrue(mongoUpsertRequestHandler.canCreate());
     }
 
     @Test
-    public void shouldReturnFalseForInsertOrUpsertMode() {
+    public void shouldReturnFalseForUpdateOnlyMode() {
         MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
                 "customer_id");
 
@@ -71,16 +71,17 @@ public class MongoUpsertRequestHandlerTest {
 
     @Test
     public void shouldReturnModelWithCorrectPayloadForJsonMessageType() {
-        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.JSON, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
-                "s2_id_level");
+        MongoUpdateRequestHandler mongoUpdateRequestHandler = new MongoUpdateRequestHandler(MongoSinkMessageType.JSON, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
+                "customer_id");
 
-        ReplaceOneModel<Document> request = mongoUpsertRequestHandler.getRequest(messageWithProto);
+        ReplaceOneModel<Document> request = mongoUpdateRequestHandler.getRequest(messageWithJSON);
+        Document inputMap = Document.parse(jsonString);
         Document outputMap = request.getReplacement();
         System.out.println(messageWithProto);
-        assertEquals("BIKE",outputMap.get("vehicle_type"));
-        assertEquals("3", outputMap.get("unique_drivers"));
+        assertEquals(inputMap.keySet(), outputMap.keySet());
+        assertEquals(inputMap.get("wallet_id"), outputMap.get("wallet_id"));
+        assertEquals(inputMap.get("dag_run_time"), outputMap.get("dag_run_time"));
     }
-
 
     @Test
     public void shouldReturnReplaceOneModelForProtoMessageType() {
@@ -91,7 +92,6 @@ public class MongoUpsertRequestHandlerTest {
     }
 
 
-
     @Test
     public void shouldReturnModelWithCorrectPayloadForProtoMessageType() {
         MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
@@ -100,7 +100,7 @@ public class MongoUpsertRequestHandlerTest {
         ReplaceOneModel<Document> request = mongoUpsertRequestHandler.getRequest(messageWithProto);
         Document outputMap = request.getReplacement();
         System.out.println(messageWithProto);
-        assertEquals("BIKE",outputMap.get("vehicle_type"));
+        assertEquals("BIKE", outputMap.get("vehicle_type"));
         assertEquals("3", outputMap.get("unique_drivers"));
     }
 

@@ -55,7 +55,7 @@ public class MongoUpdateRequestHandlerTest {
 
     @Test
     public void shouldReturnFalseForInsertOrUpdateMode() {
-        MongoUpdateRequestHandler mongoUpdateRequestHandler = new MongoUpdateRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
+        MongoUpdateRequestHandler mongoUpdateRequestHandler = new MongoUpdateRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.INSERT_OR_UPDATE,
                 "customer_id");
 
         assertFalse(mongoUpdateRequestHandler.canCreate());
@@ -72,13 +72,15 @@ public class MongoUpdateRequestHandlerTest {
     @Test
     public void shouldReturnModelWithCorrectPayloadForJsonMessageType() {
         MongoUpdateRequestHandler mongoUpdateRequestHandler = new MongoUpdateRequestHandler(MongoSinkMessageType.JSON, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
-                "s2_id_level");
+                "customer_id");
 
-        ReplaceOneModel<Document> request = mongoUpdateRequestHandler.getRequest(messageWithProto);
+        ReplaceOneModel<Document> request = mongoUpdateRequestHandler.getRequest(messageWithJSON);
+        Document inputMap=Document.parse(jsonString);
         Document outputMap = request.getReplacement();
         System.out.println(messageWithProto);
-        assertEquals("BIKE",outputMap.get("vehicle_type"));
-        assertEquals("3", outputMap.get("unique_drivers"));
+        assertEquals(inputMap.keySet(), outputMap.keySet());
+        assertEquals(inputMap.get("wallet_id"), outputMap.get("wallet_id"));
+        assertEquals(inputMap.get("dag_run_time"), outputMap.get("dag_run_time"));
     }
 
 

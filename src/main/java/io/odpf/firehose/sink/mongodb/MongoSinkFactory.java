@@ -66,7 +66,7 @@ public class MongoSinkFactory implements SinkFactory {
 
         instrumentation.logInfo("MONGO connection established");
         return new MongoSink(new Instrumentation(statsDReporter, MongoSink.class), SinkType.MONGODB.name().toLowerCase(), collection, mongoClient, mongoRequestHandler,
-                mongoSinkConfig.getSinkMongoRequestTimeoutMs());
+                mongoSinkConfig.getSinkMongoRequestTimeoutMs(),getStatusCodesAsList(mongoSinkConfig.getSinkMongoRetryStatusCodeBlacklist()));
     }
 
     List<ServerAddress> getServerAddresses(String mongoConnectionUrls, Instrumentation instrumentation) {
@@ -87,9 +87,9 @@ public class MongoSinkFactory implements SinkFactory {
         }
     }
 
-    List<String> getStatusCodesAsList(String esRetryStatusCodeBlacklist) {
+    List<String> getStatusCodesAsList(String mongoRetryStatusCodeBlacklist) {
         return Arrays
-                .stream(esRetryStatusCodeBlacklist.split(","))
+                .stream(mongoRetryStatusCodeBlacklist.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.toList());
