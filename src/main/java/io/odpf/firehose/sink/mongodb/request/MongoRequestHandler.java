@@ -52,7 +52,7 @@ public abstract class MongoRequestHandler {
      * Extract payload string.
      *
      * @param message the message
-     * @return the string
+     * @return the JSON string parsed from the message
      */
     protected String extractPayload(Message message) {
         if (messageType.equals(MongoSinkMessageType.PROTOBUF)) {
