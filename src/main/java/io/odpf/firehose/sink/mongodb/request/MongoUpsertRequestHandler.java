@@ -10,8 +10,8 @@ import org.bson.Document;
 
 public class MongoUpsertRequestHandler extends MongoRequestHandler {
 
-    private MongoSinkRequestType mongoSinkRequestType;
-    private String mongoPrimaryKey;
+    private final MongoSinkRequestType mongoSinkRequestType;
+    private final String mongoPrimaryKey;
 
     public MongoUpsertRequestHandler(MongoSinkMessageType messageType, MessageToJson jsonSerializer, MongoSinkRequestType mongoSinkRequestType, String mongoPrimaryKey) {
         super(messageType, jsonSerializer);

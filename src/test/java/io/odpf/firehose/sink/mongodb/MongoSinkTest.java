@@ -19,7 +19,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -46,7 +45,7 @@ public class MongoSinkTest {
     private MongoCollection<Document> mongoCollection;
 
     private List<Message> messages;
-    private List<String> mongoRetryStatusCodeBlacklist = new ArrayList<>();
+    private final List<String> mongoRetryStatusCodeBlacklist = new ArrayList<>();
 
     @Before
     public void setUp() {
@@ -112,7 +111,7 @@ public class MongoSinkTest {
     }
 
     @Test
-    public void shouldReturnEsbMessagesListWhenBulkResponseHasFailuresAndEmptyBlacklist() throws IOException {
+    public void shouldReturnEsbMessagesListWhenBulkResponseHasFailuresAndEmptyBlacklist() {
         BulkWriteError bulkWriteError1 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 0);
         BulkWriteError bulkWriteError2 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 0);
         List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteError1, bulkWriteError2);
@@ -126,7 +125,7 @@ public class MongoSinkTest {
     }
 
     @Test
-    public void shouldReturnEsbMessagesListWhenBulkResponseHasFailuresWithStatusOtherThanBlacklist() throws IOException {
+    public void shouldReturnEsbMessagesListWhenBulkResponseHasFailuresWithStatusOtherThanBlacklist() {
         BulkWriteError bulkWriteError1 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 0);
         BulkWriteError bulkWriteError2 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 0);
         List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteError1, bulkWriteError2);
@@ -141,7 +140,7 @@ public class MongoSinkTest {
     }
 
     @Test
-    public void shouldReturnEmptyMessageListIfAllTheResponsesBelongToBlacklistStatusCode() throws IOException {
+    public void shouldReturnEmptyMessageListIfAllTheResponsesBelongToBlacklistStatusCode() {
         BulkWriteError bulkWriteError1 = new BulkWriteError(11000, "Duplicate Key Error", new BasicDBObject(), 0);
         BulkWriteError bulkWriteError2 = new BulkWriteError(11000, "Duplicate Key Error", new BasicDBObject(), 0);
         List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteError1, bulkWriteError2);
@@ -154,7 +153,7 @@ public class MongoSinkTest {
     }
 
     @Test
-    public void shouldReportTelemetryIfTheResponsesBelongToBlacklistStatusCode() throws IOException {
+    public void shouldReportTelemetryIfTheResponsesBelongToBlacklistStatusCode() {
         BulkWriteError bulkWriteError1 = new BulkWriteError(11000, "Duplicate Key Error", new BasicDBObject(), 0);
         BulkWriteError bulkWriteError2 = new BulkWriteError(11000, "Duplicate Key Error", new BasicDBObject(), 0);
         List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteError1, bulkWriteError2);
@@ -169,7 +168,7 @@ public class MongoSinkTest {
     }
 
     @Test
-    public void shouldThrowNeedToRetryExceptionIfSomeOfTheFailuresDontBelongToBlacklist() throws IOException {
+    public void shouldThrowNeedToRetryExceptionIfSomeOfTheFailuresDontBelongToBlacklist() {
         BulkWriteError bulkWriteError1 = new BulkWriteError(11000, "Duplicate Key Error", new BasicDBObject(), 0);
         BulkWriteError bulkWriteError2 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 0);
         BulkWriteError bulkWriteError3 = new BulkWriteError(502, "Collection not found", new BasicDBObject(), 0);
@@ -204,10 +203,8 @@ public class MongoSinkTest {
 
     @Test
     public void shouldNotLogBulkRequestFailedWhenBulkResponsesHasNoFailures() {
-        BulkWriteError bulkWriteError1 = new BulkWriteError(11000, "Duplicate Key Error", new BasicDBObject(), 0);
-        BulkWriteError bulkWriteError2 = new BulkWriteError(11000, "Duplicate Key Error", new BasicDBObject(), 0);
-        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteError1, bulkWriteError2);
-        bulkWriteErrors = new ArrayList<>();
+        List<BulkWriteError> bulkWriteErrors = new ArrayList<>();
+
         MongoSinkMock mongoSinkMock = new MongoSinkMock(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
                 mongoRetryStatusCodeBlacklist);
         mongoSinkMock.setBulkWriteErrors(bulkWriteErrors);

@@ -15,8 +15,8 @@ import static io.odpf.firehose.config.enums.MongoSinkRequestType.UPDATE_ONLY;
 @AllArgsConstructor
 public class MongoRequestHandlerFactory {
 
-    private MongoSinkConfig mongoSinkConfig;
-    private Instrumentation instrumentation;
+    private final MongoSinkConfig mongoSinkConfig;
+    private final Instrumentation instrumentation;
     private final String mongoPrimaryKey;
     private final MongoSinkMessageType messageType;
     private final MessageToJson jsonSerializer;
