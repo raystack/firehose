@@ -34,10 +34,12 @@ public class MongoSink extends AbstractSink {
     /**
      * Instantiates a new Mongo sink.
      *
-     * @param instrumentation     the instrumentation
-     * @param sinkType            the sink type
-     * @param mongoCollection     the client
-     * @param mongoRequestHandler the mongo request handler
+     * @param instrumentation               the instrumentation
+     * @param sinkType                      the sink type
+     * @param mongoCollection               the mongo collection
+     * @param mongoClient                   the mongo client
+     * @param mongoRequestHandler           the mongo request handler
+     * @param mongoRetryStatusCodeBlacklist the mongo retry status code blacklist
      */
     public MongoSink(Instrumentation instrumentation, String sinkType, MongoCollection<Document> mongoCollection, MongoClient mongoClient, MongoRequestHandler mongoRequestHandler,
                      List<String> mongoRetryStatusCodeBlacklist) {
@@ -81,6 +83,11 @@ public class MongoSink extends AbstractSink {
         this.mongoClient.close();
     }
 
+    /**
+     * Process request list.
+     *
+     * @return the list
+     */
     List<BulkWriteError> processRequest() {
         List<BulkWriteError> bulkWriteErrors = new ArrayList<>();
         try {
@@ -99,7 +106,6 @@ public class MongoSink extends AbstractSink {
         getInstrumentation().logInfo("Successfully updated {} documents", bulkWriteResult.getModifiedCount());
 
     }
-
 
     private void handleBulkWriteErrors(List<BulkWriteError> bulkWriteErrors) throws NeedToRetry {
         int failedResponseCount = 0;

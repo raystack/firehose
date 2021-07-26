@@ -46,7 +46,6 @@ public class MongoSinkFactoryTest {
         assertEquals(MongoSink.class, sink.getClass());
     }
 
-
     @Test
     public void shouldReturnBlackListRetryStatusCodesAsList() {
         MongoSinkFactory mongoSinkFactory = new MongoSinkFactory();

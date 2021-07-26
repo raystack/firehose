@@ -70,6 +70,12 @@ public class MongoSinkFactory implements SinkFactory {
                 getStatusCodesAsList(mongoSinkConfig.getSinkMongoRetryStatusCodeBlacklist()));
     }
 
+    /**
+     * Gets status codes as list.
+     *
+     * @param mongoRetryStatusCodeBlacklist the mongo retry status code blacklist
+     * @return the status codes as list
+     */
     List<String> getStatusCodesAsList(String mongoRetryStatusCodeBlacklist) {
         return Arrays
                 .stream(mongoRetryStatusCodeBlacklist.split(","))

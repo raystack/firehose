@@ -12,6 +12,13 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class MongoSinkFactoryUtil {
 
+    /**
+     * Gets server addresses.
+     *
+     * @param mongoConnectionUrls the mongo connection urls
+     * @param instrumentation     the instrumentation
+     * @return the server addresses
+     */
     public static List<ServerAddress> getServerAddresses(String mongoConnectionUrls, Instrumentation instrumentation) {
         if (mongoConnectionUrls != null && !mongoConnectionUrls.isEmpty()) {
             List<String> mongoNodes = Arrays.asList(mongoConnectionUrls.trim().split(","));

@@ -8,11 +8,22 @@ import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.serializer.MessageToJson;
 import org.bson.Document;
 
+/**
+ * Mongo request handler for upsert operation.
+ */
 public class MongoUpsertRequestHandler extends MongoRequestHandler {
 
     private final MongoSinkRequestType mongoSinkRequestType;
     private final String mongoPrimaryKey;
 
+    /**
+     * Instantiates a new Mongo upsert request handler.
+     *
+     * @param messageType          the message type
+     * @param jsonSerializer       the json serializer
+     * @param mongoSinkRequestType the mongo sink request type
+     * @param mongoPrimaryKey      the mongo primary key
+     */
     public MongoUpsertRequestHandler(MongoSinkMessageType messageType, MessageToJson jsonSerializer, MongoSinkRequestType mongoSinkRequestType, String mongoPrimaryKey) {
         super(messageType, jsonSerializer);
         this.mongoSinkRequestType = mongoSinkRequestType;

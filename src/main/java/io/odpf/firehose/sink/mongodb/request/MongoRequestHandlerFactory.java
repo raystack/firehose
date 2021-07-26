@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import static io.odpf.firehose.config.enums.MongoSinkRequestType.INSERT_OR_UPDATE;
 import static io.odpf.firehose.config.enums.MongoSinkRequestType.UPDATE_ONLY;
 
+/**
+ * The Mongo request handler factory.
+ */
 @AllArgsConstructor
 public class MongoRequestHandlerFactory {
 
@@ -21,7 +24,11 @@ public class MongoRequestHandlerFactory {
     private final MongoSinkMessageType messageType;
     private final MessageToJson jsonSerializer;
 
-
+    /**
+     * Gets request handler.
+     *
+     * @return the request handler
+     */
     public MongoRequestHandler getRequestHandler() {
         MongoSinkRequestType mongoSinkRequestType = mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable() ? UPDATE_ONLY : INSERT_OR_UPDATE;
         instrumentation.logInfo("Mongo request mode: {}", mongoSinkRequestType);

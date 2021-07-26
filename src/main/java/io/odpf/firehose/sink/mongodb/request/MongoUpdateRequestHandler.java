@@ -7,11 +7,22 @@ import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.serializer.MessageToJson;
 import org.bson.Document;
 
+/**
+ * The Mongo update request handler.
+ */
 public class MongoUpdateRequestHandler extends MongoRequestHandler {
 
     private final MongoSinkRequestType mongoSinkRequestType;
     private final String mongoPrimaryKey;
 
+    /**
+     * Instantiates a new Mongo update request handler.
+     *
+     * @param messageType          the message type
+     * @param jsonSerializer       the json serializer
+     * @param mongoSinkRequestType the mongo sink request type
+     * @param mongoPrimaryKey      the mongo primary key
+     */
     public MongoUpdateRequestHandler(MongoSinkMessageType messageType, MessageToJson jsonSerializer, MongoSinkRequestType mongoSinkRequestType, String mongoPrimaryKey) {
         super(messageType, jsonSerializer);
         this.mongoSinkRequestType = mongoSinkRequestType;
