@@ -3,6 +3,7 @@ package io.odpf.firehose.sink.mongodb;
 import com.mongodb.BulkWriteError;
 import com.mongodb.BulkWriteException;
 import com.mongodb.MongoClient;
+import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.WriteModel;
 import io.odpf.firehose.consumer.Message;
@@ -19,54 +20,58 @@ import java.util.List;
 import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_DROP_TOTAL;
 
 /**
- * MongoDB sink
+ * MongoDB sink.
  */
 public class MongoSink extends AbstractSink {
-    private MongoRequestHandler mongoRequestHandler;
-    private List<WriteModel<Document>> bulkRequest;
-    private long mongoRequestTimeoutInMs;
-    private List<String> mongoRetryStatusCodeBlacklist;
-    private MongoCollection<Document> mongoCollection;
-    private MongoClient mongoClient;
+    private final MongoRequestHandler mongoRequestHandler;
+    private final List<WriteModel<Document>> bulkRequest = new ArrayList<>();
+    private final List<String> mongoRetryStatusCodeBlacklist;
+    private final MongoCollection<Document> mongoCollection;
+    private final MongoClient mongoClient;
+    private List<Message> messages;
 
     /**
      * Instantiates a new Mongo sink.
      *
-     * @param instrumentation         the instrumentation
-     * @param sinkType                the sink type
-     * @param mongoCollection         the client
-     * @param mongoRequestHandler     the mongo request handler
-     * @param mongoRequestTimeoutInMs the mongo request timeout in ms
+     * @param instrumentation     the instrumentation
+     * @param sinkType            the sink type
+     * @param mongoCollection     the client
+     * @param mongoRequestHandler the mongo request handler
      */
     public MongoSink(Instrumentation instrumentation, String sinkType, MongoCollection<Document> mongoCollection, MongoClient mongoClient, MongoRequestHandler mongoRequestHandler,
-                     long mongoRequestTimeoutInMs, List<String> mongoRetryStatusCodeBlacklist) {
+                     List<String> mongoRetryStatusCodeBlacklist) {
         super(instrumentation, sinkType);
         this.mongoCollection = mongoCollection;
         this.mongoRequestHandler = mongoRequestHandler;
         this.mongoClient = mongoClient;
-        this.mongoRequestTimeoutInMs = mongoRequestTimeoutInMs;
-        this.mongoRetryStatusCodeBlacklist=mongoRetryStatusCodeBlacklist;
+        this.mongoRetryStatusCodeBlacklist = mongoRetryStatusCodeBlacklist;
     }
 
     @Override
-    protected void prepare(List<Message> messages) {
-
-        bulkRequest = new ArrayList<>();
+    protected void prepare(List<Message> messageList) {
+        this.messages = messageList;
+        bulkRequest.clear();
 
         messages.forEach(message -> bulkRequest.add(mongoRequestHandler.getRequest(message)));
     }
 
     @Override
     protected List<Message> execute() throws Exception {
-        List<BulkWriteError> bulkWriteErrors = getBulkWriteErrors();
+        List<BulkWriteError> bulkWriteErrors = processRequest();
         if (!bulkWriteErrors.isEmpty()) {
             getInstrumentation().logWarn("Bulk request failed");
 
-            handleResponse(bulkWriteErrors);
-
+            handleBulkWriteErrors(bulkWriteErrors);
         }
 
-        return new ArrayList<>();
+        List<Message> failedMessages = new ArrayList<>();
+
+        bulkWriteErrors.forEach((bulkWriteError) -> {
+            if (!mongoRetryStatusCodeBlacklist.contains(String.valueOf(bulkWriteError.getCode()))) {
+                failedMessages.add(messages.get(bulkWriteError.getIndex()));
+            }
+        });
+        return failedMessages;
     }
 
     @Override
@@ -75,20 +80,29 @@ public class MongoSink extends AbstractSink {
         this.mongoClient.close();
     }
 
-    List<BulkWriteError> getBulkWriteErrors() {
+    List<BulkWriteError> processRequest() {
         List<BulkWriteError> bulkWriteErrors = new ArrayList<>();
         try {
-            mongoCollection.bulkWrite(bulkRequest);
+            handleBulkWriteResult(mongoCollection.bulkWrite(bulkRequest));
         } catch (BulkWriteException bulkWriteException) {
 
             bulkWriteErrors = bulkWriteException.getWriteErrors();
         }
+
         return bulkWriteErrors;
     }
 
-    private void handleResponse(List<BulkWriteError> bulkResponse) throws NeedToRetry {
+    private void handleBulkWriteResult(BulkWriteResult bulkWriteResult) {
+
+        getInstrumentation().logInfo("Successfully inserted {} documents", bulkWriteResult.getInsertedCount());
+        getInstrumentation().logInfo("Successfully updated {} documents", bulkWriteResult.getModifiedCount());
+
+    }
+
+
+    private void handleBulkWriteErrors(List<BulkWriteError> bulkWriteErrors) throws NeedToRetry {
         int failedResponseCount = 0;
-        for (BulkWriteError bulkWriteError : bulkResponse) {
+        for (BulkWriteError bulkWriteError : bulkWriteErrors) {
             failedResponseCount++;
             String responseStatus = String.valueOf(bulkWriteError.getCode());
             if (mongoRetryStatusCodeBlacklist.contains(responseStatus)) {

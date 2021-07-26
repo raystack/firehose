@@ -8,7 +8,7 @@ public interface MongoSinkConfig extends AppConfig {
 
     @Key("SINK_MONGO_REQUEST_TIMEOUT_MS")
     @DefaultValue("60000")
-    Long getSinkMongoRequestTimeoutMs();
+    int getSinkMongoRequestTimeoutMs();
 
     @Key("SINK_MONGO_RETRY_STATUS_CODE_BLACKLIST")
     @DefaultValue("404")

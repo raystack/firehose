@@ -28,14 +28,14 @@ public abstract class MongoRequestHandler {
 
     public abstract WriteModel<Document> getRequest(Message message);
 
-    String extractPayload(Message message) {
+    protected String extractPayload(Message message) {
         if (messageType.equals(MongoSinkMessageType.PROTOBUF)) {
             return getFieldFromJSON(jsonSerializer.serialize(message), "logMessage");
         }
         return new String(message.getLogMessage(), Charset.defaultCharset());
     }
 
-    String getFieldFromJSON(String jsonString, String key) {
+    protected String getFieldFromJSON(String jsonString, String key) {
         try {
             JSONObject parse = (JSONObject) jsonParser.parse(jsonString);
             Object valueAtKey = parse.get(key);
@@ -49,5 +49,4 @@ public abstract class MongoRequestHandler {
             jsonParser.reset();
         }
     }
-
 }

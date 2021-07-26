@@ -75,7 +75,7 @@ public class MongoUpdateRequestHandlerTest {
                 "customer_id");
 
         ReplaceOneModel<Document> request = mongoUpdateRequestHandler.getRequest(messageWithJSON);
-        Document inputMap=Document.parse(jsonString);
+        Document inputMap = Document.parse(jsonString);
         Document outputMap = request.getReplacement();
         System.out.println(messageWithProto);
         assertEquals(inputMap.keySet(), outputMap.keySet());
@@ -93,7 +93,6 @@ public class MongoUpdateRequestHandlerTest {
     }
 
 
-
     @Test
     public void shouldReturnModelWithCorrectPayloadForProtoMessageType() {
         MongoUpdateRequestHandler mongoUpdateRequestHandler = new MongoUpdateRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
@@ -102,7 +101,7 @@ public class MongoUpdateRequestHandlerTest {
         ReplaceOneModel<Document> request = mongoUpdateRequestHandler.getRequest(messageWithProto);
         Document outputMap = request.getReplacement();
         System.out.println(messageWithProto);
-        assertEquals("BIKE",outputMap.get("vehicle_type"));
+        assertEquals("BIKE", outputMap.get("vehicle_type"));
         assertEquals("3", outputMap.get("unique_drivers"));
     }
 

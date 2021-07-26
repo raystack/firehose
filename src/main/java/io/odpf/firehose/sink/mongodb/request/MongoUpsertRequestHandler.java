@@ -13,7 +13,7 @@ public class MongoUpsertRequestHandler extends MongoRequestHandler {
     private MongoSinkRequestType mongoSinkRequestType;
     private String mongoPrimaryKey;
 
-    public MongoUpsertRequestHandler(MongoSinkMessageType messageType, MessageToJson jsonSerializer,  MongoSinkRequestType mongoSinkRequestType, String mongoPrimaryKey) {
+    public MongoUpsertRequestHandler(MongoSinkMessageType messageType, MessageToJson jsonSerializer, MongoSinkRequestType mongoSinkRequestType, String mongoPrimaryKey) {
         super(messageType, jsonSerializer);
         this.mongoSinkRequestType = mongoSinkRequestType;
         this.mongoPrimaryKey = mongoPrimaryKey;
@@ -32,6 +32,6 @@ public class MongoUpsertRequestHandler extends MongoRequestHandler {
         return new ReplaceOneModel<>(
                 new Document(mongoPrimaryKey, getFieldFromJSON(logMessage, mongoPrimaryKey)),
                 document,
-        new ReplaceOptions().upsert(true) );
+                new ReplaceOptions().upsert(true));
     }
 }

@@ -1,12 +1,12 @@
 package io.odpf.firehose.sink.mongodb;
 
 import com.gojek.de.stencil.client.StencilClient;
-import com.mongodb.ServerAddress;
-import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -20,11 +20,12 @@ public class MongoSinkFactoryTest {
 
     private Map<String, String> configuration;
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Mock
     private StatsDReporter statsDReporter;
 
-    @Mock
-    private Instrumentation instrumentation;
 
     @Mock
     private StencilClient stencilClient;
@@ -47,95 +48,6 @@ public class MongoSinkFactoryTest {
         assertEquals(MongoSink.class, sink.getClass());
     }
 
-    @Test
-    public void shouldThrowIllegalArgumentExceptionForEmptyMongoConnectionURLs() {
-        MongoSinkFactory mongoSinkFactory = new MongoSinkFactory();
-        try {
-            mongoSinkFactory.getServerAddresses("", instrumentation);
-        } catch (Exception e) {
-            assertEquals(IllegalArgumentException.class, e.getClass());
-            assertEquals("SINK_MONGO_CONNECTION_URLS is empty or null", e.getMessage());
-        }
-    }
-
-    @Test
-    public void shouldThrowIllegalArgumentExceptionForNullMongoConnectionURLs() {
-        MongoSinkFactory mongoSinkFactory = new MongoSinkFactory();
-        try {
-            mongoSinkFactory.getServerAddresses(null, instrumentation);
-        } catch (Exception e) {
-            assertEquals(IllegalArgumentException.class, e.getClass());
-            assertEquals("SINK_MONGO_CONNECTION_URLS is empty or null", e.getMessage());
-        }
-    }
-
-    @Test
-    public void shouldThrowIllegalArgumentExceptionForEmptyHost() {
-        MongoSinkFactory mongoSinkFactory = new MongoSinkFactory();
-        String mongoConnectionURLs = ":1000";
-        try {
-            mongoSinkFactory.getServerAddresses(mongoConnectionURLs, instrumentation);
-        } catch (Exception e) {
-            assertEquals(IllegalArgumentException.class, e.getClass());
-        }
-    }
-
-    @Test
-    public void shouldThrowIllegalArgumentExceptionForEmptyPort() {
-        MongoSinkFactory mongoSinkFactory = new MongoSinkFactory();
-        String mongoConnectionURLs = "localhost:";
-        try {
-            mongoSinkFactory.getServerAddresses(mongoConnectionURLs, instrumentation);
-        } catch (Exception e) {
-            assertEquals(IllegalArgumentException.class, e.getClass());
-        }
-    }
-
-    @Test
-    public void shouldGetServerAddressesForValidMongoConnectionURLs() {
-        MongoSinkFactory mongoSinkFactory = new MongoSinkFactory();
-        String mongoConnectionURLs = "localhost_1:1000,localhost_2:1000";
-        List<ServerAddress>  serverAddresses = mongoSinkFactory.getServerAddresses(mongoConnectionURLs, instrumentation);
-
-        assertEquals("localhost_1", serverAddresses.get(0).getHost());
-        assertEquals(1000, serverAddresses.get(0).getPort());
-        assertEquals("localhost_2", serverAddresses.get(1).getHost());
-        assertEquals(1000, serverAddresses.get(1).getPort());
-    }
-
-    @Test
-    public void shouldGetServerAddressesForValidMongoConnectionURLsWithSpacesInBetween() {
-        MongoSinkFactory mongoSinkFactory = new MongoSinkFactory();
-        String mongoConnectionURLs = " localhost_1: 1000,  localhost_2:1000";
-        List<ServerAddress> serverAddresses = mongoSinkFactory.getServerAddresses(mongoConnectionURLs, instrumentation);
-
-        assertEquals("localhost_1", serverAddresses.get(0).getHost());
-        assertEquals(1000, serverAddresses.get(0).getPort());
-        assertEquals("localhost_2", serverAddresses.get(1).getHost());
-        assertEquals(1000, serverAddresses.get(1).getPort());
-    }
-
-    @Test
-    public void shouldGetServerAddressForIPInMongoConnectionURLs() {
-        MongoSinkFactory mongoSinkFactory = new MongoSinkFactory();
-        String mongoConnectionURLs = "172.28.32.156:1000";
-        List<ServerAddress> serverAddresses = mongoSinkFactory.getServerAddresses(mongoConnectionURLs, instrumentation);
-
-        assertEquals("172.28.32.156", serverAddresses.get(0).getHost());
-        assertEquals(1000, serverAddresses.get(0).getPort());
-    }
-
-    @Test
-    public void shouldThrowExceptionIfHostAndPortNotProvidedProperly() {
-        MongoSinkFactory mongoSinkFactory = new MongoSinkFactory();
-        String mongoConnectionURLs = "test";
-        try {
-            mongoSinkFactory.getServerAddresses(mongoConnectionURLs, instrumentation);
-        } catch (Exception e) {
-            assertEquals(IllegalArgumentException.class, e.getClass());
-            assertEquals("SINK_MONGO_CONNECTION_URLS should contain host and port both", e.getMessage());
-        }
-    }
 
     @Test
     public void shouldReturnBlackListRetryStatusCodesAsList() {

@@ -3,6 +3,7 @@ package io.odpf.firehose.sink.mongodb;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -15,22 +16,22 @@ import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.mongodb.request.MongoRequestHandler;
 import io.odpf.firehose.sink.mongodb.request.MongoRequestHandlerFactory;
+import io.odpf.firehose.sink.mongodb.util.MongoSinkUtil;
 import org.aeonbits.owner.ConfigFactory;
 import org.bson.Document;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Sink factory to configue and create MongoDB sink.
+ * Sink factory to configure and create MongoDB sink.
  */
 public class MongoSinkFactory implements SinkFactory {
 
     /**
-     * Creates Elastic search sink.
+     * Creates MongoDB sink.
      *
      * @param configuration  the configuration
      * @param statsDReporter the stats d reporter
@@ -54,38 +55,21 @@ public class MongoSinkFactory implements SinkFactory {
                 mongoSinkConfig.getSinkMongoPrimaryKey(), mongoSinkConfig.getSinkMongoInputMessageType(),
                 new MessageToJson(new ProtoParser(stencilClient, mongoSinkConfig.getInputSchemaProtoClass()), true, false)
 
-        )
-                .getRequestHandler();
+        ).getRequestHandler();
 
-        List<ServerAddress> serverAddresses = getServerAddresses(mongoSinkConfig.getSinkMongoConnectionUrls(), instrumentation);
-        MongoClient mongoClient = new MongoClient(serverAddresses);
+        List<ServerAddress> serverAddresses = MongoSinkUtil.getServerAddresses(mongoSinkConfig.getSinkMongoConnectionUrls(), instrumentation);
+
+        MongoClientOptions options = MongoClientOptions.builder().connectTimeout(mongoSinkConfig.getSinkMongoRequestTimeoutMs()).build();
+        MongoClient mongoClient = new MongoClient(serverAddresses, options);
         MongoDatabase database = mongoClient.getDatabase(mongoSinkConfig.getSinkMongoDBName());
-
 
         MongoCollection<Document> collection = database.getCollection(mongoSinkConfig.getSinkMongoCollectionName());
 
         instrumentation.logInfo("MONGO connection established");
         return new MongoSink(new Instrumentation(statsDReporter, MongoSink.class), SinkType.MONGODB.name().toLowerCase(), collection, mongoClient, mongoRequestHandler,
-                mongoSinkConfig.getSinkMongoRequestTimeoutMs(),getStatusCodesAsList(mongoSinkConfig.getSinkMongoRetryStatusCodeBlacklist()));
+                getStatusCodesAsList(mongoSinkConfig.getSinkMongoRetryStatusCodeBlacklist()));
     }
 
-    List<ServerAddress> getServerAddresses(String mongoConnectionUrls, Instrumentation instrumentation) {
-        if (mongoConnectionUrls != null && !mongoConnectionUrls.isEmpty()) {
-            List<String> mongoNodes = Arrays.asList(mongoConnectionUrls.trim().split(","));
-            List<ServerAddress> serverAddresses = new ArrayList<>(mongoNodes.size());
-            mongoNodes.forEach((String mongoNode) -> {
-                String[] node = mongoNode.trim().split(":");
-                if (node.length <= 1) {
-                    throw new IllegalArgumentException("SINK_MONGO_CONNECTION_URLS should contain host and port both");
-                }
-                serverAddresses.add(new ServerAddress(node[0].trim(), Integer.parseInt(node[1].trim())));
-            });
-            return serverAddresses;
-        } else {
-            instrumentation.logError("No connection URL found");
-            throw new IllegalArgumentException("SINK_MONGO_CONNECTION_URLS is empty or null");
-        }
-    }
 
     List<String> getStatusCodesAsList(String mongoRetryStatusCodeBlacklist) {
         return Arrays

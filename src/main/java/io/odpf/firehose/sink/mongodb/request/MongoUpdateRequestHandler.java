@@ -12,7 +12,7 @@ public class MongoUpdateRequestHandler extends MongoRequestHandler {
     private MongoSinkRequestType mongoSinkRequestType;
     private String mongoPrimaryKey;
 
-    public MongoUpdateRequestHandler(MongoSinkMessageType messageType, MessageToJson jsonSerializer,  MongoSinkRequestType mongoSinkRequestType, String mongoPrimaryKey) {
+    public MongoUpdateRequestHandler(MongoSinkMessageType messageType, MessageToJson jsonSerializer, MongoSinkRequestType mongoSinkRequestType, String mongoPrimaryKey) {
         super(messageType, jsonSerializer);
         this.mongoSinkRequestType = mongoSinkRequestType;
         this.mongoPrimaryKey = mongoPrimaryKey;
