@@ -8,7 +8,7 @@ Firehose is a cloud-native service for delivering real-time streaming data to de
 
 Discover why users choose Firehose as their main Kafka Consumer
 
-* **Sinks** Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB\(JDBC\), InfluxDB, Elastic Search & Redis.
+* **Sinks** Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB\(JDBC\), InfluxDB, Elastic Search, Redis, Prometheus and MongoDB.
 * **Scale** Firehose scales in an instant, both vertically and horizontally, for high-performance streaming sink and zero data drops.
 * **Extensibility** Add your own sink to Firehose with a clearly defined interface or choose from already provided ones.
 * **Runtime** Firehose can run inside containers or VMs in a fully managed runtime environment like Kubernetes.
@@ -26,6 +26,7 @@ Following sinks are supported in the Firehose
 * [ElasticSearch](https://en.wikipedia.org/wiki/Elasticsearch) - A search database
 * [GRPC](https://en.wikipedia.org/wiki/GRPC) - GRPC based services
 * [Prometheus](https://en.wikipedia.org/wiki/Prometheus_%28software) - A time-series database
+* [MongoDB ](https://en.wikipedia.org/wiki/MongoDB)- A NoSQL database
 
 ## How is Firehose different from Kafka-Connect?
 

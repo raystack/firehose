@@ -13,6 +13,7 @@ This page contains reference for all the application configurations for Firehose
 * [Elasticsearch Sink](configuration.md#elasticsearch-sink)
 * [GRPC Sink](configuration.md#grpc-sink)
 * [Prometheus Sink](configuration.md#prometheus-sink)
+* [MongoDB Sink](configuration.md#mongodb-sink)
 * [Retries](configuration.md#retries)
 
 ## Generic
@@ -677,6 +678,73 @@ Defines the proto index of a field that can be used as the timestamp.
 
 * Example value: `2`
 * Type: `required (if SINK_PROM_WITH_EVENT_TIMESTAMP=true)`
+
+\`\`
+
+## MongoDB Sink
+
+A MongoDB sink Firehose \(`SINK_TYPE`= `mongodb` \) requires the following variables to be set along with Generic ones
+
+### `SINK_MONGO_CONNECTION_URLS`
+
+MongoDB connection URL/URLs to connect. Multiple URLs could be given in a comma separated format.
+
+* Example value: `localhost1:9200`
+* Type: `required`
+
+### `SINK_MONGO_DB_NAME`
+
+The name of the Mongo database to which you want to write the documents. If it does not exist, it will be created.
+
+* Example value: `sample_DB`
+* Type: `required`
+
+### `SINK_MONGO_COLLECTION_NAME`
+
+Defines the name of the Mongo Collection
+
+* Example value: `customerCollection`
+* Type: `required`
+
+### `SINK_MONGO_PRIMARY_KEY`
+
+The identifier field of the document in MongoDB. This should be the key of the field present in the message \(JSON or Protobuf\) and it has to be a unique, non-null field. So the value of this field in the message will be used as the ID of the document in MongoDB while writing the document.
+
+* Example value: `customer_id`
+* Type: `required`
+
+### `SINK_MONGO_MODE_UPDATE_ONLY_ENABLE`
+
+MongoDB sink can be created in 2 modes: `Upsert mode` or `UpdateOnly mode`. If this config is set:
+
+* `TRUE`: Firehose will run on UpdateOnly mode which will only UPDATE the already existing documents in the MongoDB collection.
+* `FALSE`: Firehose will run on Upsert mode, UPDATING the existing documents and also INSERTING any new ones.
+  * Example value: `TRUE`
+  * Type: `required`
+  * Default value: `FALSE`
+
+### `SINK_MONGO_INPUT_MESSAGE_TYPE`
+
+Indicates if the Kafka topic contains JSON or Protocol Buffer messages.
+
+* Example value: `PROTOBUF`
+* Type: `required`
+* Default value: `JSON`
+
+### `SINK_MONGO_REQUEST_TIMEOUT_MS`
+
+Defines the request timeout of the MongoDB endpoint. The value specified is in milliseconds.
+
+* Example value: `60000`
+* Type: `required`
+* Default value: `60000`
+
+### `SINK_MONGO_RETRY_STATUS_CODE_BLACKLIST`
+
+List of comma-separated status codes for which Firehose should not retry in case of UPDATE ONLY mode is TRUE
+
+* Example value: `404,400`
+* Type: `optional`
 
 ## Retries
 
