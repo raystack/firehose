@@ -23,6 +23,7 @@ import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_DROP_TOTAL;
  * MongoDB sink.
  */
 public class MongoSink extends AbstractSink {
+
     private final MongoRequestHandler mongoRequestHandler;
     private final List<WriteModel<Document>> bulkRequest = new ArrayList<>();
     private final List<String> mongoRetryStatusCodeBlacklist;
@@ -112,7 +113,6 @@ public class MongoSink extends AbstractSink {
             } else {
                 throw new NeedToRetry(String.valueOf(bulkWriteError.getCode()));
             }
-
         }
         getInstrumentation().logWarn("Bulk request failed count: {}", failedResponseCount);
     }

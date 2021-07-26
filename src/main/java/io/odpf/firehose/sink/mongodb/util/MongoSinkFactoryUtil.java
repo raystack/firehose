@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @UtilityClass
-public class MongoSinkUtil {
+public class MongoSinkFactoryUtil {
 
     public static List<ServerAddress> getServerAddresses(String mongoConnectionUrls, Instrumentation instrumentation) {
         if (mongoConnectionUrls != null && !mongoConnectionUrls.isEmpty()) {
@@ -30,7 +30,4 @@ public class MongoSinkUtil {
             throw new IllegalArgumentException("SINK_MONGO_CONNECTION_URLS is empty or null");
         }
     }
-
-
 }
-

@@ -26,7 +26,6 @@ public class MongoSinkFactoryTest {
     @Mock
     private StatsDReporter statsDReporter;
 
-
     @Mock
     private StencilClient stencilClient;
 
@@ -41,7 +40,6 @@ public class MongoSinkFactoryTest {
         configuration.put("SINK_MONGO_CONNECTION_URLS", "localhost:9200 , localhost:9200 ");
         configuration.put("SINK_MONGO_DB_NAME", "myDb");
         configuration.put("SINK_MONGO_COLLECTION_NAME", "sampleCollection");
-
 
         MongoSinkFactory mongoSinkFactory = new MongoSinkFactory();
         Sink sink = mongoSinkFactory.create(configuration, statsDReporter, stencilClient);

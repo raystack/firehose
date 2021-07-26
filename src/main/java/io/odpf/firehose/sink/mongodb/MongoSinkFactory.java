@@ -16,7 +16,7 @@ import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.mongodb.request.MongoRequestHandler;
 import io.odpf.firehose.sink.mongodb.request.MongoRequestHandlerFactory;
-import io.odpf.firehose.sink.mongodb.util.MongoSinkUtil;
+import io.odpf.firehose.sink.mongodb.util.MongoSinkFactoryUtil;
 import org.aeonbits.owner.ConfigFactory;
 import org.bson.Document;
 
@@ -57,7 +57,7 @@ public class MongoSinkFactory implements SinkFactory {
 
         ).getRequestHandler();
 
-        List<ServerAddress> serverAddresses = MongoSinkUtil.getServerAddresses(mongoSinkConfig.getSinkMongoConnectionUrls(), instrumentation);
+        List<ServerAddress> serverAddresses = MongoSinkFactoryUtil.getServerAddresses(mongoSinkConfig.getSinkMongoConnectionUrls(), instrumentation);
 
         MongoClientOptions options = MongoClientOptions.builder().connectTimeout(mongoSinkConfig.getSinkMongoRequestTimeoutMs()).build();
         MongoClient mongoClient = new MongoClient(serverAddresses, options);
@@ -69,7 +69,6 @@ public class MongoSinkFactory implements SinkFactory {
         return new MongoSink(new Instrumentation(statsDReporter, MongoSink.class), SinkType.MONGODB.name().toLowerCase(), collection, mongoClient, mongoRequestHandler,
                 getStatusCodesAsList(mongoSinkConfig.getSinkMongoRetryStatusCodeBlacklist()));
     }
-
 
     List<String> getStatusCodesAsList(String mongoRetryStatusCodeBlacklist) {
         return Arrays

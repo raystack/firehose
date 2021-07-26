@@ -14,7 +14,9 @@ import io.odpf.firehose.sink.mongodb.request.MongoRequestHandler;
 import org.bson.Document;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 
 import java.io.IOException;
@@ -28,15 +30,21 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 public class MongoSinkTest {
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Mock
     private Instrumentation instrumentation;
+
     @Mock
     private MongoClient client;
+
     @Mock
     private MongoRequestHandler mongoRequestHandler;
 
     @Mock
     private MongoCollection<Document> mongoCollection;
+
     private List<Message> messages;
     private List<String> mongoRetryStatusCodeBlacklist = new ArrayList<>();
 
@@ -88,21 +96,19 @@ public class MongoSinkTest {
     }
 
     @Test
-    public void shouldThrowNeedToRetryExceptionWhenBulkResponseHasFailuresExceptMentionedInBlacklist() {
+    public void shouldThrowNeedToRetryExceptionWhenBulkResponseHasFailuresExceptMentionedInBlacklist() throws Exception {
         BulkWriteError bulkWriteError1 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 0);
         BulkWriteError bulkWriteError2 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 0);
         List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteError1, bulkWriteError2);
         MongoSinkMock mongoSinkMock = new MongoSinkMock(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
                 new ArrayList<>());
         mongoSinkMock.setBulkWriteErrors(bulkWriteErrors);
-
         mongoSinkMock.prepare(messages);
-        try {
-            mongoSinkMock.execute();
-        } catch (Exception e) {
-            Assert.assertEquals(NeedToRetry.class, e.getClass());
-            Assert.assertEquals("Status code fall under retry range. StatusCode: 400", e.getMessage());
-        }
+
+        thrown.expect(NeedToRetry.class);
+        thrown.expectMessage("Status code fall under retry range. StatusCode: 400");
+
+        mongoSinkMock.execute();
     }
 
     @Test
@@ -229,7 +235,5 @@ public class MongoSinkTest {
             return bulkWriteErrors;
         }
     }
-
-
 }
 

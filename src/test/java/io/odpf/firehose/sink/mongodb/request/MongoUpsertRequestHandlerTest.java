@@ -11,7 +11,9 @@ import io.odpf.firehose.exception.JsonParseException;
 import io.odpf.firehose.serializer.MessageToJson;
 import org.bson.Document;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 
 import java.util.Base64;
@@ -21,6 +23,9 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class MongoUpsertRequestHandlerTest {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private StencilClient stencilClient;
@@ -91,7 +96,6 @@ public class MongoUpsertRequestHandlerTest {
         assertEquals(ReplaceOneModel.class, mongoUpsertRequestHandler.getRequest(messageWithProto).getClass());
     }
 
-
     @Test
     public void shouldReturnModelWithCorrectPayloadForProtoMessageType() {
         MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
@@ -109,24 +113,18 @@ public class MongoUpsertRequestHandlerTest {
         MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
                 "s2_id_level");
 
-        try {
-            mongoUpsertRequestHandler.getFieldFromJSON("", "s2_id_level");
-        } catch (Exception e) {
-            assertEquals(JsonParseException.class, e.getClass());
-        }
+        thrown.expect(JsonParseException.class);
+        mongoUpsertRequestHandler.getFieldFromJSON("", "s2_id_level");
     }
 
     @Test
     public void shouldThrowExceptionForInvalidKey() {
         MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
                 "s2_id_level");
-        try {
-            mongoUpsertRequestHandler.getFieldFromJSON(jsonSerializer.serialize(messageWithProto), "wrongKey");
-        } catch (Exception e) {
-            assertEquals(IllegalArgumentException.class, e.getClass());
-            assertEquals("Key: wrongKey not found in ESB Message", e.getMessage());
-        }
+
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Key: wrongKey not found in ESB Message");
+        mongoUpsertRequestHandler.getFieldFromJSON(jsonSerializer.serialize(messageWithProto), "wrongKey");
+
     }
-
-
 }
