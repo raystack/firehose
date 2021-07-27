@@ -40,7 +40,7 @@ public class MongoUpdateRequestHandler extends MongoRequestHandler {
         Document document = Document.parse(logMessage);
 
         return new ReplaceOneModel<>(
-                new Document(mongoPrimaryKey, getFieldFromJSON(logMessage, mongoPrimaryKey)),
+                new Document("_id", getFieldFromJSON(logMessage, mongoPrimaryKey)),
                 document);
     }
 }

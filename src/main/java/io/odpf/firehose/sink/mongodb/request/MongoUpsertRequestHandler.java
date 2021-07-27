@@ -39,9 +39,10 @@ public class MongoUpsertRequestHandler extends MongoRequestHandler {
     public ReplaceOneModel<Document> getRequest(Message message) {
         String logMessage = extractPayload(message);
         Document document = Document.parse(logMessage);
+        document.append("_id",mongoPrimaryKey);
 
         return new ReplaceOneModel<>(
-                new Document(mongoPrimaryKey, getFieldFromJSON(logMessage, mongoPrimaryKey)),
+                new Document("_id", getFieldFromJSON(logMessage, mongoPrimaryKey)),
                 document,
                 new ReplaceOptions().upsert(true));
     }

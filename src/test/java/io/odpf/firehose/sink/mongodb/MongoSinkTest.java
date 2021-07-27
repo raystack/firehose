@@ -8,7 +8,6 @@ import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.ReplaceOptions;
 import io.odpf.firehose.config.enums.SinkType;
 import io.odpf.firehose.consumer.Message;
-import io.odpf.firehose.exception.NeedToRetry;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.mongodb.request.MongoRequestHandler;
 import org.bson.Document;
@@ -94,26 +93,11 @@ public class MongoSinkTest {
         Assert.assertEquals(0, failedMessages.size());
     }
 
-    @Test
-    public void shouldThrowNeedToRetryExceptionWhenBulkResponseHasFailuresExceptMentionedInBlacklist() throws Exception {
-        BulkWriteError bulkWriteError1 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 0);
-        BulkWriteError bulkWriteError2 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 0);
-        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteError1, bulkWriteError2);
-        MongoSinkMock mongoSinkMock = new MongoSinkMock(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
-                new ArrayList<>());
-        mongoSinkMock.setBulkWriteErrors(bulkWriteErrors);
-        mongoSinkMock.prepare(messages);
-
-        thrown.expect(NeedToRetry.class);
-        thrown.expectMessage("Status code fall under retry range. StatusCode: 400");
-
-        mongoSinkMock.execute();
-    }
 
     @Test
     public void shouldReturnEsbMessagesListWhenBulkResponseHasFailuresAndEmptyBlacklist() {
         BulkWriteError bulkWriteError1 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 0);
-        BulkWriteError bulkWriteError2 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 0);
+        BulkWriteError bulkWriteError2 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 1);
         List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteError1, bulkWriteError2);
         MongoSinkMock mongoSinkMock = new MongoSinkMock(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
                 new ArrayList<>());
@@ -127,12 +111,11 @@ public class MongoSinkTest {
     @Test
     public void shouldReturnEsbMessagesListWhenBulkResponseHasFailuresWithStatusOtherThanBlacklist() {
         BulkWriteError bulkWriteError1 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 0);
-        BulkWriteError bulkWriteError2 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 0);
+        BulkWriteError bulkWriteError2 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 1);
         List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteError1, bulkWriteError2);
         MongoSinkMock mongoSinkMock = new MongoSinkMock(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
                 mongoRetryStatusCodeBlacklist);
         mongoSinkMock.setBulkWriteErrors(bulkWriteErrors);
-
 
         List<Message> failedMessages = mongoSinkMock.pushMessage(this.messages);
         Assert.assertEquals(messages.get(0), failedMessages.get(0));
@@ -168,7 +151,7 @@ public class MongoSinkTest {
     }
 
     @Test
-    public void shouldThrowNeedToRetryExceptionIfSomeOfTheFailuresDontBelongToBlacklist() {
+    public void shouldReturnFailedMessagesIfSomeOfTheFailuresDontBelongToBlacklist() {
         BulkWriteError bulkWriteError1 = new BulkWriteError(11000, "Duplicate Key Error", new BasicDBObject(), 0);
         BulkWriteError bulkWriteError2 = new BulkWriteError(400, "DB not found", new BasicDBObject(), 0);
         BulkWriteError bulkWriteError3 = new BulkWriteError(502, "Collection not found", new BasicDBObject(), 0);
@@ -184,7 +167,7 @@ public class MongoSinkTest {
         List<Message> failedMessages = mongoSinkMock.pushMessage(this.messages);
 
         verify(instrumentation, times(2)).incrementCounterWithTags(any(String.class), any(String.class));
-        Assert.assertEquals(3, failedMessages.size());
+        Assert.assertEquals(1, failedMessages.size());
     }
 
     @Test
@@ -228,7 +211,7 @@ public class MongoSinkTest {
         }
 
         @Override
-        List<BulkWriteError> processRequest() {
+        protected  List<BulkWriteError> processRequest() {
             return bulkWriteErrors;
         }
     }
