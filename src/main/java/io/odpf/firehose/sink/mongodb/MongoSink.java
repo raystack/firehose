@@ -59,7 +59,7 @@ public class MongoSink extends AbstractSink {
 
     @Override
     protected List<Message> execute() throws Exception {
-        List<BulkWriteError> bulkWriteErrors = processRequest();
+        List<BulkWriteError> bulkWriteErrors = processRequest(bulkRequest);
 
         if (bulkWriteErrors.isEmpty()) {
             return Collections.emptyList();
@@ -83,8 +83,8 @@ public class MongoSink extends AbstractSink {
         this.mongoClient.close();
     }
 
-    protected  List<BulkWriteError> processRequest(){
-        return MongoResponseHandler.processRequest(bulkRequest, mongoCollection,getInstrumentation());
+    protected List<BulkWriteError> processRequest(List<WriteModel<Document>> bulkRequest) {
+        return MongoResponseHandler.processRequest(bulkRequest, mongoCollection, getInstrumentation());
     }
 
     private void handleBulkWriteErrors(List<BulkWriteError> bulkWriteErrors) {

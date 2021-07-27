@@ -6,6 +6,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.ReplaceOptions;
+import com.mongodb.client.model.WriteModel;
 import io.odpf.firehose.config.enums.SinkType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -211,7 +212,7 @@ public class MongoSinkTest {
         }
 
         @Override
-        protected  List<BulkWriteError> processRequest() {
+        protected  List<BulkWriteError> processRequest(List<WriteModel<Document>> bulkRequest) {
             return bulkWriteErrors;
         }
     }
