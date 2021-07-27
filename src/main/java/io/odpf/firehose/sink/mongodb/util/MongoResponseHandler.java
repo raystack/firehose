@@ -29,7 +29,7 @@ public class MongoResponseHandler {
     public static List<BulkWriteError> processRequest(List<WriteModel<Document>> bulkRequest, MongoCollection<Document> mongoCollection, Instrumentation instrumentation) {
         List<BulkWriteError> bulkWriteErrors = new ArrayList<>();
         try {
-            handleBulkWriteResult(mongoCollection.bulkWrite(bulkRequest),instrumentation);
+            handleBulkWriteResult(mongoCollection.bulkWrite(bulkRequest), instrumentation);
         } catch (BulkWriteException bulkWriteException) {
 
             bulkWriteErrors = bulkWriteException.getWriteErrors();
@@ -40,8 +40,11 @@ public class MongoResponseHandler {
 
     private static void handleBulkWriteResult(BulkWriteResult bulkWriteResult, Instrumentation instrumentation) {
 
-        instrumentation.logInfo("Successfully inserted {} documents", bulkWriteResult.getInsertedCount());
-        instrumentation.logInfo("Successfully updated {} documents", bulkWriteResult.getModifiedCount());
+        if (bulkWriteResult.wasAcknowledged()) {
+            instrumentation.logInfo("Bulk Write operation was successfully acknowledged");
+        } else {
+            instrumentation.logInfo("Bulk Write operation was not acknowledged");
+        }
 
     }
 }
