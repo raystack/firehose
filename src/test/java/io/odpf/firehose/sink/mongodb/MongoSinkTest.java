@@ -146,7 +146,7 @@ public class MongoSinkTest {
         mongoSinkMock.setBulkWriteErrors(bulkWriteErrors);
 
         mongoSinkMock.pushMessage(this.messages);
-        verify(instrumentation, times(2)).logInfo("Not retrying due to response status: {} is under blacklisted status code", "11000");
+        verify(instrumentation, times(2)).logWarn("Non-retriable error due to response status: {} is under blacklisted status code", "11000");
         verify(instrumentation, times(2)).logInfo("Message dropped because of status code: 11000");
         verify(instrumentation, times(2)).incrementCounterWithTags("firehose_sink_messages_drop_total", "cause=Duplicate Key Error");
     }
@@ -212,7 +212,7 @@ public class MongoSinkTest {
         }
 
         @Override
-        protected  List<BulkWriteError> processRequest(List<WriteModel<Document>> bulkRequest) {
+        protected List<BulkWriteError> processRequest(List<WriteModel<Document>> bulkRequest) {
             return bulkWriteErrors;
         }
     }
