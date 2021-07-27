@@ -12,9 +12,20 @@ import org.bson.Document;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The type Mongo response handler.
+ */
 @UtilityClass
 public class MongoResponseHandler {
 
+    /**
+     * Process request list.
+     *
+     * @param bulkRequest     the bulk request
+     * @param mongoCollection the mongo collection
+     * @param instrumentation the instrumentation
+     * @return the list of Bulk Write errors, if any, else returns empty list
+     */
     public static List<BulkWriteError> processRequest(List<WriteModel<Document>> bulkRequest, MongoCollection<Document> mongoCollection, Instrumentation instrumentation) {
         List<BulkWriteError> bulkWriteErrors = new ArrayList<>();
         try {
