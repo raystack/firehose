@@ -146,7 +146,9 @@ No, all fields from the input key/message will be sent by Firehose to the Sink. 
 
 Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data. Data streams on Kafka topics are bound to a Protobuf schema. Protobuf is much more lightweight that other schema formats like JSON, since it encodes the keys in the message to integers.
 
-Firehose uses the Stencil client which doesn't support any other schema format other than Protobuf. Nevertheless, support for JSON and Avro is planned to be included in a future Firehose release. Do follow the Roadmap section to know about future support for other schema formats
+Currently, only MongoDB sink and ElasticSearch sink have support for both JSON and Protobuf.
+
+Other sinks in Fiehose presently don't support any other schema format other than Protobuf. Nevertheless, support for JSON and Avro is planned to be included in a future Firehose release. Do follow the Roadmap section to know about future support for other schema formats.
 
 ## Will I have any data loss if my Firehose fails ?
 
