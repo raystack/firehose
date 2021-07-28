@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.mongodb;
 
-import com.mongodb.BulkWriteError;
 import com.mongodb.MongoClient;
+import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.WriteModel;
 import io.odpf.firehose.consumer.Message;
@@ -17,16 +17,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_DROP_TOTAL;
-
 /**
  * MongoDB sink.
  */
 public class MongoSink extends AbstractSink {
 
     private final MongoRequestHandler mongoRequestHandler;
-    private final List<WriteModel<Document>> bulkRequest = new ArrayList<>();
-    private final List<String> mongoRetryStatusCodeBlacklist;
+    private final List<WriteModel<Document>> request = new ArrayList<>();
     private final MongoResponseHandler mongoResponseHandler;
     private final MongoClient mongoClient;
     private List<Message> messages;
@@ -42,58 +39,35 @@ public class MongoSink extends AbstractSink {
      * @param mongoRetryStatusCodeBlacklist the mongo retry status code blacklist
      */
     public MongoSink(Instrumentation instrumentation, String sinkType, MongoCollection<Document> mongoCollection, MongoClient mongoClient, MongoRequestHandler mongoRequestHandler,
-                     List<String> mongoRetryStatusCodeBlacklist) {
+                     List<String> mongoRetryStatusCodeBlacklist, MongoResponseHandler mongoResponseHandler) {
         super(instrumentation, sinkType);
         this.mongoRequestHandler = mongoRequestHandler;
         this.mongoClient = mongoClient;
-        this.mongoRetryStatusCodeBlacklist = mongoRetryStatusCodeBlacklist;
-        this.mongoResponseHandler = new MongoResponseHandler(mongoCollection, instrumentation);
+        this.mongoResponseHandler = mongoResponseHandler;
     }
 
     @Override
     protected void prepare(List<Message> messageList) {
         this.messages = messageList;
-        bulkRequest.clear();
-
-        messages.forEach(message -> bulkRequest.add(mongoRequestHandler.getRequest(message)));
+        request.clear();
+        messages.forEach(message -> request.add(mongoRequestHandler.getRequest(message)));
     }
 
     @Override
     protected List<Message> execute() throws Exception {
-        List<BulkWriteError> bulkWriteErrors = processRequest(bulkRequest);
+        List<BulkWriteError> writeErrors = mongoResponseHandler.processRequest(request);
 
-        if (bulkWriteErrors.isEmpty()) {
+        if (writeErrors.isEmpty()) {
             return Collections.emptyList();
         }
-        getInstrumentation().logWarn("Bulk request failed");
-        handleBulkWriteErrors(bulkWriteErrors);
-
-        return bulkWriteErrors.stream()
-                .filter(bulkWriteError -> !mongoRetryStatusCodeBlacklist.contains(String.valueOf(bulkWriteError.getCode())))
-                .map(bulkWriteError -> messages.get(bulkWriteError.getIndex())).collect(Collectors.toList());
+        return writeErrors.stream()
+                .map(writeError -> messages.get(writeError.getIndex()))
+                .collect(Collectors.toList());
     }
 
     @Override
     public void close() throws IOException {
         getInstrumentation().logInfo("MongoDB connection closing");
         this.mongoClient.close();
-    }
-
-    protected List<BulkWriteError> processRequest(List<WriteModel<Document>> bulkRequest) {
-        return mongoResponseHandler.processRequest(bulkRequest);
-    }
-
-    private void handleBulkWriteErrors(List<BulkWriteError> bulkWriteErrors) {
-        int failedResponseCount = 0;
-        for (BulkWriteError bulkWriteError : bulkWriteErrors) {
-            failedResponseCount++;
-            String responseStatus = String.valueOf(bulkWriteError.getCode());
-            if (mongoRetryStatusCodeBlacklist.contains(responseStatus)) {
-                getInstrumentation().logWarn("Non-retriable error due to response status: {} is under blacklisted status code", responseStatus);
-                getInstrumentation().incrementCounterWithTags(SINK_MESSAGES_DROP_TOTAL, "cause=" + bulkWriteError.getMessage());
-                getInstrumentation().logInfo("Message dropped because of status code: " + responseStatus);
-            }
-        }
-        getInstrumentation().logWarn("Bulk request failed count: {}", failedResponseCount);
     }
 }

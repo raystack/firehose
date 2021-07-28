@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.mongodb.response;
 
-import com.mongodb.BulkWriteError;
-import com.mongodb.BulkWriteException;
+import com.mongodb.MongoBulkWriteException;
+import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.WriteModel;
@@ -11,6 +11,9 @@ import org.bson.Document;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_DROP_TOTAL;
 
 /**
  * The type Mongo response handler.
@@ -20,30 +23,57 @@ public class MongoResponseHandler {
 
     private final MongoCollection<Document> mongoCollection;
     private final Instrumentation instrumentation;
+    private final List<String> mongoRetryStatusCodeBlacklist;
 
     /**
      * Process request list.
      *
-     * @param bulkRequest the bulk request
+     * @param request the bulk request
      * @return the list of Bulk Write errors, if any, else returns empty list
      */
-    public List<BulkWriteError> processRequest(List<WriteModel<Document>> bulkRequest) {
-        List<BulkWriteError> bulkWriteErrors = new ArrayList<>();
+    public List<BulkWriteError> processRequest(List<WriteModel<Document>> request) {
+        List<BulkWriteError> writeErrors = new ArrayList<>();
         try {
-            handleBulkWriteResult(mongoCollection.bulkWrite(bulkRequest), instrumentation);
-        } catch (BulkWriteException bulkWriteException) {
+            handleWriteResult(mongoCollection.bulkWrite(request));
 
-            bulkWriteErrors = bulkWriteException.getWriteErrors();
+        } catch (MongoBulkWriteException writeException) {
+            instrumentation.logWarn("Bulk request failed");
+
+            writeErrors = writeException.getWriteErrors();
+            handleWriteErrors(writeErrors);
         }
-        return bulkWriteErrors;
+        return writeErrors.stream()
+                .filter(writeError -> !mongoRetryStatusCodeBlacklist.contains(String.valueOf(writeError.getCode())))
+                .collect(Collectors.toList());
     }
 
-    private void handleBulkWriteResult(BulkWriteResult bulkWriteResult, Instrumentation instrumentation) {
+    private void handleWriteResult(BulkWriteResult writeResult) {
 
-        if (bulkWriteResult.wasAcknowledged()) {
+        instrumentation.logInfo("Successfully inserted {} documents", writeResult.getInsertedCount());
+        instrumentation.logInfo("Successfully updated {} documents", writeResult.getModifiedCount());
+
+        if (writeResult.wasAcknowledged()) {
             instrumentation.logInfo("Bulk Write operation was successfully acknowledged");
         } else {
-            instrumentation.logInfo("Bulk Write operation was not acknowledged");
+            instrumentation.logWarn("Bulk Write operation was not acknowledged");
         }
+    }
+
+    /**
+     * Handle write errors.
+     *
+     * @param writeErrors the write errors
+     */
+    private void handleWriteErrors(List<BulkWriteError> writeErrors) {
+
+        writeErrors.stream()
+                .filter(writeError -> mongoRetryStatusCodeBlacklist.contains(String.valueOf(writeError.getCode())))
+                .forEach(writeError -> {
+                    instrumentation.logWarn("Non-retriable error due to response status: {} is under blacklisted status code", writeError.getCode());
+                    instrumentation.incrementCounterWithTags(SINK_MESSAGES_DROP_TOTAL, "cause=" + writeError.getMessage());
+                    instrumentation.logInfo("Message dropped because of status code: " + writeError.getCode());
+                });
+
+        instrumentation.logWarn("Bulk request failed count: {}", writeErrors.size());
     }
 }

@@ -16,6 +16,7 @@ import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.mongodb.request.MongoRequestHandler;
 import io.odpf.firehose.sink.mongodb.request.MongoRequestHandlerFactory;
+import io.odpf.firehose.sink.mongodb.response.MongoResponseHandler;
 import io.odpf.firehose.sink.mongodb.util.MongoSinkFactoryUtil;
 import org.aeonbits.owner.ConfigFactory;
 import org.bson.Document;
@@ -65,9 +66,11 @@ public class MongoSinkFactory implements SinkFactory {
 
         MongoCollection<Document> collection = database.getCollection(mongoSinkConfig.getSinkMongoCollectionName());
 
+        List<String> mongoRetryStatusCodeBlacklist = getStatusCodesAsList(mongoSinkConfig.getSinkMongoRetryStatusCodeBlacklist());
         instrumentation.logInfo("MONGO connection established");
         return new MongoSink(new Instrumentation(statsDReporter, MongoSink.class), SinkType.MONGODB.name().toLowerCase(), collection, mongoClient, mongoRequestHandler,
-                getStatusCodesAsList(mongoSinkConfig.getSinkMongoRetryStatusCodeBlacklist()));
+                mongoRetryStatusCodeBlacklist, new MongoResponseHandler(collection, instrumentation, mongoRetryStatusCodeBlacklist));
+
     }
 
     /**
