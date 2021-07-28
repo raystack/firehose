@@ -10,15 +10,28 @@ public interface MongoSinkConfig extends AppConfig {
     @DefaultValue("60000")
     int getSinkMongoRequestTimeoutMs();
 
-    @Key("SINK_MONGO_RETRY_STATUS_CODE_BLACKLIST")
-    @DefaultValue("404")
-    String getSinkMongoRetryStatusCodeBlacklist();
-
     @Key("SINK_MONGO_CONNECTION_URLS")
     String getSinkMongoConnectionUrls();
 
     @Key("SINK_MONGO_DB_NAME")
     String getSinkMongoDBName();
+
+    @Key("SINK_MONGO_RETRY_STATUS_CODE_BLACKLIST")
+    @DefaultValue("11000")
+    String getSinkMongoRetryStatusCodeBlacklist();
+
+    @Key("SINK_MONGO_AUTH_ENABLE")
+    @DefaultValue("false")
+    Boolean isSinkMongoAuthEnable();
+
+    @Key("SINK_MONGO_AUTH_USERNAME")
+    String getSinkMongoAuthUsername();
+
+    @Key("SINK_MONGO_AUTH_PASSWORD")
+    String getSinkMongoAuthPassword();
+
+    @Key("SINK_MONGO_AUTH_DB")
+    String getSinkMongoAuthDB();
 
     @Key("SINK_MONGO_INPUT_MESSAGE_TYPE")
     @ConverterClass(MongoSinkMessageTypeConverter.class)

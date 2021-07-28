@@ -4,6 +4,7 @@ import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -59,9 +60,17 @@ public class MongoSinkFactory implements SinkFactory {
         ).getRequestHandler();
 
         List<ServerAddress> serverAddresses = MongoSinkFactoryUtil.getServerAddresses(mongoSinkConfig.getSinkMongoConnectionUrls(), instrumentation);
-
         MongoClientOptions options = MongoClientOptions.builder().connectTimeout(mongoSinkConfig.getSinkMongoRequestTimeoutMs()).build();
-        MongoClient mongoClient = new MongoClient(serverAddresses, options);
+
+        MongoClient mongoClient;
+        if (mongoSinkConfig.isSinkMongoAuthEnable()) {
+            MongoCredential mongoCredential = MongoCredential.createCredential(mongoSinkConfig.getSinkMongoAuthUsername(), mongoSinkConfig.getSinkMongoAuthDB(), mongoSinkConfig.getSinkMongoAuthPassword().toCharArray());
+
+            mongoClient = new MongoClient(serverAddresses, mongoCredential, options);
+        } else {
+            mongoClient = new MongoClient(serverAddresses, options);
+        }
+
         MongoDatabase database = mongoClient.getDatabase(mongoSinkConfig.getSinkMongoDBName());
 
         MongoCollection<Document> collection = database.getCollection(mongoSinkConfig.getSinkMongoCollectionName());
