@@ -6,6 +6,7 @@ import io.odpf.firehose.config.enums.MongoSinkRequestType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.serializer.MessageToJson;
 import org.bson.Document;
+import org.json.simple.JSONObject;
 
 /**
  * The Mongo update request handler.
@@ -37,10 +38,13 @@ public class MongoUpdateRequestHandler extends MongoRequestHandler {
     @Override
     public ReplaceOneModel<Document> getRequest(Message message) {
         String logMessage = extractPayload(message);
-        Document document = Document.parse(logMessage);
+        JSONObject logMessageJSONObject = getJSONObject(logMessage);
+
+        Document document = new Document("_id", getFieldFromJSON(logMessageJSONObject, mongoPrimaryKey));
+        document.putAll(logMessageJSONObject);
 
         return new ReplaceOneModel<>(
-                new Document(mongoPrimaryKey, getFieldFromJSON(logMessage, mongoPrimaryKey)),
+                new Document("_id", getFieldFromJSON(logMessageJSONObject, mongoPrimaryKey)),
                 document);
     }
 }

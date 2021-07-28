@@ -2,6 +2,7 @@ package io.odpf.firehose.sink.mongodb.request;
 
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.model.ReplaceOneModel;
 import io.odpf.firehose.config.enums.MongoSinkMessageType;
 import io.odpf.firehose.config.enums.MongoSinkRequestType;
@@ -10,6 +11,7 @@ import io.odpf.firehose.consumer.TestAggregatedSupplyMessage;
 import io.odpf.firehose.exception.JsonParseException;
 import io.odpf.firehose.serializer.MessageToJson;
 import org.bson.Document;
+import org.json.simple.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,6 +19,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 
 import java.util.Base64;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
@@ -80,10 +83,10 @@ public class MongoUpdateRequestHandlerTest {
                 "customer_id");
 
         ReplaceOneModel<Document> request = mongoUpdateRequestHandler.getRequest(messageWithJSON);
-        Document inputMap = Document.parse(jsonString);
+        Document inputMap = new Document("_id","544131618") ;
+        inputMap.putAll(new BasicDBObject(Document.parse(jsonString)).toMap());
         Document outputMap = request.getReplacement();
-        System.out.println(messageWithProto);
-        assertEquals(inputMap.keySet(), outputMap.keySet());
+        assertEquals(inputMap.keySet().stream().sorted().collect(Collectors.toList()), outputMap.keySet().stream().sorted().collect(Collectors.toList()));
         assertEquals(inputMap.get("wallet_id"), outputMap.get("wallet_id"));
         assertEquals(inputMap.get("dag_run_time"), outputMap.get("dag_run_time"));
     }
@@ -116,7 +119,7 @@ public class MongoUpdateRequestHandlerTest {
                 "s2_id_level");
 
         thrown.expect(JsonParseException.class);
-        mongoUpdateRequestHandler.getFieldFromJSON("", "s2_id_level");
+        mongoUpdateRequestHandler.getJSONObject("");
 
     }
 
@@ -124,9 +127,10 @@ public class MongoUpdateRequestHandlerTest {
     public void shouldThrowExceptionForInvalidKey() {
         MongoUpdateRequestHandler mongoUpdateRequestHandler = new MongoUpdateRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
                 "s2_id_level");
+        JSONObject jsonObject=mongoUpdateRequestHandler.getJSONObject(jsonSerializer.serialize(messageWithProto));
 
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("Key: wrongKey not found in ESB Message");
-        mongoUpdateRequestHandler.getFieldFromJSON(jsonSerializer.serialize(messageWithProto), "wrongKey");
+        mongoUpdateRequestHandler.getFieldFromJSON(jsonObject, "wrongKey");
     }
 }

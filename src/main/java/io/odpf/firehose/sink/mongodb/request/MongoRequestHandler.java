@@ -56,7 +56,7 @@ public abstract class MongoRequestHandler {
      */
     protected String extractPayload(Message message) {
         if (messageType.equals(MongoSinkMessageType.PROTOBUF)) {
-            return getFieldFromJSON(jsonSerializer.serialize(message), "logMessage");
+            return getFieldFromJSON(getJSONObject(jsonSerializer.serialize(message)), "logMessage");
         }
         return new String(message.getLogMessage(), Charset.defaultCharset());
     }
@@ -64,18 +64,26 @@ public abstract class MongoRequestHandler {
     /**
      * Gets field from json.
      *
-     * @param jsonString the json string
      * @param key        the key
      * @return the field from json
      */
-    protected String getFieldFromJSON(String jsonString, String key) {
+    protected String getFieldFromJSON(JSONObject jsonObject, String key) {
+        Object valueAtKey = jsonObject.get(key);
+        if (valueAtKey == null) {
+            throw new IllegalArgumentException("Key: " + key + " not found in ESB Message");
+        }
+        return valueAtKey.toString();
+    }
+
+    /**
+     * Gets json object.
+     *
+     * @param jsonString the json string
+     * @return the json object
+     */
+    protected JSONObject getJSONObject(String jsonString) {
         try {
-            JSONObject parse = (JSONObject) jsonParser.parse(jsonString);
-            Object valueAtKey = parse.get(key);
-            if (valueAtKey == null) {
-                throw new IllegalArgumentException("Key: " + key + " not found in ESB Message");
-            }
-            return valueAtKey.toString();
+            return (JSONObject) jsonParser.parse(jsonString);
         } catch (ParseException e) {
             throw new JsonParseException(e.getMessage(), e.getCause());
         } finally {
