@@ -92,11 +92,11 @@ public class MongoSinkTest {
 
     @Test
     public void shouldReturnEmptyArrayListWhenBulkResponseExecutedSuccessfully() {
-        List<BulkWriteError> bulkWriteErrors = new ArrayList<>();
+        List<BulkWriteError> writeErrors = new ArrayList<>();
         MongoSink mongoSink = new MongoSink(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
                 mongoRetryStatusCodeBlacklist, mongoResponseHandler);
         when(mongoCollection.bulkWrite(any())).thenThrow(new MongoBulkWriteException(new MongoResponseHandlerTest.BulkWriteResultMock(false, 0, 0),
-                bulkWriteErrors, null, new ServerAddress()));
+                writeErrors, null, new ServerAddress()));
 
         List<Message> failedMessages = mongoSink.pushMessage(this.messages);
         Assert.assertEquals(0, failedMessages.size());
@@ -105,13 +105,13 @@ public class MongoSinkTest {
 
     @Test
     public void shouldReturnEsbMessagesListWhenBulkResponseHasFailuresAndEmptyBlacklist() {
-        BulkWriteError bulkWriteError1 = new BulkWriteError(400, "DB not found", new BsonDocument(), 0);
-        BulkWriteError bulkWriteError2 = new BulkWriteError(400, "DB not found", new BsonDocument(), 1);
-        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteError1, bulkWriteError2);
+        BulkWriteError writeError1 = new BulkWriteError(400, "DB not found", new BsonDocument(), 0);
+        BulkWriteError writeError2 = new BulkWriteError(400, "DB not found", new BsonDocument(), 1);
+        List<BulkWriteError> writeErrors = Arrays.asList(writeError1, writeError2);
         MongoSink mongoSink = new MongoSink(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
                 new ArrayList<>(), mongoResponseHandler);
         when(mongoCollection.bulkWrite(any())).thenThrow(new MongoBulkWriteException(new MongoResponseHandlerTest.BulkWriteResultMock(false, 0, 0),
-                bulkWriteErrors, null, new ServerAddress()));
+                writeErrors, null, new ServerAddress()));
 
         List<Message> failedMessages = mongoSink.pushMessage(this.messages);
         Assert.assertEquals(messages.get(0), failedMessages.get(0));
@@ -120,13 +120,13 @@ public class MongoSinkTest {
 
     @Test
     public void shouldReturnEsbMessagesListWhenBulkResponseHasFailuresWithStatusOtherThanBlacklist() {
-        BulkWriteError bulkWriteError1 = new BulkWriteError(400, "DB not found", new BsonDocument(), 0);
-        BulkWriteError bulkWriteError2 = new BulkWriteError(400, "DB not found", new BsonDocument(), 1);
-        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteError1, bulkWriteError2);
+        BulkWriteError writeError1 = new BulkWriteError(400, "DB not found", new BsonDocument(), 0);
+        BulkWriteError writeError2 = new BulkWriteError(400, "DB not found", new BsonDocument(), 1);
+        List<BulkWriteError> writeErrors = Arrays.asList(writeError1, writeError2);
         MongoSink mongoSink = new MongoSink(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
                 mongoRetryStatusCodeBlacklist, mongoResponseHandler);
         when(mongoCollection.bulkWrite(any())).thenThrow(new MongoBulkWriteException(new MongoResponseHandlerTest.BulkWriteResultMock(false, 0, 0),
-                bulkWriteErrors, null, new ServerAddress()));
+                writeErrors, null, new ServerAddress()));
 
         List<Message> failedMessages = mongoSink.pushMessage(this.messages);
         Assert.assertEquals(messages.get(0), failedMessages.get(0));
@@ -135,13 +135,13 @@ public class MongoSinkTest {
 
     @Test
     public void shouldReturnEmptyMessageListIfAllTheResponsesBelongToBlacklistStatusCode() {
-        BulkWriteError bulkWriteError1 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 0);
-        BulkWriteError bulkWriteError2 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 1);
-        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteError1, bulkWriteError2);
+        BulkWriteError writeError1 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 0);
+        BulkWriteError writeError2 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 1);
+        List<BulkWriteError> writeErrors = Arrays.asList(writeError1, writeError2);
         MongoSink mongoSink = new MongoSink(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
                 mongoRetryStatusCodeBlacklist, mongoResponseHandler);
         when(mongoCollection.bulkWrite(any())).thenThrow(new MongoBulkWriteException(new MongoResponseHandlerTest.BulkWriteResultMock(false, 0, 0),
-                bulkWriteErrors, null, new ServerAddress()));
+                writeErrors, null, new ServerAddress()));
 
         List<Message> failedMessages = mongoSink.pushMessage(this.messages);
         Assert.assertEquals(0, failedMessages.size());
@@ -149,13 +149,13 @@ public class MongoSinkTest {
 
     @Test
     public void shouldReportTelemetryIfTheResponsesBelongToBlacklistStatusCode() {
-        BulkWriteError bulkWriteError1 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 0);
-        BulkWriteError bulkWriteError2 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 1);
-        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteError1, bulkWriteError2);
+        BulkWriteError writeError1 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 0);
+        BulkWriteError writeError2 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 1);
+        List<BulkWriteError> writeErrors = Arrays.asList(writeError1, writeError2);
         MongoSink mongoSink = new MongoSink(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
                 mongoRetryStatusCodeBlacklist, mongoResponseHandler);
         when(mongoCollection.bulkWrite(any())).thenThrow(new MongoBulkWriteException(new MongoResponseHandlerTest.BulkWriteResultMock(false, 0, 0),
-                bulkWriteErrors, null, new ServerAddress()));
+                writeErrors, null, new ServerAddress()));
 
         mongoSink.pushMessage(this.messages);
         verify(instrumentation, times(1)).logWarn("Bulk request failed");
@@ -167,16 +167,16 @@ public class MongoSinkTest {
 
     @Test
     public void shouldReturnFailedMessagesIfSomeOfTheFailuresDontBelongToBlacklist() {
-        BulkWriteError bulkWriteError1 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 0);
-        BulkWriteError bulkWriteError2 = new BulkWriteError(400, "DB not found", new BsonDocument(), 0);
-        BulkWriteError bulkWriteError3 = new BulkWriteError(502, "Collection not found", new BsonDocument(), 1);
+        BulkWriteError writeError1 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 0);
+        BulkWriteError writeError2 = new BulkWriteError(400, "DB not found", new BsonDocument(), 0);
+        BulkWriteError writeError3 = new BulkWriteError(502, "Collection not found", new BsonDocument(), 1);
 
-        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteError1, bulkWriteError3, bulkWriteError2);
+        List<BulkWriteError> writeErrors = Arrays.asList(writeError1, writeError3, writeError2);
         MongoSink mongoSink = new MongoSink(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
                 mongoRetryStatusCodeBlacklist, mongoResponseHandler);
 
         when(mongoCollection.bulkWrite(any())).thenThrow(new MongoBulkWriteException(new MongoResponseHandlerTest.BulkWriteResultMock(false, 0, 0),
-                bulkWriteErrors, null, new ServerAddress()));
+                writeErrors, null, new ServerAddress()));
         String logMessage = "CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM\u003d";
         Message messageWithProto = new Message(null, Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
         messages.add(messageWithProto);
@@ -188,13 +188,13 @@ public class MongoSinkTest {
 
     @Test
     public void shouldLogBulkRequestFailedWhenBulkResponsesHasFailures() {
-        BulkWriteError bulkWriteError1 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 0);
-        BulkWriteError bulkWriteError2 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 1);
-        List<BulkWriteError> bulkWriteErrors = Arrays.asList(bulkWriteError1, bulkWriteError2);
+        BulkWriteError writeError1 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 0);
+        BulkWriteError writeError2 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 1);
+        List<BulkWriteError> writeErrors = Arrays.asList(writeError1, writeError2);
         MongoSink mongoSink = new MongoSink(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
                 mongoRetryStatusCodeBlacklist, mongoResponseHandler);
         when(mongoCollection.bulkWrite(any())).thenThrow(new MongoBulkWriteException(new MongoResponseHandlerTest.BulkWriteResultMock(false, 0, 0),
-                bulkWriteErrors, null, new ServerAddress()));
+                writeErrors, null, new ServerAddress()));
 
         mongoSink.pushMessage(this.messages);
         verify(instrumentation, times(1)).logWarn("Bulk request failed");
@@ -203,7 +203,7 @@ public class MongoSinkTest {
 
     @Test
     public void shouldNotLogBulkRequestFailedWhenBulkResponsesHasNoFailures() {
-        List<BulkWriteError> bulkWriteErrors = new ArrayList<>();
+        List<BulkWriteError> writeErrors = new ArrayList<>();
 
         MongoSink mongoSink = new MongoSink(instrumentation, SinkType.MONGODB.name(), mongoCollection, client, mongoRequestHandler,
                 mongoRetryStatusCodeBlacklist, mongoResponseHandler);
