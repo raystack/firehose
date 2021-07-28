@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_DROP_TOTAL;
 
 /**
- * The type Mongo response handler.
+ * The Mongo response handler.
  */
 @AllArgsConstructor
 public class MongoResponseHandler {
@@ -34,20 +34,20 @@ public class MongoResponseHandler {
     public List<BulkWriteError> processRequest(List<WriteModel<Document>> request) {
         List<BulkWriteError> writeErrors = new ArrayList<>();
         try {
-            handleWriteResult(mongoCollection.bulkWrite(request));
+            logResults(mongoCollection.bulkWrite(request));
 
         } catch (MongoBulkWriteException writeException) {
             instrumentation.logWarn("Bulk request failed");
 
             writeErrors = writeException.getWriteErrors();
-            handleWriteErrors(writeErrors);
+            logErrors(writeErrors);
         }
         return writeErrors.stream()
                 .filter(writeError -> !mongoRetryStatusCodeBlacklist.contains(String.valueOf(writeError.getCode())))
                 .collect(Collectors.toList());
     }
 
-    private void handleWriteResult(BulkWriteResult writeResult) {
+    private void logResults(BulkWriteResult writeResult) {
 
         instrumentation.logInfo("Successfully inserted {} documents", writeResult.getInsertedCount());
         instrumentation.logInfo("Successfully updated {} documents", writeResult.getModifiedCount());
@@ -64,7 +64,7 @@ public class MongoResponseHandler {
      *
      * @param writeErrors the write errors
      */
-    private void handleWriteErrors(List<BulkWriteError> writeErrors) {
+    private void logErrors(List<BulkWriteError> writeErrors) {
 
         writeErrors.stream()
                 .filter(writeError -> mongoRetryStatusCodeBlacklist.contains(String.valueOf(writeError.getCode())))
