@@ -699,6 +699,35 @@ The name of the Mongo database to which you want to write the documents. If it d
 * Example value: `sample_DB`
 * Type: `required`
 
+### `SINK_MONGO_AUTH_ENABLE`
+
+This field should be set to `true` if login authentication is enabled for the MongoDB Server.
+
+* Example value: `true`
+* Type: `optional`
+* Default value: `false`
+
+### `SINK_MONGO_AUTH_USERNAME`
+
+The login username for session authentication to the MongoDB Server. This is a required field is `SINK_MONGO_AUTH_ENABLE` is set to `true`
+
+* Example value: `bruce_wills`
+* Type: `optional`
+
+### `SINK_MONGO_AUTH_PASSWORD`
+
+The login password for session authentication to the MongoDB Server. This is a required field is `SINK_MONGO_AUTH_ENABLE` is set to `true`
+
+* Example value: `password@123`
+* Type: `optional`
+
+### `SINK_MONGO_AUTH_DB`
+
+The name of the Mongo authentication database in which the user credentials are stored. This is a required field is `SINK_MONGO_AUTH_ENABLE` is set to `true`
+
+* Example value: `sample_auth_DB`
+* Type: `optional`
+
 ### `SINK_MONGO_COLLECTION_NAME`
 
 Defines the name of the Mongo Collection
