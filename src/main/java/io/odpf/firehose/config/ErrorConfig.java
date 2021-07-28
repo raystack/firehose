@@ -24,7 +24,7 @@ public interface ErrorConfig extends Config, Mutable {
     @ConverterClass(SetErrorTypeConverter.class)
     @Key("ERROR_TYPES_FOR_FAILING")
     @Separator(",")
-    @DefaultValue("DESERIALIZATION_ERROR,EMPTY_MESSAGE_ERROR")
+    @DefaultValue("DESERIALIZATION_ERROR,INVALID_MESSAGE_ERROR,UNKNOWN_FIELDS_ERROR")
     Set<ErrorType> getErrorTypesForFailing();
 
 }

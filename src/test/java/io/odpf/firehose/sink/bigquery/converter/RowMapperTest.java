@@ -5,7 +5,6 @@ import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.models.DescriptorAndTypeName;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.gojek.de.stencil.parser.ProtoParserWithRefresh;
 import com.google.api.client.util.DateTime;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
@@ -16,11 +15,9 @@ import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value;
 import io.odpf.firehose.StatusBQ;
 import io.odpf.firehose.TestMessageBQ;
-import io.odpf.firehose.TestMessageChildBQ;
 import io.odpf.firehose.TestNestedMessageBQ;
 import io.odpf.firehose.TestNestedRepeatedMessageBQ;
 import io.odpf.firehose.sink.bigquery.proto.ProtoUtil;
-import org.apache.commons.codec.DecoderException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,9 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -322,17 +317,6 @@ public class RowMapperTest {
         fieldMappings.put("10", "some_column_in_bq");
 
         new RowMapper(null).map(dynamicMessage);
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void shouldThrowExceptionIfUnknownFieldsArePresent() throws InvalidProtocolBufferException, DecoderException {
-        Properties fieldMappings = new Properties();
-        fieldMappings.put("10", "some_column_in_bq");
-
-        ProtoParserWithRefresh protoParser = new ProtoParserWithRefresh(stencilClientWithURL, TestMessageChildBQ.class.getName());
-        byte[] testData = TestMessageBQ.newBuilder().setOrderNumber("22").setPrice(33).setSuccess(true).build().toByteArray();
-        DynamicMessage message = protoParser.parse(testData);
-        new RowMapper(fieldMappings, true).map(message);
     }
 
     @Test

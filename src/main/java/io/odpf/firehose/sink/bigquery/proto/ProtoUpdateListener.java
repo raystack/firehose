@@ -96,7 +96,7 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
         List<String> duplicateFields = getDuplicateFields(bqSchemaFields, bqMetadataFields).stream().map(Field::getName).collect(Collectors.toList());
         if (duplicateFields.size() > 0) {
             throw new RuntimeException(String.format("Metadata field(s) is already present in the schema. "
-                                                     + "fields: %s", duplicateFields));
+                    + "fields: %s", duplicateFields));
         }
         bqSchemaFields.addAll(bqMetadataFields);
     }
@@ -107,7 +107,7 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
         Map<String, Object> m = new Gson().fromJson(protoMapping, type);
         Properties columnMapping = mapToProperties(m);
         messageRecordConverterCache.setMessageRecordConverter(
-                new MessageRecordConverter(new RowMapper(columnMapping, config.getFailOnUnknownFields()),
+                new MessageRecordConverter(new RowMapper(columnMapping),
                         stencilParser, config));
     }
 

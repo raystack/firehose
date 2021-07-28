@@ -1,9 +1,12 @@
 package io.odpf.firehose.sink.objectstorage;
 
+import com.google.protobuf.DynamicMessage;
+import io.odpf.firehose.TestMessageBQ;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.exception.EmptyMessageException;
+import io.odpf.firehose.sink.exception.EmptyMessageException;
+import io.odpf.firehose.sink.exception.UnknownFieldsException;
 import io.odpf.firehose.exception.WriterIOException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
@@ -105,7 +108,7 @@ public class ObjectStorageSinkTest {
     }
 
     @Test
-    public void shouldReturnFailedMessageWithErrorInfo() throws Exception {
+    public void shouldReturnMessageThatCausedDeserializerException() throws Exception {
         objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer);
 
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
@@ -131,7 +134,7 @@ public class ObjectStorageSinkTest {
         List<Message> retryMessages = objectStorageSink.pushMessage(Arrays.asList(message1, message2, message3, message4, message5, message6));
 
         verify(writerOrchestrator, times(2)).write(any(Record.class));
-        assertEquals(retryMessages.size(), 4);
+        assertEquals(4, retryMessages.size());
         retryMessages.forEach(message -> assertNotNull(message.getErrorInfo()));
     }
 
@@ -170,12 +173,28 @@ public class ObjectStorageSinkTest {
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 2, 1);
         Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 2, 2);
 
-        when(messageDeSerializer.deSerialize(message1)).thenThrow(new DeserializerException("", new EmptyMessageException()));
+        when(messageDeSerializer.deSerialize(message1)).thenThrow(new EmptyMessageException());
 
         List<Message> retryMessages = objectStorageSink.pushMessage(Arrays.asList(message1, message2));
 
         assertEquals(retryMessages.size(), 1);
-        assertEquals(ErrorType.EMPTY_MESSAGE_ERROR, retryMessages.get(0).getErrorInfo().getErrorType());
+        assertEquals(ErrorType.INVALID_MESSAGE_ERROR, retryMessages.get(0).getErrorInfo().getErrorType());
+        retryMessages.forEach(message -> assertNotNull(message.getErrorInfo()));
+    }
+
+    @Test
+    public void shouldReturnMessagesWhenMessagesHasErrorCausedByUnknownFields() {
+        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer);
+
+        Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 2, 1);
+        Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 2, 2);
+
+        when(messageDeSerializer.deSerialize(message1)).thenThrow(new UnknownFieldsException(DynamicMessage.newBuilder(TestMessageBQ.getDescriptor()).build()));
+
+        List<Message> retryMessages = objectStorageSink.pushMessage(Arrays.asList(message1, message2));
+
+        assertEquals(retryMessages.size(), 1);
+        assertEquals(ErrorType.UNKNOWN_FIELDS_ERROR, retryMessages.get(0).getErrorInfo().getErrorType());
         retryMessages.forEach(message -> assertNotNull(message.getErrorInfo()));
     }
 }

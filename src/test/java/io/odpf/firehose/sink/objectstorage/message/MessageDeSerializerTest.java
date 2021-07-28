@@ -1,5 +1,6 @@
 package io.odpf.firehose.sink.objectstorage.message;
 
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -9,6 +10,9 @@ import com.gojek.de.stencil.parser.Parser;
 import com.google.protobuf.UnknownFieldSet;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProto;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoFile;
+import io.odpf.firehose.sink.objectstorage.proto.NestedKafkaMetadataProto;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -78,7 +82,17 @@ public class MessageDeSerializerTest {
 
     @Test(expected = DeserializerException.class)
     public void shouldThrowExceptionWhenUnknownFieldExist() throws InvalidProtocolBufferException {
-        DynamicMessage dynamicMessage = DynamicMessage.newBuilder(new KafkaMetadataUtils("").getMetadataDescriptor())
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoFile.createFileDescriptor("meta_field");
+        Descriptors.Descriptor nestedDescriptor = fileDescriptor.findMessageTypeByName(NestedKafkaMetadataProto.getTypeName());
+        Descriptors.Descriptor metaDescriptor = fileDescriptor.findMessageTypeByName(KafkaMetadataProto.getTypeName());
+
+        Descriptors.FieldDescriptor fieldDescriptor = nestedDescriptor.findFieldByName("meta_field");
+        DynamicMessage dynamicMessage = DynamicMessage.newBuilder(nestedDescriptor)
+                .setField(fieldDescriptor, DynamicMessage.newBuilder(metaDescriptor)
+                        .setUnknownFields(UnknownFieldSet.newBuilder()
+                                .addField(1, UnknownFieldSet.Field.getDefaultInstance())
+                                .build())
+                        .build())
                 .setUnknownFields(UnknownFieldSet.newBuilder()
                         .addField(1, UnknownFieldSet.Field.getDefaultInstance())
                         .addField(2, UnknownFieldSet.Field.getDefaultInstance())

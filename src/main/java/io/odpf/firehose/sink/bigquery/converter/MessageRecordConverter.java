@@ -2,15 +2,20 @@ package io.odpf.firehose.sink.bigquery.converter;
 
 import com.gojek.de.stencil.parser.Parser;
 import com.google.api.client.util.DateTime;
+import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.odpf.firehose.config.BigQuerySinkConfig;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
+import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.sink.exception.EmptyMessageException;
+import io.odpf.firehose.sink.exception.UnknownFieldsException;
 import io.odpf.firehose.sink.bigquery.models.Constants;
 import io.odpf.firehose.sink.bigquery.models.Record;
 import io.odpf.firehose.sink.bigquery.models.Records;
 import io.odpf.firehose.sink.bigquery.proto.UnknownProtoFields;
+import io.odpf.firehose.sink.common.ProtoUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,40 +34,49 @@ public class MessageRecordConverter {
     private final Parser parser;
     private final BigQuerySinkConfig config;
 
-    public Records convert(List<Message> messages, Instant now) throws InvalidProtocolBufferException {
+    public Records convert(List<Message> messages, Instant now) {
         ArrayList<Record> validRecords = new ArrayList<>();
         ArrayList<Record> invalidRecords = new ArrayList<>();
         for (Message message : messages) {
-            if (message.getLogMessage() == null) {
-                if (config.getFailOnNullMessage()) {
-                    throw new RuntimeException("Null message " + message.getOffset());
-                }
-                continue;
+            try {
+                Record record = createRecord(now, message);
+                validRecords.add(record);
+            } catch (UnknownFieldsException e) {
+                message.setErrorInfo(new ErrorInfo(e, ErrorType.UNKNOWN_FIELDS_ERROR));
+                invalidRecords.add(new Record(message, Collections.emptyMap()));
+            } catch (EmptyMessageException e) {
+                message.setErrorInfo(new ErrorInfo(e, ErrorType.INVALID_MESSAGE_ERROR));
+                invalidRecords.add(new Record(message, Collections.emptyMap()));
+            } catch (DeserializerException e) {
+                message.setErrorInfo(new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR));
+                invalidRecords.add(new Record(message, Collections.emptyMap()));
             }
-            Map<String, Object> columns = mapToColumns(message);
-            if (columns.isEmpty()) {
-                invalidRecords.add(new Record(message, columns));
-                continue;
-            }
-            addMetadata(columns, message, now);
-            validRecords.add(new Record(message, columns));
         }
         return new Records(validRecords, invalidRecords);
     }
 
-    private Map<String, Object> mapToColumns(Message message) throws InvalidProtocolBufferException {
-        Map<String, Object> columns = Collections.emptyMap();
+    private Record createRecord(Instant now, Message message) throws DeserializerException {
+        if (message.getLogMessage() == null || message.getLogMessage().length == 0) {
+            log.info("empty message found at offset: {}, partition: {}", message.getOffset(), message.getPartition());
+            throw new EmptyMessageException();
+        }
+
         try {
-            columns = rowMapper.map(parser.parse(message.getLogMessage()));
+            DynamicMessage dynamicMessage = parser.parse(message.getLogMessage());
+
+            if (ProtoUtil.isUnknownFieldExist(dynamicMessage)) {
+                log.info("unknown fields found at offset: {}, partition: {}, message: {}", message.getOffset(), message.getPartition(), message);
+                throw new UnknownFieldsException(dynamicMessage);
+            }
+
+            Map<String, Object> columns = rowMapper.map(dynamicMessage);
+            addMetadata(columns, message, now);
+            return new Record(message, columns);
         } catch (InvalidProtocolBufferException e) {
-            message.setErrorInfo(new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR));
             log.info("failed to deserialize message: {} at offset: {}, partition: {}", UnknownProtoFields.toString(message.getLogMessage()),
                     message.getOffset(), message.getPartition());
-            if (config.getFailOnDeserializeError()) {
-                throw new InvalidProtocolBufferException(e);
-            }
+            throw new DeserializerException("failed to deserialize ", e);
         }
-        return columns;
     }
 
     private void addMetadata(Map<String, Object> columns, Message message, Instant now) {
