@@ -72,13 +72,12 @@ public class MongoSinkFactory implements SinkFactory {
         }
 
         MongoDatabase database = mongoClient.getDatabase(mongoSinkConfig.getSinkMongoDBName());
-
         MongoCollection<Document> collection = database.getCollection(mongoSinkConfig.getSinkMongoCollectionName());
 
         List<String> mongoRetryStatusCodeBlacklist = getStatusCodesAsList(mongoSinkConfig.getSinkMongoRetryStatusCodeBlacklist());
         instrumentation.logInfo("MONGO connection established");
-        return new MongoSink(new Instrumentation(statsDReporter, MongoSink.class), SinkType.MONGODB.name().toLowerCase(), collection, mongoClient, mongoRequestHandler,
-                mongoRetryStatusCodeBlacklist, new MongoResponseHandler(collection, instrumentation, mongoRetryStatusCodeBlacklist));
+        return new MongoSink(new Instrumentation(statsDReporter, MongoSink.class), SinkType.MONGODB.name().toLowerCase(), mongoClient, mongoRequestHandler,
+                new MongoResponseHandler(collection, instrumentation, mongoRetryStatusCodeBlacklist));
 
     }
 

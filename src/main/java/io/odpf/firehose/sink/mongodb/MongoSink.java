@@ -2,7 +2,6 @@ package io.odpf.firehose.sink.mongodb;
 
 import com.mongodb.MongoClient;
 import com.mongodb.bulk.BulkWriteError;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.WriteModel;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -33,13 +32,11 @@ public class MongoSink extends AbstractSink {
      *
      * @param instrumentation               the instrumentation
      * @param sinkType                      the sink type
-     * @param mongoCollection               the mongo collection
      * @param mongoClient                   the mongo client
      * @param mongoRequestHandler           the mongo request handler
-     * @param mongoRetryStatusCodeBlacklist the mongo retry status code blacklist
      */
-    public MongoSink(Instrumentation instrumentation, String sinkType, MongoCollection<Document> mongoCollection, MongoClient mongoClient, MongoRequestHandler mongoRequestHandler,
-                     List<String> mongoRetryStatusCodeBlacklist, MongoResponseHandler mongoResponseHandler) {
+    public MongoSink(Instrumentation instrumentation, String sinkType, MongoClient mongoClient, MongoRequestHandler mongoRequestHandler,
+                     MongoResponseHandler mongoResponseHandler) {
         super(instrumentation, sinkType);
         this.mongoRequestHandler = mongoRequestHandler;
         this.mongoClient = mongoClient;

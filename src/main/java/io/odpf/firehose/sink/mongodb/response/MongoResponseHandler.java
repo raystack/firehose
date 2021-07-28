@@ -26,10 +26,15 @@ public class MongoResponseHandler {
     private final List<String> mongoRetryStatusCodeBlacklist;
 
     /**
-     * Process request list.
+     * Processes the bulk request list of WriteModel.
+     * This method performs a bulk write operation on the MongoCollection
+     * If bulk write succeeds, an empty list is returned
+     * If bulk write fails, then failure count is logged to instrumentation
+     * and returns a list of BulkWriteErrors, whose status codes are
+     * not present in retry status code blacklist
      *
      * @param request the bulk request
-     * @return the list of Bulk Write errors, if any, else returns empty list
+     * @return the list of non-blacklisted Bulk Write errors, if any, else returns empty list
      */
     public List<BulkWriteError> processRequest(List<WriteModel<Document>> request) {
         List<BulkWriteError> writeErrors = new ArrayList<>();
