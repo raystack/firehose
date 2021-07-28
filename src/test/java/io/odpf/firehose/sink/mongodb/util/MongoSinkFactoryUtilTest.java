@@ -97,4 +97,19 @@ public class MongoSinkFactoryUtilTest {
 
         MongoSinkFactoryUtil.getServerAddresses(mongoConnectionURLs, instrumentation);
     }
+
+    @Test
+    public void shouldReturnBlackListRetryStatusCodesAsList() {
+        String inputRetryStatusCodeBlacklist = "404, 502";
+        List<String> statusCodesAsList = MongoSinkFactoryUtil.getStatusCodesAsList(inputRetryStatusCodeBlacklist);
+        assertEquals("404", statusCodesAsList.get(0));
+        assertEquals("502", statusCodesAsList.get(1));
+    }
+
+    @Test
+    public void shouldReturnEmptyBlackListRetryStatusCodesAsEmptyList() {
+        String inputRetryStatusCodeBlacklist = "";
+        List<String> statusCodesAsList = MongoSinkFactoryUtil.getStatusCodesAsList(inputRetryStatusCodeBlacklist);
+        assertEquals(0, statusCodesAsList.size());
+    }
 }

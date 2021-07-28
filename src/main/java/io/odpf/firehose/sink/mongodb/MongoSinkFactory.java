@@ -3,9 +3,6 @@ package io.odpf.firehose.sink.mongodb;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.odpf.firehose.config.MongoSinkConfig;
@@ -22,10 +19,8 @@ import io.odpf.firehose.sink.mongodb.util.MongoSinkFactoryUtil;
 import org.aeonbits.owner.ConfigFactory;
 import org.bson.Document;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Sink factory to configure and create MongoDB sink.
@@ -43,7 +38,6 @@ public class MongoSinkFactory implements SinkFactory {
     @Override
     public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         MongoSinkConfig mongoSinkConfig = ConfigFactory.create(MongoSinkConfig.class, configuration);
-
         Instrumentation instrumentation = new Instrumentation(statsDReporter, io.odpf.firehose.sink.mongodb.MongoSinkFactory.class);
         String mongoConfig = String.format("\n\tMONGO connection urls: %s\n\tMONGO DB name: %s\n\tMONGO Primary Key: %s\n\tMONGO message type: %s"
                         + "\n\tMONGO Collection Name: %s\n\tMONGO request timeout in ms: %s\n\tMONGO retry status code blacklist: %s"
@@ -53,45 +47,20 @@ public class MongoSinkFactory implements SinkFactory {
                 mongoSinkConfig.getSinkMongoCollectionName(), mongoSinkConfig.getSinkMongoRequestTimeoutMs(), mongoSinkConfig.getSinkMongoRetryStatusCodeBlacklist(),
                 mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable(), true);
         instrumentation.logDebug(mongoConfig);
+
         MongoRequestHandler mongoRequestHandler = new MongoRequestHandlerFactory(mongoSinkConfig, new Instrumentation(statsDReporter, MongoRequestHandlerFactory.class),
                 mongoSinkConfig.getSinkMongoPrimaryKey(), mongoSinkConfig.getSinkMongoInputMessageType(),
                 new MessageToJson(new ProtoParser(stencilClient, mongoSinkConfig.getInputSchemaProtoClass()), true, false)
 
         ).getRequestHandler();
 
-        List<ServerAddress> serverAddresses = MongoSinkFactoryUtil.getServerAddresses(mongoSinkConfig.getSinkMongoConnectionUrls(), instrumentation);
-        MongoClientOptions options = MongoClientOptions.builder().connectTimeout(mongoSinkConfig.getSinkMongoRequestTimeoutMs()).build();
-
-        MongoClient mongoClient;
-        if (mongoSinkConfig.isSinkMongoAuthEnable()) {
-            MongoCredential mongoCredential = MongoCredential.createCredential(mongoSinkConfig.getSinkMongoAuthUsername(), mongoSinkConfig.getSinkMongoAuthDB(), mongoSinkConfig.getSinkMongoAuthPassword().toCharArray());
-
-            mongoClient = new MongoClient(serverAddresses, mongoCredential, options);
-        } else {
-            mongoClient = new MongoClient(serverAddresses, options);
-        }
-
+        MongoClient mongoClient = MongoSinkFactoryUtil.buildMongoClient(mongoSinkConfig, instrumentation);
         MongoDatabase database = mongoClient.getDatabase(mongoSinkConfig.getSinkMongoDBName());
         MongoCollection<Document> collection = database.getCollection(mongoSinkConfig.getSinkMongoCollectionName());
 
-        List<String> mongoRetryStatusCodeBlacklist = getStatusCodesAsList(mongoSinkConfig.getSinkMongoRetryStatusCodeBlacklist());
+        List<String> mongoRetryStatusCodeBlacklist = MongoSinkFactoryUtil.getStatusCodesAsList(mongoSinkConfig.getSinkMongoRetryStatusCodeBlacklist());
         instrumentation.logInfo("MONGO connection established");
         return new MongoSink(new Instrumentation(statsDReporter, MongoSink.class), SinkType.MONGODB.name().toLowerCase(), mongoClient, mongoRequestHandler,
                 new MongoResponseHandler(collection, instrumentation, mongoRetryStatusCodeBlacklist));
-
-    }
-
-    /**
-     * Gets status codes as list.
-     *
-     * @param mongoRetryStatusCodeBlacklist the mongo retry status code blacklist
-     * @return the status codes as list
-     */
-    List<String> getStatusCodesAsList(String mongoRetryStatusCodeBlacklist) {
-        return Arrays
-                .stream(mongoRetryStatusCodeBlacklist.split(","))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .collect(Collectors.toList());
     }
 }

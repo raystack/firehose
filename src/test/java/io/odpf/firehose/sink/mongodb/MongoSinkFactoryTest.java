@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -44,22 +43,5 @@ public class MongoSinkFactoryTest {
         MongoSinkFactory mongoSinkFactory = new MongoSinkFactory();
         Sink sink = mongoSinkFactory.create(configuration, statsDReporter, stencilClient);
         assertEquals(MongoSink.class, sink.getClass());
-    }
-
-    @Test
-    public void shouldReturnBlackListRetryStatusCodesAsList() {
-        MongoSinkFactory mongoSinkFactory = new MongoSinkFactory();
-        String inputRetryStatusCodeBlacklist = "404, 502";
-        List<String> statusCodesAsList = mongoSinkFactory.getStatusCodesAsList(inputRetryStatusCodeBlacklist);
-        assertEquals("404", statusCodesAsList.get(0));
-        assertEquals("502", statusCodesAsList.get(1));
-    }
-
-    @Test
-    public void shouldReturnEmptyBlackListRetryStatusCodesAsEmptyList() {
-        MongoSinkFactory mongoSinkFactory = new MongoSinkFactory();
-        String inputRetryStatusCodeBlacklist = "";
-        List<String> statusCodesAsList = mongoSinkFactory.getStatusCodesAsList(inputRetryStatusCodeBlacklist);
-        assertEquals(0, statusCodesAsList.size());
     }
 }
