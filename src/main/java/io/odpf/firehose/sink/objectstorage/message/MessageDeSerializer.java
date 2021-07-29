@@ -23,18 +23,17 @@ public class MessageDeSerializer {
             if (message.getLogMessage() == null || message.getLogMessage().length == 0) {
                 throw new EmptyMessageException();
             }
+            DynamicMessage dynamicMessage = protoParser.parse(message.getLogMessage());
 
-            DynamicMessage logMessage = protoParser.parse(message.getLogMessage());
-
-            if (isUnknownFieldExist(logMessage)) {
-                throw new UnknownFieldsException(logMessage);
+            if (isUnknownFieldExist(dynamicMessage)) {
+                throw new UnknownFieldsException(dynamicMessage);
             }
 
             DynamicMessage kafkaMetadata = null;
             if (doWriteKafkaMetadata) {
                 kafkaMetadata = metadataUtils.createKafkaMetadata(message);
             }
-            return new Record(logMessage, kafkaMetadata);
+            return new Record(dynamicMessage, kafkaMetadata);
         } catch (InvalidProtocolBufferException e) {
             throw new DeserializerException("failed to parse message", e);
         }

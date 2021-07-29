@@ -44,12 +44,17 @@ public class ObjectStorageSink extends AbstractSink {
                 Record record = messageDeSerializer.deSerialize(message);
                 offsetManager.addOffsetToBatch(writerOrchestrator.write(record), message);
             } catch (EmptyMessageException e) {
+                getInstrumentation().logWarn("empty message found on topic: {}, partition: {}, offset: {}",
+                        message.getTopic(), message.getPartition(), message.getOffset());
                 message.setErrorInfo(new ErrorInfo(e, ErrorType.INVALID_MESSAGE_ERROR));
                 deserializationFailedMessages.add(message);
             } catch (UnknownFieldsException e) {
+                getInstrumentation().logWarn(e.getMessage());
                 message.setErrorInfo(new ErrorInfo(e, ErrorType.UNKNOWN_FIELDS_ERROR));
                 deserializationFailedMessages.add(message);
             } catch (DeserializerException e) {
+                getInstrumentation().logWarn("message deserialization failed on topic: {}, partition: {}, offset: {}, reason: {}",
+                        message.getTopic(), message.getPartition(), message.getOffset(), e.getMessage());
                 message.setErrorInfo(new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR));
                 deserializationFailedMessages.add(message);
             } catch (Exception e) {
