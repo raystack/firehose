@@ -4,14 +4,14 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)
 [![Version](https://img.shields.io/github/v/release/odpf/firehose?logo=semantic-release)](Version)
 
-Firehose is a cloud native service for delivering real-time streaming data to destinations such as service endpoints (HTTP or GRPC) & managed databases (Postgres, InfluxDB,  Redis, & Elasticsearch). With Firehose, you don't need to write applications or manage resources. It can be scaled up to match the throughput of your data. If your data is present in Kafka, Firehose delivers it to the destination(SINK) that you specified.
+Firehose is a cloud native service for delivering real-time streaming data to destinations such as service endpoints (HTTP or GRPC) & managed databases (Postgres, InfluxDB,  Redis, Elasticsearch, Prometheus and MongoDB). With Firehose, you don't need to write applications or manage resources. It can be scaled up to match the throughput of your data. If your data is present in Kafka, Firehose delivers it to the destination(SINK) that you specified.
 
 <p align="center"><img src="./docs/assets/overview.svg" /></p>
 
 ## Key Features
 Discover why users choose Firehose as their main Kafka Consumer
 
-* **Sinks:** Firehose supports sinking stream data to log console, HTTP, GRPC, PostgresDB(JDBC), InfluxDB, Elasticsearch & Redis.
+* **Sinks:** Firehose supports sinking stream data to log console, MongoDB, Prometheus, HTTP, GRPC, PostgresDB(JDBC), InfluxDB, Elasticsearch & Redis.
 * **Scale:** Firehose scales in an instant, both vertically and horizontally  for high performance streaming sink and zero data drops.
 * **Extensibility:** Add your own sink to firehose with a clearly defined interface or choose from already provided ones.
 * **Runtime:** Firehose can run inside VMs or containers in a fully managed runtime environment like kubernetes.
