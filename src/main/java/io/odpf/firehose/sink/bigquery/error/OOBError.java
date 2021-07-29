@@ -13,11 +13,6 @@ public class OOBError implements ErrorDescriptor {
     private final String message;
 
     @Override
-    public BQRecordsErrorType getType() {
-        return BQRecordsErrorType.OOB;
-    }
-
-    @Override
     public boolean matches() {
         return reason.equals("invalid")
                && ((message.contains("is outside the allowed bounds") && message.contains("days in the past and") && message.contains("days in the future"))

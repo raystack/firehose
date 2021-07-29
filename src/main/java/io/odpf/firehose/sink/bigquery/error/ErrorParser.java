@@ -1,16 +1,19 @@
 package io.odpf.firehose.sink.bigquery.error;
 
 
+import com.google.cloud.bigquery.BigQueryError;
+
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Factory class that determines the type {@link BQRecordsErrorType} error based on the
+ * ErrorParser determines the {@link ErrorDescriptor} classes error based on the
  * error string supplied.
  */
-public class ErrorTypeFactory {
+public class ErrorParser {
 
-    public static BQRecordsErrorType getErrorType(String reasonText, String msgText) {
+    public static ErrorDescriptor getError(String reasonText, String msgText) {
         List<ErrorDescriptor> errDescList = Arrays.asList(
                 new InvalidSchemaError(reasonText, msgText),
                 new OOBError(reasonText, msgText),
@@ -21,7 +24,14 @@ public class ErrorTypeFactory {
                 .filter(ErrorDescriptor::matches)
                 .findFirst()
                 .orElse(new UnknownError());
-        return errorDescriptor.getType();
+
+        return errorDescriptor;
+    }
+
+    public static List<ErrorDescriptor> parseError(List<BigQueryError> bqErrors) {
+        return bqErrors.stream()
+                .map(err -> getError(err.getReason(), err.getMessage()))
+                .collect(Collectors.toList());
     }
 
 }

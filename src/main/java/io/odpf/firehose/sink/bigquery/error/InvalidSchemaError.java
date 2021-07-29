@@ -16,11 +16,6 @@ public class InvalidSchemaError implements ErrorDescriptor {
     private final String message;
 
     @Override
-    public BQRecordsErrorType getType() {
-        return BQRecordsErrorType.INVALID;
-    }
-
-    @Override
     public boolean matches() {
         return reason.equals("invalid") && message.contains("no such field");
     }

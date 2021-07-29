@@ -4,5 +4,4 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
 public class BigQuerySinkException extends RuntimeException {
-
 }

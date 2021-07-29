@@ -16,11 +16,6 @@ public class StoppedError implements ErrorDescriptor {
     private final String reason;
 
     @Override
-    public BQRecordsErrorType getType() {
-        return BQRecordsErrorType.VALID;
-    }
-
-    @Override
     public boolean matches() {
         return reason.equals("stopped");
     }
