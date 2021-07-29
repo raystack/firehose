@@ -7,24 +7,24 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ProtoUtil {
-    public static boolean isUnknownFieldExist(DynamicMessage dynamicMessage) {
-        if (dynamicMessage == null) {
+    public static boolean isUnknownFieldExist(DynamicMessage root) {
+        if (root == null) {
             return false;
         }
         List<DynamicMessage> dynamicMessageFields = new LinkedList<>();
-        collectNestedFields(dynamicMessage, dynamicMessageFields);
+        collectNestedFields(root, dynamicMessageFields);
         List<DynamicMessage> messageWithUnknownFields = getMessageWithUnknownFields(dynamicMessageFields);
         return messageWithUnknownFields.size() > 0;
     }
 
-    private static void collectNestedFields(DynamicMessage root, List<DynamicMessage> accumulator) {
-        List<DynamicMessage> nestedChild = root.getAllFields().values().stream()
-                .filter(v -> v instanceof DynamicMessage)
-                .map(o -> (DynamicMessage) o)
+    private static void collectNestedFields(DynamicMessage node, List<DynamicMessage> accumulator) {
+        List<DynamicMessage> nestedChildNodes = node.getAllFields().values().stream()
+                .filter(field -> field instanceof DynamicMessage)
+                .map(field -> (DynamicMessage) field)
                 .collect(Collectors.toList());
+        nestedChildNodes.forEach(n -> collectNestedFields(n, accumulator));
 
-        nestedChild.forEach(m -> collectNestedFields(m, accumulator));
-        accumulator.add(root);
+        accumulator.add(node);
     }
 
     private static List<DynamicMessage> getMessageWithUnknownFields(List<DynamicMessage> messages) {
