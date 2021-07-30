@@ -2,8 +2,11 @@ package io.odpf.firehose.sink.common;
 
 import com.google.protobuf.DynamicMessage;
 
+import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 public class ProtoUtil {
@@ -11,20 +14,30 @@ public class ProtoUtil {
         if (root == null) {
             return false;
         }
-        List<DynamicMessage> dynamicMessageFields = new LinkedList<>();
-        collectNestedFields(root, dynamicMessageFields);
+        List<DynamicMessage> dynamicMessageFields = collectNestedFields(root);
         List<DynamicMessage> messageWithUnknownFields = getMessageWithUnknownFields(dynamicMessageFields);
         return messageWithUnknownFields.size() > 0;
     }
 
-    private static void collectNestedFields(DynamicMessage node, List<DynamicMessage> accumulator) {
-        List<DynamicMessage> nestedChildNodes = node.getAllFields().values().stream()
-                .filter(field -> field instanceof DynamicMessage)
-                .map(field -> (DynamicMessage) field)
-                .collect(Collectors.toList());
-        nestedChildNodes.forEach(n -> collectNestedFields(n, accumulator));
+    private static List<DynamicMessage> collectNestedFields(DynamicMessage node) {
+        List<DynamicMessage> output = new LinkedList<>();
+        Queue<DynamicMessage> stack = Collections.asLifoQueue(new LinkedList<>());
+        stack.add(node);
+        while (true){
+            DynamicMessage current = stack.poll();
+            if(current == null){
+                break;
+            }
+            List<DynamicMessage> nestedChildNodes = current.getAllFields().values().stream()
+                    .filter(field -> field instanceof DynamicMessage)
+                    .map(field -> (DynamicMessage) field)
+                    .collect(Collectors.toList());
+            stack.addAll(nestedChildNodes);
 
-        accumulator.add(node);
+            output.add(current);
+        }
+
+        return output;
     }
 
     private static List<DynamicMessage> getMessageWithUnknownFields(List<DynamicMessage> messages) {
