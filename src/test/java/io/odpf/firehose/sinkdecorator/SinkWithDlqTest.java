@@ -155,7 +155,7 @@ public class SinkWithDlqTest {
     public void shouldNotThrowIOExceptionWhenFailOnMaxRetryAttemptDisabled() throws IOException {
         when(dlqConfig.getDlqMaxRetryAttempts()).thenReturn(2);
         when(dlqConfig.getDlqFailOnMaxRetryAttemptsExceeded()).thenReturn(false);
-        Message messageWithError = new Message(message, new ErrorInfo(new IOException(), ErrorType.UNKNOWN_ERROR));
+        Message messageWithError = new Message(message, new ErrorInfo(new IOException(), ErrorType.SINK_UNKNOWN_ERROR));
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(messageWithError);
         messages.add(messageWithError);
@@ -223,7 +223,7 @@ public class SinkWithDlqTest {
         when(dlqWriter.write(anyList())).thenReturn(new LinkedList<>());
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(messageWithError);
-        messages.add(new Message(message, new ErrorInfo(null, ErrorType.UNKNOWN_ERROR)));
+        messages.add(new Message(message, new ErrorInfo(null, ErrorType.SINK_UNKNOWN_ERROR)));
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
         SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
 

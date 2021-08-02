@@ -133,13 +133,13 @@ public class SinkWithRetryTest {
 
         List<Message> messageList = sinkWithRetry.pushMessage(Collections.singletonList(message));
         assertTrue(messageList.isEmpty());
-        verify(instrumentation, times(1)).logWarn("Maximum retry attemps: {}", 10);
+        verify(instrumentation, times(1)).logInfo("Maximum retry attempts: {}", 10);
         verify(instrumentation, times(5)).incrementCounter("firehose_retry_total");
-        verify(instrumentation, times(1)).logWarn("Retrying messages attempt count: {}, Number of messages: {}", 1, 2);
-        verify(instrumentation, times(1)).logWarn("Retrying messages attempt count: {}, Number of messages: {}", 2, 2);
-        verify(instrumentation, times(1)).logWarn("Retrying messages attempt count: {}, Number of messages: {}", 3, 2);
-        verify(instrumentation, times(1)).logWarn("Retrying messages attempt count: {}, Number of messages: {}", 4, 2);
-        verify(instrumentation, times(1)).logWarn("Retrying messages attempt count: {}, Number of messages: {}", 5, 2);
+        verify(instrumentation, times(1)).logInfo("Retrying messages attempt count: {}, Number of messages: {}", 1, 2);
+        verify(instrumentation, times(1)).logInfo("Retrying messages attempt count: {}, Number of messages: {}", 2, 2);
+        verify(instrumentation, times(1)).logInfo("Retrying messages attempt count: {}, Number of messages: {}", 3, 2);
+        verify(instrumentation, times(1)).logInfo("Retrying messages attempt count: {}, Number of messages: {}", 4, 2);
+        verify(instrumentation, times(1)).logInfo("Retrying messages attempt count: {}, Number of messages: {}", 5, 2);
         verify(instrumentation, times(5)).logDebug("Retry failed messages: \n{}", "[null, null]");
     }
 
@@ -164,7 +164,7 @@ public class SinkWithRetryTest {
 
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(messageWithError);
-        messages.add(new Message(message, new ErrorInfo(null, ErrorType.UNKNOWN_ERROR)));
+        messages.add(new Message(message, new ErrorInfo(null, ErrorType.SINK_UNKNOWN_ERROR)));
         when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(new LinkedList<>());
 
         HashSet<ErrorType> errorTypes = new HashSet<>();

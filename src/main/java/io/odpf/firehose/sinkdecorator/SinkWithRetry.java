@@ -66,7 +66,7 @@ public class SinkWithRetry extends SinkDecorator {
 
     private List<Message> doRetry(List<Message> messages) throws IOException {
         List<Message> retryMessages = new LinkedList<>(messages);
-        instrumentation.logInfo("Maximum retry attemps: {}", appConfig.getSinkMaxRetryAttempts());
+        instrumentation.logInfo("Maximum retry attempts: {}", appConfig.getSinkMaxRetryAttempts());
 
         int attemptCount = 0;
         while ((attemptCount < appConfig.getSinkMaxRetryAttempts() && !retryMessages.isEmpty())

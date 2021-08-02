@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.bigquery.converter;
+package io.odpf.firehose.sink.bigquery;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

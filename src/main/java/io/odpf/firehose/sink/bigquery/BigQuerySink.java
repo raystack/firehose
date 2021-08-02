@@ -9,6 +9,7 @@ import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterCache;
+import io.odpf.firehose.sink.bigquery.handler.BigQueryResponseParser;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryRow;
 import io.odpf.firehose.sink.bigquery.models.Record;
 import io.odpf.firehose.sink.bigquery.models.Records;
@@ -16,8 +17,8 @@ import io.odpf.firehose.sink.bigquery.models.Records;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class BigQuerySink extends AbstractSink {
 
@@ -45,14 +46,13 @@ public class BigQuerySink extends AbstractSink {
     @Override
     protected List<Message> execute() throws Exception {
         Instant now = Instant.now();
-        System.out.println("**** Converting ***");
         Records records = converterCache.getMessageRecordConverter().convert(messageList, now);
-        System.out.println("**** SENDING ***");
         InsertAllResponse response = insertIntoBQ(records.getValidRecords());
-        System.out.println("**** FINISHED ***");
-        System.out.println(response);
-        //parse the response.
-        return new ArrayList<>();
+        List<Message> invalidMessages = records.getInvalidRecords().stream().map(Record::getMessage).collect(Collectors.toList());
+        if (response.hasErrors()) {
+            invalidMessages.addAll(BigQueryResponseParser.parseResponse(records.getValidRecords(), response));
+        }
+        return invalidMessages;
     }
 
     @Override
@@ -71,7 +71,6 @@ public class BigQuerySink extends AbstractSink {
         records.forEach((Record m) -> builder.addRow(rowCreator.of(m)));
         InsertAllRequest rows = builder.build();
         InsertAllResponse response = bigQueryInstance.insertAll(rows);
-
         instrumentation.logInfo("Pushed a batch of {} records to BQ. Insert success?: {}", records.size(), !response.hasErrors());
         records.forEach(m -> instrumentation.incrementCounter("bq.sink.push.records"));
         instrumentation.captureDurationSince("bq.sink.push.time", start);

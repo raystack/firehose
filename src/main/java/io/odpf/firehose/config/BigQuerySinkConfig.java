@@ -1,11 +1,10 @@
 package io.odpf.firehose.config;
 
 import io.odpf.firehose.config.converter.LabelMapConverter;
-import org.aeonbits.owner.Mutable;
 
 import java.util.Map;
 
-public interface BigQuerySinkConfig extends AppConfig, Mutable {
+public interface BigQuerySinkConfig extends AppConfig {
 
     @Key("SINK_BIGQUERY_GOOGLE_CLOUD_PROJECT_ID")
     String getGCloudProjectID();
