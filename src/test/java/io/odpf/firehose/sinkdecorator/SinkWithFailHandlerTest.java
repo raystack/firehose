@@ -46,7 +46,9 @@ public class SinkWithFailHandlerTest {
 
     @Test
     public void shouldNotThrowIOExceptionWhenConfigIsNotSet() throws IOException {
-        ErrorHandler errorHandler = new ErrorHandler(ConfigFactory.create(ErrorConfig.class, new HashMap<String, String>()));
+        ErrorConfig config = ConfigFactory.create(ErrorConfig.class, new HashMap<String, String>());
+        config.setProperty("ERROR_TYPES_FOR_FAILING", "");
+        ErrorHandler errorHandler = new ErrorHandler(config);
 
         List<Message> messages = new LinkedList<>();
         messages.add(new Message("".getBytes(), "".getBytes(), "basic", 1, 1,

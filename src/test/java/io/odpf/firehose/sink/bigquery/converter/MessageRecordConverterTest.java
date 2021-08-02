@@ -3,13 +3,18 @@ package io.odpf.firehose.sink.bigquery.converter;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.parser.Parser;
 import com.gojek.de.stencil.parser.ProtoParser;
+import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.UnknownFieldSet;
 import io.odpf.firehose.TestMessageBQ;
 import io.odpf.firehose.config.BigQuerySinkConfig;
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.error.ErrorInfo;
+import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.sink.bigquery.MessageUtils;
 import io.odpf.firehose.sink.bigquery.OffsetInfo;
 import io.odpf.firehose.sink.bigquery.models.Records;
+import io.odpf.firehose.sink.exception.UnknownFieldsException;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,13 +30,13 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageRecordConverterTest {
     private final MessageUtils util = new MessageUtils();
     private MessageRecordConverter recordConverter;
-    private MessageRecordConverter recordConverterWithFailOnDeserializeError;
-    private MessageRecordConverter recordConverterWithFailOnNull;
     private RowMapper rowMapper;
     private Parser parser;
     private Instant now;
@@ -45,24 +50,14 @@ public class MessageRecordConverterTest {
         columnMapping.put(3, "bq_order_details");
         rowMapper = new RowMapper(columnMapping);
 
-        System.setProperty("SINK_BIGQUERY_FAIL_ON_NULL_MESSAGE", "false");
-        System.setProperty("SINK_BIGQUERY_FAIL_ON_DESERIALIZE_ERROR", "false");
         recordConverter = new MessageRecordConverter(rowMapper, parser,
-                ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));
-
-        System.setProperty("SINK_BIGQUERY_FAIL_ON_NULL_MESSAGE", "true");
-        recordConverterWithFailOnNull = new MessageRecordConverter(rowMapper, parser,
-                ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));
-
-        System.setProperty("SINK_BIGQUERY_FAIL_ON_DESERIALIZE_ERROR", "true");
-        recordConverterWithFailOnDeserializeError = new MessageRecordConverter(rowMapper, parser,
                 ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));
 
         now = Instant.now();
     }
 
     @Test
-    public void shouldGetRecordForBQFromConsumerRecords() throws InvalidProtocolBufferException {
+    public void shouldGetRecordForBQFromConsumerRecords() {
         OffsetInfo record1Offset = new OffsetInfo("topic1", 1, 101, Instant.now().toEpochMilli());
         OffsetInfo record2Offset = new OffsetInfo("topic1", 2, 102, Instant.now().toEpochMilli());
         Message record1 = util.withOffsetInfo(record1Offset).createConsumerRecord("order-1", "order-url-1", "order-details-1");
@@ -95,7 +90,7 @@ public class MessageRecordConverterTest {
     }
 
     @Test
-    public void shouldIgnoreNullRecords() throws InvalidProtocolBufferException {
+    public void shouldIgnoreNullRecords() {
         OffsetInfo record1Offset = new OffsetInfo("topic1", 1, 101, Instant.now().toEpochMilli());
         OffsetInfo record2Offset = new OffsetInfo("topic1", 2, 102, Instant.now().toEpochMilli());
         Message record1 = util.withOffsetInfo(record1Offset).createConsumerRecord("order-1", "order-url-1", "order-details-1");
@@ -117,8 +112,7 @@ public class MessageRecordConverterTest {
         assertEquals(record1ExpectedColumns, record1Columns);
     }
 
-    @Test(expected = RuntimeException.class)
-    public void shouldThrowExceptionForNullRecords() throws InvalidProtocolBufferException {
+    public void shouldReturnInvalidRecordsWhenGivenNullRecords() {
         OffsetInfo record1Offset = new OffsetInfo("topic1", 1, 101, Instant.now().toEpochMilli());
         OffsetInfo record2Offset = new OffsetInfo("topic1", 2, 102, Instant.now().toEpochMilli());
         Message record1 = util.withOffsetInfo(record1Offset).createConsumerRecord("order-1", "order-url-1", "order-details-1");
@@ -130,9 +124,8 @@ public class MessageRecordConverterTest {
         record1ExpectedColumns.put("bq_order_details", "order-details-1");
         record1ExpectedColumns.putAll(util.metadataColumns(record1Offset, now));
 
-
         List<Message> messages = Arrays.asList(record1, record2);
-        Records records = recordConverterWithFailOnNull.convert(messages, now);
+        Records records = recordConverter.convert(messages, now);
 
         assertEquals(1, records.getValidRecords().size());
         Map<String, Object> record1Columns = records.getValidRecords().get(0).getColumns();
@@ -141,7 +134,7 @@ public class MessageRecordConverterTest {
     }
 
     @Test
-    public void shouldNotNamespaceMetadataFieldWhenNamespaceIsNotProvided() throws InvalidProtocolBufferException {
+    public void shouldNotNamespaceMetadataFieldWhenNamespaceIsNotProvided() {
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
         MessageRecordConverter recordConverterTest = new MessageRecordConverter(rowMapper, parser, sinkConfig);
 
@@ -165,7 +158,7 @@ public class MessageRecordConverterTest {
     }
 
     @Test
-    public void shouldNamespaceMetadataFieldWhenNamespaceIsProvided() throws InvalidProtocolBufferException {
+    public void shouldNamespaceMetadataFieldWhenNamespaceIsProvided() {
         System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "metadata_ns");
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
         MessageRecordConverter recordConverterTest = new MessageRecordConverter(rowMapper, parser, sinkConfig);
@@ -190,8 +183,7 @@ public class MessageRecordConverterTest {
     }
 
 
-    @Test(expected = InvalidProtocolBufferException.class)
-    public void shouldThrowExceptionWhenInvalidRecordsFound() throws InvalidProtocolBufferException {
+    public void shouldReturnInvalidRecordsGivenInvalidProtobufMessage() {
         OffsetInfo record1Offset = new OffsetInfo("topic1", 1, 101, Instant.now().toEpochMilli());
         OffsetInfo record2Offset = new OffsetInfo("topic1", 2, 102, Instant.now().toEpochMilli());
         Message record1 = util.withOffsetInfo(record1Offset).createConsumerRecord("order-1",
@@ -207,11 +199,12 @@ public class MessageRecordConverterTest {
         record1ExpectedColumns.putAll(util.metadataColumns(record1Offset, now));
 
         List<Message> messages = Arrays.asList(record1, record2);
-        Records records = recordConverterWithFailOnDeserializeError.convert(messages, now);
+        Records records = recordConverter.convert(messages, now);
+        assertEquals(1, records.getInvalidRecords());
     }
 
     @Test
-    public void shouldWriteToErrorWriterInvalidRecords() throws InvalidProtocolBufferException {
+    public void shouldWriteToErrorWriterInvalidRecords() {
         OffsetInfo record1Offset = new OffsetInfo("topic1", 1, 101, Instant.now().toEpochMilli());
         OffsetInfo record2Offset = new OffsetInfo("topic1", 2, 102, Instant.now().toEpochMilli());
         Message record1 = util.withOffsetInfo(record1Offset).createConsumerRecord("order-1",
@@ -235,5 +228,29 @@ public class MessageRecordConverterTest {
         Map<String, Object> record1Columns = records.getValidRecords().get(0).getColumns();
         assertEquals(record1ExpectedColumns.size(), record1Columns.size());
         assertEquals(record1ExpectedColumns, record1Columns);
+    }
+
+    @Test
+    public void shouldReturnInvalidRecordsWhenUnknownFieldsFound() throws InvalidProtocolBufferException {
+        Parser mockParser = mock(Parser.class);
+
+        OffsetInfo record1Offset = new OffsetInfo("topic1", 1, 101, Instant.now().toEpochMilli());
+        Message consumerRecord = util.withOffsetInfo(record1Offset).createConsumerRecord("order-1",
+                "order-url-1", "order-details-1");
+
+        DynamicMessage dynamicMessage = DynamicMessage.newBuilder(TestMessageBQ.getDescriptor())
+                .setUnknownFields(UnknownFieldSet.newBuilder()
+                        .addField(1, UnknownFieldSet.Field.getDefaultInstance())
+                        .build())
+                .build();
+        when(mockParser.parse(consumerRecord.getLogMessage())).thenReturn(dynamicMessage);
+
+        recordConverter = new MessageRecordConverter(rowMapper, mockParser,
+                ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));
+
+        List<Message> messages = Collections.singletonList(consumerRecord);
+        Records records = recordConverter.convert(messages, now);
+        consumerRecord.setErrorInfo(new ErrorInfo(new UnknownFieldsException(dynamicMessage), ErrorType.UNKNOWN_FIELDS_ERROR));
+        assertEquals(consumerRecord, records.getInvalidRecords().get(0).getMessage());
     }
 }

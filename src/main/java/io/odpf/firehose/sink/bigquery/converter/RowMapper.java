@@ -5,7 +5,6 @@ import com.google.protobuf.DynamicMessage;
 import io.odpf.firehose.sink.bigquery.converter.fields.NestedField;
 import io.odpf.firehose.sink.bigquery.converter.fields.ProtoField;
 import io.odpf.firehose.sink.bigquery.models.Constants;
-import io.odpf.firehose.sink.bigquery.proto.UnknownProtoFields;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,11 +19,6 @@ import java.util.Properties;
 public class RowMapper {
 
     private final Properties mapping;
-    private final boolean failOnUnknownFields;
-
-    public RowMapper(Properties mappings) {
-        this(mappings, false);
-    }
 
     public Map<String, Object> map(DynamicMessage message) {
         if (mapping == null) {
@@ -36,11 +30,6 @@ public class RowMapper {
     private Map<String, Object> getMappings(DynamicMessage message, Properties columnMapping) {
         if (message == null || columnMapping == null || columnMapping.isEmpty()) {
             return new HashMap<>();
-        }
-        if (failOnUnknownFields && message.getUnknownFields().asMap().size() > 0) {
-            String serializedUnknownFields = message.getUnknownFields().asMap().keySet().toString();
-            String serializedMessage = UnknownProtoFields.toString(message.toByteArray());
-            throw new RuntimeException(serializedUnknownFields + " " + serializedMessage);
         }
         Descriptors.Descriptor descriptorForType = message.getDescriptorForType();
 
