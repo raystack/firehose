@@ -1,15 +1,15 @@
 package io.odpf.firehose.sink.objectstorage;
 
-import io.odpf.firehose.error.ErrorInfo;
-import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.consumer.offset.OffsetManager;
+import io.odpf.firehose.error.ErrorInfo;
+import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.sink.exception.UnknownFieldsException;
-import io.odpf.firehose.sink.exception.EmptyMessageException;
 import io.odpf.firehose.exception.WriterIOException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
+import io.odpf.firehose.sink.exception.EmptyMessageException;
+import io.odpf.firehose.sink.exception.UnknownFieldsException;
 import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
 import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.writer.WriterOrchestrator;
@@ -21,6 +21,9 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import static io.odpf.firehose.metrics.Metrics.FILE_PATH_TAG;
+import static io.odpf.firehose.metrics.Metrics.SINK_OBJECTSTORAGE_RECORD_WRITE_TOTAL;
 
 public class ObjectStorageSink extends AbstractSink {
 
@@ -42,7 +45,9 @@ public class ObjectStorageSink extends AbstractSink {
         for (Message message : messages) {
             try {
                 Record record = messageDeSerializer.deSerialize(message);
-                offsetManager.addOffsetToBatch(writerOrchestrator.write(record), message);
+                String filePath = writerOrchestrator.write(record);
+                offsetManager.addOffsetToBatch(filePath, message);
+                getInstrumentation().incrementCounterWithTags(SINK_OBJECTSTORAGE_RECORD_WRITE_TOTAL, FILE_PATH_TAG + filePath);
             } catch (EmptyMessageException e) {
                 getInstrumentation().logWarn("empty message found on topic: {}, partition: {}, offset: {}",
                         message.getTopic(), message.getPartition(), message.getOffset());

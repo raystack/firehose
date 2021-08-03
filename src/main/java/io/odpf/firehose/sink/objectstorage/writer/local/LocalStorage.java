@@ -56,7 +56,14 @@ public class LocalStorage {
         } catch (IOException e) {
             throw new LocalFileWriterFailedException(e);
         }
+    }
 
+    public long getFileSize(String path) throws IOException {
+        return Files.size(Paths.get(path));
+    }
 
+    public Boolean shouldRotate(LocalFileWriter writer) {
+        return this.policies.stream().reduce(false,
+                (accumulated, writerPolicy) -> accumulated || writerPolicy.shouldRotate(writer), (left, right) -> left || right);
     }
 }

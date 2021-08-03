@@ -5,10 +5,10 @@ import io.odpf.firehose.TestMessageBQ;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.sink.exception.EmptyMessageException;
-import io.odpf.firehose.sink.exception.UnknownFieldsException;
 import io.odpf.firehose.exception.WriterIOException;
 import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.sink.exception.EmptyMessageException;
+import io.odpf.firehose.sink.exception.UnknownFieldsException;
 import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
 import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.writer.WriterOrchestrator;
@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import static io.odpf.firehose.metrics.Metrics.FILE_PATH_TAG;
+import static io.odpf.firehose.metrics.Metrics.SINK_OBJECTSTORAGE_RECORD_WRITE_TOTAL;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -196,5 +198,25 @@ public class ObjectStorageSinkTest {
         assertEquals(retryMessages.size(), 1);
         assertEquals(ErrorType.UNKNOWN_FIELDS_ERROR, retryMessages.get(0).getErrorInfo().getErrorType());
         retryMessages.forEach(message -> assertNotNull(message.getErrorInfo()));
+    }
+
+    @Test
+    public void shouldRecordMetricWhenSuccessfullyWriteRecordToFile() throws Exception {
+        Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
+        Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 1, 2);
+        Record record1 = mock(Record.class);
+        Record record2 = mock(Record.class);
+        String path1 = "/tmp/test1";
+        String path2 = "/tmp/test2";
+
+        when(messageDeSerializer.deSerialize(message1)).thenReturn(record1);
+        when(messageDeSerializer.deSerialize(message2)).thenReturn(record2);
+        when(writerOrchestrator.write(record1)).thenReturn(path1);
+        when(writerOrchestrator.write(record2)).thenReturn(path2);
+
+        objectStorageSink.pushMessage(Arrays.asList(message1, message2));
+
+        verify(instrumentation, times(1)).incrementCounterWithTags(SINK_OBJECTSTORAGE_RECORD_WRITE_TOTAL, FILE_PATH_TAG + "/tmp/test1");
+        verify(instrumentation, times(1)).incrementCounterWithTags(SINK_OBJECTSTORAGE_RECORD_WRITE_TOTAL, FILE_PATH_TAG + "/tmp/test2");
     }
 }

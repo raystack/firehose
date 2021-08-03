@@ -1,10 +1,12 @@
 package io.odpf.firehose.sink.objectstorage.writer;
 
+import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileChecker;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriter;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
-import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageChecker;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterWorkerFuture;
 
@@ -22,6 +24,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import static io.odpf.firehose.metrics.Metrics.SINK_OBJECTSTORAGE_LOCAL_FILE_OPEN_TOTAL;
 
 /**
  * This class manages threads for local and object storage checking.
@@ -43,10 +47,11 @@ public class WriterOrchestrator implements Closeable {
     private final BlockingQueue<String> flushedToRemotePaths = new LinkedBlockingQueue<>();
     private final LocalStorage localStorage;
     private final WriterOrchestratorStatus writerOrchestratorStatus;
+    private final Instrumentation instrumentation;
 
-    public WriterOrchestrator(LocalStorage localStorage, ObjectStorage objectStorage) {
-
+    public WriterOrchestrator(LocalStorage localStorage, ObjectStorage objectStorage, Instrumentation instrumentation, StatsDReporter statsDReporter) {
         this.localStorage = localStorage;
+        this.instrumentation = instrumentation;
 
         BlockingQueue<String> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
 
@@ -54,7 +59,7 @@ public class WriterOrchestrator implements Closeable {
                 new LocalFileChecker(
                         toBeFlushedToRemotePaths,
                         timePartitionWriterMap,
-                        localStorage.getPolicies()),
+                        localStorage, new Instrumentation(statsDReporter, LocalFileChecker.class)),
                 FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS,
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
                 TimeUnit.SECONDS);
@@ -66,7 +71,9 @@ public class WriterOrchestrator implements Closeable {
                         flushedToRemotePaths,
                         remoteUploadFutures,
                         remoteUploadScheduler,
-                        objectStorage),
+                        objectStorage,
+                        localStorage,
+                        new Instrumentation(statsDReporter, ObjectStorageChecker.class)),
                 FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS,
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
                 TimeUnit.SECONDS);
@@ -105,7 +112,11 @@ public class WriterOrchestrator implements Closeable {
         Path partitionedPath = localStorage.getTimePartitionPath().create(record);
         String pathString = partitionedPath.toString();
         synchronized (timePartitionWriterMap) {
-            LocalFileWriter writer = timePartitionWriterMap.computeIfAbsent(pathString, x -> localStorage.createLocalFileWriter(partitionedPath));
+            LocalFileWriter writer = timePartitionWriterMap.computeIfAbsent(pathString, x -> {
+                LocalFileWriter localFileWriter = localStorage.createLocalFileWriter(partitionedPath);
+                instrumentation.incrementCounter(SINK_OBJECTSTORAGE_LOCAL_FILE_OPEN_TOTAL);
+                return localFileWriter;
+            });
             writer.write(record);
             return writer.getFullPath();
         }

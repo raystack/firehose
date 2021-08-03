@@ -43,7 +43,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
 
         ObjectStorage sinkObjectStorage = createSinkObjectStorage(sinkConfig);
 
-        WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, sinkObjectStorage);
+        WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, sinkObjectStorage, new Instrumentation(statsDReporter, WriterOrchestrator.class), statsDReporter);
         MessageDeSerializer messageDeSerializer = getMessageDeSerializer(sinkConfig, stencilClient);
 
         return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer);

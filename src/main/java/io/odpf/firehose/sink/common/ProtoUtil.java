@@ -2,7 +2,6 @@ package io.odpf.firehose.sink.common;
 
 import com.google.protobuf.DynamicMessage;
 
-import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,9 +22,9 @@ public class ProtoUtil {
         List<DynamicMessage> output = new LinkedList<>();
         Queue<DynamicMessage> stack = Collections.asLifoQueue(new LinkedList<>());
         stack.add(node);
-        while (true){
+        while (true) {
             DynamicMessage current = stack.poll();
-            if(current == null){
+            if (current == null) {
                 break;
             }
             List<DynamicMessage> nestedChildNodes = current.getAllFields().values().stream()

@@ -11,6 +11,7 @@ public class Metrics {
     //SINK PREFIXES
     public static final String SINK_PREFIX = "sink_";
     public static final String HTTP_SINK_PREFIX = "http_";
+    public static final String OBJECTSTORAGE_SINK_PREFIX = "objectstorage_";
 
     //RETRY PREFIX
     public static final String RETRY_PREFIX = "retry_";
@@ -37,6 +38,17 @@ public class Metrics {
     public static final String SINK_HTTP_RESPONSE_CODE_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + HTTP_SINK_PREFIX + "response_code_total";
     public static final String SINK_PUSH_BATCH_SIZE_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + "push_batch_size_total";
 
+    // OBJECT STORAGE SINK MEASUREMENTS
+    public static final String SINK_OBJECTSTORAGE_RECORD_WRITE_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "record_write_total";
+    public static final String SINK_OBJECTSTORAGE_LOCAL_FILE_OPEN_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_open_total";
+    public static final String SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSED_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_closed_total";
+    public static final String SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSING_TIME_MILLISECONDS = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_closing_time_milliseconds";
+    public static final String SINK_OBJECTSTORAGE_LOCAL_FILE_SIZE_BYTES = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "local_file_size_bytes";
+    public static final String SINK_OBJECTSTORAGE_FILE_UPLOAD_TIME_MILLISECONDS = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_upload_time_milliseconds";
+    public static final String SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_upload_total";
+    public static final String SINK_OBJECTSTORAGE_FILE_UPLOAD_BYTES = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_upload_bytes";
+
+
     // RETRY MEASUREMENT
     public static final String RETRY_TOTAL = APPLICATION_PREFIX + RETRY_PREFIX + "total";
     public static final String RETRY_SLEEP_TIME_MILLISECONDS = APPLICATION_PREFIX + RETRY_PREFIX + "backoff_sleep_milliseconds";
@@ -60,4 +72,9 @@ public class Metrics {
     public static final String ERROR_MESSAGE_CLASS_TAG = "class";
     public static final String NON_FATAL_ERROR = "nonfatal";
     public static final String FATAL_ERROR = "fatal";
+
+
+    //SINK OBJECTSTORAGE TAGS
+    public static final String FILE_PATH_TAG = "filepath=";
+
 }

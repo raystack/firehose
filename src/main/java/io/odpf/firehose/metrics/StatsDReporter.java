@@ -39,6 +39,10 @@ public class StatsDReporter implements Closeable {
         client.count(withTags(metric, tags), delta);
     }
 
+    public void captureCount(String metric, Long delta, String... tags) {
+        client.count(withTags(metric, tags), delta);
+    }
+
     public void captureCount(String metric, Integer delta) {
         client.count(withGlobalTags(metric), delta);
     }
