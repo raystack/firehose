@@ -3,7 +3,7 @@ package io.odpf.firehose.sink;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.EglcConfigurationException;
-import io.odpf.firehose.exception.WriterIOException;
+import io.odpf.firehose.exception.SinkException;
 import io.odpf.firehose.metrics.Instrumentation;
 import lombok.AllArgsConstructor;
 
@@ -26,7 +26,7 @@ public abstract class AbstractSink implements Closeable, Sink {
      * Method to push messages to sink.
      *
      * @param messages the messages
-     * @return the list
+     * @return the list of failed messages
      * @throws DeserializerException when invalid kafka message is encountered
      */
     public List<Message> pushMessage(List<Message> messages) throws DeserializerException {
@@ -37,8 +37,9 @@ public abstract class AbstractSink implements Closeable, Sink {
             instrumentation.capturePreExecutionLatencies(messages);
             instrumentation.startExecution();
             failedMessages = execute();
-            instrumentation.captureSuccessExecutionTelemetry(sinkType, messages.size());
-        } catch (DeserializerException | EglcConfigurationException | NullPointerException | WriterIOException e) {
+            instrumentation.captureSuccessExecutionTelemetry(sinkType, messages.size() - failedMessages.size());
+            instrumentation.captureFailedMessagesTelemetry(sinkType, failedMessages.size());
+        } catch (DeserializerException | EglcConfigurationException | NullPointerException | SinkException e) {
             throw e;
         } catch (Exception e) {
             if (!messages.isEmpty()) {

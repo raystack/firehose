@@ -66,14 +66,11 @@ public class BigQuerySink extends AbstractSink {
     }
 
     private InsertAllResponse insertIntoBQ(List<Record> records) {
-        Instant start = Instant.now();
         InsertAllRequest.Builder builder = InsertAllRequest.newBuilder(tableId);
         records.forEach((Record m) -> builder.addRow(rowCreator.of(m)));
         InsertAllRequest rows = builder.build();
         InsertAllResponse response = bigQueryInstance.insertAll(rows);
         instrumentation.logInfo("Pushed a batch of {} records to BQ. Insert success?: {}", records.size(), !response.hasErrors());
-        records.forEach(m -> instrumentation.incrementCounter("bq.sink.push.records"));
-        instrumentation.captureDurationSince("bq.sink.push.time", start);
         return response;
     }
 }

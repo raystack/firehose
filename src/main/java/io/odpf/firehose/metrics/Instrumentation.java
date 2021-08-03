@@ -17,19 +17,8 @@ import static io.odpf.firehose.metrics.Metrics.*;
  */
 public class Instrumentation {
 
-    private StatsDReporter statsDReporter;
-    private Logger logger;
-
-
-    /**
-     * Gets start execution time.
-     *
-     * @return the start execution time
-     */
-    public Instant getStartExecutionTime() {
-        return startExecutionTime;
-    }
-
+    private final StatsDReporter statsDReporter;
+    private final Logger logger;
     private Instant startExecutionTime;
 
     /**
@@ -52,6 +41,15 @@ public class Instrumentation {
     public Instrumentation(StatsDReporter statsDReporter, Class clazz) {
         this.statsDReporter = statsDReporter;
         this.logger = LoggerFactory.getLogger(clazz);
+    }
+
+    /**
+     * Gets start execution time.
+     *
+     * @return the start execution time
+     */
+    public Instant getStartExecutionTime() {
+        return startExecutionTime;
     }
     // =================== LOGGING ===================
 
@@ -163,6 +161,19 @@ public class Instrumentation {
         statsDReporter.captureCount(SINK_MESSAGES_TOTAL, messageListSize, FAILURE_TAG);
         statsDReporter.captureHistogramWithTags(SINK_PUSH_BATCH_SIZE_TOTAL, messageListSize, FAILURE_TAG);
     }
+
+    /**
+     * Captures failed executions.
+     *
+     * @param sinkType        the sink type
+     * @param messageListSize the message list size
+     */
+    public void captureFailedMessagesTelemetry(String sinkType, Integer messageListSize) {
+        logger.info("Failed to Push {} messages to {}.", messageListSize, sinkType);
+        statsDReporter.captureCount(SINK_MESSAGES_TOTAL, messageListSize, FAILURE_TAG);
+        statsDReporter.captureHistogramWithTags(SINK_PUSH_BATCH_SIZE_TOTAL, messageListSize, FAILURE_TAG);
+    }
+
 
     // =================== RetryTelemetry ======================
 
