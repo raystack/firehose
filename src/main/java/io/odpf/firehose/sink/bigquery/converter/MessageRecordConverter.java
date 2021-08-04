@@ -15,7 +15,7 @@ import io.odpf.firehose.sink.bigquery.models.Constants;
 import io.odpf.firehose.sink.bigquery.models.Record;
 import io.odpf.firehose.sink.bigquery.models.Records;
 import io.odpf.firehose.sink.bigquery.proto.UnknownProtoFields;
-import io.odpf.firehose.sink.common.ProtoUtil;
+import io.odpf.firehose.sink.common.ProtoUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,7 +64,7 @@ public class MessageRecordConverter {
         try {
             DynamicMessage dynamicMessage = parser.parse(message.getLogMessage());
 
-            if (ProtoUtil.isUnknownFieldExist(dynamicMessage)) {
+            if (ProtoUtils.hasUnknownField(dynamicMessage)) {
                 log.info("unknown fields found at offset: {}, partition: {}, message: {}", message.getOffset(), message.getPartition(), message);
                 throw new UnknownFieldsException(dynamicMessage);
             }

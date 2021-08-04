@@ -9,7 +9,7 @@ import io.odpf.firehose.sink.exception.EmptyMessageException;
 import io.odpf.firehose.sink.exception.UnknownFieldsException;
 import lombok.AllArgsConstructor;
 
-import static io.odpf.firehose.sink.common.ProtoUtil.isUnknownFieldExist;
+import static io.odpf.firehose.sink.common.ProtoUtils.hasUnknownField;
 
 @AllArgsConstructor
 public class MessageDeSerializer {
@@ -25,7 +25,7 @@ public class MessageDeSerializer {
             }
             DynamicMessage dynamicMessage = protoParser.parse(message.getLogMessage());
 
-            if (isUnknownFieldExist(dynamicMessage)) {
+            if (hasUnknownField(dynamicMessage)) {
                 throw new UnknownFieldsException(dynamicMessage);
             }
 
@@ -38,5 +38,4 @@ public class MessageDeSerializer {
             throw new DeserializerException("failed to parse message", e);
         }
     }
-
 }

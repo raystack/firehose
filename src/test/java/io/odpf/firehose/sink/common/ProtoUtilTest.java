@@ -28,7 +28,7 @@ public class ProtoUtilTest {
                         .build())
                 .build();
 
-        boolean unknownFieldExist = ProtoUtil.isUnknownFieldExist(dynamicMessage);
+        boolean unknownFieldExist = ProtoUtils.hasUnknownField(dynamicMessage);
         assertTrue(unknownFieldExist);
     }
 
@@ -48,13 +48,13 @@ public class ProtoUtilTest {
                         .build())
                 .build();
 
-        boolean unknownFieldExist = ProtoUtil.isUnknownFieldExist(dynamicMessage);
+        boolean unknownFieldExist = ProtoUtils.hasUnknownField(dynamicMessage);
         assertTrue(unknownFieldExist);
     }
 
     @Test
     public void shouldReturnFalseWhenRootIsNull() {
-        boolean unknownFieldExist = ProtoUtil.isUnknownFieldExist(null);
+        boolean unknownFieldExist = ProtoUtils.hasUnknownField(null);
         assertFalse(unknownFieldExist);
     }
 }
