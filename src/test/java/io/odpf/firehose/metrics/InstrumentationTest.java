@@ -125,7 +125,7 @@ public class InstrumentationTest {
     @Test
     public void shouldCaptureSuccessExecutionTelemetry() {
         List<Message> messages = Collections.singletonList(message);
-        instrumentation.captureSuccessExecutionTelemetry("test", messages.size());
+        instrumentation.captureSinkExecutionTelemetry("test", messages.size());
         verify(logger, times(1)).info("Pushed {} messages to {}.", messages.size(), "test");
         verify(statsDReporter, times(1)).captureDurationSince("firehose_sink_response_time_milliseconds", instrumentation.getStartExecutionTime());
         verify(statsDReporter, times(1)).captureCount("firehose_sink_messages_total", messages.size(), Metrics.SUCCESS_TAG);
@@ -141,20 +141,8 @@ public class InstrumentationTest {
     }
 
     @Test
-    public void shouldIncrementMessageSucceedCount() {
-        instrumentation.incrementMessageSucceedCount();
-        verify(statsDReporter, times(1)).increment(Metrics.DLQ_MESSAGES_TOTAL, Metrics.SUCCESS_TAG);
-    }
-
-    @Test
-    public void shouldCaptureRetryAttempts() {
-        instrumentation.captureRetryAttempts();
-        verify(statsDReporter, times(1)).increment(Metrics.DQL_RETRY_TOTAL);
-    }
-
-    @Test
     public void shouldIncrementMessageFailCount() {
-        instrumentation.incrementMessageFailCount(message, e);
+        instrumentation.captureDLQErrors(message, e);
         verify(statsDReporter, times(1)).increment(Metrics.DLQ_MESSAGES_TOTAL, Metrics.FAILURE_TAG);
         verify(logger, times(1)).warn(e.getMessage(), e);
     }

@@ -121,9 +121,7 @@ public class SinkWithDlqTest {
 
         verify(dlqWriter, times(1)).write(messages);
         verify(dlqWriter, times(1)).write(dlqRetryMessages);
-        verify(instrumentation, times(2)).captureRetryAttempts();
-        verify(instrumentation, times(2)).incrementMessageSucceedCount();
-        verify(instrumentation, times(1)).incrementMessageFailCount(any(), any());
+        verify(instrumentation, times(1)).captureDLQErrors(any(), any());
     }
 
     @Test(expected = IOException.class)

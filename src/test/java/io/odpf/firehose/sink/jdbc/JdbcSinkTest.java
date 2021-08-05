@@ -66,7 +66,7 @@ public class JdbcSinkTest {
         jdbcSink.pushMessage(messages);
 
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("db", messages.size());
+        verify(instrumentation, times(1)).captureSinkExecutionTelemetry("db", messages.size());
     }
 
     @Test
@@ -76,10 +76,10 @@ public class JdbcSinkTest {
         jdbcSink.pushMessage(messages);
 
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("db", messages.size());
+        verify(instrumentation, times(1)).captureSinkExecutionTelemetry("db", messages.size());
         InOrder inOrder = inOrder(instrumentation);
         inOrder.verify(instrumentation).startExecution();
-        inOrder.verify(instrumentation).captureSuccessExecutionTelemetry("db", messages.size());
+        inOrder.verify(instrumentation).captureSinkExecutionTelemetry("db", messages.size());
     }
 
     @Test
@@ -88,7 +88,7 @@ public class JdbcSinkTest {
                 new Message(new byte[0], new byte[0], "topic", 0, 100));
 
         assertEquals(jdbcSink.pushMessage(messages).size(), 0);
-        verify(instrumentation, times(1)).captureSuccessExecutionTelemetry("db", messages.size());
+        verify(instrumentation, times(1)).captureSinkExecutionTelemetry("db", messages.size());
     }
 
     @Test

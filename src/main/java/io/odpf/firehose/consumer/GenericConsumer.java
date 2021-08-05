@@ -5,6 +5,7 @@ import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.Metrics;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -60,6 +61,7 @@ public class GenericConsumer implements AutoCloseable {
         ConsumerRecords<byte[], byte[]> records = kafkaConsumer.poll(Duration.ofMillis(consumerConfig.getSourceKafkaPollTimeoutMs()));
         instrumentation.logInfo("Pulled {} messages", records.count());
         instrumentation.capturePulledMessageHistogram(records.count());
+        instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.CONSUMER, records.count());
         List<Message> messages = new ArrayList<>();
 
         for (ConsumerRecord<byte[], byte[]> record : records) {

@@ -47,10 +47,12 @@ public class BigQuerySink extends AbstractSink {
     protected List<Message> execute() throws Exception {
         Instant now = Instant.now();
         Records records = converterCache.getMessageRecordConverter().convert(messageList, now);
-        InsertAllResponse response = insertIntoBQ(records.getValidRecords());
         List<Message> invalidMessages = records.getInvalidRecords().stream().map(Record::getMessage).collect(Collectors.toList());
-        if (response.hasErrors()) {
-            invalidMessages.addAll(BigQueryResponseParser.parseResponse(records.getValidRecords(), response));
+        if (records.getValidRecords().size() > 0) {
+            InsertAllResponse response = insertIntoBQ(records.getValidRecords());
+            if (response.hasErrors()) {
+                invalidMessages.addAll(BigQueryResponseParser.parseResponse(records.getValidRecords(), response));
+            }
         }
         return invalidMessages;
     }
