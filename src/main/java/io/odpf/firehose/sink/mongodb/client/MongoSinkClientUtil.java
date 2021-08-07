@@ -1,6 +1,7 @@
 package io.odpf.firehose.sink.mongodb.client;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoNamespace;
 import com.mongodb.client.MongoDatabase;
 import io.odpf.firehose.metrics.Instrumentation;
 import lombok.experimental.UtilityClass;
@@ -34,42 +35,39 @@ public class MongoSinkClientUtil {
     }
 
     /**
-     * Check database exists or not.
+     * Check if database already exists or not.
      *
      * @param databaseName    the database name
      * @param mongoClient     the mongo client
      * @param instrumentation the instrumentation
-     * @return the boolean
+     * @return true if database already exists, otherwise false
      */
     static boolean checkDatabaseExists(String databaseName, MongoClient mongoClient, Instrumentation instrumentation) {
-        if (databaseName == null) {
-            throw new IllegalArgumentException("Database name cannot be null");
-        }
-
+        MongoNamespace.checkDatabaseNameValidity(databaseName);
         boolean doesDBExist = true;
+
         if (!mongoClient.listDatabaseNames()
                 .into(new ArrayList<>())
                 .contains(databaseName)) {
             instrumentation.logInfo("Database: " + databaseName + " does not exist. Attempting to create database");
+
             doesDBExist = false;
         }
         return doesDBExist;
     }
 
     /**
-     * Check collection exists or not..
+     * Check if collection already exists or not.
      *
      * @param collectionName  the collection name
      * @param database        the database
      * @param instrumentation the instrumentation
-     * @return the boolean
+     * @return true if collection already exists, otherwise false
      */
     static boolean checkCollectionExists(String collectionName, MongoDatabase database, Instrumentation instrumentation) {
-        if (collectionName == null) {
-            throw new IllegalArgumentException("Collection name cannot be null");
-        }
-
+        MongoNamespace.checkCollectionNameValidity(collectionName);
         boolean doesCollectionExist = true;
+
         if (!database.listCollectionNames()
                 .into(new ArrayList<>())
                 .contains(collectionName)) {

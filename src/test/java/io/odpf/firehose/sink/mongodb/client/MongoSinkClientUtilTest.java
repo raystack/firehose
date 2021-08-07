@@ -83,14 +83,12 @@ public class MongoSinkClientUtilTest {
     @Test
     public void shouldThrowExceptionWhenNullDatabaseName() {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Database name cannot be null");
         MongoSinkClientUtil.checkDatabaseExists(null, mongoClient, instrumentation);
     }
 
     @Test
     public void shouldThrowExceptionWhenNullCollectionName() {
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Collection name cannot be null");
         MongoSinkClientUtil.checkCollectionExists(null, mongoDatabase, instrumentation);
     }
 }

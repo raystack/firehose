@@ -14,7 +14,6 @@ import org.bson.Document;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,28 +58,21 @@ public class MongoSinkClient implements Closeable {
      * and connects to the database and collection
      */
     public void prepare() {
-
         String databaseName = mongoSinkConfig.getSinkMongoDBName();
         String collectionName = mongoSinkConfig.getSinkMongoCollectionName();
-        boolean doesDBExist = MongoSinkClientUtil.checkDatabaseExists(databaseName, mongoClient, instrumentation);
-        MongoDatabase database = mongoClient.getDatabase(mongoSinkConfig.getSinkMongoDBName());
 
-        if (!mongoClient.listDatabaseNames().into(new ArrayList<>()).contains(databaseName)) {
-            throw new IllegalArgumentException("Failed to create DB due to invalid DB name");
-        }
+        boolean doesDBExist = MongoSinkClientUtil.checkDatabaseExists(databaseName, mongoClient, instrumentation);
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
         if (!doesDBExist) {
             instrumentation.logInfo("Database was successfully created");
         }
 
-        boolean doesCollectionExist = MongoSinkClientUtil.checkCollectionExists(databaseName, database, instrumentation);
-        mongoCollection = database.getCollection(collectionName);
-        if (!database.listCollectionNames().into(new ArrayList<>()).contains(collectionName)) {
-            throw new IllegalArgumentException("Failed to create Collection due to invalid collection name");
-        }
-
+        boolean doesCollectionExist = MongoSinkClientUtil.checkCollectionExists(collectionName, database, instrumentation);
         if (!doesCollectionExist) {
+            database.createCollection(collectionName);
             instrumentation.logInfo("Collection was successfully created");
         }
+        mongoCollection = database.getCollection(collectionName);
     }
 
     /**
