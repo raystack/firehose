@@ -76,7 +76,10 @@ public class MongoSinkFactory implements SinkFactory {
      */
     private MongoClient buildMongoClient(MongoSinkConfig mongoSinkConfig, Instrumentation instrumentation) {
         List<ServerAddress> serverAddresses = MongoSinkFactoryUtil.getServerAddresses(mongoSinkConfig.getSinkMongoConnectionUrls(), instrumentation);
-        MongoClientOptions options = MongoClientOptions.builder().connectTimeout(mongoSinkConfig.getSinkMongoConnectTimeoutMs()).build();
+        MongoClientOptions options = MongoClientOptions.builder()
+                .connectTimeout(mongoSinkConfig.getSinkMongoConnectTimeoutMs())
+                .serverSelectionTimeout(mongoSinkConfig.getSinkMongoServerSelectTimeoutMs())
+                .build();
 
         MongoClient mongoClient;
         if (mongoSinkConfig.isSinkMongoAuthEnable()) {

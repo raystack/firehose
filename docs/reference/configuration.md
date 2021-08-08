@@ -779,6 +779,26 @@ List of comma-separated status codes for which Firehose should not retry in case
 * Example value: `16608,11000`
 * Type: `optional`
 
+
+### `SINK_MONGO_PRESERVE_PROTO_FIELD_NAMES_ENABLE`
+
+Whether or not the protobuf field names should be preserved in the Elasticsearch document. If false the fields will be converted to camel case.
+* Example value: `false`
+* Type: `optional`
+* Default: `true`
+
+
+
+### `SINK_MONGO_SERVER_SELECT_TIMEOUT_MS`
+
+Sets the server selection timeout in milliseconds, which defines how long the driver will wait for server selection to succeed before throwing an exception.
+A value of 0 means that it will timeout immediately if no server is available. A negative value means to wait indefinitely.
+
+* Example value: `4000`
+* Type: `optional`
+* Default: `30000`
+
+
 ## Retries
 
 ### `RETRY_EXPONENTIAL_BACKOFF_INITIAL_MS`

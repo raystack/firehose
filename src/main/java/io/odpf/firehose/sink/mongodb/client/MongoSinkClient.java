@@ -2,6 +2,7 @@ package io.odpf.firehose.sink.mongodb.client;
 
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.MongoCollection;
@@ -61,11 +62,8 @@ public class MongoSinkClient implements Closeable {
         String databaseName = mongoSinkConfig.getSinkMongoDBName();
         String collectionName = mongoSinkConfig.getSinkMongoCollectionName();
 
-        boolean doesDBExist = MongoSinkClientUtil.checkDatabaseExists(databaseName, mongoClient, instrumentation);
+        MongoSinkClientUtil.checkDatabaseExists(databaseName, mongoClient, instrumentation);
         MongoDatabase database = mongoClient.getDatabase(databaseName);
-        if (!doesDBExist) {
-            instrumentation.logInfo("Database was successfully created");
-        }
 
         boolean doesCollectionExist = MongoSinkClientUtil.checkCollectionExists(collectionName, database, instrumentation);
         if (!doesCollectionExist) {
