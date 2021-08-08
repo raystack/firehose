@@ -2,6 +2,7 @@ package io.odpf.firehose.sink.mongodb.client;
 
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.MongoCollection;
@@ -61,13 +62,24 @@ public class MongoSinkClient implements Closeable {
         String databaseName = mongoSinkConfig.getSinkMongoDBName();
         String collectionName = mongoSinkConfig.getSinkMongoCollectionName();
 
-        MongoSinkClientUtil.checkDatabaseExists(databaseName, mongoClient, instrumentation);
+        boolean doesDBExist = MongoSinkClientUtil.checkDatabaseExists(databaseName, mongoClient, instrumentation);
         MongoDatabase database = mongoClient.getDatabase(databaseName);
-
         boolean doesCollectionExist = MongoSinkClientUtil.checkCollectionExists(collectionName, database, instrumentation);
         if (!doesCollectionExist) {
-            database.createCollection(collectionName);
-            instrumentation.logInfo("Collection was successfully created");
+            try {
+                database.createCollection(collectionName);
+            } catch (MongoCommandException e) {
+                if (!doesDBExist) {
+                    instrumentation.logWarn("Failed to create database");
+                }
+
+                instrumentation.logWarn("Failed to create collection. Cause: " + e.getErrorMessage());
+                throw e;
+            }
+            if (!doesDBExist) {
+                instrumentation.logInfo("Database: " + databaseName + " was successfully created");
+            }
+            instrumentation.logInfo("Collection: " + collectionName + " was successfully created");
         }
         mongoCollection = database.getCollection(collectionName);
         instrumentation.logInfo("Successfully connected to Mongo namespace : " + mongoCollection.getNamespace().getFullName());
