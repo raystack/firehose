@@ -70,7 +70,7 @@ public class MongoSinkClient implements Closeable {
             instrumentation.logInfo("Collection was successfully created");
         }
         mongoCollection = database.getCollection(collectionName);
-        instrumentation.logInfo("Successfully connected to : " + mongoCollection.getNamespace().getFullName());
+        instrumentation.logInfo("Successfully connected to Mongo namespace : " + mongoCollection.getNamespace().getFullName());
     }
 
     /**

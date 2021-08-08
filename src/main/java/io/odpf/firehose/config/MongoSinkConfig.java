@@ -53,6 +53,6 @@ public interface MongoSinkConfig extends AppConfig {
     Boolean isSinkMongoModeUpdateOnlyEnable();
 
     @Key("SINK_MONGO_SERVER_SELECT_TIMEOUT_MS")
-    @DefaultValue("30")
+    @DefaultValue("30000")
     int getSinkMongoServerSelectTimeoutMs();
 }
