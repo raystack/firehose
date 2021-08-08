@@ -70,6 +70,7 @@ public class MongoSinkClient implements Closeable {
             instrumentation.logInfo("Collection was successfully created");
         }
         mongoCollection = database.getCollection(collectionName);
+        instrumentation.logInfo("Successfully connected to : " + mongoCollection.getNamespace().getFullName());
     }
 
     /**
@@ -92,6 +93,7 @@ public class MongoSinkClient implements Closeable {
         } catch (MongoBulkWriteException writeException) {
             instrumentation.logWarn("Bulk request failed");
             List<BulkWriteError> writeErrors = writeException.getWriteErrors();
+
             logErrors(writeErrors);
             return writeErrors.stream()
                     .filter(writeError -> !mongoRetryStatusCodeBlacklist.contains(writeError.getCode()))
@@ -134,10 +136,8 @@ public class MongoSinkClient implements Closeable {
             instrumentation.logWarn("Bulk Write operation was not acknowledged");
         }
         instrumentation.logInfo(
-                "Inserted Count {}. Matched Count {}. Deleted Count {}. Updated Count {}. Total Modified Count {}",
-                writeResult.getUpserts().
-
-                        size() + writeResult.getInsertedCount(),
+                "Inserted Count = {}. Matched Count = {}. Deleted Count = {}. Updated Count = {}. Total Modified Count = {}",
+                writeResult.getUpserts().size() + writeResult.getInsertedCount(),
                 writeResult.getMatchedCount(),
                 writeResult.getDeletedCount(),
                 writeResult.getModifiedCount(),

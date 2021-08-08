@@ -45,7 +45,6 @@ public class MongoSinkClientUtil {
     static boolean checkDatabaseExists(String databaseName, MongoClient mongoClient, Instrumentation instrumentation) {
         MongoNamespace.checkDatabaseNameValidity(databaseName);
         boolean doesDBExist = true;
-
         if (!mongoClient.listDatabaseNames()
                 .into(new ArrayList<>())
                 .contains(databaseName)) {
