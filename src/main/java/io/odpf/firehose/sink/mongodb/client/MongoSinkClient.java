@@ -102,27 +102,42 @@ public class MongoSinkClient implements Closeable {
     private void logResults(BulkWriteResult writeResult, int messageCount) {
 
         int totalWriteCount = writeResult.getInsertedCount() + writeResult.getModifiedCount() + writeResult.getUpserts().size();
-        if (writeResult.wasAcknowledged()) {
-            if (mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable() && totalWriteCount != messageCount) {
-                int failureCount = messageCount - totalWriteCount;
-                instrumentation.logWarn("Bulk request failed");
+        int failureCount = messageCount - totalWriteCount;
+
+        if (totalWriteCount == 0) {
+            instrumentation.logWarn("Bulk request failed");
+        } else if (totalWriteCount == messageCount) {
+            instrumentation.logInfo("Bulk request succeeded");
+        } else {
+            instrumentation.logWarn("Bulk request partially succeeded");
+        }
+
+        if (totalWriteCount != messageCount) {
+            instrumentation.logWarn("Bulk request failures count: {}", failureCount);
+            if (mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable()) {
 
                 for (int i = 0; i < failureCount; i++) {
-                    instrumentation.incrementCounterWithTags(SINK_MESSAGES_DROP_TOTAL, "cause=Primary Key for update request not found");
+                    instrumentation.incrementCounterWithTags(SINK_MESSAGES_DROP_TOTAL, "cause=Primary Key value not found");
                 }
-                instrumentation.logWarn("Message was dropped because value of Primary Key in the ESB message, had no matches in the MongoDB collection");
-                instrumentation.logWarn("Bulk request failed count: {}", failureCount);
-
+                instrumentation.logWarn("Some Messages were dropped because their Primary Key values had no matches");
             } else {
-                instrumentation.logInfo("Bulk Write operation was successfully acknowledged");
+                for (int i = 0; i < failureCount; i++) {
+                    instrumentation.incrementCounter(SINK_MESSAGES_DROP_TOTAL);
+                }
             }
+        }
+
+        if (writeResult.wasAcknowledged()) {
+            instrumentation.logInfo("Bulk Write operation was successfully acknowledged");
 
         } else {
             instrumentation.logWarn("Bulk Write operation was not acknowledged");
         }
         instrumentation.logInfo(
                 "Inserted Count {}. Matched Count {}. Deleted Count {}. Updated Count {}. Total Modified Count {}",
-                writeResult.getUpserts().size() + writeResult.getInsertedCount(),
+                writeResult.getUpserts().
+
+                        size() + writeResult.getInsertedCount(),
                 writeResult.getMatchedCount(),
                 writeResult.getDeletedCount(),
                 writeResult.getModifiedCount(),

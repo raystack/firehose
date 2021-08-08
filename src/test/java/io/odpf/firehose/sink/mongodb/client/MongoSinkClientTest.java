@@ -194,7 +194,8 @@ public class MongoSinkClientTest {
         when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(true, 0, 0));
         mongoSinkClient.processRequest(request);
 
-        verify(instrumentation, times(1)).logWarn("Bulk request failed count: {}", 2);
+        verify(instrumentation, times(1)).logWarn("Bulk request failed");
+        verify(instrumentation, times(1)).logWarn("Bulk request failures count: {}", 2);
     }
 
     public static class BulkWriteResultMock extends BulkWriteResult {
