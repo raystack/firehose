@@ -2,7 +2,6 @@ package io.odpf.firehose.sink.mongodb.client;
 
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoClient;
-import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.MongoCollection;
