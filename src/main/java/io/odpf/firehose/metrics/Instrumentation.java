@@ -192,6 +192,10 @@ public class Instrumentation {
         statsDReporter.captureDurationSince(metric, instant);
     }
 
+    public void captureDurationSinceWithTags(String metric, Instant instant, String... tags) {
+        statsDReporter.captureDurationSince(metric, instant, tags);
+    }
+
     public void captureSleepTime(String metric, int sleepTime) {
         statsDReporter.gauge(metric, sleepTime);
     }

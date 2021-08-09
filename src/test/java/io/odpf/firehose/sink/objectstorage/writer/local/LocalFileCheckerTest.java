@@ -1,7 +1,9 @@
 package io.odpf.firehose.sink.objectstorage.writer.local;
 
 import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.sink.objectstorage.Constants;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
+import io.odpf.firehose.util.Clock;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,10 +21,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static io.odpf.firehose.metrics.Metrics.*;
+import static io.odpf.firehose.metrics.Metrics.PARTITION_TAG;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class LocalFileCheckerTest {
+
+    @Mock
+    private Clock clock;
+
+    @Mock
+    private PartitionFactory partitionFactory;
 
     @Mock
     private LocalFileWriter writer1;
@@ -39,22 +48,54 @@ public class LocalFileCheckerTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
-    private BlockingQueue<String> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
+    private BlockingQueue<FileMeta> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
     private Map<String, LocalFileWriter> writerMap = new ConcurrentHashMap<>();
     private List<WriterPolicy> policies = new ArrayList<>();
     private LocalFileChecker worker;
 
+    private final long fileSize = 1024L;
+    private final long recordCount = 100L;
+    private final Instant startTime = Instant.parse("2021-01-01T00:10:00.000Z");
+
+    private final Partition partition = new Partition("default", Instant.ofEpochSecond(1L), new PartitionConfig("UTC", Constants.PartitioningType.HOUR, "dt=", "hr="));
+
     @Before
-    public void setup() {
+    public void setup() throws IOException {
         initMocks(this);
         toBeFlushedToRemotePaths.clear();
         writerMap.clear();
         policies.clear();
-        worker = new LocalFileChecker(toBeFlushedToRemotePaths, writerMap, localStorage, instrumentation);
+        when(localStorage.getFileSize(anyString())).thenReturn(fileSize);
+        when(writer1.getRecordCount()).thenReturn(recordCount);
+        when(writer2.getRecordCount()).thenReturn(recordCount);
+        when(partitionFactory.fromPartitionPath(anyString())).thenReturn(partition);
+        when(localStorage.getPartitionFactory()).thenReturn(partitionFactory);
+        when(clock.now()).thenReturn(startTime);
+        worker = new LocalFileChecker(toBeFlushedToRemotePaths, writerMap, localStorage, clock, instrumentation);
     }
 
     @Test
-    public void shouldRotateBasedOnPolicy() throws Exception {
+    public void shouldRotateBasedOnPolicy() throws IOException {
+        writerMap.put("/tmp/a", writer1);
+        writerMap.put("/tmp/b", writer2);
+        when(localStorage.shouldRotate(writer1)).thenReturn(true);
+        when(localStorage.shouldRotate(writer2)).thenReturn(true);
+
+        when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name-1");
+        when(writer2.getFullPath()).thenReturn("/tmp/b/random-file-name-2");
+
+        worker.run();
+        verify(writer1, times(1)).close();
+        verify(writer2, times(1)).close();
+        Assert.assertEquals(2, toBeFlushedToRemotePaths.size());
+        Assert.assertEquals(0, writerMap.size());
+    }
+
+    @Test
+    public void shouldProduceFileMeta() throws IOException {
+        long fileSize1 = 128L;
+        long fileSize2 = 129L;
+
         writerMap.put("/tmp/a", writer1);
         writerMap.put("/tmp/b", writer2);
         doNothing().when(writer1).close();
@@ -63,10 +104,16 @@ public class LocalFileCheckerTest {
 
         when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name");
         when(writer2.getFullPath()).thenReturn("/tmp/a/random-file-name-2");
+
+        when(localStorage.getFileSize("/tmp/a/random-file-name")).thenReturn(fileSize1);
+        when(localStorage.getFileSize("/tmp/a/random-file-name-2")).thenReturn(fileSize2);
+
         worker.run();
         Assert.assertEquals(2, toBeFlushedToRemotePaths.size());
-        Assert.assertTrue(toBeFlushedToRemotePaths.contains("/tmp/a/random-file-name"));
-        Assert.assertTrue(toBeFlushedToRemotePaths.contains("/tmp/a/random-file-name-2"));
+        verify(writer1, times(1)).getRecordCount();
+        verify(writer2, times(1)).getRecordCount();
+        Assert.assertTrue(toBeFlushedToRemotePaths.contains(new FileMeta("/tmp/a/random-file-name", recordCount, fileSize1, partition)));
+        Assert.assertTrue(toBeFlushedToRemotePaths.contains(new FileMeta("/tmp/a/random-file-name-2", recordCount, fileSize2, partition)));
         Assert.assertEquals(0, writerMap.size());
     }
 
@@ -108,35 +155,84 @@ public class LocalFileCheckerTest {
         when(writer2.getFullPath()).thenReturn("/tmp/a/random-file-name-2");
         worker.run();
         Assert.assertEquals(1, toBeFlushedToRemotePaths.size());
-        Assert.assertTrue(toBeFlushedToRemotePaths.contains("/tmp/a/random-file-name"));
+        Assert.assertTrue(toBeFlushedToRemotePaths.contains(new FileMeta("/tmp/a/random-file-name", recordCount, fileSize, partition)));
         Assert.assertEquals(1, writerMap.size());
         Assert.assertEquals(writer2, writerMap.get("/tmp/b"));
     }
 
     @Test
-    public void publishMetricWhenCloseFileSuccess() throws IOException {
+    public void shouldRecordMetricOfSuccessfullyClosedFiles() throws IOException {
         writerMap.put("/tmp/a", writer1);
         doNothing().when(writer1).close();
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
-        long fileSize = 128L;
-        when(localStorage.getFileSize("/tmp/a/random-file-name")).thenReturn(fileSize);
         when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name");
         worker.run();
-
-        verify(instrumentation).captureDurationSince(eq(SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSING_TIME_MILLISECONDS), any(Instant.class));
-        verify(instrumentation).incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSED_TOTAL, SUCCESS_TAG);
-        verify(instrumentation).captureCountWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_SIZE_BYTES, fileSize);
+        verify(instrumentation).incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSE_TOTAL,
+                SUCCESS_TAG,
+                TOPIC_TAG + partition.getTopic(),
+                PARTITION_TAG + partition.getDatetime());
     }
 
     @Test
-    public void publishMetricWhenCloseFileFailed() throws IOException {
-        expectedException.expect(LocalFileWriterFailedException.class);
+    public void shouldRecordMetricOfSuccessfullyProcessedRecord() throws IOException {
+        writerMap.put("/tmp/a", writer1);
+        writerMap.put("/tmp/b", writer2);
+        doNothing().when(writer1).close();
+        doNothing().when(writer2).close();
+        when(localStorage.shouldRotate(writer1)).thenReturn(true);
+        when(localStorage.shouldRotate(writer2)).thenReturn(true);
+        when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name-1");
+        when(writer2.getFullPath()).thenReturn("/tmp/b/random-file-name-2");
+        worker.run();
+
+        verify(instrumentation, times(2)).captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL, recordCount,
+                SCOPE_TAG + SINK_OBJECT_STORAGE_SCOPE_FILE_CLOSE,
+                TOPIC_TAG + partition.getTopic(),
+                PARTITION_TAG + partition.getDatetime());
+    }
+
+    @Test
+    public void shouldRecordMetricOfClosingTimeDuration() throws IOException {
+        writerMap.put("/tmp/a", writer1);
+        doNothing().when(writer1).close();
+        when(localStorage.shouldRotate(writer1)).thenReturn(true);
+        when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name");
+        worker.run();
+
+        verify(instrumentation, times(1)).captureDurationSinceWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSING_TIME_MILLISECONDS, startTime,
+                TOPIC_TAG + partition.getTopic(),
+                PARTITION_TAG + partition.getDatetime());
+    }
+
+    @Test
+    public void shouldRecordMetricOfFileSizeInBytes() throws IOException {
+        writerMap.put("/tmp/a", writer1);
+        doNothing().when(writer1).close();
+        when(localStorage.shouldRotate(writer1)).thenReturn(true);
+        when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name");
+        worker.run();
+
+        verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_SIZE_BYTES, fileSize,
+                TOPIC_TAG + partition.getTopic(),
+                PARTITION_TAG + partition.getDatetime());
+    }
+
+    @Test
+    public void shouldRecordMetricOfFailedClosedFiles() throws IOException {
         writerMap.put("/tmp/a", writer1);
         writerMap.put("/tmp/b", writer2);
         doThrow(new IOException("Failed")).when(writer1).close();
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
         when(localStorage.shouldRotate(writer2)).thenReturn(false);
-        worker.run();
-        verify(instrumentation).incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSED_TOTAL, FAILURE_TAG);
+
+        try {
+            worker.run();
+        } catch (LocalFileWriterFailedException e) {
+        }
+
+        verify(instrumentation, times(1)).incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSE_TOTAL,
+                FAILURE_TAG,
+                TOPIC_TAG + partition.getTopic(),
+                PARTITION_TAG + partition.getDatetime());
     }
 }

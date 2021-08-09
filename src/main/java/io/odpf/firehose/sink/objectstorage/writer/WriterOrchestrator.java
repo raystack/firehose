@@ -4,15 +4,17 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.sink.objectstorage.message.Record;
+import io.odpf.firehose.sink.objectstorage.writer.local.FileMeta;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileChecker;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriter;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
+import io.odpf.firehose.sink.objectstorage.writer.local.Partition;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageChecker;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterWorkerFuture;
+import io.odpf.firehose.util.Clock;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +27,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import static io.odpf.firehose.metrics.Metrics.SINK_OBJECTSTORAGE_LOCAL_FILE_OPEN_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.*;
 
 /**
  * This class manages threads for local and object storage checking.
@@ -53,13 +55,13 @@ public class WriterOrchestrator implements Closeable {
         this.localStorage = localStorage;
         this.instrumentation = instrumentation;
 
-        BlockingQueue<String> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
+        BlockingQueue<FileMeta> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
 
         ScheduledFuture<?> localWriterFuture = localFileCheckerScheduler.scheduleAtFixedRate(
                 new LocalFileChecker(
                         toBeFlushedToRemotePaths,
                         timePartitionWriterMap,
-                        localStorage, new Instrumentation(statsDReporter, LocalFileChecker.class)),
+                        localStorage, new Clock(), new Instrumentation(statsDReporter, LocalFileChecker.class)),
                 FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS,
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
                 TimeUnit.SECONDS);
@@ -72,7 +74,7 @@ public class WriterOrchestrator implements Closeable {
                         remoteUploadFutures,
                         remoteUploadScheduler,
                         objectStorage,
-                        localStorage,
+                        new Clock(),
                         new Instrumentation(statsDReporter, ObjectStorageChecker.class)),
                 FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS,
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
@@ -109,15 +111,26 @@ public class WriterOrchestrator implements Closeable {
      */
     public String write(Record record) throws Exception {
         checkStatus();
-        Path partitionedPath = localStorage.getTimePartitionPath().create(record);
-        String pathString = partitionedPath.toString();
+        Partition partition = localStorage.getPartitionFactory().getPartition(record);
+
+        String dateTimePartition = partition.getDatetime();
+
         synchronized (timePartitionWriterMap) {
-            LocalFileWriter writer = timePartitionWriterMap.computeIfAbsent(pathString, x -> {
-                LocalFileWriter localFileWriter = localStorage.createLocalFileWriter(partitionedPath);
-                instrumentation.incrementCounter(SINK_OBJECTSTORAGE_LOCAL_FILE_OPEN_TOTAL);
+            LocalFileWriter writer = timePartitionWriterMap.computeIfAbsent(partition.toString(), x -> {
+                LocalFileWriter localFileWriter = localStorage.createLocalFileWriter(partition.getPath());
+                instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_OPEN_TOTAL,
+                        TOPIC_TAG + partition.getTopic(),
+                        PARTITION_TAG + dateTimePartition);
                 return localFileWriter;
             });
+
             writer.write(record);
+
+            instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL,
+                    SCOPE_TAG + SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE,
+                    TOPIC_TAG + partition.getTopic(),
+                    PARTITION_TAG + dateTimePartition);
+
             return writer.getFullPath();
         }
     }

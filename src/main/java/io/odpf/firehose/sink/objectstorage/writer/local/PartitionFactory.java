@@ -2,54 +2,44 @@ package io.odpf.firehose.sink.objectstorage.writer.local;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import io.odpf.firehose.exception.EglcConfigurationException;
 import io.odpf.firehose.sink.objectstorage.Constants;
 import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProto;
 import lombok.AllArgsConstructor;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 
+/**
+ * Create path partition from Record.
+ */
 @AllArgsConstructor
-public class TimePartitionPath {
+public class PartitionFactory {
 
     private final String kafkaMetadataFieldName;
     private final String fieldName;
-    private final Constants.PartitioningType partitioningType;
-    private final String zone;
-    private final String datePrefix;
-    private final String hourPrefix;
+    private PartitionConfig partitionConfig;
 
-    public Path create(Record record) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public Path getPartitionPath(Record record) {
+        Partition partition = getPartition(record);
+        return partition.getPath();
+    }
 
+    public Partition getPartition(Record record) {
         DynamicMessage metadataMessage = record.getMetadata();
         String topic = getTopic(metadataMessage);
 
-        DynamicMessage message = record.getMessage();
-        Instant timestamp = getTimestamp(message);
-        LocalDateTime localDateTime = LocalDateTime.ofInstant(timestamp, ZoneId.of(zone));
-
-        String dateTime = formatter.format(localDateTime);
-        String dateSegment = String.format("%s%s", datePrefix, dateTime);
-
-        switch (partitioningType) {
-            case DAY:
-                return Paths.get(topic, dateSegment);
-            case HOUR:
-                String hour = DateTimeFormatter.ofPattern("HH").format(localDateTime);
-                String hourSegment = String.format("%s%s", hourPrefix, hour);
-                return Paths.get(topic, dateSegment, hourSegment);
-            case NONE:
-                return Paths.get(topic);
-            default:
-                throw new EglcConfigurationException(String.format("%s partition type is not supported", partitioningType));
+        Instant timestamp = null;
+        if (partitionConfig.getPartitioningType() != Constants.PartitioningType.NONE) {
+            DynamicMessage message = record.getMessage();
+            timestamp = getTimestamp(message);
         }
+
+        return new Partition(topic, timestamp, partitionConfig);
+    }
+
+    public Partition fromPartitionPath(String partitionPath) {
+        return Partition.parseFrom(partitionPath, partitionConfig);
     }
 
     private String getTopic(DynamicMessage dynamicMessage) {

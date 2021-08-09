@@ -22,8 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static io.odpf.firehose.metrics.Metrics.FILE_PATH_TAG;
-import static io.odpf.firehose.metrics.Metrics.SINK_OBJECTSTORAGE_RECORD_WRITE_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.*;
 
 public class ObjectStorageSink extends AbstractSink {
 
@@ -41,32 +40,35 @@ public class ObjectStorageSink extends AbstractSink {
 
     @Override
     protected List<Message> execute() throws Exception {
-        List<Message> deserializationFailedMessages = new LinkedList<>();
+        List<Message> failedMessages = new LinkedList<>();
         for (Message message : messages) {
             try {
                 Record record = messageDeSerializer.deSerialize(message);
                 String filePath = writerOrchestrator.write(record);
                 offsetManager.addOffsetToBatch(filePath, message);
-                getInstrumentation().incrementCounterWithTags(SINK_OBJECTSTORAGE_RECORD_WRITE_TOTAL, FILE_PATH_TAG + filePath);
             } catch (EmptyMessageException e) {
                 getInstrumentation().logWarn("empty message found on topic: {}, partition: {}, offset: {}",
                         message.getTopic(), message.getPartition(), message.getOffset());
                 message.setErrorInfo(new ErrorInfo(e, ErrorType.INVALID_MESSAGE_ERROR));
-                deserializationFailedMessages.add(message);
+                failedMessages.add(message);
             } catch (UnknownFieldsException e) {
                 getInstrumentation().logWarn(e.getMessage());
                 message.setErrorInfo(new ErrorInfo(e, ErrorType.UNKNOWN_FIELDS_ERROR));
-                deserializationFailedMessages.add(message);
+                failedMessages.add(message);
             } catch (DeserializerException e) {
                 getInstrumentation().logWarn("message deserialization failed on topic: {}, partition: {}, offset: {}, reason: {}",
                         message.getTopic(), message.getPartition(), message.getOffset(), e.getMessage());
                 message.setErrorInfo(new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR));
-                deserializationFailedMessages.add(message);
+                failedMessages.add(message);
             } catch (Exception e) {
                 throw new WriterIOException(e);
             }
         }
-        return deserializationFailedMessages;
+
+        getInstrumentation().captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_FAILED_TOTAL, failedMessages.size(),
+                SCOPE_TAG + SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE);
+
+        return failedMessages;
     }
 
     @Override

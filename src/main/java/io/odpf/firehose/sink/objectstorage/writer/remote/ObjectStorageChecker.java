@@ -1,14 +1,15 @@
 package io.odpf.firehose.sink.objectstorage.writer.remote;
 
 import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.Metrics;
 import io.odpf.firehose.objectstorage.ObjectStorage;
-import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
+import io.odpf.firehose.sink.objectstorage.writer.local.FileMeta;
+import io.odpf.firehose.sink.objectstorage.writer.local.Partition;
+import io.odpf.firehose.util.Clock;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -22,50 +23,69 @@ import static io.odpf.firehose.metrics.Metrics.*;
 @AllArgsConstructor
 public class ObjectStorageChecker implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ObjectStorageChecker.class);
-    private final BlockingQueue<String> toBeFlushedToRemotePaths;
+    private final BlockingQueue<FileMeta> toBeFlushedToRemotePaths;
     private final BlockingQueue<String> flushedToRemotePaths;
     private final Set<ObjectStorageWriterWorkerFuture> remoteUploadFutures;
     private final ExecutorService remoteUploadScheduler;
     private final ObjectStorage objectStorage;
-    private final LocalStorage localStorage;
+    private final Clock clock;
     private final Instrumentation instrumentation;
 
     @Override
     public void run() {
-        List<String> tobeFlushed = new ArrayList<>();
+        List<FileMeta> tobeFlushed = new ArrayList<>();
         toBeFlushedToRemotePaths.drainTo(tobeFlushed);
         remoteUploadFutures.addAll(tobeFlushed.stream()
-                .map(path -> new ObjectStorageWriterWorkerFuture(
+                .map(fileMeta -> new ObjectStorageWriterWorkerFuture(
                         remoteUploadScheduler.submit(() -> {
-                            objectStorage.store(path);
-                        }), path, Instant.now())
+                            objectStorage.store(fileMeta.getFullPath());
+                        }), fileMeta, clock.now())
                 ).collect(Collectors.toList()));
 
-        Set<String> flushedPath = remoteUploadFutures.stream().map(future -> {
-            if (!future.getFuture().isDone()) {
+        Set<String> flushedPath = remoteUploadFutures.stream().map(uploadJob -> {
+            if (!uploadJob.getFuture().isDone()) {
                 return "";
             } else {
                 try {
-                    future.getFuture().get();
-                    LOGGER.info("Flushed to Object storage " + future.getPath());
-                    instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL, SUCCESS_TAG);
-                    long fileSize = localStorage.getFileSize(future.getPath());
-                    instrumentation.captureCountWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_BYTES, fileSize);
-                    instrumentation.captureDurationSince(SINK_OBJECTSTORAGE_FILE_UPLOAD_TIME_MILLISECONDS, future.getStartTime());
-                } catch (InterruptedException e) {
-                    instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL, FAILURE_TAG);
-                    throw new ObjectStorageFailedException(e);
-                } catch (ExecutionException e) {
-                    instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL, FAILURE_TAG);
-                    throw new ObjectStorageFailedException(e.getCause());
-                } catch (IOException e) {
-                    instrumentation.logError("failed to get file size from : {}", future.getPath());
-                    throw new ObjectStorageFailedException(e);
+                    uploadJob.getFuture().get();
+                    FileMeta fileMeta = uploadJob.getFileMeta();
+                    Partition partition = fileMeta.getPartition();
+
+                    LOGGER.info("Flushed to Object storage " + fileMeta.getFullPath());
+
+                    instrumentation.captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL, fileMeta.getRecordCount(),
+                            SCOPE_TAG + SINK_OBJECT_STORAGE_SCOPE_FILE_UPLOAD,
+                            TOPIC_TAG + partition.getTopic(),
+                            PARTITION_TAG + partition.getDatetime());
+                    instrumentation.incrementCounterWithTags(Metrics.SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL,
+                            SUCCESS_TAG,
+                            TOPIC_TAG + partition.getTopic(),
+                            PARTITION_TAG + partition.getDatetime());
+                    instrumentation.captureCountWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
+                            TOPIC_TAG + partition.getTopic(),
+                            PARTITION_TAG + partition.getDatetime());
+                    instrumentation.captureDurationSinceWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TIME_MILLISECONDS, uploadJob.getStartTime(),
+                            TOPIC_TAG + partition.getTopic(),
+                            PARTITION_TAG + partition.getDatetime());
+                } catch (InterruptedException | ExecutionException e) {
+                    Partition partition = uploadJob.getFileMeta().getPartition();
+                    instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL, FAILURE_TAG,
+                            TOPIC_TAG + partition.getTopic(),
+                            PARTITION_TAG + partition.getDatetime());
+
+                    Throwable cause;
+                    if (e instanceof ExecutionException) {
+                        cause = e.getCause();
+                    } else {
+                        cause = e;
+                    }
+                    throw new ObjectStorageFailedException(cause);
                 }
-                return future.getPath();
+
+                return uploadJob.getFileMeta().getFullPath();
             }
         }).filter(x -> !x.isEmpty()).collect(Collectors.toSet());
-        remoteUploadFutures.removeIf(x -> flushedPath.contains(x.getPath()));
+        remoteUploadFutures.removeIf(x -> flushedPath.contains(x.getFileMeta().getFullPath()));
         flushedToRemotePaths.addAll(flushedPath);
     }
 }

@@ -29,17 +29,21 @@ public class LocalStorage {
     @Getter
     private final List<WriterPolicy> policies;
     @Getter
-    private final TimePartitionPath timePartitionPath;
+    private final PartitionFactory partitionFactory;
 
-    public LocalFileWriter createLocalFileWriter(Path partitionedPath) {
+    public LocalFileWriter createLocalFileWriter(Path partitionPath) {
         String fileName = UUID.randomUUID().toString();
-        Path dir = basePath.resolve(partitionedPath);
+        Path dir = basePath.resolve(partitionPath);
         Path fullPath = dir.resolve(Paths.get(fileName));
 
+        return createWriter(fullPath);
+    }
+
+    private LocalParquetFileWriter createWriter(Path fullPath) {
         switch (writerType) {
             case PARQUET:
                 try {
-                    LOGGER.info("Creating Local File " + fullPath.toString());
+                    LOGGER.info("Creating Local File " + fullPath);
                     return new LocalParquetFileWriter(System.currentTimeMillis(), fullPath.toString(), pageSize, blockSize, messageDescriptor, metadataFieldDescriptor);
                 } catch (IOException e) {
                     throw new LocalFileWriterFailedException(e);
