@@ -70,10 +70,10 @@ public class MongoSinkClient implements Closeable {
                 database.createCollection(collectionName);
             } catch (MongoCommandException e) {
                 if (!doesDBExist) {
-                    instrumentation.logWarn("Failed to create database");
+                    instrumentation.logError("Failed to create database");
                 }
 
-                instrumentation.logWarn("Failed to create collection. Cause: " + e.getErrorMessage());
+                instrumentation.logError("Failed to create collection. Cause: " + e.getErrorMessage());
                 throw e;
             }
             if (!doesDBExist) {

@@ -133,4 +133,15 @@ public class MongoUpdateRequestHandlerTest {
         thrown.expectMessage("Key: wrongKey not found in ESB Message");
         mongoUpdateRequestHandler.getFieldFromJSON(jsonObject, "wrongKey");
     }
+
+    @Test
+    public void shouldThrowNullPointerExceptionForNullPrimaryKey() {
+        MongoUpdateRequestHandler mongoUpdateRequestHandler = new MongoUpdateRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
+                "s2_id_level", "message");
+        JSONObject jsonObject = mongoUpdateRequestHandler.getJSONObject(jsonSerializer.serialize(messageWithProto));
+
+        thrown.expect(NullPointerException.class);
+        thrown.expectMessage("Key cannot be null");
+        mongoUpdateRequestHandler.getFieldFromJSON(jsonObject, null);
+    }
 }

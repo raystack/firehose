@@ -95,7 +95,7 @@ public abstract class MongoRequestHandler {
      */
     protected String getFieldFromJSON(JSONObject jsonObject, String key) {
         if (key == null) {
-            throw new IllegalArgumentException("Key cannot be null");
+            throw new NullPointerException("Key cannot be null");
         }
         Object valueAtKey = jsonObject.get(key);
         if (valueAtKey == null) {

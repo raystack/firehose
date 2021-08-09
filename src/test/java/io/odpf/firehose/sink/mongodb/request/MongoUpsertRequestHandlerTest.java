@@ -3,6 +3,7 @@ package io.odpf.firehose.sink.mongodb.request;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.mongodb.BasicDBObject;
+import com.mongodb.client.model.InsertOneModel;
 import com.mongodb.client.model.ReplaceOneModel;
 import io.odpf.firehose.config.enums.MongoSinkMessageType;
 import io.odpf.firehose.config.enums.MongoSinkRequestType;
@@ -54,7 +55,7 @@ public class MongoUpsertRequestHandlerTest {
     }
 
     @Test
-    public void shouldReturnTrueForInsertMode() {
+    public void shouldReturnTrueForUpsertMode() {
         MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPSERT,
                 "customer_id", "message");
 
@@ -62,7 +63,7 @@ public class MongoUpsertRequestHandlerTest {
     }
 
     @Test
-    public void shouldReturnFalseForUpsertOnlyMode() {
+    public void shouldReturnFalseForUpdateOnlyMode() {
         MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
                 "customer_id", "message");
 
@@ -71,37 +72,63 @@ public class MongoUpsertRequestHandlerTest {
 
     @Test
     public void shouldReturnReplaceOneModelForJsonMessageType() {
-        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.JSON, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
+        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.JSON, jsonSerializer, MongoSinkRequestType.UPSERT,
                 "customer_id", "message");
 
         assertEquals(ReplaceOneModel.class, mongoUpsertRequestHandler.getRequest(messageWithJSON).getClass());
     }
 
     @Test
-    public void shouldReturnModelWithCorrectPayloadForJsonMessageType() {
-        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.JSON, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
+    public void shouldReturnReplaceOneModelWithCorrectPayloadForJsonMessageType() {
+        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.JSON, jsonSerializer, MongoSinkRequestType.UPSERT,
                 "customer_id", "message");
 
         ReplaceOneModel<Document> request = (ReplaceOneModel<Document>) mongoUpsertRequestHandler.getRequest(messageWithJSON);
         Document inputMap = new Document("_id", "544131618");
         inputMap.putAll(new BasicDBObject(Document.parse(jsonString)).toMap());
         Document outputMap = request.getReplacement();
+
         assertEquals(inputMap.keySet().stream().sorted().collect(Collectors.toList()), outputMap.keySet().stream().sorted().collect(Collectors.toList()));
-        assertEquals(inputMap.get("wallet_id", "message"), outputMap.get("wallet_id", "message"));
+        assertEquals(inputMap.get("wallet_id"), outputMap.get("wallet_id"));
+        assertEquals(inputMap.get("_id"), outputMap.get("_id"));
         assertEquals(inputMap.get("dag_run_time"), outputMap.get("dag_run_time"));
     }
 
     @Test
+    public void shouldReturnInsertOneModelWithCorrectPayloadForJsonMessageType() {
+        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.JSON, jsonSerializer, MongoSinkRequestType.UPSERT,
+                null, "message");
+
+        InsertOneModel<Document> request = (InsertOneModel<Document>) mongoUpsertRequestHandler.getRequest(messageWithJSON);
+        Document outputMap = request.getDocument();
+        Document inputMap = new Document();
+        inputMap.putAll(new BasicDBObject(Document.parse(jsonString)).toMap());
+        assertEquals(inputMap.keySet().stream().sorted().collect(Collectors.toList()), outputMap.keySet().stream().sorted().collect(Collectors.toList()));
+        assertEquals(inputMap.get("wallet_id"), outputMap.get("wallet_id"));
+        assertEquals(inputMap.get("dag_run_time"), outputMap.get("dag_run_time"));
+    }
+
+
+    @Test
     public void shouldReturnReplaceOneModelForProtoMessageType() {
-        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
+        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPSERT,
                 "s2_id_level", "message");
 
         assertEquals(ReplaceOneModel.class, mongoUpsertRequestHandler.getRequest(messageWithProto).getClass());
     }
 
+
+    @Test
+    public void shouldReturnInsertOneModelForNullPrimaryKey() {
+        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPSERT,
+                null, "message");
+
+        assertEquals(InsertOneModel.class, mongoUpsertRequestHandler.getRequest(messageWithProto).getClass());
+    }
+
     @Test
     public void shouldReturnModelWithCorrectPayloadForProtoMessageType() {
-        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
+        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPSERT,
                 "s2_id_level", "message");
 
         ReplaceOneModel<Document> request = (ReplaceOneModel<Document>) mongoUpsertRequestHandler.getRequest(messageWithProto);
@@ -113,7 +140,7 @@ public class MongoUpsertRequestHandlerTest {
 
     @Test
     public void shouldThrowJSONParseExceptionForInvalidJson() {
-        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
+        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPSERT,
                 "s2_id_level", "message");
 
         thrown.expect(JsonParseException.class);
@@ -122,7 +149,7 @@ public class MongoUpsertRequestHandlerTest {
 
     @Test
     public void shouldThrowExceptionForInvalidKey() {
-        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPDATE_ONLY,
+        MongoUpsertRequestHandler mongoUpsertRequestHandler = new MongoUpsertRequestHandler(MongoSinkMessageType.PROTOBUF, jsonSerializer, MongoSinkRequestType.UPSERT,
                 "s2_id_level", "message");
         JSONObject jsonObject = mongoUpsertRequestHandler.getJSONObject(jsonSerializer.serialize(messageWithProto));
         thrown.expect(IllegalArgumentException.class);

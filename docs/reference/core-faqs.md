@@ -49,7 +49,8 @@ Firehose provides various Kafka client configurations. Refer [Generic Configurat
 
 ## What all data formats are supported ?
 
-Only Protobuf is supported by the Stencil client, the schema registry used by Firehose. Nevertheless, support for JSON and Avro is planned to be included in a future Firehose release.
+Elasticsearch and MongoDB sink support both JSON and Protobuf as the input schema.
+For other sinks, we currently support only Protobuf. Support for JSON and Avro is planned and incorporated in our roadmap. Please refer to our Roadmap section for more details.
 
 Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data. Data streams on Kafka topics are bound to a Protobuf schema.
 

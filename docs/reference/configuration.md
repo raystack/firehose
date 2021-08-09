@@ -689,7 +689,7 @@ A MongoDB sink Firehose \(`SINK_TYPE`= `mongodb` \) requires the following varia
 
 MongoDB connection URL/URLs to connect. Multiple URLs could be given in a comma separated format.
 
-* Example value: `localhost1:9200`
+* Example value: `localhost:27017`
 * Type: `required`
 
 ### `SINK_MONGO_DB_NAME`
@@ -782,7 +782,7 @@ List of comma-separated status codes for which Firehose should not retry in case
 
 ### `SINK_MONGO_PRESERVE_PROTO_FIELD_NAMES_ENABLE`
 
-Whether or not the protobuf field names should be preserved in the Elasticsearch document. If false the fields will be converted to camel case.
+Whether or not the protobuf field names should be preserved in the MongoDB document. If false the fields will be converted to camel case.
 * Example value: `false`
 * Type: `optional`
 * Default: `true`
