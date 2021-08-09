@@ -1,70 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_GODATA-PRODUCTION",
-      "label": "godata-production",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "influxdb",
-      "pluginName": "InfluxDB"
-    }
-  ],
-  "__requires": [
-    {
-      "type": "panel",
-      "id": "flant-statusmap-panel",
-      "name": "Statusmap",
-      "version": "0.4.1"
-    },
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "8.0.1"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph (old)",
-      "version": ""
-    },
-    {
-      "type": "datasource",
-      "id": "influxdb",
-      "name": "InfluxDB",
-      "version": "1.0.0"
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "stat",
-      "name": "Stat",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "table",
-      "name": "Table",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "table-old",
-      "name": "Table (old)",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "timeseries",
-      "name": "Time series",
-      "version": ""
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -82,8 +16,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 1,
-  "id": null,
-  "iteration": 1628508364776,
+  "id": 222,
+  "iteration": 1628508364782,
   "links": [],
   "panels": [
     {
@@ -10269,7 +10203,7 @@
       "type": "row"
     },
     {
-      "datasource": "${DS_GODATA-PRODUCTION}",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -10349,7 +10283,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_GODATA-PRODUCTION}",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -10429,7 +10363,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_GODATA-PRODUCTION}",
+      "datasource": "${datasource}",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -10830,9 +10764,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "godata-production",
-          "value": "godata-production"
+          "selected": true,
+          "text": "firehose-integration",
+          "value": "firehose-integration"
         },
         "description": null,
         "error": null,
@@ -10851,7 +10785,7 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "lens-prometheus",
           "value": "lens-prometheus"
         },
@@ -10954,7 +10888,11 @@
       },
       {
         "allValue": null,
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "g-gojek-id--gofood-fundamental-dishes-es-firehose",
+          "value": "g-gojek-id--gofood-fundamental-dishes-es-firehose"
+        },
         "datasource": "$datasource",
         "definition": "SHOW TAG VALUES FROM \"firehose_jvm_\" WITH KEY=\"app\"",
         "description": null,
@@ -10977,7 +10915,15 @@
       },
       {
         "allValue": null,
-        "current": {},
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
         "datasource": "$datasource",
         "definition": "SHOW TAG VALUES FROM \"firehose_jvm_\" WITH KEY=\"host\" WHERE \"app\" =~ /^$firehose$/",
         "description": null,
