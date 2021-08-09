@@ -8,6 +8,12 @@
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
         "type": "dashboard"
       }
     ]
@@ -16,146 +22,18 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 1,
-  "id": 222,
-  "iteration": 1628508364782,
+  "id": 3,
+  "iteration": 1628530437009,
   "links": [],
   "panels": [
     {
-      "cards": {
-        "cardHSpacing": 2,
-        "cardMinWidth": 5,
-        "cardRound": null,
-        "cardVSpacing": 2
-      },
-      "color": {
-        "cardColor": "#b4ff00",
-        "colorScale": "sqrt",
-        "colorScheme": "interpolateGnYlRd",
-        "defaultColor": "#757575",
-        "exponent": 0.5,
-        "max": 1,
-        "min": 0,
-        "mode": "discrete",
-        "thresholds": [
-          {
-            "$$hashKey": "object:665",
-            "color": "#C4162A",
-            "tooltip": "👎🏻",
-            "value": "0"
-          },
-          {
-            "$$hashKey": "object:669",
-            "color": "#37872D",
-            "tooltip": "👍🏻",
-            "value": "1"
-          }
-        ]
-      },
-      "datasource": "$datasource",
-      "description": "This shows the health of the firehose. In case the firehose is not running fine you would see a red bar",
-      "gridPos": {
-        "h": 5,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "hideTimeOverride": false,
-      "highlightCards": true,
-      "id": 218,
-      "legend": {
-        "show": false
-      },
-      "links": [],
-      "nullPointMode": "as empty",
-      "pageSize": 15,
-      "seriesFilterIndex": -1,
-      "statusmap": {
-        "ConfigVersion": "v1"
-      },
-      "targets": [
-        {
-          "alias": "Uptime",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "firehose_uptime",
-          "orderByTime": "ASC",
-          "policy": "quarterly",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "uptime"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "min"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "app",
-              "operator": "=~",
-              "value": "/^$firehose.*$/"
-            }
-          ]
-        }
-      ],
-      "title": "Health",
-      "tooltip": {
-        "extraInfo": "",
-        "freezeOnClick": true,
-        "items": [],
-        "show": true,
-        "showExtraInfo": false,
-        "showItems": false
-      },
-      "type": "flant-statusmap-panel",
-      "useMax": true,
-      "usingPagination": false,
-      "xAxis": {
-        "show": true
-      },
-      "yAxis": {
-        "maxWidth": -1,
-        "minWidth": -1,
-        "show": true
-      },
-      "yAxisSort": "metrics",
-      "yLabel": {
-        "delimiter": "",
-        "labelTemplate": "",
-        "usingSplitLabel": false
-      }
-    },
-    {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 5
+        "y": 0
       },
       "id": 77,
       "panels": [
@@ -547,15 +425,11 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 6
+        "y": 1
       },
       "id": 188,
       "panels": [
@@ -2333,15 +2207,11 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 2
       },
       "id": 137,
       "panels": [
@@ -2765,15 +2635,11 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 3
       },
       "id": 118,
       "panels": [
@@ -6198,15 +6064,11 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 4
       },
       "id": 88,
       "panels": [
@@ -6416,15 +6278,11 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 10
+        "y": 5
       },
       "id": 139,
       "panels": [
@@ -7362,15 +7220,11 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 11
+        "y": 6
       },
       "id": 94,
       "panels": [
@@ -9317,15 +9171,11 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 12
+        "y": 7
       },
       "id": 48,
       "panels": [
@@ -9616,15 +9466,11 @@
     {
       "collapsed": false,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 8
       },
       "id": 34,
       "panels": [],
@@ -9671,14 +9517,14 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 9
       },
       "id": 225,
       "links": [],
       "options": {
         "showHeader": true
       },
-      "pluginVersion": "8.0.1",
+      "pluginVersion": "8.1.0",
       "targets": [
         {
           "alias": "$tag_status_code",
@@ -9755,7 +9601,7 @@
         "h": 11,
         "w": 8,
         "x": 0,
-        "y": 20
+        "y": 15
       },
       "hiddenSeries": false,
       "id": 30,
@@ -9776,7 +9622,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.0.1",
+      "pluginVersion": "8.1.0",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -9905,7 +9751,7 @@
         "h": 11,
         "w": 8,
         "x": 8,
-        "y": 20
+        "y": 15
       },
       "hiddenSeries": false,
       "id": 199,
@@ -9926,7 +9772,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.0.1",
+      "pluginVersion": "8.1.0",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -10059,7 +9905,7 @@
         "h": 11,
         "w": 8,
         "x": 16,
-        "y": 20
+        "y": 15
       },
       "hiddenSeries": false,
       "id": 198,
@@ -10080,7 +9926,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.0.1",
+      "pluginVersion": "8.1.0",
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
@@ -10195,7 +10041,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 26
       },
       "id": 229,
       "panels": [],
@@ -10258,7 +10104,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 32
+        "y": 27
       },
       "id": 227,
       "options": {
@@ -10338,7 +10184,7 @@
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 32
+        "y": 27
       },
       "id": 231,
       "options": {
@@ -10418,7 +10264,7 @@
         "h": 9,
         "w": 8,
         "x": 16,
-        "y": 32
+        "y": 27
       },
       "id": 233,
       "options": {
@@ -10445,15 +10291,11 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 41
+        "y": 36
       },
       "id": 201,
       "panels": [
@@ -10765,8 +10607,8 @@
       {
         "current": {
           "selected": true,
-          "text": "firehose-integration",
-          "value": "firehose-integration"
+          "text": "default",
+          "value": "default"
         },
         "description": null,
         "error": null,
@@ -10786,8 +10628,8 @@
       {
         "current": {
           "selected": true,
-          "text": "lens-prometheus",
-          "value": "lens-prometheus"
+          "text": "No data sources found",
+          "value": ""
         },
         "description": null,
         "error": null,
@@ -10807,40 +10649,19 @@
       {
         "allValue": null,
         "current": {
-          "selected": true,
-          "text": "gojek",
-          "value": "gojek"
+          "selected": false,
+          "text": "org",
+          "value": "org"
         },
-        "description": null,
+        "description": "",
         "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "Organisation",
         "multi": false,
         "name": "organisation",
-        "options": [
-          {
-            "selected": true,
-            "text": "gojek",
-            "value": "gojek"
-          },
-          {
-            "selected": false,
-            "text": "godata",
-            "value": "godata"
-          },
-          {
-            "selected": false,
-            "text": "goid",
-            "value": "goid"
-          },
-          {
-            "selected": false,
-            "text": "pilotdata",
-            "value": "pilotdata"
-          }
-        ],
-        "query": "gojek,godata,goid,pilotdata",
+        "options": [],
+        "query": "",
         "queryValue": "",
         "skipUrlSync": false,
         "type": "custom"
@@ -10848,50 +10669,10 @@
       {
         "allValue": null,
         "current": {
+          "isNone": true,
           "selected": true,
-          "text": "id",
-          "value": "id"
-        },
-        "description": null,
-        "error": null,
-        "hide": 0,
-        "includeAll": false,
-        "label": "Landscape",
-        "multi": false,
-        "name": "landscape",
-        "options": [
-          {
-            "selected": true,
-            "text": "id",
-            "value": "id"
-          },
-          {
-            "selected": false,
-            "text": "th",
-            "value": "th"
-          },
-          {
-            "selected": false,
-            "text": "vn",
-            "value": "vn"
-          },
-          {
-            "selected": false,
-            "text": "gl",
-            "value": "gl"
-          }
-        ],
-        "query": "id,th,vn,gl",
-        "queryValue": "",
-        "skipUrlSync": false,
-        "type": "custom"
-      },
-      {
-        "allValue": null,
-        "current": {
-          "selected": false,
-          "text": "g-gojek-id--gofood-fundamental-dishes-es-firehose",
-          "value": "g-gojek-id--gofood-fundamental-dishes-es-firehose"
+          "text": "None",
+          "value": ""
         },
         "datasource": "$datasource",
         "definition": "SHOW TAG VALUES FROM \"firehose_jvm_\" WITH KEY=\"app\"",
@@ -10976,6 +10757,6 @@
   },
   "timezone": "browser",
   "title": "Firehose Timeboard",
-  "uid": "UFOq2j8Mk",
-  "version": 59
+  "uid": "2W1Us8Gnk",
+  "version": 4
 }
