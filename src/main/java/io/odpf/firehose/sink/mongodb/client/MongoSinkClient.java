@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_DROP_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.*;
 
 /**
  * The Mongo Sink Client.
@@ -117,6 +117,7 @@ public class MongoSinkClient implements Closeable {
 
         int totalWriteCount = writeResult.getInsertedCount() + writeResult.getModifiedCount() + writeResult.getUpserts().size();
         int failureCount = messageCount - totalWriteCount;
+        int totalInsertedCount = writeResult.getInsertedCount() + writeResult.getUpserts().size();
 
         if (totalWriteCount == 0) {
             instrumentation.logWarn("Bulk request failed");
@@ -149,11 +150,21 @@ public class MongoSinkClient implements Closeable {
         }
         instrumentation.logInfo(
                 "Inserted Count = {}. Matched Count = {}. Deleted Count = {}. Updated Count = {}. Total Modified Count = {}",
-                writeResult.getUpserts().size() + writeResult.getInsertedCount(),
+                totalInsertedCount,
                 writeResult.getMatchedCount(),
                 writeResult.getDeletedCount(),
                 writeResult.getModifiedCount(),
                 totalWriteCount);
+
+        for (int i = 0; i < totalInsertedCount; i++) {
+            instrumentation.incrementCounterWithTags(SINK_MONGO_INSERTED_TOTAL);
+        }
+        for (int i = 0; i < writeResult.getModifiedCount(); i++) {
+            instrumentation.incrementCounterWithTags(SINK_MONGO_UPDATED_TOTAL);
+        }
+        for (int i = 0; i < totalWriteCount; i++) {
+            instrumentation.incrementCounterWithTags(SINK_MONGO_MODIFIED_TOTAL);
+        }
     }
 
     /**
