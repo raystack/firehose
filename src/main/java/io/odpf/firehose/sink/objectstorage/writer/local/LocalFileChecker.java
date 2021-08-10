@@ -57,27 +57,30 @@ public class LocalFileChecker implements Runnable {
 
                 instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSE_TOTAL,
                         SUCCESS_TAG,
-                        TOPIC_TAG + partition.getTopic(),
-                        PARTITION_TAG + partition.getDatetime());
+                        tag(TOPIC_TAG, partition.getTopic()),
+                        tag(PARTITION_TAG, partition.getDatetime()));
 
                 instrumentation.captureDurationSinceWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSING_TIME_MILLISECONDS, fileClosingStartTime,
-                        TOPIC_TAG + partition.getTopic(),
-                        PARTITION_TAG + partition.getDatetime());
+                        tag(TOPIC_TAG, partition.getTopic()),
+                        tag(PARTITION_TAG, partition.getDatetime()));
 
                 instrumentation.captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL, fileMeta.getRecordCount(),
-                        SCOPE_TAG + SINK_OBJECT_STORAGE_SCOPE_FILE_CLOSE,
-                        TOPIC_TAG + partition.getTopic(),
-                        PARTITION_TAG + partition.getDatetime());
+                        tag(SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_CLOSE),
+                        tag(TOPIC_TAG, partition.getTopic()),
+                        tag(PARTITION_TAG, partition.getDatetime()));
 
                 instrumentation.captureCountWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_SIZE_BYTES, fileMeta.getFileSizeBytes(),
-                        TOPIC_TAG + partition.getTopic(),
-                        PARTITION_TAG + partition.getDatetime());
+                        tag(TOPIC_TAG, partition.getTopic()),
+                        tag(PARTITION_TAG, partition.getDatetime()));
             } catch (IOException e) {
                 e.printStackTrace();
+                instrumentation.captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSING_FAILED_TOTAL, writer.getRecordCount(),
+                        tag(TOPIC_TAG, partition.getTopic()),
+                        tag(PARTITION_TAG, partition.getDatetime()));
                 instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSE_TOTAL,
                         FAILURE_TAG,
-                        TOPIC_TAG + partition.getTopic(),
-                        PARTITION_TAG + partition.getDatetime());
+                        tag(TOPIC_TAG, partition.getTopic()),
+                        tag(PARTITION_TAG, partition.getDatetime()));
                 throw new LocalFileWriterFailedException(e);
             }
         });

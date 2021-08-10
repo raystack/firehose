@@ -146,8 +146,8 @@ public class ObjectStorageCheckerTest {
 
         verify(instrumentation, times(1)).incrementCounterWithTags(Metrics.SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL,
                 SUCCESS_TAG,
-                TOPIC_TAG + fileMeta.getPartition().getTopic(),
-                PARTITION_TAG + fileMeta.getPartition().getDatetime());
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(PARTITION_TAG, fileMeta.getPartition().getDatetime()));
     }
 
     @Test
@@ -159,8 +159,8 @@ public class ObjectStorageCheckerTest {
         worker.run();
 
         verify(instrumentation).captureCountWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
-                TOPIC_TAG + fileMeta.getPartition().getTopic(),
-                PARTITION_TAG + fileMeta.getPartition().getDatetime());
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(PARTITION_TAG, fileMeta.getPartition().getDatetime()));
     }
 
     @Test
@@ -174,8 +174,8 @@ public class ObjectStorageCheckerTest {
         worker.run();
 
         verify(instrumentation, (times(1))).captureDurationSinceWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TIME_MILLISECONDS, startTime,
-                TOPIC_TAG + fileMeta.getPartition().getTopic(),
-                PARTITION_TAG + fileMeta.getPartition().getDatetime());
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(PARTITION_TAG, fileMeta.getPartition().getDatetime()));
     }
 
     @Test
@@ -187,9 +187,9 @@ public class ObjectStorageCheckerTest {
         worker.run();
 
         verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL, fileMeta.getRecordCount(),
-                SCOPE_TAG + SINK_OBJECT_STORAGE_SCOPE_FILE_UPLOAD,
-                TOPIC_TAG + fileMeta.getPartition().getTopic(),
-                PARTITION_TAG + fileMeta.getPartition().getDatetime());
+                tag(SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_UPLOAD),
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(PARTITION_TAG, fileMeta.getPartition().getDatetime()));
     }
 
     @Test
@@ -209,8 +209,8 @@ public class ObjectStorageCheckerTest {
 
         verify(instrumentation, times(1)).incrementCounterWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
-                TOPIC_TAG + fileMeta.getPartition().getTopic(),
-                PARTITION_TAG + fileMeta.getPartition().getDatetime());
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(PARTITION_TAG, fileMeta.getPartition().getDatetime()));
     }
 
     @Test
@@ -238,7 +238,35 @@ public class ObjectStorageCheckerTest {
 
         verify(instrumentation, times(1)).incrementCounterWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
-                TOPIC_TAG + fileMeta.getPartition().getTopic(),
-                PARTITION_TAG + fileMeta.getPartition().getDatetime());
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(PARTITION_TAG, fileMeta.getPartition().getDatetime()));
+    }
+
+    @Test
+    public void shouldRecordMetricOfRecordProcessingFailedWhenUploadFutureThrowsException() {
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        worker = new ObjectStorageChecker(
+                toBeFlushedToRemotePaths,
+                flushedToRemotePaths,
+                remoteUploadFutures,
+                executorService,
+                objectStorage,
+                clock,
+                instrumentation);
+        toBeFlushedToRemotePaths.add(fileMeta);
+
+        doThrow(new ObjectStorageFailedException(new IOException())).when(objectStorage).store(fileMeta.getFullPath());
+
+        while (true) {
+            try {
+                worker.run();
+            } catch (ObjectStorageFailedException ignored) {
+                break;
+            }
+        }
+
+        verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSING_FAILED_TOTAL, fileMeta.getRecordCount(),
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(PARTITION_TAG, fileMeta.getPartition().getDatetime()));
     }
 }

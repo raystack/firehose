@@ -40,7 +40,7 @@ public class Metrics {
 
     // OBJECT STORAGE SINK MEASUREMENTS
     public static final String SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "record_processed_total";
-    public static final String SINK_OBJECTSTORAGE_RECORD_FAILED_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "record_failed_total";
+    public static final String SINK_OBJECTSTORAGE_RECORD_PROCESSING_FAILED_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "record_processing_failed_total";
 
     public static final String SINK_OBJECTSTORAGE_LOCAL_FILE_OPEN_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_open_total";
     public static final String SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSE_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_close_total";
@@ -77,14 +77,17 @@ public class Metrics {
     public static final String FATAL_ERROR = "fatal";
 
     // KAFKA TAG
-    public static final String TOPIC_TAG = "topic=";
+    public static final String TOPIC_TAG = "topic";
 
     //SINK OBJECT STORAGE TAG
     public static final String PARTITION_TAG = "partition=";
-    public static final String SCOPE_TAG = "scope=";
+    public static final String SCOPE_TAG = "scope";
 
     public static final String SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE = "file_write";
     public static final String SINK_OBJECT_STORAGE_SCOPE_FILE_CLOSE = "file_close";
     public static final String SINK_OBJECT_STORAGE_SCOPE_FILE_UPLOAD = "file_upload";
 
+    public static String tag(String key, String value) {
+        return String.format("%s=%s", key, value);
+    }
 }

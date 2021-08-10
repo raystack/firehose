@@ -223,7 +223,7 @@ public class ObjectStorageSinkTest {
 
         verify(writerOrchestrator, times(2)).write(any(Record.class));
         assertEquals(2, retryMessages.size());
-        verify(instrumentation).captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_FAILED_TOTAL, 2,
-                SCOPE_TAG + SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE);
+        verify(instrumentation).captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSING_FAILED_TOTAL, 2,
+                tag(SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE));
     }
 }
