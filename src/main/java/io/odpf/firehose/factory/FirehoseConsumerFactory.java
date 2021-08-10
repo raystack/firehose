@@ -1,6 +1,7 @@
 package io.odpf.firehose.factory;
 
 
+
 import io.jaegertracing.Configuration;
 import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.config.DlqConfig;
@@ -20,6 +21,7 @@ import io.odpf.firehose.sink.influxdb.InfluxSinkFactory;
 import io.odpf.firehose.sink.jdbc.JdbcSinkFactory;
 import io.odpf.firehose.sink.log.KeyOrMessageParser;
 import io.odpf.firehose.sink.log.LogSinkFactory;
+import io.odpf.firehose.sink.mongodb.MongoSinkFactory;
 import io.odpf.firehose.sink.prometheus.PromSinkFactory;
 import io.odpf.firehose.sink.redis.RedisSinkFactory;
 import io.odpf.firehose.sinkdecorator.BackOff;
@@ -32,6 +34,7 @@ import io.odpf.firehose.util.Clock;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
 import io.odpf.stencil.parser.ProtoParser;
+
 import io.opentracing.Tracer;
 import io.opentracing.contrib.kafka.TracingKafkaProducer;
 import io.opentracing.noop.NoopTracerFactory;
@@ -125,6 +128,9 @@ public class FirehoseConsumerFactory {
                 return new GrpcSinkFactory().create(config, statsDReporter, stencilClient);
             case PROMETHEUS:
                 return new PromSinkFactory().create(config, statsDReporter, stencilClient);
+            case MONGODB:
+                return new MongoSinkFactory().create(config, statsDReporter, stencilClient);
+
             default:
                 throw new EglcConfigurationException("Invalid Firehose SINK_TYPE");
 
