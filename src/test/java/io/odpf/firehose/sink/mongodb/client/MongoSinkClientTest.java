@@ -197,6 +197,7 @@ public class MongoSinkClientTest {
 
         verify(instrumentation, times(1)).logWarn("Bulk request failed");
         verify(instrumentation, times(1)).logWarn("Bulk request failures count: {}", 2);
+        verify(instrumentation, times(1)).logWarn("Some Messages were dropped because their Primary Key values had no matches");
     }
 
     @Test
@@ -210,6 +211,19 @@ public class MongoSinkClientTest {
 
         verify(instrumentation, times(1)).logWarn("Bulk request partially succeeded");
         verify(instrumentation, times(1)).logWarn("Bulk request failures count: {}", 1);
+        verify(instrumentation, times(1)).logWarn("Some Messages were dropped because their Primary Key values had no matches");
+    }
+
+    @Test
+    public void shouldLogBulkRequestsNotAcknowledgedWhenNoAcknowledgementReceived() {
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+                mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
+
+        when(mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable()).thenReturn(true);
+        when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(false, 0, 1, 0));
+        mongoSinkClient.processRequest(request);
+
+        verify(instrumentation, times(1)).logWarn("Bulk Write operation was not acknowledged");
     }
 
     @Test
@@ -222,6 +236,10 @@ public class MongoSinkClientTest {
         mongoSinkClient.processRequest(request);
 
         verify(instrumentation, times(1)).logInfo("Bulk request succeeded");
+        verify(instrumentation, times(1)).logInfo("Bulk Write operation was successfully acknowledged");
+        verify(instrumentation, times(1)).logInfo(
+                "Inserted Count = {}. Matched Count = {}. Deleted Count = {}. Updated Count = {}. Total Modified Count = {}",
+                0, 2, 0, 2, 2);
     }
 
     @Test
@@ -229,11 +247,15 @@ public class MongoSinkClientTest {
         MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
 
-        when(mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable()).thenReturn(true);
         when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(true, 2, 0, 0));
         mongoSinkClient.processRequest(request);
 
         verify(instrumentation, times(1)).logInfo("Bulk request succeeded");
+        verify(instrumentation, times(1)).logInfo("Bulk Write operation was successfully acknowledged");
+
+        verify(instrumentation, times(1)).logInfo(
+                "Inserted Count = {}. Matched Count = {}. Deleted Count = {}. Updated Count = {}. Total Modified Count = {}",
+                2, 0, 0, 0, 2);
     }
 
     @Test
@@ -241,11 +263,27 @@ public class MongoSinkClientTest {
         MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
 
-        when(mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable()).thenReturn(true);
         when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(true, 1, 1, 0));
         mongoSinkClient.processRequest(request);
 
         verify(instrumentation, times(1)).logInfo("Bulk request succeeded");
+        verify(instrumentation, times(1)).logInfo("Bulk Write operation was successfully acknowledged");
+        verify(instrumentation, times(1)).logInfo(
+                "Inserted Count = {}. Matched Count = {}. Deleted Count = {}. Updated Count = {}. Total Modified Count = {}",
+                1, 1, 0, 1, 2);
+
+    }
+
+    @Test
+    public void shouldIncrementFailureCounterTagWhenPrimaryKeyNotFoundInUpdateOnlyMode() {
+
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+                mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
+        when(mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable()).thenReturn(true);
+        when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(true, 0, 1, 0));
+        mongoSinkClient.processRequest(request);
+
+        verify(instrumentation, times(1)).incrementCounterWithTags(SINK_MESSAGES_DROP_TOTAL, "cause=Primary Key value not found");
     }
 
     @Test
@@ -254,7 +292,6 @@ public class MongoSinkClientTest {
         MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
 
-        when(mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable()).thenReturn(true);
         when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(true, 3, 0, 0));
         mongoSinkClient.processRequest(request);
 
