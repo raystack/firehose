@@ -123,31 +123,6 @@ public class InstrumentationTest {
     }
 
     @Test
-    public void shouldCaptureSuccessExecutionTelemetry() {
-        List<Message> messages = Collections.singletonList(message);
-        instrumentation.captureSinkExecutionTelemetry("test", messages.size());
-        verify(logger, times(1)).info("Pushed {} messages to {}.", messages.size(), "test");
-        verify(statsDReporter, times(1)).captureDurationSince("firehose_sink_response_time_milliseconds", instrumentation.getStartExecutionTime());
-        verify(statsDReporter, times(1)).captureCount("firehose_sink_messages_total", messages.size(), Metrics.SUCCESS_TAG);
-        verify(statsDReporter, times(1)).captureHistogramWithTags(Metrics.SINK_PUSH_BATCH_SIZE_TOTAL, messages.size(), Metrics.SUCCESS_TAG);
-    }
-
-    @Test
-    public void shouldCaptureFailedExecutionTelemetry() {
-        List<Message> messages = Collections.singletonList(message);
-        instrumentation.captureFailedExecutionTelemetry(e, messages.size());
-        verify(statsDReporter, times(1)).captureCount("firehose_sink_messages_total", messages.size(), Metrics.FAILURE_TAG);
-        verify(statsDReporter, times(1)).captureHistogramWithTags(Metrics.SINK_PUSH_BATCH_SIZE_TOTAL, messages.size(), Metrics.FAILURE_TAG);
-    }
-
-    @Test
-    public void shouldIncrementMessageFailCount() {
-        instrumentation.captureDLQErrors(message, e);
-        verify(statsDReporter, times(1)).increment(Metrics.DLQ_MESSAGES_TOTAL, Metrics.FAILURE_TAG);
-        verify(logger, times(1)).warn(e.getMessage(), e);
-    }
-
-    @Test
     public void shouldCaptureLifetimeTillSink() {
         List<Message> messages = Collections.singletonList(message);
         instrumentation.capturePreExecutionLatencies(messages);

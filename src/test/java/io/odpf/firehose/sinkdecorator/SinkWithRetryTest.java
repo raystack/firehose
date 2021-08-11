@@ -79,6 +79,7 @@ public class SinkWithRetryTest {
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
         messages.add(message);
+        when(message.getErrorInfo()).thenReturn(new ErrorInfo(null, ErrorType.DESERIALIZATION_ERROR));
         when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages)
                 .thenReturn(messages);
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, appConfig, parser, errorHandler);
@@ -94,6 +95,7 @@ public class SinkWithRetryTest {
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
         messages.add(message);
+        when(message.getErrorInfo()).thenReturn(new ErrorInfo(null, ErrorType.DESERIALIZATION_ERROR));
         when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages)
                 .thenReturn(new ArrayList<>());
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, appConfig, parser, errorHandler);
@@ -111,6 +113,7 @@ public class SinkWithRetryTest {
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
         messages.add(message);
+        when(message.getErrorInfo()).thenReturn(new ErrorInfo(null, ErrorType.DESERIALIZATION_ERROR));
         when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages)
                 .thenReturn(messages).thenReturn(messages).thenReturn(new ArrayList<>());
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, appConfig, parser, errorHandler);
@@ -127,6 +130,7 @@ public class SinkWithRetryTest {
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
         messages.add(message);
+        when(message.getErrorInfo()).thenReturn(new ErrorInfo(null, ErrorType.DESERIALIZATION_ERROR));
         when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages)
                 .thenReturn(messages).thenReturn(messages).thenReturn(new ArrayList<>());
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, appConfig, parser, errorHandler);
@@ -151,6 +155,7 @@ public class SinkWithRetryTest {
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
         messages.add(message);
+        when(message.getErrorInfo()).thenReturn(new ErrorInfo(null, ErrorType.DESERIALIZATION_ERROR));
         when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages)
                 .thenReturn(messages).thenReturn(messages).thenReturn(new ArrayList<>());
         SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, instrumentation, appConfig, parser, errorHandler);

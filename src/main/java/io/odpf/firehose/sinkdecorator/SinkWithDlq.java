@@ -85,8 +85,8 @@ public class SinkWithDlq extends SinkDecorator {
             }
             instrumentation.captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, m.getErrorInfo().getErrorType(), 1);
         });
-        int attemptCount = 0;
-        while (attemptCount < this.dlqConfig.getDlqMaxRetryAttempts() && !retryQueueMessages.isEmpty()) {
+        int attemptCount = 1;
+        while (attemptCount <= this.dlqConfig.getDlqMaxRetryAttempts() && !retryQueueMessages.isEmpty()) {
             instrumentation.incrementCounter(DQL_RETRY_TOTAL);
             retryQueueMessages = writer.write(retryQueueMessages);
             retryQueueMessages.forEach(message -> Optional.ofNullable(message.getErrorInfo())

@@ -163,19 +163,6 @@ public class Instrumentation {
         );
     }
 
-    /**
-     * Captures failed executions.
-     *
-     * @param exception       the reported exception
-     * @param messageListSize the message list size
-     */
-    public void captureFailedExecutionTelemetry(Exception exception, Integer messageListSize) {
-        captureNonFatalError(exception, "caught {} {}", exception.getClass(), exception.getMessage());
-        statsDReporter.captureCount(SINK_MESSAGES_TOTAL, messageListSize, FAILURE_TAG);
-        statsDReporter.captureHistogramWithTags(SINK_PUSH_BATCH_SIZE_TOTAL, messageListSize, FAILURE_TAG);
-    }
-
-
     // =================== Retry and DLQ Telemetry ======================
 
     public void captureMessageMetrics(String metric, MessageType type, ErrorType errorType, int counter) {
