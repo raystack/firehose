@@ -1,2 +1,2 @@
-# Generic
+# MongoDB Sink
 
