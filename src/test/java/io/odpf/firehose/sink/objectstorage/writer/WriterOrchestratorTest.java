@@ -162,6 +162,7 @@ public class WriterOrchestratorTest {
 
     @Test
     public void shouldRecordMetricWhenFileWriterIsCreated() throws Exception {
+        String dateTimeTag = "2021-01-01";
         String date = "dt=2021-01-01";
         String partitionPathString = "default/dt=2021-01-01";
 
@@ -169,7 +170,7 @@ public class WriterOrchestratorTest {
         Mockito.when(partition.getTopic()).thenReturn(defaultTopic);
         Mockito.when(partition.getPath()).thenReturn(Paths.get(defaultTopic, date));
         Mockito.when(partition.toString()).thenReturn(partitionPathString);
-        Mockito.when(partition.getDatetime()).thenReturn(date);
+        Mockito.when(partition.getDatetimePathWithoutPrefix()).thenReturn(dateTimeTag);
 
         Record record = TestUtils.createRecordWithMetadata("abc", "default", 1, 1, Instant.now());
         Mockito.when(partitionFactory.getPartition(record)).thenReturn(partition);
@@ -180,12 +181,12 @@ public class WriterOrchestratorTest {
 
             verify(instrumentation).incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_OPEN_TOTAL,
                     tag(TOPIC_TAG, partition.getTopic()),
-                    tag(PARTITION_TAG, date));
+                    tag(PARTITION_TAG, dateTimeTag));
 
             verify(instrumentation).incrementCounterWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL,
                     tag(SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE),
                     tag(TOPIC_TAG, partition.getTopic()),
-                    tag(PARTITION_TAG, date));
+                    tag(PARTITION_TAG, dateTimeTag));
         }
     }
 }

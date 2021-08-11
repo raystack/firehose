@@ -33,35 +33,46 @@ public class Partition {
         return DATE_FORMATTER.format(localDate);
     }
 
-    public String getHour() {
+    private String getHour() {
         LocalTime localTime = LocalDateTime.ofInstant(timestamp, ZoneId.of(partitionConfig.getZone())).toLocalTime();
         return TIME_FORMATTER.format(localTime);
     }
 
 
-    public String getDatetime() {
-        String dateTime = getDate();
-        String dateSegment = String.format("%s%s", partitionConfig.getDatePrefix(), dateTime);
+    public String getDatetimePathWithoutPrefix() {
+        String datePart = getDate();
+        String hourPart = getHour();
+        return getPath(datePart, hourPart);
+    }
 
-        String localTime = getHour();
-        String hourSegment = String.format("%s%s", partitionConfig.getHourPrefix(), localTime);
-
+    private String getPath(String datePart, String hourPart) {
         switch (partitionConfig.getPartitioningType()) {
             case DAY:
-                return String.format("%s", dateSegment);
+                return String.format("%s", datePart);
             case HOUR:
-                return String.format("%s/%s", dateSegment, hourSegment);
+                return String.format("%s/%s", datePart, hourPart);
             default:
                 throw new IllegalArgumentException();
         }
     }
 
-    public String getPartitionPath() {
+    private String getDatetimePath() {
+        String datePart = getDate();
+        String dateSegment = String.format("%s%s", partitionConfig.getDatePrefix(), datePart);
+
+        String hourPart = getHour();
+        String hourSegment = String.format("%s%s", partitionConfig.getHourPrefix(), hourPart);
+
+        return getPath(dateSegment, hourSegment);
+    }
+
+
+    private String getPartitionPath() {
         if (partitionConfig.getPartitioningType() == Constants.PartitioningType.NONE) {
             return topic;
         }
 
-        String datetimePartition = getDatetime();
+        String datetimePartition = getDatetimePath();
         return String.format("%s/%s", topic, datetimePartition);
     }
 

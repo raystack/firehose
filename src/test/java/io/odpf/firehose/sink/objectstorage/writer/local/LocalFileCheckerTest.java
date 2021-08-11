@@ -170,7 +170,7 @@ public class LocalFileCheckerTest {
         verify(instrumentation).incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSE_TOTAL,
                 SUCCESS_TAG,
                 tag(TOPIC_TAG, partition.getTopic()),
-                tag(PARTITION_TAG, partition.getDatetime()));
+                tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -188,7 +188,7 @@ public class LocalFileCheckerTest {
         verify(instrumentation, times(2)).captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL, recordCount,
                 tag(SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_CLOSE),
                 tag(TOPIC_TAG, partition.getTopic()),
-                tag(PARTITION_TAG, partition.getDatetime()));
+                tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -201,7 +201,7 @@ public class LocalFileCheckerTest {
 
         verify(instrumentation, times(1)).captureDurationSinceWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSING_TIME_MILLISECONDS, startTime,
                 tag(TOPIC_TAG, partition.getTopic()),
-                tag(PARTITION_TAG, partition.getDatetime()));
+                tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -214,7 +214,7 @@ public class LocalFileCheckerTest {
 
         verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_SIZE_BYTES, fileSize,
                 tag(TOPIC_TAG, partition.getTopic()),
-                tag(PARTITION_TAG, partition.getDatetime()));
+                tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -233,7 +233,7 @@ public class LocalFileCheckerTest {
         verify(instrumentation, times(1)).incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSE_TOTAL,
                 FAILURE_TAG,
                 tag(TOPIC_TAG, partition.getTopic()),
-                tag(PARTITION_TAG, partition.getDatetime()));
+                tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -251,6 +251,6 @@ public class LocalFileCheckerTest {
 
         verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSING_FAILED_TOTAL, recordCount,
                 tag(TOPIC_TAG, partition.getTopic()),
-                tag(PARTITION_TAG, partition.getDatetime()));
+                tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
     }
 }

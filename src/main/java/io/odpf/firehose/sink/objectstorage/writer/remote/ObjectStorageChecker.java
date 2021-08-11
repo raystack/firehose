@@ -53,29 +53,34 @@ public class ObjectStorageChecker implements Runnable {
 
                     LOGGER.info("Flushed to Object storage " + fileMeta.getFullPath());
 
+                    String topic = partition.getTopic();
+                    String datetimeTag = partition.getDatetimePathWithoutPrefix();
+
                     instrumentation.captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL, fileMeta.getRecordCount(),
                             tag(SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_UPLOAD),
-                            tag(TOPIC_TAG, partition.getTopic()),
-                            tag(PARTITION_TAG, partition.getDatetime()));
+                            tag(TOPIC_TAG, topic),
+                            tag(PARTITION_TAG, datetimeTag));
                     instrumentation.incrementCounterWithTags(Metrics.SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL,
                             SUCCESS_TAG,
-                            tag(TOPIC_TAG, partition.getTopic()),
-                            tag(PARTITION_TAG, partition.getDatetime()));
+                            tag(TOPIC_TAG, topic),
+                            tag(PARTITION_TAG, datetimeTag));
                     instrumentation.captureCountWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
-                            tag(TOPIC_TAG, partition.getTopic()),
-                            tag(PARTITION_TAG, partition.getDatetime()));
+                            tag(TOPIC_TAG, topic),
+                            tag(PARTITION_TAG, datetimeTag));
                     instrumentation.captureDurationSinceWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TIME_MILLISECONDS, uploadJob.getStartTime(),
-                            tag(TOPIC_TAG, partition.getTopic()),
-                            tag(PARTITION_TAG, partition.getDatetime()));
+                            tag(TOPIC_TAG, topic),
+                            tag(PARTITION_TAG, datetimeTag));
                 } catch (InterruptedException | ExecutionException e) {
                     Partition partition = uploadJob.getFileMeta().getPartition();
+                    String topic = partition.getTopic();
+                    String datetimeTag = partition.getDatetimePathWithoutPrefix();
                     instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL, FAILURE_TAG,
-                            tag(TOPIC_TAG, partition.getTopic()),
-                            tag(PARTITION_TAG, partition.getDatetime()));
+                            tag(TOPIC_TAG, topic),
+                            tag(PARTITION_TAG, datetimeTag));
 
                     instrumentation.captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSING_FAILED_TOTAL, uploadJob.getFileMeta().getRecordCount(),
-                            tag(TOPIC_TAG, partition.getTopic()),
-                            tag(PARTITION_TAG, partition.getDatetime()));
+                            tag(TOPIC_TAG, topic),
+                            tag(PARTITION_TAG, datetimeTag));
 
                     Throwable cause;
                     if (e instanceof ExecutionException) {

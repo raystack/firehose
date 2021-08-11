@@ -113,7 +113,7 @@ public class WriterOrchestrator implements Closeable {
         checkStatus();
         Partition partition = localStorage.getPartitionFactory().getPartition(record);
 
-        String dateTimePartition = partition.getDatetime();
+        String dateTimePartition = partition.getDatetimePathWithoutPrefix();
 
         synchronized (timePartitionWriterMap) {
             LocalFileWriter writer = timePartitionWriterMap.computeIfAbsent(partition.toString(), x -> {
