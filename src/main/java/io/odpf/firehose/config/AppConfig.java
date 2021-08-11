@@ -48,7 +48,7 @@ public interface AppConfig extends Config {
     Integer getSchemaRegistryStencilFetchRetries();
 
     @Key("SCHEMA_REGISTRY_STENCIL_FETCH_BACKOFF_MIN_MS")
-    @DefaultValue("0L")
+    @DefaultValue("60000")
     Long getSchemaRegistryStencilFetchBackoffMinMs();
 
     @Key("SCHEMA_REGISTRY_STENCIL_FETCH_AUTH_BEARER_TOKEN")
@@ -59,7 +59,7 @@ public interface AppConfig extends Config {
     Boolean getSchemaRegistryStencilCacheAutoRefresh();
 
     @Key("SCHEMA_REGISTRY_STENCIL_CACHE_TTL_MS")
-    @DefaultValue("0L")
+    @DefaultValue("900000")
     Long getSchemaRegistryStencilCacheTtlMs();
 
     @Key("SCHEMA_REGISTRY_STENCIL_URLS")
