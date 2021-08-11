@@ -22,7 +22,8 @@
 
 ## Reference
 
-* [Configuration](reference/configuration.md)
+* [Configuration](reference/configuration/README.md)
+  * [Generic](reference/configuration/generic.md)
 * [Metrics](reference/metrics.md)
 * [FAQs](reference/core-faqs.md)
 * [Glossary](reference/glossary.md)
