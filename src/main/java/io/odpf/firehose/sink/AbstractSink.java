@@ -37,7 +37,7 @@ public abstract class AbstractSink implements Closeable, Sink {
      * @throws DeserializerException when invalid kafka message is encountered
      */
     public List<Message> pushMessage(List<Message> messages) throws DeserializerException {
-        List<Message> failedMessages;
+        List<Message> failedMessages = messages;
         try {
             instrumentation.logDebug("Preparing {} messages", messages.size());
             instrumentation.captureMessageBatchSize(messages.size());
@@ -46,12 +46,7 @@ public abstract class AbstractSink implements Closeable, Sink {
             instrumentation.capturePreExecutionLatencies(messages);
             instrumentation.startExecution();
             failedMessages = execute();
-            instrumentation.captureSinkExecutionTelemetry(sinkType, messages.size());
             instrumentation.logInfo("Pushed {} messages", messages.size() - failedMessages.size());
-            instrumentation.captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, messages.size() - failedMessages.size());
-            instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.SINK, messages.size() - failedMessages.size());
-            processFailedMessages(failedMessages);
-            return failedMessages;
         } catch (DeserializerException | EglcConfigurationException | NullPointerException | SinkException e) {
             throw e;
         } catch (Exception e) {
@@ -59,14 +54,15 @@ public abstract class AbstractSink implements Closeable, Sink {
                 instrumentation.logWarn("Failed to push {} messages to sink", messages.size());
             }
             instrumentation.captureNonFatalError(e, "caught {} {}", e.getClass(), e.getMessage());
-            messages.forEach(m -> {
-                if (m.getErrorInfo() == null) {
-                    m.setErrorInfo(new ErrorInfo(null, ErrorType.DEFAULT_ERROR));
-                }
-                instrumentation.captureMessageMetrics(SINK_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, m.getErrorInfo().getErrorType(), 1);
-            });
-            return messages;
+            failedMessages = messages;
+        } finally {
+            // Process success,failure and error metrics
+            instrumentation.captureSinkExecutionTelemetry(sinkType, messages.size());
+            instrumentation.captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, messages.size() - failedMessages.size());
+            instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.SINK, messages.size() - failedMessages.size());
+            processFailedMessages(failedMessages);
         }
+        return failedMessages;
     }
 
     private void processFailedMessages(List<Message> failedMessages) {
