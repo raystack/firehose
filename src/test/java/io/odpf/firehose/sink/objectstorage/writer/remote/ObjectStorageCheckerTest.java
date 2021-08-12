@@ -257,7 +257,7 @@ public class ObjectStorageCheckerTest {
 
         GCSException gcsException = new GCSException(GCSErrorType.FORBIDDEN, GCSErrorType.FORBIDDEN.getCodeValue(), "");
         ObjectStorageException objectStorageException = new ObjectStorageException(gcsException);
-        doThrow(new RuntimeException(objectStorageException)).when(objectStorage).store(fileMeta.getFullPath());
+        doThrow(objectStorageException).when(objectStorage).store(fileMeta.getFullPath());
 
         while (true) {
             try {
@@ -292,7 +292,7 @@ public class ObjectStorageCheckerTest {
                 instrumentation);
         toBeFlushedToRemotePaths.add(fileMeta);
 
-        doThrow(new RuntimeException(new IOException())).when(objectStorage).store(fileMeta.getFullPath());
+        doThrow(new IOException()).when(objectStorage).store(fileMeta.getFullPath());
 
         while (true) {
             try {
