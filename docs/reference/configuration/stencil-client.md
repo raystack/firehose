@@ -19,9 +19,9 @@ Defines the URL of the Proto Descriptor set file in the Stencil Server
 
 ### `SCHEMA_REGISTRY_STENCIL_FETCH_TIMEOUT_MS`
 
-Defines the URL of the Proto Descriptor set file in the Stencil Server
+Defines the timeout in milliseconds to fetch the Proto Descriptor set file from the Stencil Server. 
 
-* Example value: `10000`
+* Example value: `4000`
 * Type: `optional`
 * Default value: `10000`
 
@@ -35,7 +35,7 @@ Defines the number of times to retry to fetch the Proto Descriptor set file from
 
 ### `SCHEMA_REGISTRY_STENCIL_FETCH_BACKOFF_MIN_MS`
 
-Defines the minimum time after which to back off from fetching the Proto Descriptor set file from the Stencil Server. 
+Defines the minimum time in milliseconds after which to back off from fetching the Proto Descriptor set file from the Stencil Server. 
 
 * Example value: `70000`
 * Type: `optional`
@@ -58,7 +58,7 @@ Defines whether to enable auto-refresh of Stencil cache.
 
 ### `SCHEMA_REGISTRY_STENCIL_CACHE_TTL_MS`
 
-Defines the minimum time after which to refresh the Stencil cache.
+Defines the minimum time in milliseconds after which to refresh the Stencil cache.
 
 * Example value: `900000`
 * Type: `optional`
