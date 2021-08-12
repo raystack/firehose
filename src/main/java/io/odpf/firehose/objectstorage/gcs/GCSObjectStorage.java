@@ -6,8 +6,10 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
+import io.odpf.firehose.objectstorage.ObjectStorageException;
 import io.odpf.firehose.objectstorage.ObjectStorage;
-import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageFailedException;
+import io.odpf.firehose.objectstorage.gcs.error.GCSErrorType;
+import io.odpf.firehose.objectstorage.gcs.exception.GCSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,26 +32,23 @@ public class GCSObjectStorage implements ObjectStorage {
     }
 
     @Override
-    public void store(String localPath) {
+    public void store(String localPath) throws IOException, ObjectStorageException {
         String objectName = gcsConfig.getLocalBasePath().relativize(Paths.get(localPath)).toString();
-        try {
-            byte[] content = Files.readAllBytes(Paths.get(localPath));
-            store(objectName, content);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new ObjectStorageFailedException(e);
-        }
+        byte[] content = Files.readAllBytes(Paths.get(localPath));
+        store(objectName, content);
     }
 
     @Override
-    public void store(String objectName, byte[] content) throws IOException {
+    public void store(String objectName, byte[] content) throws ObjectStorageException {
         BlobId blobId = BlobId.of(gcsConfig.getGcsBucketName(), objectName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
         try {
             storage.create(blobInfo, content);
             LOGGER.info("Created object in GCS " + blobInfo.getBucket() + "/" + blobInfo.getName());
         } catch (StorageException e) {
-            throw new IOException(e);
+            GCSErrorType gcsErrorType = GCSErrorType.valueOfCode(e.getCode());
+            GCSException gcsException = new GCSException(gcsErrorType, e.getCode(), e.getReason());
+            throw new ObjectStorageException(gcsException);
         }
     }
 }

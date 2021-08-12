@@ -1,15 +1,17 @@
 package io.odpf.firehose.sink.objectstorage.writer.remote;
 
 import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.Metrics;
 import io.odpf.firehose.objectstorage.ObjectStorage;
+import io.odpf.firehose.objectstorage.gcs.exception.GCSException;
 import io.odpf.firehose.sink.objectstorage.writer.local.FileMeta;
 import io.odpf.firehose.sink.objectstorage.writer.local.Partition;
 import io.odpf.firehose.util.Clock;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +25,7 @@ import static io.odpf.firehose.metrics.Metrics.*;
 @AllArgsConstructor
 public class ObjectStorageChecker implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ObjectStorageChecker.class);
+
     private final BlockingQueue<FileMeta> toBeFlushedToRemotePaths;
     private final BlockingQueue<String> flushedToRemotePaths;
     private final Set<ObjectStorageWriterWorkerFuture> remoteUploadFutures;
@@ -38,7 +41,11 @@ public class ObjectStorageChecker implements Runnable {
         remoteUploadFutures.addAll(tobeFlushed.stream()
                 .map(fileMeta -> new ObjectStorageWriterWorkerFuture(
                         remoteUploadScheduler.submit(() -> {
-                            objectStorage.store(fileMeta.getFullPath());
+                            try {
+                                objectStorage.store(fileMeta.getFullPath());
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
                         }), fileMeta, clock.now())
                 ).collect(Collectors.toList()));
 
@@ -59,36 +66,35 @@ public class ObjectStorageChecker implements Runnable {
                     instrumentation.captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL, fileMeta.getRecordCount(),
                             tag(SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_UPLOAD),
                             tag(TOPIC_TAG, topic),
-                            tag(PARTITION_TAG, datetimeTag));
-                    instrumentation.incrementCounterWithTags(Metrics.SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL,
+                            tag(SINK_OBJECT_STORAGE_PARTITION_TAG, datetimeTag));
+                    instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL,
                             SUCCESS_TAG,
                             tag(TOPIC_TAG, topic),
-                            tag(PARTITION_TAG, datetimeTag));
+                            tag(SINK_OBJECT_STORAGE_PARTITION_TAG, datetimeTag));
                     instrumentation.captureCountWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
                             tag(TOPIC_TAG, topic),
-                            tag(PARTITION_TAG, datetimeTag));
+                            tag(SINK_OBJECT_STORAGE_PARTITION_TAG, datetimeTag));
                     instrumentation.captureDurationSinceWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TIME_MILLISECONDS, uploadJob.getStartTime(),
                             tag(TOPIC_TAG, topic),
-                            tag(PARTITION_TAG, datetimeTag));
+                            tag(SINK_OBJECT_STORAGE_PARTITION_TAG, datetimeTag));
                 } catch (InterruptedException | ExecutionException e) {
                     Partition partition = uploadJob.getFileMeta().getPartition();
                     String topic = partition.getTopic();
                     String datetimeTag = partition.getDatetimePathWithoutPrefix();
-                    instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL, FAILURE_TAG,
+                    String errorType = getErrorType(e);
+
+                    instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL,
+                            FAILURE_TAG,
+                            tag(ERROR_TYPE_TAG, errorType),
                             tag(TOPIC_TAG, topic),
-                            tag(PARTITION_TAG, datetimeTag));
+                            tag(SINK_OBJECT_STORAGE_PARTITION_TAG, datetimeTag));
 
                     instrumentation.captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSING_FAILED_TOTAL, uploadJob.getFileMeta().getRecordCount(),
+                            tag(ERROR_TYPE_TAG, errorType),
                             tag(TOPIC_TAG, topic),
-                            tag(PARTITION_TAG, datetimeTag));
+                            tag(SINK_OBJECT_STORAGE_PARTITION_TAG, datetimeTag));
 
-                    Throwable cause;
-                    if (e instanceof ExecutionException) {
-                        cause = e.getCause();
-                    } else {
-                        cause = e;
-                    }
-                    throw new ObjectStorageFailedException(cause);
+                    throw new RuntimeException(e);
                 }
 
                 return uploadJob.getFileMeta().getFullPath();
@@ -97,4 +103,21 @@ public class ObjectStorageChecker implements Runnable {
         remoteUploadFutures.removeIf(x -> flushedPath.contains(x.getFileMeta().getFullPath()));
         flushedToRemotePaths.addAll(flushedPath);
     }
+
+    private String getErrorType(Throwable throwable) {
+        if (io.odpf.firehose.util.ExceptionUtils.matchCause(throwable, InterruptedException.class)) {
+            return Constants.OBJECT_STORAGE_CHECKER_THREAD_ERROR;
+        } else if (io.odpf.firehose.util.ExceptionUtils.matchCause(throwable, IOException.class)) {
+            return Constants.FILE_IO_ERROR;
+        } else if (ExceptionUtils.getRootCause(throwable) instanceof GCSException) {
+            GCSException gcsException = (GCSException) ExceptionUtils.getRootCause(throwable);
+            if (gcsException.getErrorType() != null) {
+                return gcsException.getErrorType().name();
+            } else {
+                return String.valueOf(gcsException.getErrorCode());
+            }
+        }
+        return "";
+    }
 }
+

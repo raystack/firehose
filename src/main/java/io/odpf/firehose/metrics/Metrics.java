@@ -75,13 +75,16 @@ public class Metrics {
     public static final String ERROR_MESSAGE_CLASS_TAG = "class";
     public static final String NON_FATAL_ERROR = "nonfatal";
     public static final String FATAL_ERROR = "fatal";
+    public static final String ERROR_TYPE_TAG = "error_type";
 
     // KAFKA TAG
     public static final String TOPIC_TAG = "topic";
 
-    //SINK OBJECT STORAGE TAG
-    public static final String PARTITION_TAG = "partition=";
+    // GLOBAL TAG
     public static final String SCOPE_TAG = "scope";
+
+    //SINK OBJECT STORAGE TAG
+    public static final String SINK_OBJECT_STORAGE_PARTITION_TAG = "partition";
 
     public static final String SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE = "file_write";
     public static final String SINK_OBJECT_STORAGE_SCOPE_FILE_CLOSE = "file_close";

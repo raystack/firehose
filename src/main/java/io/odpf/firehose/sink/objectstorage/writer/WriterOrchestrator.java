@@ -120,7 +120,7 @@ public class WriterOrchestrator implements Closeable {
                 LocalFileWriter localFileWriter = localStorage.createLocalFileWriter(partition.getPath());
                 instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_OPEN_TOTAL,
                         tag(TOPIC_TAG, partition.getTopic()),
-                        tag(PARTITION_TAG, dateTimePartition));
+                        tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimePartition));
                 return localFileWriter;
             });
 
@@ -129,7 +129,7 @@ public class WriterOrchestrator implements Closeable {
             instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL,
                     tag(SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE),
                     tag(TOPIC_TAG, partition.getTopic()),
-                    tag(PARTITION_TAG, dateTimePartition));
+                    tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimePartition));
 
             return writer.getFullPath();
         }

@@ -28,7 +28,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static io.odpf.firehose.metrics.Metrics.*;
-import static io.odpf.firehose.metrics.Metrics.PARTITION_TAG;
+import static io.odpf.firehose.metrics.Metrics.SINK_OBJECT_STORAGE_PARTITION_TAG;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -181,12 +181,12 @@ public class WriterOrchestratorTest {
 
             verify(instrumentation).incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_OPEN_TOTAL,
                     tag(TOPIC_TAG, partition.getTopic()),
-                    tag(PARTITION_TAG, dateTimeTag));
+                    tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimeTag));
 
             verify(instrumentation).incrementCounterWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL,
                     tag(SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE),
                     tag(TOPIC_TAG, partition.getTopic()),
-                    tag(PARTITION_TAG, dateTimeTag));
+                    tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimeTag));
         }
     }
 }

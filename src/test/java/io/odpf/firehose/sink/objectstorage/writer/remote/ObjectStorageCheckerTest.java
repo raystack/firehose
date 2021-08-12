@@ -3,6 +3,9 @@ package io.odpf.firehose.sink.objectstorage.writer.remote;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.Metrics;
 import io.odpf.firehose.objectstorage.ObjectStorage;
+import io.odpf.firehose.objectstorage.ObjectStorageException;
+import io.odpf.firehose.objectstorage.gcs.error.GCSErrorType;
+import io.odpf.firehose.objectstorage.gcs.exception.GCSException;
 import io.odpf.firehose.sink.objectstorage.Constants;
 import io.odpf.firehose.sink.objectstorage.writer.local.FileMeta;
 import io.odpf.firehose.sink.objectstorage.writer.local.Partition;
@@ -116,8 +119,8 @@ public class ObjectStorageCheckerTest {
         Assert.assertEquals(fileMeta.getFullPath(), flushedToRemotePaths.peek());
     }
 
-    @Test(expected = ObjectStorageFailedException.class)
-    public void shouldThrowExceptionIfTheUploadIsFailed() {
+    @Test(expected = RuntimeException.class)
+    public void shouldThrowExceptionWhenObjectStorageThrowIOException() throws ObjectStorageException, IOException {
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         worker = new ObjectStorageChecker(
                 toBeFlushedToRemotePaths,
@@ -129,7 +132,27 @@ public class ObjectStorageCheckerTest {
                 instrumentation);
         toBeFlushedToRemotePaths.add(fileMeta);
 
-        doThrow(new ObjectStorageFailedException(new IOException())).when(objectStorage).store(fileMeta.getFullPath());
+        doThrow(new RuntimeException(new IOException())).when(objectStorage).store(fileMeta.getFullPath());
+
+        while (true) {
+            worker.run();
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void shouldThrowExceptionWhenObjectStorageThrowObjectStorageException() throws ObjectStorageException, IOException {
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        worker = new ObjectStorageChecker(
+                toBeFlushedToRemotePaths,
+                flushedToRemotePaths,
+                remoteUploadFutures,
+                executorService,
+                objectStorage,
+                clock,
+                instrumentation);
+        toBeFlushedToRemotePaths.add(fileMeta);
+
+        doThrow(new RuntimeException(new ObjectStorageException(null))).when(objectStorage).store(fileMeta.getFullPath());
 
         while (true) {
             worker.run();
@@ -147,7 +170,7 @@ public class ObjectStorageCheckerTest {
         verify(instrumentation, times(1)).incrementCounterWithTags(Metrics.SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL,
                 SUCCESS_TAG,
                 tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -160,7 +183,7 @@ public class ObjectStorageCheckerTest {
 
         verify(instrumentation).captureCountWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
                 tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -175,7 +198,7 @@ public class ObjectStorageCheckerTest {
 
         verify(instrumentation, (times(1))).captureDurationSinceWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TIME_MILLISECONDS, startTime,
                 tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -189,7 +212,7 @@ public class ObjectStorageCheckerTest {
         verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL, fileMeta.getRecordCount(),
                 tag(SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_UPLOAD),
                 tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -204,69 +227,90 @@ public class ObjectStorageCheckerTest {
         when(remoteUploadScheduler.submit(any(Runnable.class))).thenReturn(f);
         try {
             worker.run();
-        } catch (ObjectStorageFailedException ignored) {
+        } catch (RuntimeException ignored) {
         }
 
         verify(instrumentation, times(1)).incrementCounterWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
+                tag(ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.OBJECT_STORAGE_CHECKER_THREAD_ERROR),
                 tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
-    }
-
-    @Test
-    public void shouldRecordMetricOfUploadFailedCountWhenUploadFutureThrowsExecutionException() {
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        worker = new ObjectStorageChecker(
-                toBeFlushedToRemotePaths,
-                flushedToRemotePaths,
-                remoteUploadFutures,
-                executorService,
-                objectStorage,
-                clock,
-                instrumentation);
-        toBeFlushedToRemotePaths.add(fileMeta);
-
-        doThrow(new ObjectStorageFailedException(new IOException())).when(objectStorage).store(fileMeta.getFullPath());
-
-        while (true) {
-            try {
-                worker.run();
-            } catch (ObjectStorageFailedException ignored) {
-                break;
-            }
-        }
-
-        verify(instrumentation, times(1)).incrementCounterWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL,
-                FAILURE_TAG,
-                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
-    }
-
-    @Test
-    public void shouldRecordMetricOfRecordProcessingFailedWhenUploadFutureThrowsException() {
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        worker = new ObjectStorageChecker(
-                toBeFlushedToRemotePaths,
-                flushedToRemotePaths,
-                remoteUploadFutures,
-                executorService,
-                objectStorage,
-                clock,
-                instrumentation);
-        toBeFlushedToRemotePaths.add(fileMeta);
-
-        doThrow(new ObjectStorageFailedException(new IOException())).when(objectStorage).store(fileMeta.getFullPath());
-
-        while (true) {
-            try {
-                worker.run();
-            } catch (ObjectStorageFailedException ignored) {
-                break;
-            }
-        }
+                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
 
         verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSING_FAILED_TOTAL, fileMeta.getRecordCount(),
+                tag(ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.OBJECT_STORAGE_CHECKER_THREAD_ERROR),
                 tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+    }
+
+    @Test
+    public void shouldRecordMetricsWhenUploadFutureThrowsObjectStorageExceptionCausedByGCSException() throws ObjectStorageException, IOException {
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        worker = new ObjectStorageChecker(
+                toBeFlushedToRemotePaths,
+                flushedToRemotePaths,
+                remoteUploadFutures,
+                executorService,
+                objectStorage,
+                clock,
+                instrumentation);
+        toBeFlushedToRemotePaths.add(fileMeta);
+
+        GCSException gcsException = new GCSException(GCSErrorType.FORBIDDEN, GCSErrorType.FORBIDDEN.getCodeValue(), "");
+        ObjectStorageException objectStorageException = new ObjectStorageException(gcsException);
+        doThrow(new RuntimeException(objectStorageException)).when(objectStorage).store(fileMeta.getFullPath());
+
+        while (true) {
+            try {
+                worker.run();
+            } catch (RuntimeException ignored) {
+                break;
+            }
+        }
+
+        verify(instrumentation, times(1)).incrementCounterWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL,
+                FAILURE_TAG,
+                tag(ERROR_TYPE_TAG, GCSErrorType.FORBIDDEN.name()),
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+
+        verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSING_FAILED_TOTAL, fileMeta.getRecordCount(),
+                tag(ERROR_TYPE_TAG, GCSErrorType.FORBIDDEN.name()),
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+    }
+
+    @Test
+    public void shouldRecordMetricOfRecordProcessingFailedWhenUploadFutureThrowsIOException() throws ObjectStorageException, IOException {
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        worker = new ObjectStorageChecker(
+                toBeFlushedToRemotePaths,
+                flushedToRemotePaths,
+                remoteUploadFutures,
+                executorService,
+                objectStorage,
+                clock,
+                instrumentation);
+        toBeFlushedToRemotePaths.add(fileMeta);
+
+        doThrow(new RuntimeException(new IOException())).when(objectStorage).store(fileMeta.getFullPath());
+
+        while (true) {
+            try {
+                worker.run();
+            } catch (RuntimeException ignored) {
+                break;
+            }
+        }
+
+        verify(instrumentation, times(1)).incrementCounterWithTags(SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL,
+                FAILURE_TAG,
+                tag(ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.FILE_IO_ERROR),
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+
+        verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSING_FAILED_TOTAL, fileMeta.getRecordCount(),
+                tag(ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.FILE_IO_ERROR),
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
 }
