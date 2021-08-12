@@ -2,14 +2,14 @@
 
 A Redis sink Firehose \(`SINK_TYPE`=`redis`\) requires the following variables to be set along with Generic ones
 
-### `SINK_REDIS_URLS`
+## `SINK_REDIS_URLS`
 
 REDIS instance hostname/IP address followed by its port.
 
 * Example value: `localhos:6379,localhost:6380`
 * Type: `required`
 
-### `SINK_REDIS_DATA_TYPE`
+## `SINK_REDIS_DATA_TYPE`
 
 To select whether you want to push your data as a HashSet or as a List.
 
@@ -17,7 +17,7 @@ To select whether you want to push your data as a HashSet or as a List.
 * Type: `required`
 * Default value: `List`
 
-### `SINK_REDIS_KEY_TEMPLATE`
+## `SINK_REDIS_KEY_TEMPLATE`
 
 The string that will act as the key for each Redis entry. This key can be configured as per the requirement, a constant or can extract value from each message and use that as the Redis key.
 
@@ -27,14 +27,14 @@ The string that will act as the key for each Redis entry. This key can be config
 
 * Type: `required`
 
-### `INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING`
+## `INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING`
 
 This is the field that decides what all data will be stored in the HashSet for each message.
 
 * Example value: `{"6":"customer_id",  "2":"order_num"}`
 * Type: `required (For Hashset)`
 
-### `SINK_REDIS_LIST_DATA_PROTO_INDEX`
+## `SINK_REDIS_LIST_DATA_PROTO_INDEX`
 
 This field decides what all data will be stored in the List for each message.
 
@@ -44,7 +44,7 @@ This field decides what all data will be stored in the List for each message.
 
 * Type: `required (For List)`
 
-### `SINK_REDIS_TTL_TYPE`
+## `SINK_REDIS_TTL_TYPE`
 
 * Example value: `DURATION`
 * Type: `optional`
@@ -53,7 +53,7 @@ This field decides what all data will be stored in the List for each message.
   * `DURATION`: After which the Key will be expired and removed from Redis \(UNIT- seconds\)\
   * `EXACT_TIME`: Precise UNIX timestamp after which the Key will be expired
 
-### `SINK_REDIS_TTL_VALUE`
+## `SINK_REDIS_TTL_VALUE`
 
 Redis TTL value in Unix Timestamp for `EXACT_TIME` TTL type, In Seconds for `DURATION` TTL type.
 
@@ -61,7 +61,7 @@ Redis TTL value in Unix Timestamp for `EXACT_TIME` TTL type, In Seconds for `DUR
 * Type: `optional`
 * Default value: `0`
 
-### `SINK_REDIS_DEPLOYMENT_TYPE`
+## `SINK_REDIS_DEPLOYMENT_TYPE`
 
 The Redis deployment you are using. At present, we support `Standalone` and `Cluster` types.
 
