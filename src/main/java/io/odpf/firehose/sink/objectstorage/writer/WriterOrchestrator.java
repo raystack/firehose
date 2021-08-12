@@ -118,17 +118,17 @@ public class WriterOrchestrator implements Closeable {
         synchronized (timePartitionWriterMap) {
             LocalFileWriter writer = timePartitionWriterMap.computeIfAbsent(partition.toString(), x -> {
                 LocalFileWriter localFileWriter = localStorage.createLocalFileWriter(partition.getPath());
-                instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_OPEN_TOTAL,
-                        tag(TOPIC_TAG, partition.getTopic()),
+                instrumentation.incrementCounterWithTags(SINK_OBJECT_STORAGE_LOCAL_FILE_OPEN_TOTAL,
+                        tag(SINK_OBJECT_STORAGE_TOPIC_TAG, partition.getTopic()),
                         tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimePartition));
                 return localFileWriter;
             });
 
             writer.write(record);
 
-            instrumentation.incrementCounterWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL,
-                    tag(SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE),
-                    tag(TOPIC_TAG, partition.getTopic()),
+            instrumentation.incrementCounterWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSED_TOTAL,
+                    tag(SINK_OBJECT_STORAGE_SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE),
+                    tag(SINK_OBJECT_STORAGE_TOPIC_TAG, partition.getTopic()),
                     tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimePartition));
 
             return writer.getFullPath();

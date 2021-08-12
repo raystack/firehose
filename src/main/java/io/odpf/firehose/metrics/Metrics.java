@@ -39,18 +39,17 @@ public class Metrics {
     public static final String SINK_PUSH_BATCH_SIZE_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + "push_batch_size_total";
 
     // OBJECT STORAGE SINK MEASUREMENTS
-    public static final String SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "record_processed_total";
-    public static final String SINK_OBJECTSTORAGE_RECORD_PROCESSING_FAILED_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "record_processing_failed_total";
+    public static final String SINK_OBJECT_STORAGE_RECORD_PROCESSED_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "record_processed_total";
+    public static final String SINK_OBJECT_STORAGE_RECORD_PROCESSING_FAILED_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "record_processing_failed_total";
 
-    public static final String SINK_OBJECTSTORAGE_LOCAL_FILE_OPEN_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_open_total";
-    public static final String SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSE_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_close_total";
-    public static final String SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSING_TIME_MILLISECONDS = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_closing_time_milliseconds";
-    public static final String SINK_OBJECTSTORAGE_LOCAL_FILE_SIZE_BYTES = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "local_file_size_bytes";
+    public static final String SINK_OBJECT_STORAGE_LOCAL_FILE_OPEN_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_open_total";
+    public static final String SINK_OBJECT_STORAGE_LOCAL_FILE_CLOSE_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_close_total";
+    public static final String SINK_OBJECT_STORAGE_LOCAL_FILE_CLOSING_TIME_MILLISECONDS = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_closing_time_milliseconds";
+    public static final String SINK_OBJECT_STORAGE_LOCAL_FILE_SIZE_BYTES = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "local_file_size_bytes";
 
-    public static final String SINK_OBJECTSTORAGE_FILE_UPLOAD_TIME_MILLISECONDS = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_upload_time_milliseconds";
-    public static final String SINK_OBJECTSTORAGE_FILE_UPLOAD_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_upload_total";
-    public static final String SINK_OBJECTSTORAGE_FILE_UPLOAD_BYTES = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_upload_bytes";
-
+    public static final String SINK_OBJECT_STORAGE_FILE_UPLOAD_TIME_MILLISECONDS = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_upload_time_milliseconds";
+    public static final String SINK_OBJECT_STORAGE_FILE_UPLOAD_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_upload_total";
+    public static final String SINK_OBJECT_STORAGE_FILE_UPLOAD_BYTES = APPLICATION_PREFIX + SINK_PREFIX + OBJECTSTORAGE_SINK_PREFIX + "file_upload_bytes";
 
     // RETRY MEASUREMENT
     public static final String RETRY_TOTAL = APPLICATION_PREFIX + RETRY_PREFIX + "total";
@@ -75,15 +74,11 @@ public class Metrics {
     public static final String ERROR_MESSAGE_CLASS_TAG = "class";
     public static final String NON_FATAL_ERROR = "nonfatal";
     public static final String FATAL_ERROR = "fatal";
-    public static final String ERROR_TYPE_TAG = "error_type";
-
-    // KAFKA TAG
-    public static final String TOPIC_TAG = "topic";
-
-    // GLOBAL TAG
-    public static final String SCOPE_TAG = "scope";
 
     //SINK OBJECT STORAGE TAG
+    public static final String SINK_OBJECT_STORAGE_SCOPE_TAG = "scope";
+    public static final String SINK_OBJECT_STORAGE_TOPIC_TAG = "topic";
+    public static final String SINK_OBJECT_STORAGE_ERROR_TYPE_TAG = "error_type";
     public static final String SINK_OBJECT_STORAGE_PARTITION_TAG = "partition";
 
     public static final String SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE = "file_write";

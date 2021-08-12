@@ -167,9 +167,9 @@ public class LocalFileCheckerTest {
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
         when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name");
         worker.run();
-        verify(instrumentation).incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSE_TOTAL,
+        verify(instrumentation).incrementCounterWithTags(SINK_OBJECT_STORAGE_LOCAL_FILE_CLOSE_TOTAL,
                 SUCCESS_TAG,
-                tag(TOPIC_TAG, partition.getTopic()),
+                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, partition.getTopic()),
                 tag(SINK_OBJECT_STORAGE_PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
     }
 
@@ -185,9 +185,9 @@ public class LocalFileCheckerTest {
         when(writer2.getFullPath()).thenReturn("/tmp/b/random-file-name-2");
         worker.run();
 
-        verify(instrumentation, times(2)).captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL, recordCount,
-                tag(SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_CLOSE),
-                tag(TOPIC_TAG, partition.getTopic()),
+        verify(instrumentation, times(2)).captureCountWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSED_TOTAL, recordCount,
+                tag(SINK_OBJECT_STORAGE_SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_CLOSE),
+                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, partition.getTopic()),
                 tag(SINK_OBJECT_STORAGE_PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
     }
 
@@ -199,8 +199,8 @@ public class LocalFileCheckerTest {
         when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name");
         worker.run();
 
-        verify(instrumentation, times(1)).captureDurationSinceWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSING_TIME_MILLISECONDS, startTime,
-                tag(TOPIC_TAG, partition.getTopic()),
+        verify(instrumentation, times(1)).captureDurationSinceWithTags(SINK_OBJECT_STORAGE_LOCAL_FILE_CLOSING_TIME_MILLISECONDS, startTime,
+                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, partition.getTopic()),
                 tag(SINK_OBJECT_STORAGE_PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
     }
 
@@ -212,8 +212,8 @@ public class LocalFileCheckerTest {
         when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name");
         worker.run();
 
-        verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_SIZE_BYTES, fileSize,
-                tag(TOPIC_TAG, partition.getTopic()),
+        verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECT_STORAGE_LOCAL_FILE_SIZE_BYTES, fileSize,
+                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, partition.getTopic()),
                 tag(SINK_OBJECT_STORAGE_PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
     }
 
@@ -230,9 +230,9 @@ public class LocalFileCheckerTest {
         } catch (LocalFileWriterFailedException e) {
         }
 
-        verify(instrumentation, times(1)).incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_CLOSE_TOTAL,
+        verify(instrumentation, times(1)).incrementCounterWithTags(SINK_OBJECT_STORAGE_LOCAL_FILE_CLOSE_TOTAL,
                 FAILURE_TAG,
-                tag(TOPIC_TAG, partition.getTopic()),
+                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, partition.getTopic()),
                 tag(SINK_OBJECT_STORAGE_PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
     }
 
@@ -249,8 +249,8 @@ public class LocalFileCheckerTest {
         } catch (LocalFileWriterFailedException e) {
         }
 
-        verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSING_FAILED_TOTAL, recordCount,
-                tag(TOPIC_TAG, partition.getTopic()),
+        verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSING_FAILED_TOTAL, recordCount,
+                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, partition.getTopic()),
                 tag(SINK_OBJECT_STORAGE_PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
     }
 }

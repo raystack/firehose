@@ -179,13 +179,13 @@ public class WriterOrchestratorTest {
         try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage, instrumentation, statsDReporter)) {
             writerOrchestrator.write(record);
 
-            verify(instrumentation).incrementCounterWithTags(SINK_OBJECTSTORAGE_LOCAL_FILE_OPEN_TOTAL,
-                    tag(TOPIC_TAG, partition.getTopic()),
+            verify(instrumentation).incrementCounterWithTags(SINK_OBJECT_STORAGE_LOCAL_FILE_OPEN_TOTAL,
+                    tag(SINK_OBJECT_STORAGE_TOPIC_TAG, partition.getTopic()),
                     tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimeTag));
 
-            verify(instrumentation).incrementCounterWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSED_TOTAL,
-                    tag(SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE),
-                    tag(TOPIC_TAG, partition.getTopic()),
+            verify(instrumentation).incrementCounterWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSED_TOTAL,
+                    tag(SINK_OBJECT_STORAGE_SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE),
+                    tag(SINK_OBJECT_STORAGE_TOPIC_TAG, partition.getTopic()),
                     tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimeTag));
         }
     }

@@ -65,8 +65,8 @@ public class ObjectStorageSink extends AbstractSink {
             }
         }
 
-        getInstrumentation().captureCountWithTags(SINK_OBJECTSTORAGE_RECORD_PROCESSING_FAILED_TOTAL, failedMessages.size(),
-                tag(SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE));
+        getInstrumentation().captureCountWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSING_FAILED_TOTAL, failedMessages.size(),
+                tag(SINK_OBJECT_STORAGE_SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE));
 
         return failedMessages;
     }
