@@ -1,6 +1,6 @@
 # Stencil Client
 
-## Stencil
+Stencil, the Protobuf schema registry used by Firehose need the following variables to be set for the Stencil client. 
 
 ### `SCHEMA_REGISTRY_STENCIL_ENABLE`
 
