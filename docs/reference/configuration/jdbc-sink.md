@@ -1,9 +1,5 @@
 # JDBC Sink
 
-
-
-## JDBC Sink
-
 A JDBC sink Firehose \(`SINK_TYPE`=`jdbc`\) requires the following variables to be set along with Generic ones
 
 ### `SINK_JDBC_URL`
