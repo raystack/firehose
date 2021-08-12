@@ -16,5 +16,3 @@ This page contains reference for all the application configurations for Firehose
 * [GRPC Sink](grpc-sink.md)
 * [Prometheus Sink](prometheus-sink.md)
 
-
-
