@@ -27,11 +27,15 @@ Defines the URL of the Proto Descriptor set file in the Stencil Server
 
 ### `SCHEMA_REGISTRY_STENCIL_FETCH_RETRIES`
 
+Defines the number of times to retry to fetch the Proto Descriptor set file from the Stencil Server. 
+
 * Example value: `4`
 * Type: `optional`
 * Default value: `3`
 
 ### `SCHEMA_REGISTRY_STENCIL_FETCH_BACKOFF_MIN_MS`
+
+Defines the minimum time after which to back off from fetching the Proto Descriptor set file from the Stencil Server. 
 
 * Example value: `70000`
 * Type: `optional`
@@ -39,17 +43,22 @@ Defines the URL of the Proto Descriptor set file in the Stencil Server
 
 ### `SCHEMA_REGISTRY_STENCIL_FETCH_AUTH_BEARER_TOKEN`
 
-* Example value: `true`
+Defines the token for authentication to connect to Stencil Server
+
+* Example value: `tcDpw34J8d1`
 * Type: `optional`
-* Default value: `false`
 
 ### `SCHEMA_REGISTRY_STENCIL_CACHE_AUTO_REFRESH`
+
+Defines whether to enable auto-refresh of Stencil cache.
 
 * Example value: `true`
 * Type: `optional`
 * Default value: `false`
 
 ### `SCHEMA_REGISTRY_STENCIL_CACHE_TTL_MS`
+
+Defines the minimum time after which to refresh the Stencil cache.
 
 * Example value: `900000`
 * Type: `optional`
