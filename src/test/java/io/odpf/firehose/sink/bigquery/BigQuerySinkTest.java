@@ -1,6 +1,5 @@
 package io.odpf.firehose.sink.bigquery;
 
-import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.InsertAllRequest;
 import com.google.cloud.bigquery.InsertAllResponse;
@@ -13,6 +12,7 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverter;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.firehose.sink.bigquery.exception.BigQuerySinkException;
+import io.odpf.firehose.sink.bigquery.handler.BigQueryClient;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryRow;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryRowWithInsertId;
 import io.odpf.firehose.sink.bigquery.models.Record;
@@ -38,7 +38,7 @@ public class BigQuerySinkTest {
     private final MessageRecordConverterCache converterCache = new MessageRecordConverterCache();
     private final BigQueryRow rowCreator = new BigQueryRowWithInsertId();
     @Mock
-    private BigQuery bigQueryInstance;
+    private BigQueryClient client;
     @Mock
     private Instrumentation instrumentation;
     @Mock
@@ -51,7 +51,7 @@ public class BigQuerySinkTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         this.converterCache.setMessageRecordConverter(converter);
-        this.sink = new BigQuerySink(instrumentation, "BIGQUERY", bigQueryInstance, tableId, converterCache, rowCreator);
+        this.sink = new BigQuerySink(instrumentation, "BIGQUERY", client, tableId, converterCache, rowCreator);
     }
 
     @Test
@@ -82,11 +82,11 @@ public class BigQuerySinkTest {
         records.getValidRecords().forEach((Record m) -> builder.addRow(rowCreator.of(m)));
         InsertAllRequest rows = builder.build();
         Mockito.when(converter.convert(Mockito.eq(messages), Mockito.any(Instant.class))).thenReturn(records);
-        Mockito.when(bigQueryInstance.insertAll(rows)).thenReturn(response);
+        Mockito.when(client.insertAll(rows)).thenReturn(response);
         Mockito.when(response.hasErrors()).thenReturn(false);
         List<Message> invalidMessages = sink.execute();
         Assert.assertEquals(0, invalidMessages.size());
-        Mockito.verify(bigQueryInstance, Mockito.times(1)).insertAll(rows);
+        Mockito.verify(client, Mockito.times(1)).insertAll(rows);
     }
 
     @Test
@@ -117,11 +117,11 @@ public class BigQuerySinkTest {
         records.getValidRecords().forEach((Record m) -> builder.addRow(rowCreator.of(m)));
         InsertAllRequest rows = builder.build();
         Mockito.when(converter.convert(Mockito.eq(messages), Mockito.any(Instant.class))).thenReturn(records);
-        Mockito.when(bigQueryInstance.insertAll(rows)).thenReturn(response);
+        Mockito.when(client.insertAll(rows)).thenReturn(response);
         Mockito.when(response.hasErrors()).thenReturn(false);
         List<Message> invalidMessages = sink.execute();
         Assert.assertEquals(2, invalidMessages.size());
-        Mockito.verify(bigQueryInstance, Mockito.times(1)).insertAll(rows);
+        Mockito.verify(client, Mockito.times(1)).insertAll(rows);
 
         Assert.assertEquals(TestMessageBQ.newBuilder()
                 .setOrderNumber("order-2")
@@ -165,7 +165,7 @@ public class BigQuerySinkTest {
         records.getValidRecords().forEach((Record m) -> builder.addRow(rowCreator.of(m)));
         InsertAllRequest rows = builder.build();
         Mockito.when(converter.convert(Mockito.eq(messages), Mockito.any(Instant.class))).thenReturn(records);
-        Mockito.when(bigQueryInstance.insertAll(rows)).thenReturn(response);
+        Mockito.when(client.insertAll(rows)).thenReturn(response);
         Mockito.when(response.hasErrors()).thenReturn(true);
 
         BigQueryError error1 = new BigQueryError("", "US", "");
@@ -178,7 +178,7 @@ public class BigQuerySinkTest {
         Mockito.when(response.getInsertErrors()).thenReturn(insertErrorsMap);
 
         List<Message> invalidMessages = sink.execute();
-        Mockito.verify(bigQueryInstance, Mockito.times(1)).insertAll(rows);
+        Mockito.verify(client, Mockito.times(1)).insertAll(rows);
 
         Assert.assertEquals(4, invalidMessages.size());
         Assert.assertEquals(TestMessageBQ.newBuilder()

@@ -1,9 +1,14 @@
 package io.odpf.firehose.sink.bigquery.handler;
 
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.TransportOptions;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.InsertAllRequest;
+import com.google.cloud.bigquery.InsertAllResponse;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.Table;
@@ -14,6 +19,8 @@ import com.google.cloud.bigquery.TimePartitioning;
 import io.odpf.firehose.config.BigQuerySinkConfig;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
@@ -24,11 +31,31 @@ public class BigQueryClient {
     private final BigQuerySinkConfig bqConfig;
     private final BQTableDefinition bqTableDefinition;
 
-    public BigQueryClient(BigQuery bigquery, BigQuerySinkConfig bqConfig) {
-        this.bigquery = bigquery;
+    public BigQueryClient(BigQuerySinkConfig bqConfig) throws IOException {
+        this(getBigQueryInstance(bqConfig), bqConfig);
+    }
+
+    public BigQueryClient(BigQuery bq, BigQuerySinkConfig bqConfig) {
+        this.bigquery = bq;
         this.bqConfig = bqConfig;
         this.tableID = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
         this.bqTableDefinition = new BQTableDefinition(bqConfig);
+    }
+
+    private static BigQuery getBigQueryInstance(BigQuerySinkConfig sinkConfig) throws IOException {
+        TransportOptions transportOptions = BigQueryOptions.getDefaultHttpTransportOptions().toBuilder()
+                .setConnectTimeout(Integer.parseInt(sinkConfig.getBqClientConnectTimeout()))
+                .setReadTimeout(Integer.parseInt(sinkConfig.getBqClientReadTimeout()))
+                .build();
+        return BigQueryOptions.newBuilder()
+                .setTransportOptions(transportOptions)
+                .setCredentials(GoogleCredentials.fromStream(new FileInputStream(sinkConfig.getBigQueryCredentialPath())))
+                .setProjectId(sinkConfig.getGCloudProjectID())
+                .build().getService();
+    }
+
+    public InsertAllResponse insertAll(InsertAllRequest rows) {
+        return bigquery.insertAll(rows);
     }
 
     public void upsertTable(List<Field> bqSchemaFields) throws BigQueryException {
@@ -81,14 +108,14 @@ public class BigQueryClient {
 
     private boolean shouldUpdateTable(TableInfo tableInfo, Table table, Schema existingSchema, Schema updatedSchema) {
         return !table.getLabels().equals(tableInfo.getLabels())
-               || !existingSchema.equals(updatedSchema)
-               || shouldChangePartitionExpiryForStandardTable(table);
+                || !existingSchema.equals(updatedSchema)
+                || shouldChangePartitionExpiryForStandardTable(table);
     }
 
     private boolean shouldUpdateDataset(Dataset dataSet) {
         if (!dataSet.getLocation().equals(bqConfig.getBigQueryDatasetLocation())) {
             throw new RuntimeException("Dataset location cannot be changed from "
-                                       + dataSet.getLocation() + " to " + bqConfig.getBigQueryDatasetLocation());
+                    + dataSet.getLocation() + " to " + bqConfig.getBigQueryDatasetLocation());
         }
 
         return !dataSet.getLabels().equals(bqConfig.getDatasetLabels());

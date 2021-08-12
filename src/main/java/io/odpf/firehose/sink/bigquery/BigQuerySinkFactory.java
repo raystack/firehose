@@ -33,8 +33,7 @@ public class BigQuerySinkFactory implements SinkFactory {
     public Sink create(Map<String, String> env, StatsDReporter statsDReporter, StencilClient defaultClient) {
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, env);
         try {
-            BigQuery bq = getBigQueryInstance(sinkConfig);
-            BigQueryClient bigQueryClient = new BigQueryClient(bq, sinkConfig);
+            BigQueryClient bigQueryClient = new BigQueryClient(sinkConfig);
             MessageRecordConverterCache recordConverterWrapper = new MessageRecordConverterCache();
             ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(sinkConfig, bigQueryClient, recordConverterWrapper);
             StencilClient client = sinkConfig.isSchemaRegistryStencilEnable()
@@ -54,7 +53,7 @@ public class BigQuerySinkFactory implements SinkFactory {
             return new BigQuerySink(
                     new Instrumentation(statsDReporter, BigQuerySink.class),
                     SinkType.BIGQUERY.name(),
-                    bq,
+                    bigQueryClient,
                     tableId,
                     recordConverterWrapper,
                     rowCreator);

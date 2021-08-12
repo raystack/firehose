@@ -1,6 +1,5 @@
 package io.odpf.firehose.sink.bigquery;
 
-import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.InsertAllRequest;
 import com.google.cloud.bigquery.InsertAllResponse;
 import com.google.cloud.bigquery.TableId;
@@ -9,6 +8,7 @@ import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterCache;
+import io.odpf.firehose.sink.bigquery.handler.BigQueryClient;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryResponseParser;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryRow;
 import io.odpf.firehose.sink.bigquery.models.Record;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class BigQuerySink extends AbstractSink {
 
-    private final BigQuery bigQueryInstance;
+    private final BigQueryClient bigQueryClient;
     private final TableId tableId;
     private final BigQueryRow rowCreator;
     private final Instrumentation instrumentation;
@@ -31,13 +31,13 @@ public class BigQuerySink extends AbstractSink {
 
     public BigQuerySink(Instrumentation instrumentation,
                         String sinkType,
-                        BigQuery bigQueryInstance,
+                        BigQueryClient client,
                         TableId tableId,
                         MessageRecordConverterCache converterCache,
                         BigQueryRow rowCreator) {
         super(instrumentation, sinkType);
         this.instrumentation = instrumentation;
-        this.bigQueryInstance = bigQueryInstance;
+        this.bigQueryClient = client;
         this.tableId = tableId;
         this.converterCache = converterCache;
         this.rowCreator = rowCreator;
@@ -71,7 +71,7 @@ public class BigQuerySink extends AbstractSink {
         InsertAllRequest.Builder builder = InsertAllRequest.newBuilder(tableId);
         records.forEach((Record m) -> builder.addRow(rowCreator.of(m)));
         InsertAllRequest rows = builder.build();
-        InsertAllResponse response = bigQueryInstance.insertAll(rows);
+        InsertAllResponse response = bigQueryClient.insertAll(rows);
         instrumentation.logInfo("Pushed a batch of {} records to BQ. Insert success?: {}", records.size(), !response.hasErrors());
         return response;
     }
