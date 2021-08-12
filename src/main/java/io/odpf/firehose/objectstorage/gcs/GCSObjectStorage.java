@@ -1,5 +1,6 @@
 package io.odpf.firehose.objectstorage.gcs;
 
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
@@ -12,6 +13,8 @@ import io.odpf.firehose.objectstorage.gcs.error.GCSErrorType;
 import io.odpf.firehose.objectstorage.gcs.exception.GCSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.threeten.bp.Duration;
+import org.threeten.bp.temporal.ChronoUnit;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -26,6 +29,10 @@ public class GCSObjectStorage implements ObjectStorage {
     public GCSObjectStorage(GCSConfig gcsConfig) throws IOException {
         this.gcsConfig = gcsConfig;
         this.storage = StorageOptions.newBuilder()
+                .setRetrySettings(RetrySettings.newBuilder()
+                        .setMaxAttempts(gcsConfig.getMaxRetryAttempt())
+                        .setTotalTimeout(Duration.of(gcsConfig.getMaxRetryDurationMilliseconds(), ChronoUnit.MILLIS))
+                        .build())
                 .setProjectId(gcsConfig.getGcsProjectId())
                 .setCredentials(GoogleCredentials.fromStream(new FileInputStream(gcsConfig.getCredentialPath())))
                 .build().getService();

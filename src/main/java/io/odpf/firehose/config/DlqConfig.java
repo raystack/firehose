@@ -69,5 +69,11 @@ public interface DlqConfig extends AppConfig {
     @DefaultValue("true")
     boolean getDlqFailOnMaxRetryAttemptsExceeded();
 
+    @Key("DLQ_OBJECT_STORAGE_GCS_MAX_RETRY_ATTEMPTS")
+    @DefaultValue("2147483647")
+    Integer getDlqGCSMaxRetryAttempts();
 
+    @Key("DLQ_OBJECT_STORAGE_GCS_MAX_RETRY_DURATION_MS")
+    @DefaultValue("300000")
+    Long getDlqGCSMaxRetryDurationMillis();
 }

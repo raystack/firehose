@@ -37,7 +37,9 @@ public class DlqWriterFactory {
                 GCSConfig gcsConfig = new GCSConfig(Paths.get(DEFAULT_DLQ_OBJECT_STORAGE_BASE_PATH),
                         dlqConfig.getDlqObjectStorageBucketName(),
                         dlqConfig.getDlqGCSCredentialPath(),
-                        dlqConfig.getDlqGcsGcloudProjectID());
+                        dlqConfig.getDlqGcsGcloudProjectID(),
+                        dlqConfig.getDlqGCSMaxRetryAttempts(),
+                        dlqConfig.getDlqGCSMaxRetryDurationMillis());
 
                 ObjectStorage objectStorage = ObjectStorageFactory.createObjectStorage(dlqConfig.getObjectStorageType(), gcsConfig.getProperties());
                 return new ObjectStorageDlqWriter(objectStorage);
