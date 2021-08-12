@@ -51,7 +51,8 @@ public class BigQuerySinkTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         this.converterCache.setMessageRecordConverter(converter);
-        this.sink = new BigQuerySink(instrumentation, "BIGQUERY", client, tableId, converterCache, rowCreator);
+        this.sink = new BigQuerySink(instrumentation, "BIGQUERY", client, converterCache, rowCreator);
+        Mockito.when(client.getTableID()).thenReturn(tableId);
     }
 
     @Test
@@ -78,7 +79,7 @@ public class BigQuerySinkTest {
         Record record6 = new Record(message6, new HashMap<>());
         Records records = new Records(Collections.list(record1, record2, record3, record4, record5, record6), java.util.Collections.emptyList());
 
-        InsertAllRequest.Builder builder = InsertAllRequest.newBuilder(tableId);
+        InsertAllRequest.Builder builder = InsertAllRequest.newBuilder(client.getTableID());
         records.getValidRecords().forEach((Record m) -> builder.addRow(rowCreator.of(m)));
         InsertAllRequest rows = builder.build();
         Mockito.when(converter.convert(Mockito.eq(messages), Mockito.any(Instant.class))).thenReturn(records);
@@ -113,7 +114,7 @@ public class BigQuerySinkTest {
         Record record6 = new Record(message6, new HashMap<>());
         Records records = new Records(Collections.list(record1, record3, record5, record6), Collections.list(record2, record4));
 
-        InsertAllRequest.Builder builder = InsertAllRequest.newBuilder(tableId);
+        InsertAllRequest.Builder builder = InsertAllRequest.newBuilder(client.getTableID());
         records.getValidRecords().forEach((Record m) -> builder.addRow(rowCreator.of(m)));
         InsertAllRequest rows = builder.build();
         Mockito.when(converter.convert(Mockito.eq(messages), Mockito.any(Instant.class))).thenReturn(records);
@@ -161,7 +162,7 @@ public class BigQuerySinkTest {
         Record record6 = new Record(message6, new HashMap<>());
         Records records = new Records(Collections.list(record1, record3, record5, record6), Collections.list(record2, record4));
 
-        InsertAllRequest.Builder builder = InsertAllRequest.newBuilder(tableId);
+        InsertAllRequest.Builder builder = InsertAllRequest.newBuilder(client.getTableID());
         records.getValidRecords().forEach((Record m) -> builder.addRow(rowCreator.of(m)));
         InsertAllRequest rows = builder.build();
         Mockito.when(converter.convert(Mockito.eq(messages), Mockito.any(Instant.class))).thenReturn(records);

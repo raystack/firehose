@@ -155,12 +155,12 @@ public class Instrumentation {
         statsDReporter.captureHistogramWithTags(SINK_PUSH_BATCH_SIZE_TOTAL, totalMessages);
     }
 
-    public void captureErrorsMetrics(List<ErrorType> errors) {
-        errors.forEach(
-                errorType -> {
-                    statsDReporter.captureCount(ERROR_MESSAGES_TOTAL, 1, String.format(ERROR_TYPE_TAG, errorType.name()));
-                }
-        );
+    public void captureErrorMetrics(List<ErrorType> errors) {
+        errors.forEach(this::captureErrorMetrics);
+    }
+
+    public void captureErrorMetrics(ErrorType errorType) {
+        statsDReporter.captureCount(ERROR_MESSAGES_TOTAL, 1, String.format(ERROR_TYPE_TAG, errorType.name()));
     }
 
     // =================== Retry and DLQ Telemetry ======================
@@ -194,8 +194,8 @@ public class Instrumentation {
         });
     }
 
-    public void captureDurationSince(String metric, Instant instant) {
-        statsDReporter.captureDurationSince(metric, instant);
+    public void captureDurationSince(String metric, Instant instant, String... tags) {
+        statsDReporter.captureDurationSince(metric, instant, tags);
     }
 
     public void captureSleepTime(String metric, int sleepTime) {

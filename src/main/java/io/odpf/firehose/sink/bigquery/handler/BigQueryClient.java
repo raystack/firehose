@@ -17,29 +17,33 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TimePartitioning;
 import io.odpf.firehose.config.BigQuerySinkConfig;
-import lombok.extern.slf4j.Slf4j;
+import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.Metrics;
+import lombok.Getter;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
-@Slf4j
 public class BigQueryClient {
     private final BigQuery bigquery;
+    @Getter
     private final TableId tableID;
     private final BigQuerySinkConfig bqConfig;
     private final BQTableDefinition bqTableDefinition;
+    private final Instrumentation instrumentation;
 
-    public BigQueryClient(BigQuerySinkConfig bqConfig) throws IOException {
-        this(getBigQueryInstance(bqConfig), bqConfig);
+    public BigQueryClient(BigQuerySinkConfig bqConfig, Instrumentation instrumentation) throws IOException {
+        this(getBigQueryInstance(bqConfig), bqConfig, instrumentation);
     }
 
-    public BigQueryClient(BigQuery bq, BigQuerySinkConfig bqConfig) {
+    public BigQueryClient(BigQuery bq, BigQuerySinkConfig bqConfig, Instrumentation instrumentation) {
         this.bigquery = bq;
         this.bqConfig = bqConfig;
         this.tableID = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
         this.bqTableDefinition = new BQTableDefinition(bqConfig);
+        this.instrumentation = instrumentation;
     }
 
     private static BigQuery getBigQueryInstance(BigQuerySinkConfig sinkConfig) throws IOException {
@@ -55,7 +59,10 @@ public class BigQueryClient {
     }
 
     public InsertAllResponse insertAll(InsertAllRequest rows) {
-        return bigquery.insertAll(rows);
+        Instant start = Instant.now();
+        InsertAllResponse response = bigquery.insertAll(rows);
+        instrument(start, Metrics.BigQueryAPIType.TABLE_INSERT_ALL);
+        return response;
     }
 
     public void upsertTable(List<Field> bqSchemaFields) throws BigQueryException {
@@ -70,26 +77,32 @@ public class BigQueryClient {
     private void upsertDatasetAndTable(TableInfo tableInfo) {
         Dataset dataSet = bigquery.getDataset(tableID.getDataset());
         if (dataSet == null || !bigquery.getDataset(tableID.getDataset()).exists()) {
+            Instant start = Instant.now();
             bigquery.create(
                     Dataset.newBuilder(tableID.getDataset())
                             .setLocation(bqConfig.getBigQueryDatasetLocation())
                             .setLabels(bqConfig.getDatasetLabels())
                             .build()
             );
-            log.info("Successfully CREATED bigquery DATASET: {}", tableID.getDataset());
+            instrumentation.logInfo("Successfully CREATED bigquery DATASET: {}", tableID.getDataset());
+            instrument(start, Metrics.BigQueryAPIType.DATASET_CREATE);
         } else if (shouldUpdateDataset(dataSet)) {
+            Instant start = Instant.now();
             bigquery.update(
                     Dataset.newBuilder(tableID.getDataset())
                             .setLabels(bqConfig.getDatasetLabels())
                             .build()
             );
-            log.info("Successfully UPDATED bigquery DATASET: {} with labels", tableID.getDataset());
+            instrumentation.logInfo("Successfully UPDATED bigquery DATASET: {} with labels", tableID.getDataset());
+            instrument(start, Metrics.BigQueryAPIType.DATASET_UPDATE);
         }
 
         Table table = bigquery.getTable(tableID);
         if (table == null || !table.exists()) {
+            Instant start = Instant.now();
             bigquery.create(tableInfo);
-            log.info("Successfully CREATED bigquery TABLE: {}", tableID.getTable());
+            instrumentation.logInfo("Successfully CREATED bigquery TABLE: {}", tableID.getTable());
+            instrument(start, Metrics.BigQueryAPIType.TABLE_CREATE);
         } else {
             Schema existingSchema = table.getDefinition().getSchema();
             Schema updatedSchema = tableInfo.getDefinition().getSchema();
@@ -97,13 +110,26 @@ public class BigQueryClient {
             if (shouldUpdateTable(tableInfo, table, existingSchema, updatedSchema)) {
                 Instant start = Instant.now();
                 bigquery.update(tableInfo);
-                log.info("Successfully UPDATED bigquery TABLE: {}", tableID.getTable());
-//                instrumentation.captureDurationSince("bq.upsert.table.time," + statsClient.getBqTags(), start);
-                //               instrumentation.incrementCounter("bq.upsert.table.count," + statsClient.getBqTags());
+                instrumentation.logInfo("Successfully UPDATED bigquery TABLE: {}", tableID.getTable());
+                instrument(start, Metrics.BigQueryAPIType.TABLE_UPDATE);
             } else {
-                log.info("Skipping bigquery table update, since proto schema hasn't changed");
+                instrumentation.logInfo("Skipping bigquery table update, since proto schema hasn't changed");
             }
         }
+    }
+
+    private void instrument(Instant startTime, Metrics.BigQueryAPIType type) {
+        instrumentation.incrementCounterWithTags(
+                Metrics.SINK_BIGQUERY_OPERATION_TOTAL,
+                String.format(Metrics.BIGQUERY_TABLE_TAG, tableID.getTable()),
+                String.format(Metrics.BIGQUERY_DATASET_TAG, tableID.getDataset()),
+                String.format(Metrics.BIGQUERY_API_TAG, type));
+        instrumentation.captureDurationSince(
+                Metrics.SINK_BIGQUERY_OPERATION_LATENCY_MILLISECONDS,
+                startTime,
+                String.format(Metrics.BIGQUERY_TABLE_TAG, tableID.getTable()),
+                String.format(Metrics.BIGQUERY_DATASET_TAG, tableID.getDataset()),
+                String.format(Metrics.BIGQUERY_API_TAG, type));
     }
 
     private boolean shouldUpdateTable(TableInfo tableInfo, Table table, Schema existingSchema, Schema updatedSchema) {

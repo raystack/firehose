@@ -2,7 +2,6 @@ package io.odpf.firehose.sink.bigquery;
 
 import com.google.cloud.bigquery.InsertAllRequest;
 import com.google.cloud.bigquery.InsertAllResponse;
-import com.google.cloud.bigquery.TableId;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -23,7 +22,6 @@ import java.util.stream.Collectors;
 public class BigQuerySink extends AbstractSink {
 
     private final BigQueryClient bigQueryClient;
-    private final TableId tableId;
     private final BigQueryRow rowCreator;
     private final Instrumentation instrumentation;
     private final MessageRecordConverterCache converterCache;
@@ -32,13 +30,11 @@ public class BigQuerySink extends AbstractSink {
     public BigQuerySink(Instrumentation instrumentation,
                         String sinkType,
                         BigQueryClient client,
-                        TableId tableId,
                         MessageRecordConverterCache converterCache,
                         BigQueryRow rowCreator) {
         super(instrumentation, sinkType);
         this.instrumentation = instrumentation;
         this.bigQueryClient = client;
-        this.tableId = tableId;
         this.converterCache = converterCache;
         this.rowCreator = rowCreator;
     }
@@ -68,7 +64,7 @@ public class BigQuerySink extends AbstractSink {
     }
 
     private InsertAllResponse insertIntoBQ(List<Record> records) {
-        InsertAllRequest.Builder builder = InsertAllRequest.newBuilder(tableId);
+        InsertAllRequest.Builder builder = InsertAllRequest.newBuilder(bigQueryClient.getTableID());
         records.forEach((Record m) -> builder.addRow(rowCreator.of(m)));
         InsertAllRequest rows = builder.build();
         InsertAllResponse response = bigQueryClient.insertAll(rows);

@@ -11,6 +11,7 @@ public class Metrics {
     //SINK PREFIXES
     public static final String SINK_PREFIX = "sink_";
     public static final String HTTP_SINK_PREFIX = "http_";
+    public static final String BIGQUERY_SINK_PREFIX = "bigquery_";
 
     //RETRY PREFIX
     public static final String RETRY_PREFIX = "retry_";
@@ -56,6 +57,10 @@ public class Metrics {
     public static final String PIPELINE_END_LATENCY_MILLISECONDS = APPLICATION_PREFIX + PIPELINE_PREFIX + "end_latency_milliseconds";
     public static final String PIPELINE_EXECUTION_LIFETIME_MILLISECONDS = APPLICATION_PREFIX + PIPELINE_PREFIX + "execution_lifetime_milliseconds";
 
+    // BigQuery SINK MEASUREMENTS
+    public static final String SINK_BIGQUERY_OPERATION_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + BIGQUERY_SINK_PREFIX + "operation_total";
+    public static final String SINK_BIGQUERY_OPERATION_LATENCY_MILLISECONDS = APPLICATION_PREFIX + SINK_PREFIX + BIGQUERY_SINK_PREFIX + "operation_latency_milliseconds";
+
     // ERROR MEASUREMENT
     public static final String ERROR_EVENT = APPLICATION_PREFIX + ERROR_PREFIX + "event";
     public static final String ERROR_MESSAGES_TOTAL = APPLICATION_PREFIX + ERROR_PREFIX + "messages_total";
@@ -65,6 +70,10 @@ public class Metrics {
     public static final String FAILURE_TAG = "success=false";
     public static final String MESSAGE_TYPE_TAG = "type=%s"; // total, success, failure
     public static final String MESSAGE_SCOPE_TAG = "scope=%s";
+
+    public static final String BIGQUERY_TABLE_TAG = "table=%s";
+    public static final String BIGQUERY_DATASET_TAG = "dataset=%s";
+    public static final String BIGQUERY_API_TAG = "api=%s";
 
     //ERROR TAGS
     public static final String ERROR_TYPE_TAG = "error_type=%s";
@@ -87,5 +96,13 @@ public class Metrics {
         TOTAL,
         SUCCESS,
         FAILURE
+    }
+
+    public enum BigQueryAPIType {
+        TABLE_UPDATE,
+        TABLE_CREATE,
+        DATASET_UPDATE,
+        DATASET_CREATE,
+        TABLE_INSERT_ALL,
     }
 }

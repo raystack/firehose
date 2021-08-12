@@ -14,8 +14,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_TOTAL;
 
@@ -73,8 +71,13 @@ public abstract class AbstractSink implements Closeable, Sink {
                     m.setErrorInfo(new ErrorInfo(null, ErrorType.DEFAULT_ERROR));
                 }
                 instrumentation.captureMessageMetrics(SINK_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, m.getErrorInfo().getErrorType(), 1);
+                instrumentation.captureErrorMetrics(m.getErrorInfo().getErrorType());
+                instrumentation.logError("Failed to Push message. Error: {},Topic: {}, Partition: {},Offset: {}",
+                        m.getErrorInfo().getErrorType(),
+                        m.getTopic(),
+                        m.getPartition(),
+                        m.getOffset());
             });
-            instrumentation.captureErrorsMetrics(failedMessages.stream().map(Message::getErrorInfo).filter(Objects::nonNull).map(ErrorInfo::getErrorType).collect(Collectors.toList()));
         }
     }
 

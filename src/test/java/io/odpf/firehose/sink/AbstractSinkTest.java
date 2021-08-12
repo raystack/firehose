@@ -123,11 +123,8 @@ public class AbstractSinkTest {
         Mockito.verify(instrumentation, Mockito.times(1)).captureSinkExecutionTelemetry("TestSink", 5);
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("Pushed {} messages", 2);
         Mockito.verify(instrumentation, Mockito.times(1)).logError("Failed to Push {} messages to sink ", 3);
-        Mockito.verify(instrumentation, Mockito.times(1)).captureErrorsMetrics(new ArrayList<ErrorType>() {{
-            add(ErrorType.DEFAULT_ERROR);
-            add(ErrorType.DEFAULT_ERROR);
-            add(ErrorType.DESERIALIZATION_ERROR);
-        }});
+        Mockito.verify(instrumentation, Mockito.times(1)).captureErrorMetrics(ErrorType.DESERIALIZATION_ERROR);
+        Mockito.verify(instrumentation, Mockito.times(2)).captureErrorMetrics(ErrorType.DEFAULT_ERROR);
     }
 
     @Test
@@ -159,12 +156,7 @@ public class AbstractSinkTest {
         Mockito.verify(instrumentation, Mockito.times(1)).startExecution();
         Mockito.verify(instrumentation, Mockito.times(1)).captureSinkExecutionTelemetry("TestSink", 4);
         Mockito.verify(instrumentation, Mockito.times(1)).logError("Failed to Push {} messages to sink ", 4);
-        Mockito.verify(instrumentation, Mockito.times(1)).captureErrorsMetrics(new ArrayList<ErrorType>() {{
-            add(ErrorType.DEFAULT_ERROR);
-            add(ErrorType.DEFAULT_ERROR);
-            add(ErrorType.DEFAULT_ERROR);
-            add(ErrorType.DEFAULT_ERROR);
-        }});
+        Mockito.verify(instrumentation, Mockito.times(4)).captureErrorMetrics(ErrorType.DEFAULT_ERROR);
     }
 
     @Test(expected = DeserializerException.class)
