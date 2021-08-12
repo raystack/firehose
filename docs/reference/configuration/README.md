@@ -1,0 +1,18 @@
+# Configuration
+
+This page contains reference for all the application configurations for Firehose.
+
+## Table of Contents
+
+* [Generic](./#generic)
+* Stencil
+* [Kafka Consumer ](./#kafka-consumer)
+* [HTTP Sink](./#http-sink)
+* [JDBC Sink](./#jdbc-sink)
+* [Influx Sink](./#influx-sink)
+* [Redis Sink](./#redis-sink)
+* [Elasticsearch Sink](./#elasticsearch-sink)
+* [GRPC Sink](./#grpc-sink)
+* [Prometheus Sink](./#prometheus-sink)
+* [Retries](./#retries)
+
