@@ -26,23 +26,50 @@ StatsD is a simple protocol for sending application metrics via UDP. StatsD is s
 
 ## Setting Up Grafana with Firehose
 
-### Set Up Grafana
+### Set Up Grafana service
 
-Create a [Grafana Cloud](https://grafana.com/products/cloud/) account, to set up Grafana metrics dashboard on the cloud, or [download Grafana ](https://grafana.com/grafana/download)to set up Grafana dashboard locally.
+Create a [Grafana Cloud](https://grafana.com/products/cloud/) account, to set up Grafana metrics dashboard on the cloud, or [download Grafana ](https://grafana.com/grafana/download)to set up Grafana dashboard locally. Grafana can also be deployed on Docker by pulling InfluxDB image from DockerHub. 
 
-### Set Up InfluxDB
+```text
+$ docker pull grafana/grafana
+```
 
-Follow [this guide](https://grafana.com/docs/grafana/latest/getting-started/getting-started-influxdb/) to set up and link your InfluxDB database with Grafana. InfluxDB can be installed locally or can be set up on the cloud via [InfluxDB Cloud](https://www.influxdata.com/products/influxdb-cloud/).
+Grafana server runs on `localhost:3000` by default. Make sure to add your InfluxDB server as the data source in Grafana Data Sources section.
 
-### Set Up Telegraf
+If your using InfluxDB version 1.8 or earlier, then Grafana dashboard can be loaded on your Grafana cloud account or local Grafana server by importing the JSON file `firehose-grafana-dashboard-updated.json` in the `docs/assets/` directory of the Firehose. 
+
+Make sure to select InfluxQL as the query language while configuring the InfluxDB as the Grafana data source, since the InfluxDB queries for the Firehose metrics in the  `firehose-grafana-dashboard-updated.json` currently support only InfluxDB 1.x. Then provide the InfluxDB login credentials and other parameters like organization name and bucket name.  
+
+### Set Up InfluxDB Server
+
+Follow [this guide](https://grafana.com/docs/grafana/latest/getting-started/getting-started-influxdb/) to set up and link your InfluxDB database with Grafana. InfluxDB can be installed locally or can be set up on the cloud via [InfluxDB Cloud](https://www.influxdata.com/products/influxdb-cloud/). For local setup, InfluxDB installer can be downloaded from [here](https://portal.influxdata.com/downloads/). InfluxDB can also be deployed on Docker by pulling InfluxDB image from DockerHub. The following command will pull the InfluxDb 2.x latest version.
+
+```text
+$ docker pull influxdb
+```
+
+For compatibity with the sample Firehose Grafana dashboard \(which current only supports InfluxQL query language\), you must download and install InfluxDB 1.x . To deploy InfluxDB 1.x on Docker, run the following to pull the image from Docker Hub.
+
+```text
+$ docker pull influxdb:1.8
+```
+
+Make sure to add the InfluxDB server URLs, port and the login credentials to the `telegraf.conf` file. By default, InfluxDB server is hosted on `localhost:8086`  . Create a new bucket for the Firehose metrics and configure the bucket name in the `telegraf.conf` file, as well as in the InfluxDB source properties in the Grafana Data Sources section
+
+The Telegraf output plugin  configuration for InfluxDB v2 + can be found [here](https://github.com/influxdata/telegraf/tree/release-1.14/plugins/outputs/influxdb_v2). The Telegraf output plugin  configuration for InfluxDB v1.x can be found [here](https://github.com/influxdata/telegraf/tree/master/plugins/outputs/influxdb). 
+
+
+
+### Set Up Telegraf Server
 
 Lastly, set up Telegraf to send metrics to InfluxDB, following the corresponding instructions according to your Firehose deployment -
 
 #### **Firehose in Docker or deployed locally**
 
-1. Follow [this guide](https://www.influxdata.com/blog/getting-started-with-sending-statsd-metrics-to-telegraf-influxdb/) to install and set up Telegraf as the StatsD host. 
+1. Follow [this guide](https://www.influxdata.com/blog/getting-started-with-sending-statsd-metrics-to-telegraf-influxdb/) to install and set up Telegraf as the StatsD host. For a sample Telegraf file, needed for Firehose  you may refer the `telegraf.conf` file in `docs/assets/` 
 2. Configure the Firehose environment variables `METRIC_STATSD_HOST` and `METRIC_STATSD_PORT`  to the IP address and port on which Telegraf is listening. By default, `METRIC_STATSD_HOST` is set to `localhost` and `METRIC_STATSD_PORT` is set to the default listener port of Telegraf, i.e.`8125` 
-3. Configure the IP address and port of the InfluxDB server in the file `~/.telegraf/telegraf.conf`
+3. In `telegraf.conf`, check these 2 configs in INPUT PLUGINS in the StatsD plugin configuration, set `datadog_extensions = true` and `datadog_distributions = true`
+4. Configure the URL and port of the InfluxDB server in the Telegraf configuration file, i.e.`~/.telegraf/telegraf.conf`
 
 #### Firehose deployed on Kubernetes _\*\*_
 
@@ -65,7 +92,7 @@ $ helm install my-release -f values.yaml odpf/firehose
 
 [Grafana](https://grafana.com/) is a multi-platform open-source analytics and interactive visualization web application. It provides charts, graphs, and alerts for the web when connected to supported data sources. A licensed Grafana Enterprise version with additional capabilities is also available as a self-hosted installation or an account on the Grafana Labs cloud service.
 
-Grafana dashboard can be loaded on your Grafana cloud account by importing the JSON file `firehose-grafana-dashboard.json` in the `docs/assets/` directory.
+Grafana dashboard can be loaded on your Grafana cloud account by importing the JSON file `firehose-grafana-dashboard-updated.json` in the `docs/assets/` directory.
 
 ![Firehose Grafana dashboard](../.gitbook/assets/screenshot-from-2021-07-12-17-55-11.png)
 
@@ -73,9 +100,8 @@ Load a Firehose dashboard by configuring the following parameters -
 
 * **Data Source** - name of InfluxDB database for metrics
 * **Prometheus Data Source** - Prometheus cluster name if any
-* **Organization** - name of the organization
-* **Landscape** - id/th/vn/gl
-* **Firehose Name** - name of the Firehose
+* **Organization** - name of the InfluxDB organization
+* **Firehose Name** - the Firehose Kafka Consumer Group ID
 * **Pod** - specify a particular Kubernetes pod ID or select **All** to track all pods.
 
 ## Features of Grafana dashboard
