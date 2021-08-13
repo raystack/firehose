@@ -5,7 +5,7 @@ This page contains reference for all the application configurations for Firehose
 ## Table of Contents
 
 * [Generic](generic-1.md)
-* [Stencil Clien](stencil-client.md)t
+* [Stencil Client](stencil-client.md)
 * [Retries](retries.md)
 * [Kafka Consumer ](kafka-consumer-1.md)
 * [HTTP Sink](http-sink.md)

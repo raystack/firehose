@@ -26,7 +26,7 @@ Maximum expiry time in milliseconds for exponential backoff policy.
 
 ## `DLQ_ENABLE`
 
-Maximum 
+Maximum
 
 * Example value: `true`
 * Type: `optional`
