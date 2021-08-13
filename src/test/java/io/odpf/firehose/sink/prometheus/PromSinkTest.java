@@ -35,7 +35,6 @@ import java.util.Map;
 
 import static io.odpf.firehose.sink.prometheus.PromSinkConstants.PROMETHEUS_LABEL_FOR_METRIC_NAME;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -134,18 +133,6 @@ public class PromSinkTest {
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         promSink.prepare(messages);
-    }
-
-    @Test
-    public void shouldCatchIOExceptionInAbstractSinkAndCaptureFailedExecutionTelemetry() throws Exception {
-        when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
-        when(request.build(messages)).thenReturn(httpPostList);
-        when(httpClient.execute(any(HttpPost.class))).thenThrow(IOException.class);
-
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
-        promSink.pushMessage(messages);
-
-//          verify(instrumentation, times(1)).captureFailedExecutionTelemetry(any(IOException.class), anyInt());
     }
 
     @Test

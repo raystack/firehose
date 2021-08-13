@@ -92,17 +92,6 @@ public class JdbcSinkTest {
     }
 
     @Test
-    public void shouldReturnFailedMessagesWhenExecuteThrowsException() throws SQLException, IOException, DeserializerException {
-        SQLException sqlException = new SQLException();
-        when(connection.createStatement()).thenThrow(sqlException);
-        List<Message> messages = Arrays.asList(new Message(new byte[0], new byte[0], "topic", 0, 100),
-                new Message(new byte[0], new byte[0], "topic", 0, 100));
-
-        assertEquals(jdbcSink.pushMessage(messages).size(), 2);
-//        verify(instrumentation, times(1)).captureFailedExecutionTelemetry(sqlException, messages.size());
-    }
-
-    @Test
     public void shouldPrepareBatchForQueries() throws SQLException {
         List<String> queries = Arrays.asList("select * from table", "select count(*) from table");
         List<Message> messages = Arrays.asList(new Message(new byte[0], new byte[0], "topic", 0, 100),
