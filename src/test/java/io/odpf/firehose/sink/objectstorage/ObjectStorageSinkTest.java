@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import static io.odpf.firehose.metrics.Metrics.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -197,33 +196,5 @@ public class ObjectStorageSinkTest {
         assertEquals(retryMessages.size(), 1);
         assertEquals(ErrorType.UNKNOWN_FIELDS_ERROR, retryMessages.get(0).getErrorInfo().getErrorType());
         retryMessages.forEach(message -> assertNotNull(message.getErrorInfo()));
-    }
-
-    @Test
-    public void shouldRecordMetricOfFailedMessage() throws Exception {
-        objectStorageSink = new ObjectStorageSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer);
-
-        Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
-        Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 1, 2);
-        Message message3 = new Message("".getBytes(), "".getBytes(), "booking", 1, 3);
-        Message message4 = new Message("".getBytes(), "".getBytes(), "booking", 1, 4);
-        Record record1 = mock(Record.class);
-        Record record2 = mock(Record.class);
-        String path1 = "/tmp/test1";
-        String path2 = "/tmp/test2";
-
-        when(messageDeSerializer.deSerialize(message1)).thenReturn(record1);
-        when(messageDeSerializer.deSerialize(message2)).thenReturn(record2);
-        when(messageDeSerializer.deSerialize(message3)).thenThrow(new DeserializerException(""));
-        when(messageDeSerializer.deSerialize(message4)).thenThrow(new DeserializerException(""));
-        when(writerOrchestrator.write(record1)).thenReturn(path1);
-        when(writerOrchestrator.write(record2)).thenReturn(path2);
-
-        List<Message> retryMessages = objectStorageSink.pushMessage(Arrays.asList(message1, message2, message3, message4));
-
-        verify(writerOrchestrator, times(2)).write(any(Record.class));
-        assertEquals(2, retryMessages.size());
-        verify(instrumentation).captureCountWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSING_FAILED_TOTAL, 2,
-                tag(SINK_OBJECT_STORAGE_SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE));
     }
 }

@@ -22,8 +22,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static io.odpf.firehose.metrics.Metrics.*;
-
 public class ObjectStorageSink extends AbstractSink {
 
     private final WriterOrchestrator writerOrchestrator;
@@ -64,9 +62,6 @@ public class ObjectStorageSink extends AbstractSink {
                 throw new WriterIOException(e);
             }
         }
-
-        getInstrumentation().captureCountWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSING_FAILED_TOTAL, failedMessages.size(),
-                tag(SINK_OBJECT_STORAGE_SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE));
 
         return failedMessages;
     }

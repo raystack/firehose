@@ -27,7 +27,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import static io.odpf.firehose.metrics.Metrics.*;
+import static io.odpf.firehose.metrics.Metrics.tag;
+import static io.odpf.firehose.sink.objectstorage.ObjectStorageMetrics.*;
 
 /**
  * This class manages threads for local and object storage checking.
@@ -112,25 +113,16 @@ public class WriterOrchestrator implements Closeable {
     public String write(Record record) throws Exception {
         checkStatus();
         Partition partition = localStorage.getPartitionFactory().getPartition(record);
-
         String dateTimePartition = partition.getDatetimePathWithoutPrefix();
-
         synchronized (timePartitionWriterMap) {
             LocalFileWriter writer = timePartitionWriterMap.computeIfAbsent(partition.toString(), x -> {
                 LocalFileWriter localFileWriter = localStorage.createLocalFileWriter(partition.getPath());
-                instrumentation.incrementCounterWithTags(SINK_OBJECT_STORAGE_LOCAL_FILE_OPEN_TOTAL,
-                        tag(SINK_OBJECT_STORAGE_TOPIC_TAG, partition.getTopic()),
-                        tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimePartition));
+                instrumentation.incrementCounterWithTags(LOCAL_FILE_OPEN_TOTAL,
+                        tag(TOPIC_TAG, partition.getTopic()),
+                        tag(PARTITION_TAG, dateTimePartition));
                 return localFileWriter;
             });
-
             writer.write(record);
-
-            instrumentation.incrementCounterWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSED_TOTAL,
-                    tag(SINK_OBJECT_STORAGE_SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE),
-                    tag(SINK_OBJECT_STORAGE_TOPIC_TAG, partition.getTopic()),
-                    tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimePartition));
-
             return writer.getFullPath();
         }
     }

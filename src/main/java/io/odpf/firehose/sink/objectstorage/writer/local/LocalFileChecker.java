@@ -12,6 +12,7 @@ import java.util.Queue;
 import java.util.stream.Collectors;
 
 import static io.odpf.firehose.metrics.Metrics.*;
+import static io.odpf.firehose.sink.objectstorage.ObjectStorageMetrics.*;
 
 public class LocalFileChecker implements Runnable {
     private final Queue<FileMeta> toBeFlushedToRemotePaths;
@@ -57,32 +58,24 @@ public class LocalFileChecker implements Runnable {
                 toBeFlushedToRemotePaths.add(fileMeta);
                 LOGGER.info("Closing Local File " + filePath);
 
-                instrumentation.incrementCounterWithTags(SINK_OBJECT_STORAGE_LOCAL_FILE_CLOSE_TOTAL,
+                instrumentation.incrementCounterWithTags(LOCAL_FILE_CLOSE_TOTAL,
                         SUCCESS_TAG,
-                        tag(SINK_OBJECT_STORAGE_TOPIC_TAG, topic),
-                        tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimeTag));
+                        tag(TOPIC_TAG, topic),
+                        tag(PARTITION_TAG, dateTimeTag));
 
-                instrumentation.captureDurationSinceWithTags(SINK_OBJECT_STORAGE_LOCAL_FILE_CLOSING_TIME_MILLISECONDS, fileClosingStartTime,
-                        tag(SINK_OBJECT_STORAGE_TOPIC_TAG, topic),
-                        tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimeTag));
+                instrumentation.captureDurationSinceWithTags(LOCAL_FILE_CLOSING_TIME_MILLISECONDS, fileClosingStartTime,
+                        tag(TOPIC_TAG, topic),
+                        tag(PARTITION_TAG, dateTimeTag));
 
-                instrumentation.captureCountWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSED_TOTAL, fileMeta.getRecordCount(),
-                        tag(SINK_OBJECT_STORAGE_SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_CLOSE),
-                        tag(SINK_OBJECT_STORAGE_TOPIC_TAG, topic),
-                        tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimeTag));
-
-                instrumentation.captureCountWithTags(SINK_OBJECT_STORAGE_LOCAL_FILE_SIZE_BYTES, fileMeta.getFileSizeBytes(),
-                        tag(SINK_OBJECT_STORAGE_TOPIC_TAG, topic),
-                        tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimeTag));
+                instrumentation.captureCountWithTags(LOCAL_FILE_SIZE_BYTES, fileMeta.getFileSizeBytes(),
+                        tag(TOPIC_TAG, topic),
+                        tag(PARTITION_TAG, dateTimeTag));
             } catch (IOException e) {
                 e.printStackTrace();
-                instrumentation.captureCountWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSING_FAILED_TOTAL, writer.getRecordCount(),
-                        tag(SINK_OBJECT_STORAGE_TOPIC_TAG, topic),
-                        tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimeTag));
-                instrumentation.incrementCounterWithTags(SINK_OBJECT_STORAGE_LOCAL_FILE_CLOSE_TOTAL,
+                instrumentation.incrementCounterWithTags(LOCAL_FILE_CLOSE_TOTAL,
                         FAILURE_TAG,
-                        tag(SINK_OBJECT_STORAGE_TOPIC_TAG, topic),
-                        tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimeTag));
+                        tag(TOPIC_TAG, topic),
+                        tag(PARTITION_TAG, dateTimeTag));
                 throw new LocalFileWriterFailedException(e);
             }
         });

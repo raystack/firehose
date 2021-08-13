@@ -2,14 +2,14 @@ package io.odpf.firehose.sink.objectstorage.writer;
 
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.sink.objectstorage.TestUtils;
 import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriter;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriterFailedException;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
-import io.odpf.firehose.sink.objectstorage.writer.local.PartitionFactory;
-import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.sink.objectstorage.writer.local.Partition;
+import io.odpf.firehose.sink.objectstorage.writer.local.PartitionFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,8 +27,8 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
-import static io.odpf.firehose.metrics.Metrics.*;
-import static io.odpf.firehose.metrics.Metrics.SINK_OBJECT_STORAGE_PARTITION_TAG;
+import static io.odpf.firehose.metrics.Metrics.tag;
+import static io.odpf.firehose.sink.objectstorage.ObjectStorageMetrics.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -179,14 +179,9 @@ public class WriterOrchestratorTest {
         try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage, instrumentation, statsDReporter)) {
             writerOrchestrator.write(record);
 
-            verify(instrumentation).incrementCounterWithTags(SINK_OBJECT_STORAGE_LOCAL_FILE_OPEN_TOTAL,
-                    tag(SINK_OBJECT_STORAGE_TOPIC_TAG, partition.getTopic()),
-                    tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimeTag));
-
-            verify(instrumentation).incrementCounterWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSED_TOTAL,
-                    tag(SINK_OBJECT_STORAGE_SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_WRITE),
-                    tag(SINK_OBJECT_STORAGE_TOPIC_TAG, partition.getTopic()),
-                    tag(SINK_OBJECT_STORAGE_PARTITION_TAG, dateTimeTag));
+            verify(instrumentation).incrementCounterWithTags(LOCAL_FILE_OPEN_TOTAL,
+                    tag(TOPIC_TAG, partition.getTopic()),
+                    tag(PARTITION_TAG, dateTimeTag));
         }
     }
 }

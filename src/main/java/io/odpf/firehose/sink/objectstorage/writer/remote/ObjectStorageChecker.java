@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 import static io.odpf.firehose.metrics.Metrics.*;
+import static io.odpf.firehose.sink.objectstorage.ObjectStorageMetrics.*;
 
 @AllArgsConstructor
 public class ObjectStorageChecker implements Runnable {
@@ -63,36 +64,28 @@ public class ObjectStorageChecker implements Runnable {
                     String topic = partition.getTopic();
                     String datetimeTag = partition.getDatetimePathWithoutPrefix();
 
-                    instrumentation.captureCountWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSED_TOTAL, fileMeta.getRecordCount(),
-                            tag(SINK_OBJECT_STORAGE_SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_UPLOAD),
-                            tag(SINK_OBJECT_STORAGE_TOPIC_TAG, topic),
-                            tag(SINK_OBJECT_STORAGE_PARTITION_TAG, datetimeTag));
-                    instrumentation.incrementCounterWithTags(SINK_OBJECT_STORAGE_FILE_UPLOAD_TOTAL,
+                    instrumentation.incrementCounterWithTags(FILE_UPLOAD_TOTAL,
                             SUCCESS_TAG,
-                            tag(SINK_OBJECT_STORAGE_TOPIC_TAG, topic),
-                            tag(SINK_OBJECT_STORAGE_PARTITION_TAG, datetimeTag));
-                    instrumentation.captureCountWithTags(SINK_OBJECT_STORAGE_FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
-                            tag(SINK_OBJECT_STORAGE_TOPIC_TAG, topic),
-                            tag(SINK_OBJECT_STORAGE_PARTITION_TAG, datetimeTag));
-                    instrumentation.captureDurationSinceWithTags(SINK_OBJECT_STORAGE_FILE_UPLOAD_TIME_MILLISECONDS, uploadJob.getStartTime(),
-                            tag(SINK_OBJECT_STORAGE_TOPIC_TAG, topic),
-                            tag(SINK_OBJECT_STORAGE_PARTITION_TAG, datetimeTag));
+                            tag(TOPIC_TAG, topic),
+                            tag(PARTITION_TAG, datetimeTag));
+                    instrumentation.captureCountWithTags(FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
+                            tag(TOPIC_TAG, topic),
+                            tag(PARTITION_TAG, datetimeTag));
+                    instrumentation.captureDurationSinceWithTags(FILE_UPLOAD_TIME_MILLISECONDS, uploadJob.getStartTime(),
+                            tag(TOPIC_TAG, topic),
+                            tag(PARTITION_TAG, datetimeTag));
+
                 } catch (InterruptedException | ExecutionException e) {
                     Partition partition = uploadJob.getFileMeta().getPartition();
                     String topic = partition.getTopic();
                     String datetimeTag = partition.getDatetimePathWithoutPrefix();
                     String errorType = getErrorType(e);
 
-                    instrumentation.incrementCounterWithTags(SINK_OBJECT_STORAGE_FILE_UPLOAD_TOTAL,
+                    instrumentation.incrementCounterWithTags(FILE_UPLOAD_TOTAL,
                             FAILURE_TAG,
-                            tag(SINK_OBJECT_STORAGE_ERROR_TYPE_TAG, errorType),
-                            tag(SINK_OBJECT_STORAGE_TOPIC_TAG, topic),
-                            tag(SINK_OBJECT_STORAGE_PARTITION_TAG, datetimeTag));
-
-                    instrumentation.captureCountWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSING_FAILED_TOTAL, uploadJob.getFileMeta().getRecordCount(),
-                            tag(SINK_OBJECT_STORAGE_ERROR_TYPE_TAG, errorType),
-                            tag(SINK_OBJECT_STORAGE_TOPIC_TAG, topic),
-                            tag(SINK_OBJECT_STORAGE_PARTITION_TAG, datetimeTag));
+                            tag(ERROR_TYPE_TAG, errorType),
+                            tag(TOPIC_TAG, topic),
+                            tag(PARTITION_TAG, datetimeTag));
 
                     throw new RuntimeException(e);
                 }

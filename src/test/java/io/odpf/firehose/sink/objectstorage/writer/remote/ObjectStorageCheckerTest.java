@@ -1,7 +1,6 @@
 package io.odpf.firehose.sink.objectstorage.writer.remote;
 
 import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.Metrics;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.objectstorage.ObjectStorageException;
 import io.odpf.firehose.objectstorage.gcs.error.GCSErrorType;
@@ -34,6 +33,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static io.odpf.firehose.metrics.Metrics.*;
+import static io.odpf.firehose.sink.objectstorage.ObjectStorageMetrics.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -167,10 +167,10 @@ public class ObjectStorageCheckerTest {
         when(remoteUploadScheduler.submit(any(Runnable.class))).thenReturn(f);
         worker.run();
 
-        verify(instrumentation, times(1)).incrementCounterWithTags(Metrics.SINK_OBJECT_STORAGE_FILE_UPLOAD_TOTAL,
+        verify(instrumentation, times(1)).incrementCounterWithTags(FILE_UPLOAD_TOTAL,
                 SUCCESS_TAG,
-                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -181,9 +181,9 @@ public class ObjectStorageCheckerTest {
         when(remoteUploadScheduler.submit(any(Runnable.class))).thenReturn(f);
         worker.run();
 
-        verify(instrumentation).captureCountWithTags(SINK_OBJECT_STORAGE_FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
-                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+        verify(instrumentation).captureCountWithTags(FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -196,23 +196,9 @@ public class ObjectStorageCheckerTest {
         when(clock.now()).thenReturn(startTime);
         worker.run();
 
-        verify(instrumentation, (times(1))).captureDurationSinceWithTags(SINK_OBJECT_STORAGE_FILE_UPLOAD_TIME_MILLISECONDS, startTime,
-                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
-    }
-
-    @Test
-    public void shouldRecordMetricOfSuccessfullyProcessedRecord() {
-        toBeFlushedToRemotePaths.add(fileMeta);
-        Future f = Mockito.mock(Future.class);
-        when(f.isDone()).thenReturn(true);
-        when(remoteUploadScheduler.submit(any(Runnable.class))).thenReturn(f);
-        worker.run();
-
-        verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSED_TOTAL, fileMeta.getRecordCount(),
-                tag(SINK_OBJECT_STORAGE_SCOPE_TAG, SINK_OBJECT_STORAGE_SCOPE_FILE_UPLOAD),
-                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+        verify(instrumentation, (times(1))).captureDurationSinceWithTags(FILE_UPLOAD_TIME_MILLISECONDS, startTime,
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -230,16 +216,11 @@ public class ObjectStorageCheckerTest {
         } catch (RuntimeException ignored) {
         }
 
-        verify(instrumentation, times(1)).incrementCounterWithTags(SINK_OBJECT_STORAGE_FILE_UPLOAD_TOTAL,
+        verify(instrumentation, times(1)).incrementCounterWithTags(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
-                tag(SINK_OBJECT_STORAGE_ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.OBJECT_STORAGE_CHECKER_THREAD_ERROR),
-                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
-
-        verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSING_FAILED_TOTAL, fileMeta.getRecordCount(),
-                tag(SINK_OBJECT_STORAGE_ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.OBJECT_STORAGE_CHECKER_THREAD_ERROR),
-                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+                tag(ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.OBJECT_STORAGE_CHECKER_THREAD_ERROR),
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -267,16 +248,11 @@ public class ObjectStorageCheckerTest {
             }
         }
 
-        verify(instrumentation, times(1)).incrementCounterWithTags(SINK_OBJECT_STORAGE_FILE_UPLOAD_TOTAL,
+        verify(instrumentation, times(1)).incrementCounterWithTags(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
-                tag(SINK_OBJECT_STORAGE_ERROR_TYPE_TAG, GCSErrorType.FORBIDDEN.name()),
-                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
-
-        verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSING_FAILED_TOTAL, fileMeta.getRecordCount(),
-                tag(SINK_OBJECT_STORAGE_ERROR_TYPE_TAG, GCSErrorType.FORBIDDEN.name()),
-                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+                tag(ERROR_TYPE_TAG, GCSErrorType.FORBIDDEN.name()),
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -302,15 +278,10 @@ public class ObjectStorageCheckerTest {
             }
         }
 
-        verify(instrumentation, times(1)).incrementCounterWithTags(SINK_OBJECT_STORAGE_FILE_UPLOAD_TOTAL,
+        verify(instrumentation, times(1)).incrementCounterWithTags(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
-                tag(SINK_OBJECT_STORAGE_ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.FILE_IO_ERROR),
-                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
-
-        verify(instrumentation, times(1)).captureCountWithTags(SINK_OBJECT_STORAGE_RECORD_PROCESSING_FAILED_TOTAL, fileMeta.getRecordCount(),
-                tag(SINK_OBJECT_STORAGE_ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.FILE_IO_ERROR),
-                tag(SINK_OBJECT_STORAGE_TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(SINK_OBJECT_STORAGE_PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+                tag(ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.FILE_IO_ERROR),
+                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
+                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
 }
