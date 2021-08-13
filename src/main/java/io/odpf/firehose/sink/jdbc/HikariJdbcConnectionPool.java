@@ -29,6 +29,7 @@ public class HikariJdbcConnectionPool implements JdbcConnectionPool {
     public HikariJdbcConnectionPool(String jdbcUrl, String username, String password, int maximumPoolSize,
                                     long connectionTimeout, long idleTimeout, int minimumIdle) {
         HikariConfig config = new HikariConfig();
+        config.setRegisterMbeans(true);
         config.setJdbcUrl(jdbcUrl);
         config.setUsername(username);
         config.setPassword(password);
