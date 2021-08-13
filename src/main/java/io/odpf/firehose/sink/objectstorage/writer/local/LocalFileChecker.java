@@ -79,5 +79,6 @@ public class LocalFileChecker implements Runnable {
                 throw new LocalFileWriterFailedException(e);
             }
         });
+        instrumentation.captureValue(LOCAL_FILE_OPEN_TOTAL, timePartitionWriterMap.size());
     }
 }

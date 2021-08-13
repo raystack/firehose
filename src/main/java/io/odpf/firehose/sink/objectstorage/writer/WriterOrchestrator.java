@@ -27,9 +27,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import static io.odpf.firehose.metrics.Metrics.tag;
-import static io.odpf.firehose.sink.objectstorage.ObjectStorageMetrics.*;
-
 /**
  * This class manages threads for local and object storage checking.
  * It provides apis to write records to correct path based on time partitions.
@@ -57,7 +54,6 @@ public class WriterOrchestrator implements Closeable {
         this.instrumentation = instrumentation;
 
         BlockingQueue<FileMeta> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
-
         ScheduledFuture<?> localWriterFuture = localFileCheckerScheduler.scheduleAtFixedRate(
                 new LocalFileChecker(
                         toBeFlushedToRemotePaths,
@@ -113,15 +109,10 @@ public class WriterOrchestrator implements Closeable {
     public String write(Record record) throws Exception {
         checkStatus();
         Partition partition = localStorage.getPartitionFactory().getPartition(record);
-        String dateTimePartition = partition.getDatetimePathWithoutPrefix();
         synchronized (timePartitionWriterMap) {
-            LocalFileWriter writer = timePartitionWriterMap.computeIfAbsent(partition.toString(), x -> {
-                LocalFileWriter localFileWriter = localStorage.createLocalFileWriter(partition.getPath());
-                instrumentation.incrementCounterWithTags(LOCAL_FILE_OPEN_TOTAL,
-                        tag(TOPIC_TAG, partition.getTopic()),
-                        tag(PARTITION_TAG, dateTimePartition));
-                return localFileWriter;
-            });
+            LocalFileWriter writer = timePartitionWriterMap
+                    .computeIfAbsent(partition.toString(),
+                            x -> localStorage.createLocalFileWriter(partition.getPath()));
             writer.write(record);
             return writer.getFullPath();
         }

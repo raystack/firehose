@@ -217,4 +217,25 @@ public class LocalFileCheckerTest {
                 tag(TOPIC_TAG, partition.getTopic()),
                 tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
     }
+
+    @Test
+    public void shouldCaptureValueOfFileOpenCount() throws IOException {
+        writerMap.put("/tmp/a", writer1);
+        writerMap.put("/tmp/b", writer2);
+        when(localStorage.shouldRotate(writer1)).thenReturn(false).thenReturn(true);
+        when(localStorage.shouldRotate(writer2)).thenReturn(false).thenReturn(true);
+
+        when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name-1");
+        when(writer2.getFullPath()).thenReturn("/tmp/b/random-file-name-2");
+
+        worker.run();
+        verify(instrumentation, times(1)).captureValue(LOCAL_FILE_OPEN_TOTAL, 2);
+        worker.run();
+
+        verify(writer1, times(1)).close();
+        verify(writer2, times(1)).close();
+        Assert.assertEquals(2, toBeFlushedToRemotePaths.size());
+        Assert.assertEquals(0, writerMap.size());
+        verify(instrumentation, times(1)).captureValue(LOCAL_FILE_OPEN_TOTAL, 0);
+    }
 }

@@ -27,8 +27,6 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
-import static io.odpf.firehose.metrics.Metrics.tag;
-import static io.odpf.firehose.sink.objectstorage.ObjectStorageMetrics.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -157,31 +155,6 @@ public class WriterOrchestratorTest {
         Mockito.when(localStorage.createLocalFileWriter(Paths.get(partition))).thenThrow(new LocalFileWriterFailedException(new IOException("Some error")));
         try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage, instrumentation, statsDReporter)) {
             writerOrchestrator.write(record);
-        }
-    }
-
-    @Test
-    public void shouldRecordMetricWhenFileWriterIsCreated() throws Exception {
-        String dateTimeTag = "2021-01-01";
-        String date = "dt=2021-01-01";
-        String partitionPathString = "default/dt=2021-01-01";
-
-        Partition partition = Mockito.mock(Partition.class);
-        Mockito.when(partition.getTopic()).thenReturn(defaultTopic);
-        Mockito.when(partition.getPath()).thenReturn(Paths.get(defaultTopic, date));
-        Mockito.when(partition.toString()).thenReturn(partitionPathString);
-        Mockito.when(partition.getDatetimePathWithoutPrefix()).thenReturn(dateTimeTag);
-
-        Record record = TestUtils.createRecordWithMetadata("abc", "default", 1, 1, Instant.now());
-        Mockito.when(partitionFactory.getPartition(record)).thenReturn(partition);
-        Mockito.when(localFileWriter1.getFullPath()).thenReturn("test");
-        Mockito.when(localStorage.createLocalFileWriter(Paths.get(partitionPathString))).thenReturn(localFileWriter1);
-        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage, instrumentation, statsDReporter)) {
-            writerOrchestrator.write(record);
-
-            verify(instrumentation).incrementCounterWithTags(LOCAL_FILE_OPEN_TOTAL,
-                    tag(TOPIC_TAG, partition.getTopic()),
-                    tag(PARTITION_TAG, dateTimeTag));
         }
     }
 }

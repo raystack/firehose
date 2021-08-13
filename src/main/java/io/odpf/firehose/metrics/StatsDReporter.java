@@ -1,7 +1,7 @@
 package io.odpf.firehose.metrics;
 
-import io.odpf.firehose.util.Clock;
 import com.timgroup.statsd.StatsDClient;
+import io.odpf.firehose.util.Clock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +9,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Statsd reporter for firehose.
@@ -59,8 +61,8 @@ public class StatsDReporter implements Closeable {
         client.recordExecutionTime(withTags(metric, tags), Duration.between(startTime, clock.now()).toMillis());
     }
 
-    public void gauge(String metric, Integer value) {
-        client.gauge(withGlobalTags(metric), value);
+    public void gauge(String metric, Integer value, String... tags) {
+        client.gauge(withTags(metric, tags), value);
     }
 
     public void increment(String metric, String... tags) {
@@ -80,7 +82,8 @@ public class StatsDReporter implements Closeable {
     }
 
     private String withTags(String metric, String... tags) {
-        return metric + "," + this.globalTags + "," + String.join(",", tags);
+        return Stream.concat(Stream.of(withGlobalTags(metric)), Stream.of(tags))
+                .collect(Collectors.joining(","));
     }
 
     @Override

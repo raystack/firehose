@@ -218,6 +218,10 @@ public class Instrumentation {
         statsDReporter.increment(metric);
     }
 
+    public void captureValue(String metric, Integer value, String... tags) {
+        statsDReporter.gauge(metric, value, tags);
+    }
+
     // ===================== closing =================
 
     public void close() throws IOException {
