@@ -32,10 +32,14 @@ public class GCSObjectStorage implements ObjectStorage {
     }
 
     @Override
-    public void store(String localPath) throws IOException, ObjectStorageException {
+    public void store(String localPath) throws ObjectStorageException {
         String objectName = gcsConfig.getLocalBasePath().relativize(Paths.get(localPath)).toString();
-        byte[] content = Files.readAllBytes(Paths.get(localPath));
-        store(objectName, content);
+        try {
+            byte[] content = Files.readAllBytes(Paths.get(localPath));
+            store(objectName, content);
+        } catch (IOException e) {
+            throw new ObjectStorageException(e);
+        }
     }
 
     @Override

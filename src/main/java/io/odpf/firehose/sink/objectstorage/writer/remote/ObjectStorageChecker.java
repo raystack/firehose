@@ -2,6 +2,7 @@ package io.odpf.firehose.sink.objectstorage.writer.remote;
 
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.objectstorage.ObjectStorage;
+import io.odpf.firehose.objectstorage.ObjectStorageException;
 import io.odpf.firehose.objectstorage.gcs.exception.GCSException;
 import io.odpf.firehose.sink.objectstorage.writer.local.FileMeta;
 import io.odpf.firehose.sink.objectstorage.writer.local.Partition;
@@ -12,12 +13,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import static io.odpf.firehose.metrics.Metrics.*;
@@ -40,14 +43,12 @@ public class ObjectStorageChecker implements Runnable {
         List<FileMeta> tobeFlushed = new ArrayList<>();
         toBeFlushedToRemotePaths.drainTo(tobeFlushed);
         remoteUploadFutures.addAll(tobeFlushed.stream()
-                .map(fileMeta -> new ObjectStorageWriterWorkerFuture(
-                        remoteUploadScheduler.submit(() -> {
-                            try {
-                                objectStorage.store(fileMeta.getFullPath());
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                        }), fileMeta, clock.now())
+                .map(fileMeta -> {
+                            Runnable uploadTask = createUploadTask(fileMeta);
+                            Future<?> future = remoteUploadScheduler.submit(uploadTask);
+                            Instant startTime = clock.now();
+                            return new ObjectStorageWriterWorkerFuture(future, fileMeta, startTime);
+                        }
                 ).collect(Collectors.toList()));
 
         Set<String> flushedPath = remoteUploadFutures.stream().map(uploadJob -> {
@@ -57,36 +58,10 @@ public class ObjectStorageChecker implements Runnable {
                 try {
                     uploadJob.getFuture().get();
                     FileMeta fileMeta = uploadJob.getFileMeta();
-                    Partition partition = fileMeta.getPartition();
-
                     LOGGER.info("Flushed to Object storage " + fileMeta.getFullPath());
-
-                    String topic = partition.getTopic();
-                    String datetimeTag = partition.getDatetimePathWithoutPrefix();
-
-                    instrumentation.incrementCounterWithTags(FILE_UPLOAD_TOTAL,
-                            SUCCESS_TAG,
-                            tag(TOPIC_TAG, topic),
-                            tag(PARTITION_TAG, datetimeTag));
-                    instrumentation.captureCountWithTags(FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
-                            tag(TOPIC_TAG, topic),
-                            tag(PARTITION_TAG, datetimeTag));
-                    instrumentation.captureDurationSinceWithTags(FILE_UPLOAD_TIME_MILLISECONDS, uploadJob.getStartTime(),
-                            tag(TOPIC_TAG, topic),
-                            tag(PARTITION_TAG, datetimeTag));
-
+                    captureFileUploadSuccessMetric(uploadJob, fileMeta);
                 } catch (InterruptedException | ExecutionException e) {
-                    Partition partition = uploadJob.getFileMeta().getPartition();
-                    String topic = partition.getTopic();
-                    String datetimeTag = partition.getDatetimePathWithoutPrefix();
-                    String errorType = getErrorType(e);
-
-                    instrumentation.incrementCounterWithTags(FILE_UPLOAD_TOTAL,
-                            FAILURE_TAG,
-                            tag(ERROR_TYPE_TAG, errorType),
-                            tag(TOPIC_TAG, topic),
-                            tag(PARTITION_TAG, datetimeTag));
-
+                    captureUploadFailedMetric(uploadJob, e);
                     throw new RuntimeException(e);
                 }
 
@@ -95,6 +70,46 @@ public class ObjectStorageChecker implements Runnable {
         }).filter(x -> !x.isEmpty()).collect(Collectors.toSet());
         remoteUploadFutures.removeIf(x -> flushedPath.contains(x.getFileMeta().getFullPath()));
         flushedToRemotePaths.addAll(flushedPath);
+    }
+
+    private Runnable createUploadTask(FileMeta fileMeta) {
+        return () -> {
+            try {
+                objectStorage.store(fileMeta.getFullPath());
+            } catch (ObjectStorageException e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    private void captureFileUploadSuccessMetric(ObjectStorageWriterWorkerFuture uploadJob, FileMeta fileMeta) {
+        Partition partition = fileMeta.getPartition();
+        String topic = partition.getTopic();
+        String datetimeTag = partition.getDatetimePathWithoutPrefix();
+
+        instrumentation.incrementCounterWithTags(FILE_UPLOAD_TOTAL,
+                SUCCESS_TAG,
+                tag(TOPIC_TAG, topic),
+                tag(PARTITION_TAG, datetimeTag));
+        instrumentation.captureCountWithTags(FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
+                tag(TOPIC_TAG, topic),
+                tag(PARTITION_TAG, datetimeTag));
+        instrumentation.captureDurationSinceWithTags(FILE_UPLOAD_TIME_MILLISECONDS, uploadJob.getStartTime(),
+                tag(TOPIC_TAG, topic),
+                tag(PARTITION_TAG, datetimeTag));
+    }
+
+    private void captureUploadFailedMetric(ObjectStorageWriterWorkerFuture uploadJob, Exception e) {
+        Partition partition = uploadJob.getFileMeta().getPartition();
+        String topic = partition.getTopic();
+        String datetimeTag = partition.getDatetimePathWithoutPrefix();
+        String errorType = getErrorType(e);
+
+        instrumentation.incrementCounterWithTags(FILE_UPLOAD_TOTAL,
+                FAILURE_TAG,
+                tag(ERROR_TYPE_TAG, errorType),
+                tag(TOPIC_TAG, topic),
+                tag(PARTITION_TAG, datetimeTag));
     }
 
     private String getErrorType(Throwable throwable) {

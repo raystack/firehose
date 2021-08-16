@@ -45,40 +45,48 @@ public class LocalFileChecker implements Runnable {
         toBeRotated.forEach((key, writer) -> {
             String filePath = writer.getFullPath();
             Partition partition = localStorage.getPartitionFactory().fromPartitionPath(key);
-            String dateTimeTag = partition.getDatetimePathWithoutPrefix();
-            String topic = partition.getTopic();
+
             try {
                 Instant fileClosingStartTime = clock.now();
                 writer.close();
-
+                LOGGER.info("Closing Local File " + filePath);
                 //getting size of file from file instead of writer, because there is possibility of data compression on the writer
                 long fileSize = localStorage.getFileSize(filePath);
                 FileMeta fileMeta = new FileMeta(filePath, writer.getRecordCount(), fileSize, partition);
-
                 toBeFlushedToRemotePaths.add(fileMeta);
-                LOGGER.info("Closing Local File " + filePath);
-
-                instrumentation.incrementCounterWithTags(LOCAL_FILE_CLOSE_TOTAL,
-                        SUCCESS_TAG,
-                        tag(TOPIC_TAG, topic),
-                        tag(PARTITION_TAG, dateTimeTag));
-
-                instrumentation.captureDurationSinceWithTags(LOCAL_FILE_CLOSING_TIME_MILLISECONDS, fileClosingStartTime,
-                        tag(TOPIC_TAG, topic),
-                        tag(PARTITION_TAG, dateTimeTag));
-
-                instrumentation.captureCountWithTags(LOCAL_FILE_SIZE_BYTES, fileMeta.getFileSizeBytes(),
-                        tag(TOPIC_TAG, topic),
-                        tag(PARTITION_TAG, dateTimeTag));
+                captureFileClosedSuccessMetric(fileClosingStartTime, fileMeta);
             } catch (IOException e) {
                 e.printStackTrace();
-                instrumentation.incrementCounterWithTags(LOCAL_FILE_CLOSE_TOTAL,
-                        FAILURE_TAG,
-                        tag(TOPIC_TAG, topic),
-                        tag(PARTITION_TAG, dateTimeTag));
+                captureFileCloseFailedMetric(partition);
                 throw new LocalFileWriterFailedException(e);
             }
         });
         instrumentation.captureValue(LOCAL_FILE_OPEN_TOTAL, timePartitionWriterMap.size());
+    }
+
+    private void captureFileClosedSuccessMetric(Instant fileClosingStartTime, FileMeta fileMeta) {
+        String dateTimeTag = fileMeta.getPartition().getDatetimePathWithoutPrefix();
+        String topic = fileMeta.getPartition().getTopic();
+        instrumentation.incrementCounterWithTags(LOCAL_FILE_CLOSE_TOTAL,
+                SUCCESS_TAG,
+                tag(TOPIC_TAG, topic),
+                tag(PARTITION_TAG, dateTimeTag));
+
+        instrumentation.captureDurationSinceWithTags(LOCAL_FILE_CLOSING_TIME_MILLISECONDS, fileClosingStartTime,
+                tag(TOPIC_TAG, topic),
+                tag(PARTITION_TAG, dateTimeTag));
+
+        instrumentation.captureCountWithTags(LOCAL_FILE_SIZE_BYTES, fileMeta.getFileSizeBytes(),
+                tag(TOPIC_TAG, topic),
+                tag(PARTITION_TAG, dateTimeTag));
+    }
+
+    private void captureFileCloseFailedMetric(Partition partition) {
+        String dateTimeTag = partition.getDatetimePathWithoutPrefix();
+        String topic = partition.getTopic();
+        instrumentation.incrementCounterWithTags(LOCAL_FILE_CLOSE_TOTAL,
+                FAILURE_TAG,
+                tag(TOPIC_TAG, topic),
+                tag(PARTITION_TAG, dateTimeTag));
     }
 }

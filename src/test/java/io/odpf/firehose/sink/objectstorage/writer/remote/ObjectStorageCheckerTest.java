@@ -256,7 +256,7 @@ public class ObjectStorageCheckerTest {
     }
 
     @Test
-    public void shouldRecordMetricOfRecordProcessingFailedWhenUploadFutureThrowsIOException() throws ObjectStorageException, IOException {
+    public void shouldRecordMetricOfRecordProcessingFailedWhenUploadFailedCausedByIOException() throws ObjectStorageException, IOException {
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         worker = new ObjectStorageChecker(
                 toBeFlushedToRemotePaths,
@@ -268,7 +268,7 @@ public class ObjectStorageCheckerTest {
                 instrumentation);
         toBeFlushedToRemotePaths.add(fileMeta);
 
-        doThrow(new IOException()).when(objectStorage).store(fileMeta.getFullPath());
+        doThrow(new ObjectStorageException(new IOException(new Exception()))).when(objectStorage).store(fileMeta.getFullPath());
 
         while (true) {
             try {
