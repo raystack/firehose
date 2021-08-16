@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file. See [standa
 - Add GRPC sink
 - Add Prometheus sink 
 
-## [0.1.1](https://github.com/odpf/firehose/releases/tag/v0.1.0) (2021-08-16)
+## [0.1.1](https://github.com/odpf/firehose/releases/tag/v0.1.1) (2021-08-16)
 
 ### Patch
 
