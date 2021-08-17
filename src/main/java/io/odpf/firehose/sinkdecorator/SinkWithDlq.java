@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static io.odpf.firehose.metrics.Metrics.DLQ_MESSAGES_TOTAL;
-import static io.odpf.firehose.metrics.Metrics.DQL_RETRY_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.DLQ_RETRY_TOTAL;
 
 /**
  * This Sink pushes failed messages to kafka after retries are exhausted.
@@ -87,7 +87,7 @@ public class SinkWithDlq extends SinkDecorator {
         });
         int attemptCount = 1;
         while (attemptCount <= this.dlqConfig.getDlqMaxRetryAttempts() && !retryQueueMessages.isEmpty()) {
-            instrumentation.incrementCounter(DQL_RETRY_TOTAL);
+            instrumentation.incrementCounter(DLQ_RETRY_TOTAL);
             retryQueueMessages = writer.write(retryQueueMessages);
             retryQueueMessages.forEach(message -> Optional.ofNullable(message.getErrorInfo())
                     .flatMap(errorInfo -> Optional.ofNullable(errorInfo.getException()))
