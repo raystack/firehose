@@ -21,7 +21,7 @@ public interface Sink extends Closeable {
      * The logic of how to persist the data goes in here.
      * in the future this method should return Response object instead of list of messages
      * @param message list of {@see EsbMessage}
-     * @return the list of messages
+     * @return the list of failed messages
      * @throws IOException           in case of error conditions while persisting it to the custom sink.
      * @throws DeserializerException in case of problems with deserialising the message into a protobuf object.
      */

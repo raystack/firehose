@@ -19,4 +19,9 @@ public class StoppedError implements ErrorDescriptor {
     public boolean matches() {
         return reason.equals("stopped");
     }
+
+    @Override
+    public String toString() {
+        return "Stopped";
+    }
 }

@@ -143,20 +143,6 @@ public class HttpSinkTest {
     }
 
     @Test
-    public void shouldCatchIOExceptionInAbstractSinkAndCaptureFailedExecutionTelemetry() throws Exception {
-        when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
-        List<HttpEntityEnclosingRequestBase> httpRequests = Arrays.asList(httpPut, httpPost);
-
-        when(request.build(messages)).thenReturn(httpRequests);
-        when(httpClient.execute(any(HttpPut.class))).thenThrow(IOException.class);
-
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
-        httpSink.pushMessage(messages);
-
-        verify(instrumentation, times(1)).captureFailedExecutionTelemetry(any(IOException.class), anyInt());
-    }
-
-    @Test
     public void shouldCloseStencilClient() throws IOException {
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
 

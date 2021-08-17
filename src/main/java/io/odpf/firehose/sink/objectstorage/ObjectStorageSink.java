@@ -1,15 +1,15 @@
 package io.odpf.firehose.sink.objectstorage;
 
-import io.odpf.firehose.consumer.Message;
-import io.odpf.firehose.consumer.offset.OffsetManager;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
+import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.consumer.offset.OffsetManager;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.exception.WriterIOException;
+import io.odpf.firehose.exception.SinkException;
+import io.odpf.firehose.sink.exception.UnknownFieldsException;
+import io.odpf.firehose.sink.exception.EmptyMessageException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
-import io.odpf.firehose.sink.exception.EmptyMessageException;
-import io.odpf.firehose.sink.exception.UnknownFieldsException;
 import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
 import io.odpf.firehose.sink.objectstorage.message.Record;
 import io.odpf.firehose.sink.objectstorage.writer.WriterOrchestrator;
@@ -59,7 +59,7 @@ public class ObjectStorageSink extends AbstractSink {
                 message.setErrorInfo(new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR));
                 failedMessages.add(message);
             } catch (Exception e) {
-                throw new WriterIOException(e);
+                throw new SinkException(e);
             }
         }
 

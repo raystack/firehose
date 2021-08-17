@@ -19,4 +19,9 @@ public class InvalidSchemaError implements ErrorDescriptor {
     public boolean matches() {
         return reason.equals("invalid") && message.contains("no such field");
     }
+
+    @Override
+    public String toString() {
+        return "InvalidSchemaError";
+    }
 }

@@ -12,12 +12,14 @@ import io.odpf.firehose.sink.bigquery.error.OOBError;
 import io.odpf.firehose.sink.bigquery.error.StoppedError;
 import io.odpf.firehose.sink.bigquery.exception.BigQuerySinkException;
 import io.odpf.firehose.sink.bigquery.models.Record;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class BigQueryResponseParser {
     /**
      * Parses the {@link InsertAllResponse} object and returns {@link Message} that were
@@ -37,6 +39,12 @@ public class BigQueryResponseParser {
         for (final Map.Entry<Long, List<BigQueryError>> errorEntry : insertErrorsMap.entrySet()) {
             final Message message = records.get(errorEntry.getKey().intValue()).getMessage();
             List<ErrorDescriptor> errors = ErrorParser.parseError(errorEntry.getValue());
+            log.error("Error while bigquery insert for message. Record: {}, Error: {}, Topic: {}, Partition: {}, Offset: {}",
+                    records.get(errorEntry.getKey().intValue()).getColumns(),
+                    errors,
+                    message.getTopic(),
+                    message.getPartition(),
+                    message.getOffset());
             if (errorMatch(errors, io.odpf.firehose.sink.bigquery.error.UnknownError.class)) {
                 message.setErrorInfo(new ErrorInfo(new BigQuerySinkException(), ErrorType.SINK_UNKNOWN_ERROR));
             } else if (errorMatch(errors, InvalidSchemaError.class) || errorMatch(errors, OOBError.class)) {
