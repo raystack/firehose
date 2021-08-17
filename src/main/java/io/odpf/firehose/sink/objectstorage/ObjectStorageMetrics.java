@@ -12,6 +12,6 @@ public class ObjectStorageMetrics {
     public static final String FILE_UPLOAD_BYTES = Metrics.APPLICATION_PREFIX + Metrics.SINK_PREFIX + Metrics.OBJECTSTORAGE_SINK_PREFIX + "file_upload_bytes";
 
     public static final String TOPIC_TAG = "topic";
-    public static final String ERROR_TYPE_TAG = "error_type";
+    public static final String OBJECT_STORE_ERROR_TYPE_TAG = "error_type";
     public static final String PARTITION_TAG = "partition";
 }

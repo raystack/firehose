@@ -218,7 +218,7 @@ public class ObjectStorageCheckerTest {
 
         verify(instrumentation, times(1)).incrementCounterWithTags(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
-                tag(ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.OBJECT_STORAGE_CHECKER_THREAD_ERROR),
+                tag(OBJECT_STORE_ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.OBJECT_STORAGE_CHECKER_THREAD_ERROR),
                 tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
                 tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
@@ -250,7 +250,7 @@ public class ObjectStorageCheckerTest {
 
         verify(instrumentation, times(1)).incrementCounterWithTags(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
-                tag(ERROR_TYPE_TAG, GCSErrorType.FORBIDDEN.name()),
+                tag(OBJECT_STORE_ERROR_TYPE_TAG, GCSErrorType.FORBIDDEN.name()),
                 tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
                 tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
@@ -280,7 +280,7 @@ public class ObjectStorageCheckerTest {
 
         verify(instrumentation, times(1)).incrementCounterWithTags(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
-                tag(ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.FILE_IO_ERROR),
+                tag(OBJECT_STORE_ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.FILE_IO_ERROR),
                 tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
                 tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }

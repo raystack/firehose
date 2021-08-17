@@ -107,7 +107,7 @@ public class ObjectStorageChecker implements Runnable {
 
         instrumentation.incrementCounterWithTags(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
-                tag(ERROR_TYPE_TAG, errorType),
+                tag(OBJECT_STORE_ERROR_TYPE_TAG, errorType),
                 tag(TOPIC_TAG, topic),
                 tag(PARTITION_TAG, datetimeTag));
     }
