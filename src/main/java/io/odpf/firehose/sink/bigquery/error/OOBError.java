@@ -18,5 +18,9 @@ public class OOBError implements ErrorDescriptor {
                && ((message.contains("is outside the allowed bounds") && message.contains("days in the past and") && message.contains("days in the future"))
                    || message.contains("out of range"));
     }
+    @Override
+    public String toString() {
+        return "OOBError";
+    }
 
 }

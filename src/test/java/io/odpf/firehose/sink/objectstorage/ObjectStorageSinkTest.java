@@ -7,7 +7,7 @@ import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.sink.exception.EmptyMessageException;
 import io.odpf.firehose.sink.exception.UnknownFieldsException;
-import io.odpf.firehose.exception.WriterIOException;
+import io.odpf.firehose.exception.SinkException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
 import io.odpf.firehose.sink.objectstorage.message.Record;
@@ -71,7 +71,7 @@ public class ObjectStorageSinkTest {
         assertEquals(0, retryMessages.size());
     }
 
-    @Test(expected = WriterIOException.class)
+    @Test(expected = SinkException.class)
     public void shouldThrowWriterIOExceptionWhenWritingRecordThrowIOException() throws Exception {
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
         Record record1 = mock(Record.class);

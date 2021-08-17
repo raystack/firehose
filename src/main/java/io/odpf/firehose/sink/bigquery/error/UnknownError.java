@@ -13,4 +13,9 @@ public class UnknownError implements ErrorDescriptor {
     public boolean matches() {
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "UnknownError";
+    }
 }

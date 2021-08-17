@@ -4,9 +4,12 @@ import com.google.protobuf.DynamicMessage;
 import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorHandler;
+import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorScope;
+import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.Metrics;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.log.KeyOrMessageParser;
 
@@ -16,6 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static io.odpf.firehose.metrics.Metrics.RETRY_MESSAGES_TOTAL;
 import static io.odpf.firehose.metrics.Metrics.RETRY_TOTAL;
 
 /**
@@ -55,23 +59,28 @@ public class SinkWithRetry extends SinkDecorator {
 
         Map<Boolean, List<Message>> splitLists = errorHandler.split(messages, ErrorScope.RETRY);
 
-        List<Message> retunedMessages = doRetry(splitLists.get(Boolean.TRUE));
-        if (!retunedMessages.isEmpty() && appConfig.getFailOnMaxRetryAttempts()) {
+        List<Message> returnedMessages = doRetry(splitLists.get(Boolean.TRUE));
+        if (!returnedMessages.isEmpty() && appConfig.getFailOnMaxRetryAttempts()) {
             throw new IOException("exceeded maximum Sink retry attempts");
         }
 
-        retunedMessages.addAll(splitLists.get(Boolean.FALSE));
-        return retunedMessages;
+        returnedMessages.addAll(splitLists.get(Boolean.FALSE));
+        return returnedMessages;
     }
 
     private List<Message> doRetry(List<Message> messages) throws IOException {
         List<Message> retryMessages = new LinkedList<>(messages);
         instrumentation.logInfo("Maximum retry attempts: {}", appConfig.getSinkMaxRetryAttempts());
+        retryMessages.forEach(m -> {
+            if (m.getErrorInfo() == null) {
+                m.setErrorInfo(new ErrorInfo(null, ErrorType.DEFAULT_ERROR));
+            }
+            instrumentation.captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, m.getErrorInfo().getErrorType(), 1);
+        });
 
-        int attemptCount = 0;
-        while ((attemptCount < appConfig.getSinkMaxRetryAttempts() && !retryMessages.isEmpty())
-                || (appConfig.getSinkMaxRetryAttempts() == Integer.MAX_VALUE && !retryMessages.isEmpty())) {
-            attemptCount++;
+        int attemptCount = 1;
+        while ((attemptCount <= appConfig.getSinkMaxRetryAttempts() && !retryMessages.isEmpty())
+               || (appConfig.getSinkMaxRetryAttempts() == Integer.MAX_VALUE && !retryMessages.isEmpty())) {
             instrumentation.incrementCounter(RETRY_TOTAL);
             instrumentation.logInfo("Retrying messages attempt count: {}, Number of messages: {}", attemptCount, messages.size());
 
@@ -79,12 +88,12 @@ public class SinkWithRetry extends SinkDecorator {
             for (Message message : retryMessages) {
                 serializedBody.add(parser.parse(message));
             }
-
             instrumentation.logDebug("Retry failed messages: \n{}", serializedBody.toString());
             retryMessages = super.pushMessage(retryMessages);
-            backOffProvider.backOff(attemptCount);
+            backOffProvider.backOff(++attemptCount);
         }
-
+        instrumentation.captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, messages.size() - retryMessages.size());
+        retryMessages.forEach(m -> instrumentation.captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, m.getErrorInfo().getErrorType(), 1));
         return retryMessages;
     }
 

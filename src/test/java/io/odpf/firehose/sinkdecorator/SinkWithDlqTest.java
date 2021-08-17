@@ -7,6 +7,7 @@ import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorHandler;
 import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.Metrics;
 import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
 import org.aeonbits.owner.ConfigFactory;
 import org.hamcrest.Matchers;
@@ -22,6 +23,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import static io.odpf.firehose.metrics.Metrics.DLQ_MESSAGES_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.DLQ_RETRY_TOTAL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -74,6 +77,10 @@ public class SinkWithDlqTest {
         List<Message> pushResult = sinkWithDlq.pushMessage(messages);
         verify(dlqWriter, times(1)).write(messages);
         assertEquals(0, pushResult.size());
+        verify(instrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, ErrorType.DESERIALIZATION_ERROR, 1);
+        verify(instrumentation, times(1)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 2);
+        verify(instrumentation, times(1)).incrementCounter(DLQ_RETRY_TOTAL);
+        verify(instrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.DLQ, 2);
     }
 
     @Test
@@ -121,9 +128,12 @@ public class SinkWithDlqTest {
 
         verify(dlqWriter, times(1)).write(messages);
         verify(dlqWriter, times(1)).write(dlqRetryMessages);
-        verify(instrumentation, times(2)).captureRetryAttempts();
-        verify(instrumentation, times(2)).incrementMessageSucceedCount();
-        verify(instrumentation, times(1)).incrementMessageFailCount(any(), any());
+        verify(instrumentation, times(1)).captureDLQErrors(any(), any());
+
+        verify(instrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, ErrorType.DESERIALIZATION_ERROR, 1);
+        verify(instrumentation, times(1)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 2);
+        verify(instrumentation, times(2)).incrementCounter(DLQ_RETRY_TOTAL);
+        verify(instrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.DLQ, 2);
     }
 
     @Test(expected = IOException.class)
@@ -233,5 +243,27 @@ public class SinkWithDlqTest {
         assertEquals(1, argumentCaptor.getValue().size());
         assertThat(argumentCaptor.getValue(), Matchers.contains(messageWithError));
         assertEquals(1, pushResult.size());
+    }
+
+    @Test
+    public void shouldInstrumentFailure() throws Exception {
+        ArrayList<Message> messages = new ArrayList<>();
+        messages.add(message);
+        messages.add(message);
+        when(dlqConfig.getDlqFailOnMaxRetryAttemptsExceeded()).thenReturn(false);
+        when(message.getErrorInfo()).thenReturn(new ErrorInfo(new RuntimeException(), ErrorType.DESERIALIZATION_ERROR));
+        when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
+        when(dlqWriter.write(anyList())).thenReturn(messages);
+
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
+
+        List<Message> pushResult = sinkWithDlq.pushMessage(messages);
+        verify(dlqWriter, times(10)).write(messages);
+        assertEquals(2, pushResult.size());
+        verify(instrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, ErrorType.DESERIALIZATION_ERROR, 1);
+        verify(instrumentation, times(1)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 0);
+        verify(instrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, ErrorType.DESERIALIZATION_ERROR, 1);
+        verify(instrumentation, times(10)).incrementCounter(DLQ_RETRY_TOTAL);
+        verify(instrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.DLQ, 0);
     }
 }

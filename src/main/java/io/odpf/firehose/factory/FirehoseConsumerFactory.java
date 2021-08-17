@@ -36,6 +36,7 @@ import io.odpf.firehose.sinkdecorator.BackOff;
 import io.odpf.firehose.sinkdecorator.BackOffProvider;
 import io.odpf.firehose.error.ErrorHandler;
 import io.odpf.firehose.sinkdecorator.ExponentialBackOffProvider;
+import io.odpf.firehose.sinkdecorator.SinkFinal;
 import io.odpf.firehose.sinkdecorator.SinkWithDlq;
 import io.odpf.firehose.sinkdecorator.SinkWithFailHandler;
 import io.odpf.firehose.sinkdecorator.SinkWithRetry;
@@ -179,7 +180,8 @@ public class FirehoseConsumerFactory {
         Sink baseSink = getSink();
         Sink sinkWithFailHandler = new SinkWithFailHandler(baseSink, errorHandler);
         Sink sinkWithRetry = withRetry(sinkWithFailHandler, errorHandler);
-        return withDlq(sinkWithRetry, tracer, errorHandler);
+        Sink sinWithDLQ = withDlq(sinkWithRetry, tracer, errorHandler);
+        return new SinkFinal(sinWithDLQ, new Instrumentation(statsDReporter, SinkFinal.class));
     }
 
     public Sink withDlq(Sink sink, Tracer tracer, ErrorHandler errorHandler) {

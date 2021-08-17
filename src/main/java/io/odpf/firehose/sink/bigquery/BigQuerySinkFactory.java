@@ -8,7 +8,6 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.TransportOptions;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
-import com.google.cloud.bigquery.TableId;
 import io.odpf.firehose.config.BigQuerySinkConfig;
 import io.odpf.firehose.config.enums.SinkType;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -33,8 +32,7 @@ public class BigQuerySinkFactory implements SinkFactory {
     public Sink create(Map<String, String> env, StatsDReporter statsDReporter, StencilClient defaultClient) {
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, env);
         try {
-            BigQuery bq = getBigQueryInstance(sinkConfig);
-            BigQueryClient bigQueryClient = new BigQueryClient(bq, sinkConfig);
+            BigQueryClient bigQueryClient = new BigQueryClient(sinkConfig, new Instrumentation(statsDReporter, BigQueryClient.class));
             MessageRecordConverterCache recordConverterWrapper = new MessageRecordConverterCache();
             ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(sinkConfig, bigQueryClient, recordConverterWrapper);
             StencilClient client = sinkConfig.isSchemaRegistryStencilEnable()
@@ -50,12 +48,10 @@ public class BigQuerySinkFactory implements SinkFactory {
             } else {
                 rowCreator = new BigQueryRowWithoutInsertId();
             }
-            TableId tableId = TableId.of(sinkConfig.getDatasetName(), sinkConfig.getTableName());
             return new BigQuerySink(
                     new Instrumentation(statsDReporter, BigQuerySink.class),
                     SinkType.BIGQUERY.name(),
-                    bq,
-                    tableId,
+                    bigQueryClient,
                     recordConverterWrapper,
                     rowCreator);
         } catch (IOException e) {

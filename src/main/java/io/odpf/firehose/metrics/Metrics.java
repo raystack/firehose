@@ -11,12 +11,14 @@ public class Metrics {
     //SINK PREFIXES
     public static final String SINK_PREFIX = "sink_";
     public static final String HTTP_SINK_PREFIX = "http_";
-
     //RETRY PREFIX
     public static final String RETRY_PREFIX = "retry_";
 
     //DLQ PREFIX
     public static final String DLQ_PREFIX = "dlq_";
+
+    //GLOBAL PREFIX
+    public static final String GLOBAL_PREFIX = "global_";
 
     //PIPELINE PREFIX
     public static final String PIPELINE_PREFIX = "pipeline_";
@@ -38,12 +40,16 @@ public class Metrics {
     public static final String SINK_PUSH_BATCH_SIZE_TOTAL = APPLICATION_PREFIX + SINK_PREFIX + "push_batch_size_total";
 
     // RETRY MEASUREMENT
+    public static final String RETRY_MESSAGES_TOTAL = APPLICATION_PREFIX + RETRY_PREFIX + "messages_total";
     public static final String RETRY_TOTAL = APPLICATION_PREFIX + RETRY_PREFIX + "total";
     public static final String RETRY_SLEEP_TIME_MILLISECONDS = APPLICATION_PREFIX + RETRY_PREFIX + "backoff_sleep_milliseconds";
 
     // DLQ MEASUREMENTS
-    public static final String DQL_RETRY_TOTAL = APPLICATION_PREFIX + DLQ_PREFIX + "retry_total";
+    public static final String DLQ_RETRY_TOTAL = APPLICATION_PREFIX + DLQ_PREFIX + "retry_total";
     public static final String DLQ_MESSAGES_TOTAL = APPLICATION_PREFIX + DLQ_PREFIX + "messages_total";
+
+    // GLOBAL MEASUREMENTS
+    public static final String GLOBAL_MESSAGES_TOTAL = APPLICATION_PREFIX + GLOBAL_PREFIX + "messages_total";
 
     // PIPELINE DURATION MEASUREMENTS
     public static final String PIPELINE_END_LATENCY_MILLISECONDS = APPLICATION_PREFIX + PIPELINE_PREFIX + "end_latency_milliseconds";
@@ -51,13 +57,34 @@ public class Metrics {
 
     // ERROR MEASUREMENT
     public static final String ERROR_EVENT = APPLICATION_PREFIX + ERROR_PREFIX + "event";
+    public static final String ERROR_MESSAGES_TOTAL = APPLICATION_PREFIX + ERROR_PREFIX + "messages_total";
 
     // EXECUTION TAGS
     public static final String SUCCESS_TAG = "success=true";
     public static final String FAILURE_TAG = "success=false";
+    public static final String MESSAGE_TYPE_TAG = "type=%s"; // total, success, failure
+    public static final String MESSAGE_SCOPE_TAG = "scope=%s";
+
+    //ERROR TAGS
+    public static final String ERROR_TYPE_TAG = "error_type=%s";
 
     // ERROR TAGS
     public static final String ERROR_MESSAGE_CLASS_TAG = "class";
     public static final String NON_FATAL_ERROR = "nonfatal";
     public static final String FATAL_ERROR = "fatal";
+
+    // MESSAGE SCOPE
+    public enum MessageScope {
+        CONSUMER,
+        SINK,
+        DLQ,
+        IGNORED
+    }
+
+    // MESSAGE TYPE {
+    public enum MessageType {
+        TOTAL,
+        SUCCESS,
+        FAILURE
+    }
 }
