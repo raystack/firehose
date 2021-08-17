@@ -86,6 +86,8 @@
 
 [metrics](metrics.md)
 
+[MongoDB sink configs](configuration.md#mongodb-sink)
+
 ## P
 
 [Prometheus sink configs](configuration.md#prometheus-sink)
