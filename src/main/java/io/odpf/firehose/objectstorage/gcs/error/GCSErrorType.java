@@ -30,7 +30,8 @@ public enum GCSErrorType {
     BAD_GATEWAY(502),
     INTERNAL_SERVER_ERROR(500),
     TOO_MANY_REQUEST(429),
-    REQUEST_TIMEOUT(408);
+    REQUEST_TIMEOUT(408),
+    DEFAULT_ERROR;
 
     private static final Map<Integer, GCSErrorType> ERROR_NUMBER_TYPE_MAP = new HashMap<>();
 
@@ -41,13 +42,17 @@ public enum GCSErrorType {
     }
 
     public static GCSErrorType valueOfCode(int code) {
-        return ERROR_NUMBER_TYPE_MAP.get(code);
+        return ERROR_NUMBER_TYPE_MAP.getOrDefault(code, DEFAULT_ERROR);
     }
 
     private int codeValue;
 
     GCSErrorType(int codeValue) {
         this.codeValue = codeValue;
+    }
+
+    GCSErrorType() {
+
     }
 
     public int getCodeValue() {

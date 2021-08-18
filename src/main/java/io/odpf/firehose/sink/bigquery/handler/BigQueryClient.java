@@ -119,7 +119,7 @@ public class BigQueryClient {
     }
 
     private void instrument(Instant startTime, BigQueryMetrics.BigQueryAPIType type) {
-        instrumentation.incrementCounterWithTags(
+        instrumentation.incrementCounter(
                 BigQueryMetrics.SINK_BIGQUERY_OPERATION_TOTAL,
                 String.format(BigQueryMetrics.BIGQUERY_TABLE_TAG, tableID.getTable()),
                 String.format(BigQueryMetrics.BIGQUERY_DATASET_TAG, tableID.getDataset()),

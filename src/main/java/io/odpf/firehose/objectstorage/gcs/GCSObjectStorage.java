@@ -9,7 +9,6 @@ import com.google.cloud.storage.StorageOptions;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.objectstorage.ObjectStorageException;
 import io.odpf.firehose.objectstorage.gcs.error.GCSErrorType;
-import io.odpf.firehose.objectstorage.gcs.exception.GCSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,12 +33,13 @@ public class GCSObjectStorage implements ObjectStorage {
     @Override
     public void store(String localPath) throws ObjectStorageException {
         String objectName = gcsConfig.getLocalBasePath().relativize(Paths.get(localPath)).toString();
+        byte[] content;
         try {
-            byte[] content = Files.readAllBytes(Paths.get(localPath));
-            store(objectName, content);
+            content = Files.readAllBytes(Paths.get(localPath));
         } catch (IOException e) {
-            throw new ObjectStorageException(e);
+            throw new ObjectStorageException("file_io_error", "File Read failed", e);
         }
+        store(objectName, content);
     }
 
     @Override
@@ -50,9 +50,9 @@ public class GCSObjectStorage implements ObjectStorage {
             storage.create(blobInfo, content);
             LOGGER.info("Created object in GCS " + blobInfo.getBucket() + "/" + blobInfo.getName());
         } catch (StorageException e) {
-            GCSErrorType gcsErrorType = GCSErrorType.valueOfCode(e.getCode());
-            GCSException gcsException = new GCSException(gcsErrorType, e.getCode(), e.getReason());
-            throw new ObjectStorageException(gcsException);
+            LOGGER.info("Failed to create object in GCS " + blobInfo.getBucket() + "/" + blobInfo.getName());
+            String gcsErrorType = GCSErrorType.valueOfCode(e.getCode()).name();
+            throw new ObjectStorageException(gcsErrorType, "GCS Upload failed", e);
         }
     }
 }

@@ -4,12 +4,10 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.objectstorage.ObjectStorageException;
 import io.odpf.firehose.objectstorage.gcs.error.GCSErrorType;
-import io.odpf.firehose.objectstorage.gcs.exception.GCSException;
 import io.odpf.firehose.sink.objectstorage.Constants;
 import io.odpf.firehose.sink.objectstorage.writer.local.FileMeta;
 import io.odpf.firehose.sink.objectstorage.writer.local.Partition;
 import io.odpf.firehose.sink.objectstorage.writer.local.PartitionConfig;
-import io.odpf.firehose.util.Clock;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,12 +23,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 
 import static io.odpf.firehose.metrics.Metrics.*;
 import static io.odpf.firehose.sink.objectstorage.ObjectStorageMetrics.*;
@@ -52,14 +45,8 @@ public class ObjectStorageCheckerTest {
     private ObjectStorageChecker worker;
 
     @Mock
-    private Clock clock;
-
-    @Mock
     private Instrumentation instrumentation;
     private FileMeta fileMeta;
-
-    public ObjectStorageCheckerTest() throws IOException {
-    }
 
     @Before
     public void setup() {
@@ -75,7 +62,6 @@ public class ObjectStorageCheckerTest {
                 remoteUploadFutures,
                 remoteUploadScheduler,
                 objectStorage,
-                clock,
                 instrumentation);
     }
 
@@ -84,7 +70,7 @@ public class ObjectStorageCheckerTest {
         toBeFlushedToRemotePaths.add(fileMeta);
         Future f = Mockito.mock(Future.class);
         when(f.isDone()).thenReturn(false);
-        when(remoteUploadScheduler.submit(any(Runnable.class))).thenReturn(f);
+        when(remoteUploadScheduler.submit(any(Callable.class))).thenReturn(f);
         worker.run();
         Assert.assertEquals(0, toBeFlushedToRemotePaths.size());
         Assert.assertEquals(0, flushedToRemotePaths.size());
@@ -99,7 +85,7 @@ public class ObjectStorageCheckerTest {
         toBeFlushedToRemotePaths.add(fileMeta);
         Future f = Mockito.mock(Future.class);
         when(f.isDone()).thenReturn(false);
-        when(remoteUploadScheduler.submit(any(Runnable.class))).thenReturn(f);
+        when(remoteUploadScheduler.submit(any(Callable.class))).thenReturn(f);
         worker.run();
         Assert.assertEquals(0, toBeFlushedToRemotePaths.size());
         Assert.assertEquals(0, flushedToRemotePaths.size());
@@ -111,6 +97,7 @@ public class ObjectStorageCheckerTest {
 
         when(f.isDone()).thenReturn(true);
         when(f.get()).thenReturn(null);
+        when(f.get()).thenReturn(19L);
         worker.run();
         Assert.assertEquals(0, toBeFlushedToRemotePaths.size());
         Assert.assertEquals(0, remoteUploadFutures.size());
@@ -128,7 +115,6 @@ public class ObjectStorageCheckerTest {
                 remoteUploadFutures,
                 executorService,
                 objectStorage,
-                clock,
                 instrumentation);
         toBeFlushedToRemotePaths.add(fileMeta);
 
@@ -148,11 +134,10 @@ public class ObjectStorageCheckerTest {
                 remoteUploadFutures,
                 executorService,
                 objectStorage,
-                clock,
                 instrumentation);
         toBeFlushedToRemotePaths.add(fileMeta);
 
-        doThrow(new RuntimeException(new ObjectStorageException(null))).when(objectStorage).store(fileMeta.getFullPath());
+        doThrow(new RuntimeException(new ObjectStorageException(null, null, null))).when(objectStorage).store(fileMeta.getFullPath());
 
         while (true) {
             worker.run();
@@ -160,43 +145,45 @@ public class ObjectStorageCheckerTest {
     }
 
     @Test
-    public void shouldRecordMetricOfFileUploadedCount() {
+    public void shouldRecordMetricOfFileUploadedCount() throws ExecutionException, InterruptedException {
         toBeFlushedToRemotePaths.add(fileMeta);
         Future f = Mockito.mock(Future.class);
         when(f.isDone()).thenReturn(true);
-        when(remoteUploadScheduler.submit(any(Runnable.class))).thenReturn(f);
+        when(f.get()).thenReturn(10L);
+        when(remoteUploadScheduler.submit(any(Callable.class))).thenReturn(f);
         worker.run();
 
-        verify(instrumentation, times(1)).incrementCounterWithTags(FILE_UPLOAD_TOTAL,
+        verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL,
                 SUCCESS_TAG,
                 tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
                 tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
 
     @Test
-    public void shouldRecordMetricOfFileUploadBytes() {
+    public void shouldRecordMetricOfFileUploadBytes() throws ExecutionException, InterruptedException {
         toBeFlushedToRemotePaths.add(fileMeta);
         Future f = Mockito.mock(Future.class);
         when(f.isDone()).thenReturn(true);
-        when(remoteUploadScheduler.submit(any(Runnable.class))).thenReturn(f);
+        when(f.get()).thenReturn(10L);
+        when(remoteUploadScheduler.submit(any(Callable.class))).thenReturn(f);
         worker.run();
 
-        verify(instrumentation).captureCountWithTags(FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
+        verify(instrumentation).captureCount(FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
                 tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
                 tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
 
     @Test
-    public void shouldRecordMetricOfUploadDuration() {
-        Instant startTime = Instant.now();
+    public void shouldRecordMetricOfUploadDuration() throws ExecutionException, InterruptedException {
+        long totalTime = 10;
         toBeFlushedToRemotePaths.add(fileMeta);
         Future f = Mockito.mock(Future.class);
         when(f.isDone()).thenReturn(true);
-        when(remoteUploadScheduler.submit(any(Runnable.class))).thenReturn(f);
-        when(clock.now()).thenReturn(startTime);
+        when(remoteUploadScheduler.submit(any(Callable.class))).thenReturn(f);
+        when(f.get()).thenReturn(totalTime);
         worker.run();
 
-        verify(instrumentation, (times(1))).captureDurationSinceWithTags(FILE_UPLOAD_TIME_MILLISECONDS, startTime,
+        verify(instrumentation, (times(1))).captureDuration(FILE_UPLOAD_TIME_MILLISECONDS, totalTime,
                 tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
                 tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
@@ -210,21 +197,21 @@ public class ObjectStorageCheckerTest {
             when(f.get()).thenThrow(new InterruptedException());
         } catch (InterruptedException | ExecutionException ignored) {
         }
-        when(remoteUploadScheduler.submit(any(Runnable.class))).thenReturn(f);
+        when(remoteUploadScheduler.submit(any(Callable.class))).thenReturn(f);
         try {
             worker.run();
         } catch (RuntimeException ignored) {
         }
 
-        verify(instrumentation, times(1)).incrementCounterWithTags(FILE_UPLOAD_TOTAL,
+        verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
-                tag(OBJECT_STORE_ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.OBJECT_STORAGE_CHECKER_THREAD_ERROR),
+                tag(OBJECT_STORE_ERROR_TYPE_TAG, ""),
                 tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
                 tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
     }
 
     @Test
-    public void shouldRecordMetricsWhenUploadFutureThrowsObjectStorageExceptionCausedByGCSException() throws ObjectStorageException, IOException {
+    public void shouldRecordMetricsWhenUploadFutureThrowsObjectStorageExceptionCausedByGCSException() throws ObjectStorageException {
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         worker = new ObjectStorageChecker(
                 toBeFlushedToRemotePaths,
@@ -232,12 +219,10 @@ public class ObjectStorageCheckerTest {
                 remoteUploadFutures,
                 executorService,
                 objectStorage,
-                clock,
                 instrumentation);
         toBeFlushedToRemotePaths.add(fileMeta);
 
-        GCSException gcsException = new GCSException(GCSErrorType.FORBIDDEN, GCSErrorType.FORBIDDEN.getCodeValue(), "");
-        ObjectStorageException objectStorageException = new ObjectStorageException(gcsException);
+        ObjectStorageException objectStorageException = new ObjectStorageException(GCSErrorType.FORBIDDEN.name(), "Test", new RuntimeException());
         doThrow(objectStorageException).when(objectStorage).store(fileMeta.getFullPath());
 
         while (true) {
@@ -248,7 +233,7 @@ public class ObjectStorageCheckerTest {
             }
         }
 
-        verify(instrumentation, times(1)).incrementCounterWithTags(FILE_UPLOAD_TOTAL,
+        verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
                 tag(OBJECT_STORE_ERROR_TYPE_TAG, GCSErrorType.FORBIDDEN.name()),
                 tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
@@ -256,7 +241,7 @@ public class ObjectStorageCheckerTest {
     }
 
     @Test
-    public void shouldRecordMetricOfRecordProcessingFailedWhenUploadFailedCausedByIOException() throws ObjectStorageException, IOException {
+    public void shouldRecordMetricOfRecordProcessingFailedWhenUploadFailedCausedByIOException() throws ObjectStorageException {
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         worker = new ObjectStorageChecker(
                 toBeFlushedToRemotePaths,
@@ -264,11 +249,10 @@ public class ObjectStorageCheckerTest {
                 remoteUploadFutures,
                 executorService,
                 objectStorage,
-                clock,
                 instrumentation);
         toBeFlushedToRemotePaths.add(fileMeta);
 
-        doThrow(new ObjectStorageException(new IOException(new Exception()))).when(objectStorage).store(fileMeta.getFullPath());
+        doThrow(new ObjectStorageException("file_io_error", "File Read error", new IOException(new Exception()))).when(objectStorage).store(fileMeta.getFullPath());
 
         while (true) {
             try {
@@ -278,7 +262,7 @@ public class ObjectStorageCheckerTest {
             }
         }
 
-        verify(instrumentation, times(1)).incrementCounterWithTags(FILE_UPLOAD_TOTAL,
+        verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
                 tag(OBJECT_STORE_ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.FILE_IO_ERROR),
                 tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),

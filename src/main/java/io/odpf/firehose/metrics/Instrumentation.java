@@ -198,8 +198,8 @@ public class Instrumentation {
         statsDReporter.captureDurationSince(metric, instant, tags);
     }
 
-    public void captureDurationSinceWithTags(String metric, Instant instant, String... tags) {
-        statsDReporter.captureDurationSince(metric, instant, tags);
+    public void captureDuration(String metric, long duration, String... tags) {
+        statsDReporter.captureDuration(metric, duration, tags);
     }
 
     public void captureSleepTime(String metric, int sleepTime) {
@@ -208,15 +208,15 @@ public class Instrumentation {
 
     // ===================== CountTelemetry =================
 
-    public void captureCountWithTags(String metric, Integer count, String... tags) {
+    public void captureCount(String metric, Integer count, String... tags) {
         statsDReporter.captureCount(metric, count, tags);
     }
 
-    public void captureCountWithTags(String metric, Long count, String... tags) {
+    public void captureCount(String metric, Long count, String... tags) {
         statsDReporter.captureCount(metric, count, tags);
     }
 
-    public void incrementCounterWithTags(String metric, String... tags) {
+    public void incrementCounter(String metric, String... tags) {
         statsDReporter.increment(metric, tags);
     }
 

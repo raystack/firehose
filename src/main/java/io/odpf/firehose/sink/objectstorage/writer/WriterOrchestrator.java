@@ -11,7 +11,6 @@ import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
 import io.odpf.firehose.sink.objectstorage.writer.local.Partition;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageChecker;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterWorkerFuture;
-import io.odpf.firehose.util.Clock;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -58,7 +57,7 @@ public class WriterOrchestrator implements Closeable {
                 new LocalFileChecker(
                         toBeFlushedToRemotePaths,
                         timePartitionWriterMap,
-                        localStorage, new Clock(), new Instrumentation(statsDReporter, LocalFileChecker.class)),
+                        localStorage, new Instrumentation(statsDReporter, LocalFileChecker.class)),
                 FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS,
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
                 TimeUnit.SECONDS);
@@ -71,7 +70,6 @@ public class WriterOrchestrator implements Closeable {
                         remoteUploadFutures,
                         remoteUploadScheduler,
                         objectStorage,
-                        new Clock(),
                         new Instrumentation(statsDReporter, ObjectStorageChecker.class)),
                 FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS,
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,

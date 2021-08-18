@@ -60,6 +60,9 @@ public class StatsDReporter implements Closeable {
     public void captureDurationSince(String metric, Instant startTime, String... tags) {
         client.recordExecutionTime(withTags(metric, tags), Duration.between(startTime, clock.now()).toMillis());
     }
+    public void captureDuration(String metric, long duration, String... tags) {
+        client.recordExecutionTime(withTags(metric, tags), duration);
+    }
 
     public void gauge(String metric, Integer value, String... tags) {
         client.gauge(withTags(metric, tags), value);

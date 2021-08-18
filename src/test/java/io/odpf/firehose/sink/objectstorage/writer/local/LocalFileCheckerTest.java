@@ -3,7 +3,6 @@ package io.odpf.firehose.sink.objectstorage.writer.local;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.objectstorage.Constants;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
-import io.odpf.firehose.util.Clock;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,9 +25,6 @@ import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class LocalFileCheckerTest {
-
-    @Mock
-    private Clock clock;
 
     @Mock
     private PartitionFactory partitionFactory;
@@ -70,8 +66,7 @@ public class LocalFileCheckerTest {
         when(writer2.getRecordCount()).thenReturn(recordCount);
         when(partitionFactory.fromPartitionPath(anyString())).thenReturn(partition);
         when(localStorage.getPartitionFactory()).thenReturn(partitionFactory);
-        when(clock.now()).thenReturn(startTime);
-        worker = new LocalFileChecker(toBeFlushedToRemotePaths, writerMap, localStorage, clock, instrumentation);
+        worker = new LocalFileChecker(toBeFlushedToRemotePaths, writerMap, localStorage, instrumentation);
     }
 
     @Test
@@ -167,7 +162,7 @@ public class LocalFileCheckerTest {
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
         when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name");
         worker.run();
-        verify(instrumentation).incrementCounterWithTags(LOCAL_FILE_CLOSE_TOTAL,
+        verify(instrumentation).incrementCounter(LOCAL_FILE_CLOSE_TOTAL,
                 SUCCESS_TAG,
                 tag(TOPIC_TAG, partition.getTopic()),
                 tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
@@ -181,9 +176,9 @@ public class LocalFileCheckerTest {
         when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name");
         worker.run();
 
-        verify(instrumentation, times(1)).captureDurationSinceWithTags(LOCAL_FILE_CLOSING_TIME_MILLISECONDS, startTime,
-                tag(TOPIC_TAG, partition.getTopic()),
-                tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
+        verify(instrumentation, times(1)).captureDurationSince(eq(LOCAL_FILE_CLOSING_TIME_MILLISECONDS), any(Instant.class),
+                eq(tag(TOPIC_TAG, partition.getTopic())),
+                eq(tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix())));
     }
 
     @Test
@@ -194,7 +189,7 @@ public class LocalFileCheckerTest {
         when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name");
         worker.run();
 
-        verify(instrumentation, times(1)).captureCountWithTags(LOCAL_FILE_SIZE_BYTES, fileSize,
+        verify(instrumentation, times(1)).captureCount(LOCAL_FILE_SIZE_BYTES, fileSize,
                 tag(TOPIC_TAG, partition.getTopic()),
                 tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
     }
@@ -212,7 +207,7 @@ public class LocalFileCheckerTest {
         } catch (LocalFileWriterFailedException e) {
         }
 
-        verify(instrumentation, times(1)).incrementCounterWithTags(LOCAL_FILE_CLOSE_TOTAL,
+        verify(instrumentation, times(1)).incrementCounter(LOCAL_FILE_CLOSE_TOTAL,
                 FAILURE_TAG,
                 tag(TOPIC_TAG, partition.getTopic()),
                 tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));

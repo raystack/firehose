@@ -174,7 +174,7 @@ public class PromSinkTest {
                         + "\nRequest Headers: [Accept: text/plain]"
                         + "\nRequest Body: " + body);
         verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_messages_drop_total", 1, "cause= 500");
+        verify(instrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 1, "cause= 500");
     }
 
     @Test
@@ -215,7 +215,7 @@ public class PromSinkTest {
         promSink.prepare(messages);
         promSink.execute();
         verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_messages_drop_total", 1, "cause= 500");
+        verify(instrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 1, "cause= 500");
     }
 
     @Test(expected = NeedToRetry.class)
@@ -246,7 +246,7 @@ public class PromSinkTest {
         promSink.prepare(messages);
         promSink.execute();
         verify(instrumentation, times(0)).logInfo("Message dropped because of status code: 200");
-        verify(instrumentation, times(0)).captureCountWithTags("firehose_sink_messages_drop_total", 1, "200");
+        verify(instrumentation, times(0)).captureCount("firehose_sink_messages_drop_total", 1, "200");
     }
 
     @Test
@@ -262,7 +262,7 @@ public class PromSinkTest {
         promSink.prepare(messages);
         promSink.execute();
         verify(instrumentation, times(0)).logInfo("Message dropped because of status code: 201");
-        verify(instrumentation, times(0)).captureCountWithTags("firehose_sink_messages_drop_total", 1, "201");
+        verify(instrumentation, times(0)).captureCount("firehose_sink_messages_drop_total", 1, "201");
     }
 
     @Test
@@ -279,7 +279,7 @@ public class PromSinkTest {
         promSink.prepare(messages);
         promSink.execute();
 
-        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_http_response_code_total", 1, "status_code=" + statusLine.getStatusCode(), "url=" + uri.getPath());
+        verify(instrumentation, times(1)).captureCount("firehose_sink_http_response_code_total", 1, "status_code=" + statusLine.getStatusCode(), "url=" + uri.getPath());
     }
 
     @Test
