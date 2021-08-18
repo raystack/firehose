@@ -37,6 +37,7 @@ public class GCSObjectStorage implements ObjectStorage {
         try {
             content = Files.readAllBytes(Paths.get(localPath));
         } catch (IOException e) {
+            LOGGER.error("Failed to read local file " + localPath);
             throw new ObjectStorageException("file_io_error", "File Read failed", e);
         }
         store(objectName, content);
@@ -50,7 +51,7 @@ public class GCSObjectStorage implements ObjectStorage {
             storage.create(blobInfo, content);
             LOGGER.info("Created object in GCS " + blobInfo.getBucket() + "/" + blobInfo.getName());
         } catch (StorageException e) {
-            LOGGER.info("Failed to create object in GCS " + blobInfo.getBucket() + "/" + blobInfo.getName());
+            LOGGER.error("Failed to create object in GCS " + blobInfo.getBucket() + "/" + blobInfo.getName());
             String gcsErrorType = GCSErrorType.valueOfCode(e.getCode()).name();
             throw new ObjectStorageException(gcsErrorType, "GCS Upload failed", e);
         }
