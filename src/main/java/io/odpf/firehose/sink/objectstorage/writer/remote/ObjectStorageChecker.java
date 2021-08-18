@@ -44,9 +44,9 @@ public class ObjectStorageChecker implements Runnable {
         Set<String> flushedPath = remoteUploadFutures.stream().map(worker -> {
             if (worker.getFuture().isDone()) {
                 try {
-                    long startTime = worker.getFuture().get();
+                    long totalTime = worker.getFuture().get();
                     FileMeta fileMeta = worker.getFileMeta();
-                    captureFileUploadSuccessMetric(fileMeta, startTime);
+                    captureFileUploadSuccessMetric(fileMeta, totalTime);
                     return worker.getFileMeta().getFullPath();
                 } catch (InterruptedException e) {
                     captureUploadFailedMetric(worker, e);

@@ -108,9 +108,9 @@ public class WriterOrchestrator implements Closeable {
         checkStatus();
         Partition partition = localStorage.getPartitionFactory().getPartition(record);
         synchronized (timePartitionWriterMap) {
-            LocalFileWriter writer = timePartitionWriterMap
-                    .computeIfAbsent(partition.toString(),
-                            x -> localStorage.createLocalFileWriter(partition.getPath()));
+            LocalFileWriter writer = timePartitionWriterMap.computeIfAbsent(
+                    partition.toString(),
+                    x -> localStorage.createLocalFileWriter(partition.getPath()));
             writer.write(record);
             return writer.getFullPath();
         }
