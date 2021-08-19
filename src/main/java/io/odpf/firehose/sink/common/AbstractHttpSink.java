@@ -49,6 +49,9 @@ public abstract class AbstractHttpSink extends AbstractSink {
                 response = httpClient.execute(httpRequest);
                 List<String> contentStringList = null;
                 getInstrumentation().logInfo("Response Status: {}", statusCode(response));
+                if (shouldLogResponse(response)) {
+                    printResponse(response);
+                }
                 if (shouldLogRequest(response)) {
                     contentStringList = readContent(httpRequest);
                     printRequest(httpRequest, contentStringList);
@@ -86,6 +89,10 @@ public abstract class AbstractHttpSink extends AbstractSink {
 
     private boolean shouldLogRequest(HttpResponse response) {
         return response == null || getRequestLogStatusCodeRanges().containsKey(response.getStatusLine().getStatusCode());
+    }
+
+    private boolean shouldLogResponse(HttpResponse response) {
+        return response != null;
     }
 
     private boolean shouldRetry(HttpResponse response) {
