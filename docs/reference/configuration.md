@@ -333,7 +333,7 @@ Defines a database connection timeout in milliseconds. Follow this [connectionTi
 
 ### `SINK_JDBC_CONNECTION_POOL_IDLE_TIMEOUT_MS`
 
-Defines a database connection pool idle connection timeout in milliseconds. Follow this [idleTimeout](https://github.com/brettwooldridge/HikariCP#frequently-used) for more details on using this configuration.
+Defines a database connection pool idle connection timeout in milliseconds. It needs to have a minimum value of `10000` else it will use the default value. Follow this [idleTimeout](https://github.com/brettwooldridge/HikariCP#frequently-used) for more details on using this configuration.
 
 * Example value: `60000`
 * Type: `required`
