@@ -56,6 +56,14 @@ Defines the URL of the Proto Descriptor set file in the Stencil Server
 * Example value: `http://localhost:8000/v1/namespaces/quickstart/descriptors/example/versions/latest`
 * Type: `optional`
 
+### `LOG_LEVEL`
+
+Defines the Firehose log level.
+
+* Example value: `INFO`
+* Type: `optional`
+* Default value: `INFO`
+
 ## Kafka Consumer
 
 ### `SOURCE_KAFKA_BROKERS`
@@ -209,7 +217,7 @@ Defines the source from which the fields should be parsed. This field should be 
 * Example value: `Key`
 * Example value: `Message`
 * Type: `optional`
-* Default value: `None`
+* Default value: `disabled`
 
 ### `SINK_HTTP_PARAMETER_PLACEMENT`
 
@@ -317,31 +325,31 @@ Defines a comma-separated column names having a unique constraint on the table.
 
 ### `SINK_JDBC_CONNECTION_POOL_TIMEOUT_MS`
 
-Defines a database connection timeout in milliseconds.
+Defines a database connection timeout in milliseconds. Follow this [connectionTimeout](https://github.com/brettwooldridge/HikariCP#frequently-used) for more details on using this configuration.
 
 * Example value: `1000`
 * Type: `required`
-* Default value: `1000`
+* Default value: `30000`
 
 ### `SINK_JDBC_CONNECTION_POOL_IDLE_TIMEOUT_MS`
 
-Defines a database connection pool idle connection timeout in milliseconds.
+Defines a database connection pool idle connection timeout in milliseconds. Follow this [idleTimeout](https://github.com/brettwooldridge/HikariCP#frequently-used) for more details on using this configuration.
 
 * Example value: `60000`
 * Type: `required`
-* Default value: `60000`
+* Default value: `600000`
 
 ### `SINK_JDBC_CONNECTION_POOL_MIN_IDLE`
 
-Defines the minimum number of idle connections in the pool to maintain.
+Defines the minimum number of idle connections in the pool to maintain. Follow this [minimumIdle](https://github.com/brettwooldridge/HikariCP#frequently-used) for more details on using this configuration.
 
-* Example value: `0`
+* Example value: `10`
 * Type: `required`
-* Default value: `0`
+* Default value: `10`
 
 ### `SINK_JDBC_CONNECTION_POOL_MAX_SIZE`
 
-Defines the maximum size for the database connection pool.
+Defines the maximum size for the database connection pool. Follow this [maximumPoolSize](https://github.com/brettwooldridge/HikariCP#frequently-used) for more details on using this configuration.
 
 * Example value: `10`
 * Type: `required`
