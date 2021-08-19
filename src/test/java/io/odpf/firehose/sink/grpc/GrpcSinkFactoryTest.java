@@ -8,7 +8,7 @@ import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
-import io.odpf.stencil.client.StencilClient;
+import com.gojek.de.stencil.client.StencilClient;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

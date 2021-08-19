@@ -6,7 +6,7 @@ import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.common.AbstractHttpSink;
 import io.odpf.firehose.sink.http.request.types.Request;
-import io.odpf.stencil.client.StencilClient;
+import com.gojek.de.stencil.client.StencilClient;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;

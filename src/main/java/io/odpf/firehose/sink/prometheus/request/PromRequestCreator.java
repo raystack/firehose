@@ -8,7 +8,7 @@ import io.odpf.firehose.sink.prometheus.builder.HeaderBuilder;
 import io.odpf.firehose.sink.prometheus.builder.RequestEntityBuilder;
 import io.odpf.firehose.sink.prometheus.builder.TimeSeriesBuilder;
 import io.odpf.firehose.sink.prometheus.builder.WriteRequestBuilder;
-import io.odpf.stencil.parser.ProtoParser;
+import com.gojek.de.stencil.parser.ProtoParser;
 
 /**
  * Prometheus Request Creator.

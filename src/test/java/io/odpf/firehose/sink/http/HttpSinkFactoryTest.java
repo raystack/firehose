@@ -6,7 +6,7 @@ import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.util.Clock;
-import io.odpf.stencil.client.StencilClient;
+import com.gojek.de.stencil.client.StencilClient;
 import org.gradle.internal.impldep.org.junit.Before;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

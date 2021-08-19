@@ -8,7 +8,7 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.grpc.client.GrpcClient;
 import com.google.protobuf.DynamicMessage;
-import io.odpf.stencil.client.StencilClient;
+import com.gojek.de.stencil.client.StencilClient;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -8,7 +8,7 @@ import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.redis.dataentry.RedisDataEntry;
 import io.odpf.firehose.sink.redis.dataentry.RedisListEntry;
 import com.google.protobuf.DynamicMessage;
-import io.odpf.stencil.parser.ProtoParser;
+import com.gojek.de.stencil.parser.ProtoParser;
 
 import java.util.ArrayList;
 import java.util.List;

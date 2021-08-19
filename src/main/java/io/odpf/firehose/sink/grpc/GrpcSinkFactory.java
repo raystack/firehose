@@ -9,7 +9,7 @@ import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.grpc.client.GrpcClient;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.odpf.stencil.client.StencilClient;
+import com.gojek.de.stencil.client.StencilClient;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.util.Map;

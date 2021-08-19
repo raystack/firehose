@@ -10,8 +10,8 @@ import io.odpf.firehose.serializer.MessageSerializer;
 import io.odpf.firehose.serializer.MessageToJson;
 import io.odpf.firehose.serializer.MessageToTemplatizedJson;
 import io.odpf.firehose.serializer.JsonWrappedProtoByte;
-import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import com.gojek.de.stencil.client.StencilClient;
+import com.gojek.de.stencil.parser.ProtoParser;
 import lombok.AllArgsConstructor;
 
 /**

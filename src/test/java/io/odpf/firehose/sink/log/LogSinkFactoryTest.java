@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.log;
 
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
-import io.odpf.stencil.client.StencilClient;
+import com.gojek.de.stencil.client.StencilClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
