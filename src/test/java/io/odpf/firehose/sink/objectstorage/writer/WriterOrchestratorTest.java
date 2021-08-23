@@ -70,6 +70,7 @@ public class WriterOrchestratorTest {
         Mockito.when(partitionFactory.getPartition(any(Record.class))).thenReturn(partition);
         Mockito.when(localFileWriter1.getFullPath()).thenReturn("test");
         Mockito.when(localStorage.createLocalFileWriter(Paths.get(partitionPathString))).thenReturn(localFileWriter1);
+        Mockito.when(localFileWriter1.write(record)).thenReturn(true);
         try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage, statsDReporter)) {
             String path = writerOrchestrator.write(record);
             verify(partitionFactory, Mockito.times(1)).getPartition(record);
@@ -99,12 +100,14 @@ public class WriterOrchestratorTest {
         Mockito.when(partitionFactory.getPartition(record1)).thenReturn(partition1);
         Mockito.when(localFileWriter1.getFullPath()).thenReturn("test1");
         Mockito.when(localStorage.createLocalFileWriter(Paths.get(partitionPathString1))).thenReturn(localFileWriter1);
+        Mockito.when(localFileWriter1.write(record1)).thenReturn(true);
 
         Instant timestamp2 = Instant.parse("2020-01-02T10:00:00.000Z");
         Record record2 = TestUtils.createRecordWithMetadata("abc", "default", 1, 1, timestamp2);
         Mockito.when(partitionFactory.getPartition(record2)).thenReturn(partition2);
         Mockito.when(localFileWriter2.getFullPath()).thenReturn("test2");
         Mockito.when(localStorage.createLocalFileWriter(Paths.get(partitionPathString2))).thenReturn(localFileWriter2);
+        Mockito.when(localFileWriter2.write(record2)).thenReturn(true);
 
         try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage, statsDReporter)) {
             Set<String> paths = new HashSet<>();
