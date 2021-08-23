@@ -20,6 +20,7 @@ public class LocalParquetFileWriter implements LocalFileWriter {
     @Getter
     private final String fullPath;
     private final AtomicLong recordCount = new AtomicLong();
+    private boolean isClosed = false;
 
     public LocalParquetFileWriter(long createdTimestampMillis, String path, int pageSize, int blockSize, Descriptors.Descriptor messageDescriptor, List<Descriptors.FieldDescriptor> metadataFieldDescriptor) throws IOException {
         this.parquetWriter = new ProtoParquetWriter(new org.apache.hadoop.fs.Path(path),
@@ -35,9 +36,13 @@ public class LocalParquetFileWriter implements LocalFileWriter {
         return parquetWriter.getDataSize();
     }
 
-    public void write(Record record) throws IOException {
+    public synchronized boolean write(Record record) throws IOException {
+        if (isClosed) {
+            return false;
+        }
         parquetWriter.write(Arrays.asList(record.getMessage(), record.getMetadata()));
         recordCount.incrementAndGet();
+        return true;
     }
 
     @Override
@@ -46,7 +51,8 @@ public class LocalParquetFileWriter implements LocalFileWriter {
     }
 
     @Override
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
+        this.isClosed = true;
         parquetWriter.close();
     }
 }

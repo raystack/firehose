@@ -104,13 +104,25 @@ public class WriterOrchestrator implements Closeable {
     public String write(Record record) throws Exception {
         checkStatus();
         Partition partition = localStorage.getPartitionFactory().getPartition(record);
-        synchronized (timePartitionWriterMap) {
-            LocalFileWriter writer = timePartitionWriterMap.computeIfAbsent(
-                    partition.toString(),
-                    x -> localStorage.createLocalFileWriter(partition.getPath()));
-            writer.write(record);
-            return writer.getFullPath();
+        return write(record, partition);
+    }
+
+    /**
+     * Tries to fetch writer from the map, if the writer is closed, try recursive method call.
+     *
+     * @param record    record to write
+     * @param partition partition for the file path
+     * @return full path of file.
+     * @throws IOException if local storage fails.
+     */
+    private String write(Record record, Partition partition) throws IOException {
+        LocalFileWriter writer = timePartitionWriterMap.computeIfAbsent(
+                partition.toString(),
+                x -> localStorage.createLocalFileWriter(partition.getPath()));
+        if (!writer.write(record)) {
+            return write(record, partition);
         }
+        return writer.getFullPath();
     }
 
     @Override
