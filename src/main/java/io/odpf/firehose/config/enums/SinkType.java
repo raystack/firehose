@@ -12,4 +12,5 @@ public enum SinkType {
     PROMETHEUS,
     OBJECTSTORAGE,
     BIGQUERY,
+    MONGODB
 }

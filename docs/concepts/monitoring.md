@@ -10,7 +10,7 @@ The Firehose Grafana dashboard provides detailed visualization of all Firehose m
 
 ### StatsD Client
 
-StatsD is a simple protocol for sending application metrics via UDP. StatsD is simple and has a tiny footprint. It can’t crash your application and has become the standard for large-scale metric collection. Firehose uses the [StatsD client](https://github.com/tim-group/java-statsd-client) library to send metrics to the Telegraf StatsD host. 
+StatsD is a simple protocol for sending application metrics via UDP. StatsD is simple and has a tiny footprint. It can’t crash your application and has become the standard for large-scale metric collection. Firehose uses the [StatsD client](https://github.com/tim-group/java-statsd-client) library to send metrics to the Telegraf StatsD host.
 
 ### Telegraf
 
@@ -23,8 +23,6 @@ StatsD is a simple protocol for sending application metrics via UDP. StatsD is s
 ### Grafana
 
 [Grafana](https://grafana.com/) is a multi-platform open-source analytics and interactive visualization web app. It pulls metrics data from the InfluxDB database and provides detailed visualization of all Firehose metrics in real-time. Metrics visualization can be obtained for all or specific pods.
-
-
 
 ## Setting Up Grafana with Firehose
 
@@ -40,13 +38,13 @@ Follow [this guide](https://grafana.com/docs/grafana/latest/getting-started/gett
 
 Lastly, set up Telegraf to send metrics to InfluxDB, following the corresponding instructions according to your Firehose deployment -
 
-#### **Firehose in Docker or deployed locally** 
+#### **Firehose in Docker or deployed locally**
 
 1. Follow [this guide](https://www.influxdata.com/blog/getting-started-with-sending-statsd-metrics-to-telegraf-influxdb/) to install and set up Telegraf as the StatsD host. 
 2. Configure the Firehose environment variables `METRIC_STATSD_HOST` and `METRIC_STATSD_PORT`  to the IP address and port on which Telegraf is listening. By default, `METRIC_STATSD_HOST` is set to `localhost` and `METRIC_STATSD_PORT` is set to the default listener port of Telegraf, i.e.`8125` 
-3.  Configure the IP address and port of the InfluxDB server in the file `~/.telegraf/telegraf.conf`
+3. Configure the IP address and port of the InfluxDB server in the file `~/.telegraf/telegraf.conf`
 
-#### Firehose deployed on Kubernetes ****
+#### Firehose deployed on Kubernetes _\*\*_
 
 1. Follow[ this guide](https://github.com/odpf/charts/tree/main/stable/firehose#readme) for deploying Firehose on a Kubernetes cluster using a Helm chart. 
 2. Configure the following parameters in the default [values.yaml](https://github.com/odpf/charts/blob/main/stable/firehose/values.yaml) file and run - 
@@ -63,17 +61,15 @@ $ helm install my-release -f values.yaml odpf/firehose
 | telegraf.config.output.influxdb.urls | list | `["http://localhost:8086"]` | influxdb urls for telegraf output |
 | telegraf.enabled | bool | `false` | flag for enabling telegraf |
 
-
-
 ## Grafana Dashboard
 
 [Grafana](https://grafana.com/) is a multi-platform open-source analytics and interactive visualization web application. It provides charts, graphs, and alerts for the web when connected to supported data sources. A licensed Grafana Enterprise version with additional capabilities is also available as a self-hosted installation or an account on the Grafana Labs cloud service.
 
-Grafana dashboard can be loaded on your Grafana cloud account by importing the JSON file `firehose-grafana-dashboard.json` in the `docs/assets/` directory. 
+Grafana dashboard can be loaded on your Grafana cloud account by importing the JSON file `firehose-grafana-dashboard.json` in the `docs/assets/` directory.
 
 ![Firehose Grafana dashboard](../.gitbook/assets/screenshot-from-2021-07-12-17-55-11.png)
 
-Load a Firehose dashboard by configuring the following parameters - 
+Load a Firehose dashboard by configuring the following parameters -
 
 * **Data Source** - name of InfluxDB database for metrics
 * **Prometheus Data Source** - Prometheus cluster name if any
