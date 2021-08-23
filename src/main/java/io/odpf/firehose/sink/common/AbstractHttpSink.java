@@ -126,6 +126,14 @@ public abstract class AbstractHttpSink extends AbstractSink {
         getInstrumentation().logInfo(entireRequest);
     }
 
+    private void printResponse(HttpResponse response) throws IOException {
+        InputStream inputStream = response.getEntity().getContent();
+        String entireRequest = String.format("Response Body: %s",
+                Strings.join(readContent(inputStream), "\n"));
+        getInstrumentation().logDebug(entireRequest);
+        inputStream.reset();
+    }
+
     protected abstract List<String> readContent(HttpEntityEnclosingRequestBase httpRequest) throws IOException;
 
     protected abstract void captureMessageDropCount(HttpResponse response, List<String> contentString) throws IOException;

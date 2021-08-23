@@ -430,6 +430,6 @@ public class HttpSinkTest {
         httpSink.prepare(messages);
         httpSink.execute();
         verify(instrumentation, times(1)).logDebug(
-                "Response Body: {}", "[{\"key\":\"value1\"},{\"key\":\"value2\"}]");
+                "Response Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]");
     }
 }
