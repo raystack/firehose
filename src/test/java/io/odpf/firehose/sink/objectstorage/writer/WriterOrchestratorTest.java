@@ -1,6 +1,5 @@
 package io.odpf.firehose.sink.objectstorage.writer;
 
-import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.sink.objectstorage.TestUtils;
@@ -47,8 +46,6 @@ public class WriterOrchestratorTest {
     @Mock
     private ObjectStorage objectStorage;
     @Mock
-    private Instrumentation instrumentation;
-    @Mock
     private StatsDReporter statsDReporter;
 
     private final String defaultTopic = "default";
@@ -73,7 +70,7 @@ public class WriterOrchestratorTest {
         Mockito.when(partitionFactory.getPartition(any(Record.class))).thenReturn(partition);
         Mockito.when(localFileWriter1.getFullPath()).thenReturn("test");
         Mockito.when(localStorage.createLocalFileWriter(Paths.get(partitionPathString))).thenReturn(localFileWriter1);
-        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage, instrumentation, statsDReporter)) {
+        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage, statsDReporter)) {
             String path = writerOrchestrator.write(record);
             verify(partitionFactory, Mockito.times(1)).getPartition(record);
             Assert.assertEquals("test", path);
@@ -109,7 +106,7 @@ public class WriterOrchestratorTest {
         Mockito.when(localFileWriter2.getFullPath()).thenReturn("test2");
         Mockito.when(localStorage.createLocalFileWriter(Paths.get(partitionPathString2))).thenReturn(localFileWriter2);
 
-        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage, instrumentation, statsDReporter)) {
+        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage, statsDReporter)) {
             Set<String> paths = new HashSet<>();
             paths.add(writerOrchestrator.write(record1));
             paths.add(writerOrchestrator.write(record2));
@@ -132,7 +129,7 @@ public class WriterOrchestratorTest {
         Mockito.when(partitionFactory.getPartition(record)).thenReturn(partitionPath);
         Mockito.when(localFileWriter1.getFullPath()).thenReturn("test1");
         Mockito.when(localStorage.createLocalFileWriter(Paths.get(partition))).thenReturn(localFileWriter1);
-        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage, instrumentation, statsDReporter)) {
+        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage, statsDReporter)) {
             Mockito.doThrow(new IOException("")).when(localFileWriter1).write(record);
             writerOrchestrator.write(record);
         }
@@ -153,7 +150,7 @@ public class WriterOrchestratorTest {
         Mockito.when(partitionFactory.getPartition(record)).thenReturn(partitionPath);
         Mockito.when(localFileWriter1.getFullPath()).thenReturn("test1");
         Mockito.when(localStorage.createLocalFileWriter(Paths.get(partition))).thenThrow(new LocalFileWriterFailedException(new IOException("Some error")));
-        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage, instrumentation, statsDReporter)) {
+        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, objectStorage, statsDReporter)) {
             writerOrchestrator.write(record);
         }
     }

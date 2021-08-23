@@ -14,11 +14,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class LocalParquetFileWriter implements LocalFileWriter {
 
-    private ParquetWriter parquetWriter;
-    private long createdTimestampMillis;
+    private final ParquetWriter parquetWriter;
     @Getter
-    private String fullPath;
-    private AtomicLong recordCount = new AtomicLong();
+    private final long createdTimestampMillis;
+    @Getter
+    private final String fullPath;
+    private final AtomicLong recordCount = new AtomicLong();
 
     public LocalParquetFileWriter(long createdTimestampMillis, String path, int pageSize, int blockSize, Descriptors.Descriptor messageDescriptor, List<Descriptors.FieldDescriptor> metadataFieldDescriptor) throws IOException {
         this.parquetWriter = new ProtoParquetWriter(new org.apache.hadoop.fs.Path(path),
@@ -37,11 +38,6 @@ public class LocalParquetFileWriter implements LocalFileWriter {
     public void write(Record record) throws IOException {
         parquetWriter.write(Arrays.asList(record.getMessage(), record.getMetadata()));
         recordCount.incrementAndGet();
-    }
-
-    @Override
-    public long getCreatedTimestampMillis() {
-        return this.createdTimestampMillis;
     }
 
     @Override

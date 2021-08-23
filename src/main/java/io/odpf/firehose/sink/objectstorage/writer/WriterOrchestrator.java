@@ -46,12 +46,9 @@ public class WriterOrchestrator implements Closeable {
     private final BlockingQueue<String> flushedToRemotePaths = new LinkedBlockingQueue<>();
     private final LocalStorage localStorage;
     private final WriterOrchestratorStatus writerOrchestratorStatus;
-    private final Instrumentation instrumentation;
 
-    public WriterOrchestrator(LocalStorage localStorage, ObjectStorage objectStorage, Instrumentation instrumentation, StatsDReporter statsDReporter) {
+    public WriterOrchestrator(LocalStorage localStorage, ObjectStorage objectStorage, StatsDReporter statsDReporter) {
         this.localStorage = localStorage;
-        this.instrumentation = instrumentation;
-
         BlockingQueue<FileMeta> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
         ScheduledFuture<?> localWriterFuture = localFileCheckerScheduler.scheduleAtFixedRate(
                 new LocalFileChecker(

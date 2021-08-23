@@ -252,7 +252,7 @@ public class ObjectStorageCheckerTest {
                 instrumentation);
         toBeFlushedToRemotePaths.add(fileMeta);
 
-        doThrow(new ObjectStorageException("file_io_error", "File Read error", new IOException(new Exception()))).when(objectStorage).store(fileMeta.getFullPath());
+        doThrow(new ObjectStorageException(io.odpf.firehose.sink.objectstorage.writer.remote.Constants.FILE_IO_ERROR, "File Read error", new IOException(new Exception()))).when(objectStorage).store(fileMeta.getFullPath());
 
         while (true) {
             try {
