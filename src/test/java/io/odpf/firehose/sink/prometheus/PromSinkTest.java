@@ -93,6 +93,8 @@ public class PromSinkTest {
         when(statusLine.getStatusCode()).thenReturn(200);
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
+        when(response.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         promSink.prepare(messages);
@@ -109,6 +111,8 @@ public class PromSinkTest {
         when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
+        when(response.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-505"), requestLogStatusCodeRanges);
@@ -178,6 +182,7 @@ public class PromSinkTest {
         when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
+        when(response.getEntity()).thenReturn(httpEntity);
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-505"));
@@ -203,6 +208,7 @@ public class PromSinkTest {
         when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
+        when(response.getEntity()).thenReturn(httpEntity);
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-499"));
@@ -224,6 +230,7 @@ public class PromSinkTest {
         when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
+        when(response.getEntity()).thenReturn(httpEntity);
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-499"), requestLogStatusCodeRanges);
@@ -240,6 +247,8 @@ public class PromSinkTest {
         when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
+        when(response.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-600"), requestLogStatusCodeRanges);
@@ -255,6 +264,8 @@ public class PromSinkTest {
         when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
+        when(response.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
@@ -271,6 +282,8 @@ public class PromSinkTest {
         when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
+        when(response.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
@@ -288,6 +301,8 @@ public class PromSinkTest {
         when(httpPost.getURI()).thenReturn(uri);
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
+        when(response.getEntity()).thenReturn(httpEntity);
+        when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(Snappy.compress(writeRequest.toByteArray())));
 
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
