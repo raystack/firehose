@@ -26,7 +26,7 @@ lombok {
 }
 
 group 'io.odpf'
-version '0.1.0'
+version '0.1.1'
 
 def projName = "firehose"
 
@@ -51,7 +51,6 @@ private Properties loadEnv() {
 def mainClassName = "io.odpf.firehose.launch.Main"
 
 dependencies {
-    implementation 'org.junit.jupiter:junit-jupiter:5.7.0'
     compile group: 'com.google.protobuf', name: 'protobuf-java', version: '3.1.0'
     compile group: 'com.google.protobuf', name: 'protobuf-java-util', version: '3.1.0'
     compile group: 'com.newrelic.agent.java', name: 'newrelic-api', version: '3.31.1'
@@ -81,6 +80,7 @@ dependencies {
     compile group: 'org.jfrog.buildinfo', name: 'build-info-extractor', version: '2.6.3'
     compile group: 'com.google.gradle', name: 'osdetector-gradle-plugin', version: '1.2.1'
     compile group: 'org.apache.ivy', name: 'ivy', version: '2.2.0'
+    compile group: 'org.mongodb', name: 'mongo-java-driver', version: '3.12.8'
     compile (group: 'org.apache.hadoop', name: 'hadoop-common', version: '3.1.0') {
         exclude group: "log4j", module: "log4j"
         exclude group: "org.slf4j", module:"slf4j-log4j12"
@@ -101,6 +101,7 @@ dependencies {
     testCompile group: 'io.opentracing', name: 'opentracing-mock', version: '0.33.0'
     testCompile group: 'org.mock-server', name: 'mockserver-netty', version: '3.10.5'
     testCompile gradleTestKit()
+    testCompile 'org.junit.jupiter:junit-jupiter:5.7.0'
 }
 
 protobuf {

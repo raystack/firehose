@@ -18,14 +18,14 @@ export PATH=~/Downloads/jdk1.8.0_291/bin:$PATH
 
 ### Environment Variables
 
-Firehose environment variables can be configured in either of the following ways - 
+Firehose environment variables can be configured in either of the following ways -
 
 * append a new line at the end of `env/local.properties` file. Variables declared in `local.properties` file are automatically added to the environment during runtime.
 * run  `export SAMPLE_VARIABLE=287` on a UNIX shell, to directly assign the required environment variable.
 
 ### Kafka Server
 
-Apache Kafka server service must be set up, from which Firehose's Kafka consumer will pull messages. Kafka Server version greater than 2.4 is currently supported by Firehose. Kafka Server URL and port address, as well as other Kafka-specific parameters must be configured in the corresponding environment variables as defined in the  [Generic configuration](../reference/configuration.md#generic) section.
+Apache Kafka server service must be set up, from which Firehose's Kafka consumer will pull messages. Kafka Server version greater than 2.4 is currently supported by Firehose. Kafka Server URL and port address, as well as other Kafka-specific parameters must be configured in the corresponding environment variables as defined in the [Generic configuration](../reference/configuration.md#generic) section.
 
 Read the[ official guide](https://kafka.apache.org/quickstart) on how to install and configure Apache Kafka Server.
 
@@ -33,11 +33,11 @@ Read the[ official guide](https://kafka.apache.org/quickstart) on how to install
 
 The sink to which Firehose will stream Kafka's data to, must have its corresponding server set up and configured. The URL and port address of the database server / HTTP/GRPC endpoint , along with other sink - specific parameters must be configured the environment variables corresponding to that particular sink.
 
-Configuration parameter variables of each sink can be found in the [Configurations](../reference/configuration.md) section.  
+Configuration parameter variables of each sink can be found in the [Configurations](../reference/configuration.md) section.
 
 ### Schema Registry
 
-Firehose uses Stencil Server as its Schema Registry for hosting Protobuf descriptors. The environment variable `SCHEMA_REGISTRY_STENCIL_ENABLE` must be set to `true` . Stencil server URL must be specified in the variable  `SCHEMA_REGISTRY_STENCIL_URLS` . The Proto Descriptor Set file of the Kafka messages must be uploaded to the Stencil server.
+Firehose uses Stencil Server as its Schema Registry for hosting Protobuf descriptors. The environment variable `SCHEMA_REGISTRY_STENCIL_ENABLE` must be set to `true` . Stencil server URL must be specified in the variable `SCHEMA_REGISTRY_STENCIL_URLS` . The Proto Descriptor Set file of the Kafka messages must be uploaded to the Stencil server.
 
 Refer [this guide](https://github.com/odpf/stencil/tree/master/server#readme) on how to set up and configure the Stencil server, and how to generate and upload Proto descriptor set file to the server.
 
@@ -62,7 +62,7 @@ $ ./gradlew clean build
 $ cat env/local.properties
 
 # Run the Firehose
-$ ./gradlew runConsumer 
+$ ./gradlew runConsumer
 ```
 
 **Note:** Sample configuration for other sinks along with some advanced configurations can be found [here](../reference/configuration.md)
