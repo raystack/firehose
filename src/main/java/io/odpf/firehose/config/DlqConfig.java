@@ -61,6 +61,14 @@ public interface DlqConfig extends AppConfig {
     @Key("DLQ_OBJECT_STORAGE_GCLOUD_PROJECT_ID")
     String getDlqGcsGcloudProjectID();
 
+    @Key("DLQ_OBJECT_STORAGE_GCS_MAX_RETRY_ATTEMPTS")
+    @DefaultValue("2147483647")
+    Integer getDlqGCSMaxRetryAttempts();
+
+    @Key("DLQ_OBJECT_STORAGE_GCS_RETRY_TIMEOUT_DURATION_MS")
+    @DefaultValue("300000")
+    Long getDlqGCSRetryTimeoutDurationMillis();
+
     @Key("DLQ_MAX_RETRY_ATTEMPTS")
     @DefaultValue("2147483647")
     Integer getDlqMaxRetryAttempts();
@@ -68,6 +76,4 @@ public interface DlqConfig extends AppConfig {
     @Key("DLQ_FAIL_ON_MAX_RETRY_ATTEMPTS_EXCEEDED")
     @DefaultValue("true")
     boolean getDlqFailOnMaxRetryAttemptsExceeded();
-
-
 }

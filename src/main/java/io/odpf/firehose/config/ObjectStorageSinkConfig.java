@@ -73,4 +73,11 @@ public interface ObjectStorageSinkConfig extends AppConfig {
     @Key("SINK_OBJECT_STORAGE_GCS_CREDENTIAL_PATH")
     String getGCSCredentialPath();
 
+    @Key("SINK_OBJECT_STORAGE_GCS_MAX_RETRY_ATTEMPTS")
+    @DefaultValue("2147483647")
+    Integer getGCSMaxRetryAttempts();
+
+    @Key("SINK_OBJECT_STORAGE_GCS_RETRY_TIMEOUT_DURATION_MS")
+    @DefaultValue("300000")
+    Long getGCSRetryTimeoutDurationMillis();
 }

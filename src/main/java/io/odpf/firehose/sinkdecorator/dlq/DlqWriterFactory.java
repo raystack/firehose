@@ -15,6 +15,7 @@ import io.opentracing.contrib.kafka.TracingKafkaProducer;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
@@ -34,10 +35,13 @@ public class DlqWriterFactory {
                 return new KafkaDlqWriter(tracingProducer, dlqConfig.getDlqKafkaTopic(), new Instrumentation(client, KafkaDlqWriter.class));
 
             case OBJECTSTORAGE:
-                GCSConfig gcsConfig = new GCSConfig(Paths.get(DEFAULT_DLQ_OBJECT_STORAGE_BASE_PATH),
+                Path localBasePath = Paths.get(DEFAULT_DLQ_OBJECT_STORAGE_BASE_PATH);
+                GCSConfig gcsConfig = new GCSConfig(localBasePath,
                         dlqConfig.getDlqObjectStorageBucketName(),
                         dlqConfig.getDlqGCSCredentialPath(),
-                        dlqConfig.getDlqGcsGcloudProjectID());
+                        dlqConfig.getDlqGcsGcloudProjectID(),
+                        dlqConfig.getDlqGCSMaxRetryAttempts(),
+                        dlqConfig.getDlqGCSRetryTimeoutDurationMillis());
 
                 ObjectStorage objectStorage = ObjectStorageFactory.createObjectStorage(dlqConfig.getObjectStorageType(), gcsConfig.getProperties());
                 return new ObjectStorageDlqWriter(objectStorage);
