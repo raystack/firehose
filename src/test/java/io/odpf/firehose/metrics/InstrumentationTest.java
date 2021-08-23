@@ -155,7 +155,7 @@ public class InstrumentationTest {
         String metric = "test_metric";
         String urlTag = "url=test";
         String httpCodeTag = "status_code=200";
-        instrumentation.captureCountWithTags(metric, 1, httpCodeTag, urlTag);
+        instrumentation.captureCount(metric, 1, httpCodeTag, urlTag);
         verify(statsDReporter, times(1)).captureCount(metric, 1, httpCodeTag, urlTag);
     }
 
@@ -163,7 +163,7 @@ public class InstrumentationTest {
     public void shouldIncrementCounterWithTags() {
         String metric = "test_metric";
         String httpCodeTag = "status_code=200";
-        instrumentation.incrementCounterWithTags(metric, httpCodeTag);
+        instrumentation.incrementCounter(metric, httpCodeTag);
         verify(statsDReporter, times(1)).increment(metric, httpCodeTag);
     }
 

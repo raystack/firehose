@@ -94,9 +94,9 @@ public class GenericConsumer implements AutoCloseable {
         if (consumerConfig.isSourceKafkaAsyncCommitEnable()) {
             kafkaConsumer.commitAsync((offsets, exception) -> {
                 if (exception != null) {
-                    instrumentation.incrementCounterWithTags(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, FAILURE_TAG);
+                    instrumentation.incrementCounter(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, FAILURE_TAG);
                 } else {
-                    instrumentation.incrementCounterWithTags(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, SUCCESS_TAG);
+                    instrumentation.incrementCounter(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, SUCCESS_TAG);
                 }
             });
         } else {
@@ -131,9 +131,9 @@ public class GenericConsumer implements AutoCloseable {
 
     private void onComplete(Map<TopicPartition, OffsetAndMetadata> offsets, Exception exception) {
         if (exception != null) {
-            instrumentation.incrementCounterWithTags(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, FAILURE_TAG);
+            instrumentation.incrementCounter(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, FAILURE_TAG);
         } else {
-            instrumentation.incrementCounterWithTags(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, SUCCESS_TAG);
+            instrumentation.incrementCounter(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, SUCCESS_TAG);
             committedOffsets.putAll(offsets);
         }
     }

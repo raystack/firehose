@@ -1,52 +1,91 @@
 package io.odpf.firehose.sink.objectstorage.writer.local;
 
-import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.odpf.firehose.metrics.Instrumentation;
 
 import java.io.IOException;
-import java.util.List;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
-public class LocalFileChecker implements Runnable {
-    private final Queue<String> toBeFlushedToRemotePaths;
-    private final Map<String, LocalFileWriter> timePartitionWriterMap;
-    private final List<WriterPolicy> policies;
-    private static final Logger LOGGER = LoggerFactory.getLogger(LocalFileChecker.class);
+import static io.odpf.firehose.metrics.Metrics.FAILURE_TAG;
+import static io.odpf.firehose.metrics.Metrics.SUCCESS_TAG;
+import static io.odpf.firehose.metrics.Metrics.tag;
+import static io.odpf.firehose.sink.objectstorage.ObjectStorageMetrics.LOCAL_FILE_CLOSE_TOTAL;
+import static io.odpf.firehose.sink.objectstorage.ObjectStorageMetrics.LOCAL_FILE_CLOSING_TIME_MILLISECONDS;
+import static io.odpf.firehose.sink.objectstorage.ObjectStorageMetrics.LOCAL_FILE_OPEN_TOTAL;
+import static io.odpf.firehose.sink.objectstorage.ObjectStorageMetrics.LOCAL_FILE_SIZE_BYTES;
+import static io.odpf.firehose.sink.objectstorage.ObjectStorageMetrics.PARTITION_TAG;
+import static io.odpf.firehose.sink.objectstorage.ObjectStorageMetrics.TOPIC_TAG;
 
-    public LocalFileChecker(Queue<String> toBeFlushedToRemotePaths,
+public class LocalFileChecker implements Runnable {
+    private final Queue<FileMeta> toBeFlushedToRemotePaths;
+    private final Map<String, LocalFileWriter> timePartitionWriterMap;
+    private final LocalStorage localStorage;
+    private final Instrumentation instrumentation;
+
+
+    public LocalFileChecker(Queue<FileMeta> toBeFlushedToRemotePaths,
                             Map<String, LocalFileWriter> timePartitionWriterMap,
-                            List<WriterPolicy> policies) {
+                            LocalStorage localStorage,
+                            Instrumentation instrumentation) {
         this.toBeFlushedToRemotePaths = toBeFlushedToRemotePaths;
         this.timePartitionWriterMap = timePartitionWriterMap;
-        this.policies = policies;
+        this.localStorage = localStorage;
+        this.instrumentation = instrumentation;
     }
 
     @Override
     public void run() {
         Map<String, LocalFileWriter> toBeRotated;
         synchronized (timePartitionWriterMap) {
-            toBeRotated = timePartitionWriterMap.entrySet().stream().filter(kv -> shouldRotate(kv.getValue()))
+            toBeRotated = timePartitionWriterMap.entrySet().stream().filter(kv -> localStorage.shouldRotate(kv.getValue()))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             timePartitionWriterMap.entrySet().removeIf(kv -> toBeRotated.containsKey(kv.getKey()));
         }
-        toBeRotated.values().forEach(
-                writer -> {
-                    try {
-                        writer.close();
-                        LOGGER.info("Closing Local File " + writer.getFullPath());
-                        toBeFlushedToRemotePaths.add(writer.getFullPath());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        throw new LocalFileWriterFailedException(e);
-                    }
-                });
+        toBeRotated.forEach((key, writer) -> {
+            String filePath = writer.getFullPath();
+            Partition partition = localStorage.getPartitionFactory().fromPartitionPath(key);
+            try {
+                Instant startTime = Instant.now();
+                writer.close();
+                instrumentation.logInfo("Closing Local File {} ", filePath);
+                long fileSize = localStorage.getFileSize(filePath);
+                FileMeta fileMeta = new FileMeta(filePath, writer.getRecordCount(), fileSize, partition);
+                toBeFlushedToRemotePaths.add(fileMeta);
+                captureFileClosedSuccessMetric(startTime, fileMeta);
+            } catch (IOException e) {
+                e.printStackTrace();
+                captureFileCloseFailedMetric(partition);
+                throw new LocalFileWriterFailedException(e);
+            }
+        });
+        instrumentation.captureValue(LOCAL_FILE_OPEN_TOTAL, timePartitionWriterMap.size());
     }
 
-    private Boolean shouldRotate(LocalFileWriter writer) {
-        return policies.stream().reduce(false,
-                (accumulated, writerPolicy) -> accumulated || writerPolicy.shouldRotate(writer), (left, right) -> left || right);
+    private void captureFileClosedSuccessMetric(Instant startTime, FileMeta fileMeta) {
+        String dateTimeTag = fileMeta.getPartition().getDatetimePathWithoutPrefix();
+        String topic = fileMeta.getPartition().getTopic();
+        instrumentation.incrementCounter(LOCAL_FILE_CLOSE_TOTAL,
+                SUCCESS_TAG,
+                tag(TOPIC_TAG, topic),
+                tag(PARTITION_TAG, dateTimeTag));
+
+        instrumentation.captureDurationSince(LOCAL_FILE_CLOSING_TIME_MILLISECONDS, startTime,
+                tag(TOPIC_TAG, topic),
+                tag(PARTITION_TAG, dateTimeTag));
+
+        instrumentation.captureCount(LOCAL_FILE_SIZE_BYTES, fileMeta.getFileSizeBytes(),
+                tag(TOPIC_TAG, topic),
+                tag(PARTITION_TAG, dateTimeTag));
+    }
+
+    private void captureFileCloseFailedMetric(Partition partition) {
+        String dateTimeTag = partition.getDatetimePathWithoutPrefix();
+        String topic = partition.getTopic();
+        instrumentation.incrementCounter(LOCAL_FILE_CLOSE_TOTAL,
+                FAILURE_TAG,
+                tag(TOPIC_TAG, topic),
+                tag(PARTITION_TAG, dateTimeTag));
     }
 }

@@ -4,6 +4,7 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.objectstorage.ObjectStorageException;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
 
@@ -45,7 +46,11 @@ public class ObjectStorageDlqWriter implements DlqWriter {
             String fileName = UUID.randomUUID().toString();
             String objectName = entry.getKey().resolve(fileName).toString();
 
-            objectStorage.store(objectName, dlqJson.getBytes(StandardCharsets.UTF_8));
+            try {
+                objectStorage.store(objectName, dlqJson.getBytes(StandardCharsets.UTF_8));
+            } catch (ObjectStorageException e) {
+                throw new IOException(e);
+            }
         }
 
         return unProcessedMessages;

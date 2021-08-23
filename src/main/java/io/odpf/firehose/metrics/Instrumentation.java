@@ -198,22 +198,34 @@ public class Instrumentation {
         statsDReporter.captureDurationSince(metric, instant, tags);
     }
 
+    public void captureDuration(String metric, long duration, String... tags) {
+        statsDReporter.captureDuration(metric, duration, tags);
+    }
+
     public void captureSleepTime(String metric, int sleepTime) {
         statsDReporter.gauge(metric, sleepTime);
     }
 
     // ===================== CountTelemetry =================
 
-    public void captureCountWithTags(String metric, Integer count, String... tags) {
+    public void captureCount(String metric, Integer count, String... tags) {
         statsDReporter.captureCount(metric, count, tags);
     }
 
-    public void incrementCounterWithTags(String metric, String... tags) {
+    public void captureCount(String metric, Long count, String... tags) {
+        statsDReporter.captureCount(metric, count, tags);
+    }
+
+    public void incrementCounter(String metric, String... tags) {
         statsDReporter.increment(metric, tags);
     }
 
     public void incrementCounter(String metric) {
         statsDReporter.increment(metric);
+    }
+
+    public void captureValue(String metric, Integer value, String... tags) {
+        statsDReporter.gauge(metric, value, tags);
     }
 
     // ===================== closing =================

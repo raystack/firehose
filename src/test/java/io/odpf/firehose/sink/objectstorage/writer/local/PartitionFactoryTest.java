@@ -16,7 +16,7 @@ import java.time.Instant;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TimePartitionPathTest {
+public class PartitionFactoryTest {
 
     private final String zone = "UTC";
     private final String fieldName = MessageProto.CREATED_TIME_FIELD_NAME;
@@ -27,7 +27,8 @@ public class TimePartitionPathTest {
     private final long defaultOffset = 1L;
     private final int defaultPartition = 1;
     private final String defaultTopic = "booking-log";
-    private TimePartitionPath factory;
+
+    private PartitionFactory factory;
 
     @Test
     public void shouldCreateDayPartitioningPath() {
@@ -38,8 +39,8 @@ public class TimePartitionPathTest {
         DynamicMessage metadata = TestUtils.createMetadata(kafkaMetadataFieldName, defaultTimestamp, defaultOffset, defaultPartition, defaultTopic);
         Record record = new Record(message, metadata);
 
-        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, Constants.PartitioningType.DAY, zone, "date=", "");
-        Path path = factory.create(record);
+        factory = new PartitionFactory(kafkaMetadataFieldName, fieldName, new PartitionConfig(zone, Constants.PartitioningType.DAY, "date=", ""));
+        Path path = factory.getPartitionPath(record);
 
         assertEquals(partitionPath, path);
     }
@@ -53,8 +54,8 @@ public class TimePartitionPathTest {
         DynamicMessage metadata = TestUtils.createMetadata(kafkaMetadataFieldName, defaultTimestamp, defaultOffset, defaultPartition, defaultTopic);
         Record record = new Record(message, metadata);
 
-        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, Constants.PartitioningType.HOUR, zone, datePrefix, hourPrefix);
-        Path path = factory.create(record);
+        factory = new PartitionFactory(kafkaMetadataFieldName, fieldName, new PartitionConfig(zone, Constants.PartitioningType.HOUR, datePrefix, hourPrefix));
+        Path path = factory.getPartitionPath(record);
 
         assertEquals(partitionPath, path);
     }
@@ -68,8 +69,8 @@ public class TimePartitionPathTest {
         DynamicMessage metadata = TestUtils.createMetadata(kafkaMetadataFieldName, defaultTimestamp, defaultOffset, defaultPartition, defaultTopic);
         Record record = new Record(message, metadata);
 
-        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, Constants.PartitioningType.NONE, zone, datePrefix, hourPrefix);
-        Path path = factory.create(record);
+        factory = new PartitionFactory(kafkaMetadataFieldName, fieldName, new PartitionConfig(zone, Constants.PartitioningType.NONE, datePrefix, hourPrefix));
+        Path path = factory.getPartitionPath(record);
 
         assertEquals(partitionPath, path);
     }
@@ -83,8 +84,8 @@ public class TimePartitionPathTest {
         DynamicMessage metadata = TestUtils.createMetadata(kafkaMetadataFieldName, defaultTimestamp, defaultOffset, defaultPartition, defaultTopic);
         Record record = new Record(message, metadata);
 
-        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, Constants.PartitioningType.DAY, zone, datePrefix, hourPrefix);
-        Path path = factory.create(record);
+        factory = new PartitionFactory(kafkaMetadataFieldName, fieldName, new PartitionConfig(zone, Constants.PartitioningType.DAY, datePrefix, hourPrefix));
+        Path path = factory.getPartitionPath(record);
 
         assertEquals(partitionPath, path);
     }
@@ -98,9 +99,37 @@ public class TimePartitionPathTest {
         DynamicMessage metadata = TestUtils.createMetadata(kafkaMetadataFieldName, defaultTimestamp, defaultOffset, defaultPartition, defaultTopic);
         Record record = new Record(message, metadata);
 
-        factory = new TimePartitionPath(kafkaMetadataFieldName, fieldName, Constants.PartitioningType.DAY, zone, datePrefix, hourPrefix);
-        Path path = factory.create(record);
+        factory = new PartitionFactory(kafkaMetadataFieldName, fieldName, new PartitionConfig(zone, Constants.PartitioningType.DAY, datePrefix, hourPrefix));
+        Path path = factory.getPartitionPath(record);
 
         assertEquals(partitionPath, path);
+    }
+
+    @Test
+    public void shouldParsePathWithNoneAsPartition() {
+        Path path = Paths.get("topic");
+        String partitionPathString = "/topic";
+        Partition partition = Partition.parseFrom(partitionPathString, new PartitionConfig(zone, Constants.PartitioningType.NONE, "", ""));
+        Path result = partition.getPath();
+
+        assertEquals(path, result);
+    }
+
+    @Test
+    public void shouldParseDayPartition() {
+        Path path = Paths.get("topic", "dt=2021-01-01");
+        String partitionPathString = "/topic/dt=2021-01-01";
+        Partition partition = Partition.parseFrom(partitionPathString, new PartitionConfig(zone, Constants.PartitioningType.DAY, datePrefix, ""));
+        Path result = partition.getPath();
+        assertEquals(path, result);
+    }
+
+    @Test
+    public void shouldParseHourPartition() {
+        Path path = Paths.get("topic", "dt=2021-01-01", "hr=03");
+        String partitionPathString = "/topic/dt=2021-01-01/hr=03";
+        Partition partition = Partition.parseFrom(partitionPathString, new PartitionConfig(zone, Constants.PartitioningType.HOUR, datePrefix, hourPrefix));
+        Path result = partition.getPath();
+        assertEquals(path, result);
     }
 }

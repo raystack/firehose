@@ -19,7 +19,8 @@ import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoFile;
 import io.odpf.firehose.sink.objectstorage.proto.NestedKafkaMetadataProto;
 import io.odpf.firehose.sink.objectstorage.writer.WriterOrchestrator;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
-import io.odpf.firehose.sink.objectstorage.writer.local.TimePartitionPath;
+import io.odpf.firehose.sink.objectstorage.writer.local.PartitionConfig;
+import io.odpf.firehose.sink.objectstorage.writer.local.PartitionFactory;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.SizeBasedRotatingPolicy;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.TimeBasedRotatingPolicy;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
@@ -43,7 +44,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
 
         ObjectStorage sinkObjectStorage = createSinkObjectStorage(sinkConfig);
 
-        WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, sinkObjectStorage);
+        WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, sinkObjectStorage, new Instrumentation(statsDReporter, WriterOrchestrator.class), statsDReporter);
         MessageDeSerializer messageDeSerializer = getMessageDeSerializer(sinkConfig, stencilClient);
 
         return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer);
@@ -67,13 +68,14 @@ public class ObjectStorageSinkFactory implements SinkFactory {
         Descriptors.Descriptor outputMessageDescriptor = stencilClient.get(sinkConfig.getInputSchemaProtoClass());
         Descriptors.Descriptor metadataMessageDescriptor = getMetadataMessageDescriptor(sinkConfig);
 
-        TimePartitionPath timePartitionPath = new TimePartitionPath(
+        PartitionFactory partitionFactory = new PartitionFactory(
                 sinkConfig.getKafkaMetadataColumnName(),
                 sinkConfig.getTimePartitioningFieldName(),
-                sinkConfig.getPartitioningType(),
-                sinkConfig.getTimePartitioningTimeZone(),
-                sinkConfig.getTimePartitioningDatePrefix(),
-                sinkConfig.getTimePartitioningHourPrefix());
+                new PartitionConfig(
+                        sinkConfig.getTimePartitioningTimeZone(),
+                        sinkConfig.getPartitioningType(),
+                        sinkConfig.getTimePartitioningDatePrefix(),
+                        sinkConfig.getTimePartitioningHourPrefix()));
 
 
         List<WriterPolicy> writerPolicies = new ArrayList<>();
@@ -90,7 +92,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
                 metadataMessageDescriptor.getFields(),
                 localBasePath,
                 writerPolicies,
-                timePartitionPath);
+                partitionFactory);
     }
 
     public ObjectStorage createSinkObjectStorage(ObjectStorageSinkConfig sinkConfig) {

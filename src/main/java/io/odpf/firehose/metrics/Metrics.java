@@ -11,6 +11,8 @@ public class Metrics {
     //SINK PREFIXES
     public static final String SINK_PREFIX = "sink_";
     public static final String HTTP_SINK_PREFIX = "http_";
+    public static final String OBJECTSTORAGE_SINK_PREFIX = "objectstorage_";
+
     public static final String MONGO_SINK_PREFIX = "mongo_";
 
 
@@ -80,6 +82,10 @@ public class Metrics {
     public static final String ERROR_MESSAGE_CLASS_TAG = "class";
     public static final String NON_FATAL_ERROR = "nonfatal";
     public static final String FATAL_ERROR = "fatal";
+
+    public static String tag(String key, String value) {
+        return String.format("%s=%s", key, value);
+    }
 
     // MESSAGE SCOPE
     public enum MessageScope {

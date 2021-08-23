@@ -7,7 +7,8 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
 import io.odpf.firehose.objectstorage.ObjectStorage;
-import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageFailedException;
+import io.odpf.firehose.objectstorage.ObjectStorageException;
+import io.odpf.firehose.objectstorage.gcs.error.GCSErrorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,26 +31,29 @@ public class GCSObjectStorage implements ObjectStorage {
     }
 
     @Override
-    public void store(String localPath) {
+    public void store(String localPath) throws ObjectStorageException {
         String objectName = gcsConfig.getLocalBasePath().relativize(Paths.get(localPath)).toString();
+        byte[] content;
         try {
-            byte[] content = Files.readAllBytes(Paths.get(localPath));
-            store(objectName, content);
+            content = Files.readAllBytes(Paths.get(localPath));
         } catch (IOException e) {
-            e.printStackTrace();
-            throw new ObjectStorageFailedException(e);
+            LOGGER.error("Failed to read local file " + localPath);
+            throw new ObjectStorageException("file_io_error", "File Read failed", e);
         }
+        store(objectName, content);
     }
 
     @Override
-    public void store(String objectName, byte[] content) throws IOException {
+    public void store(String objectName, byte[] content) throws ObjectStorageException {
         BlobId blobId = BlobId.of(gcsConfig.getGcsBucketName(), objectName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
         try {
             storage.create(blobInfo, content);
             LOGGER.info("Created object in GCS " + blobInfo.getBucket() + "/" + blobInfo.getName());
         } catch (StorageException e) {
-            throw new IOException(e);
+            LOGGER.error("Failed to create object in GCS " + blobInfo.getBucket() + "/" + blobInfo.getName());
+            String gcsErrorType = GCSErrorType.valueOfCode(e.getCode()).name();
+            throw new ObjectStorageException(gcsErrorType, "GCS Upload failed", e);
         }
     }
 }

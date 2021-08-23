@@ -38,5 +38,4 @@ public class MessageDeSerializer {
             throw new DeserializerException("failed to parse message", e);
         }
     }
-
 }

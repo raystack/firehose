@@ -1,6 +1,8 @@
 package io.odpf.firehose.sink.objectstorage;
 
 public class Constants {
+
+
     public enum WriterType {
         PARQUET,
     }

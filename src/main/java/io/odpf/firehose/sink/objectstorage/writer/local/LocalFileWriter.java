@@ -13,4 +13,6 @@ public interface LocalFileWriter extends Closeable {
     long getCreatedTimestampMillis();
 
     String getFullPath();
+
+    Long getRecordCount();
 }

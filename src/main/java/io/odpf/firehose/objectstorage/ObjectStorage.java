@@ -1,9 +1,8 @@
 package io.odpf.firehose.objectstorage;
 
-import java.io.IOException;
 
 public interface ObjectStorage {
-    void store(String localPath);
+    void store(String localPath) throws ObjectStorageException;
 
-    void store(String objectName, byte[] content) throws IOException;
+    void store(String objectName, byte[] content) throws ObjectStorageException;
 }

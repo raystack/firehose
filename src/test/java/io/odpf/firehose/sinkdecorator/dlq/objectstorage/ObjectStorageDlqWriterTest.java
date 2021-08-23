@@ -4,6 +4,7 @@ import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.objectstorage.ObjectStorageException;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +35,7 @@ public class ObjectStorageDlqWriterTest {
     }
 
     @Test
-    public void shouldWriteMessagesWithoutErrorInfoToObjectStorage() throws IOException {
+    public void shouldWriteMessagesWithoutErrorInfoToObjectStorage() throws IOException, ObjectStorageException {
         long timestamp1 = Instant.parse("2020-01-01T00:00:00Z").toEpochMilli();
         Message message1 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 1, null, 0, timestamp1);
         Message message2 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 2, null, 0, timestamp1);
@@ -55,7 +56,7 @@ public class ObjectStorageDlqWriterTest {
     }
 
     @Test
-    public void shouldWriteMessageErrorTypesToObjectStorage() throws IOException {
+    public void shouldWriteMessageErrorTypesToObjectStorage() throws IOException, ObjectStorageException {
         long timestamp1 = Instant.parse("2020-01-01T00:00:00Z").toEpochMilli();
         Message message1 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 1, null, 0, timestamp1, new ErrorInfo(new DeserializerException(""), ErrorType.DESERIALIZATION_ERROR));
         Message message2 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 2, null, 0, timestamp1, new ErrorInfo(new NullPointerException(), ErrorType.SINK_UNKNOWN_ERROR));
@@ -76,7 +77,7 @@ public class ObjectStorageDlqWriterTest {
     }
 
     @Test(expected = IOException.class)
-    public void shouldThrowIOExceptionWhenWriteFileThrowIOException() throws IOException {
+    public void shouldThrowIOExceptionWhenWriteFileThrowIOException() throws IOException, ObjectStorageException {
         long timestamp1 = Instant.parse("2020-01-01T00:00:00Z").toEpochMilli();
         Message message1 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 1, null, 0, timestamp1);
         Message message2 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 2, null, 0, timestamp1);
@@ -85,7 +86,7 @@ public class ObjectStorageDlqWriterTest {
         Message message3 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 3, null, 0, timestamp2);
         Message message4 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 4, null, 0, timestamp2);
 
-        doThrow(new IOException()).when(objectStorage).store(anyString(), any());
+        doThrow(new ObjectStorageException("", "", new IOException())).when(objectStorage).store(anyString(), any());
 
         List<Message> messages = Arrays.asList(message1, message2, message3, message4);
         objectStorageDLQWriter.write(messages);
