@@ -37,7 +37,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
     public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         ObjectStorageSinkConfig sinkConfig = ConfigFactory.create(ObjectStorageSinkConfig.class, configuration);
 
-        LocalStorage localStorage = getLocalFileWriterWrapper(sinkConfig, stencilClient);
+        LocalStorage localStorage = getLocalFileWriterWrapper(sinkConfig, stencilClient, statsDReporter);
 
         ObjectStorage sinkObjectStorage = createSinkObjectStorage(sinkConfig, configuration);
 
@@ -61,7 +61,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
         return new MessageDeSerializer(kafkaMetadataUtils, sinkConfig.getWriteKafkaMetadata(), protoParser);
     }
 
-    private LocalStorage getLocalFileWriterWrapper(ObjectStorageSinkConfig sinkConfig, StencilClient stencilClient) {
+    private LocalStorage getLocalFileWriterWrapper(ObjectStorageSinkConfig sinkConfig, StencilClient stencilClient, StatsDReporter statsDReporter) {
         Descriptors.Descriptor outputMessageDescriptor = stencilClient.get(sinkConfig.getInputSchemaProtoClass());
         Descriptors.Descriptor metadataMessageDescriptor = getMetadataMessageDescriptor(sinkConfig);
 
@@ -89,7 +89,8 @@ public class ObjectStorageSinkFactory implements SinkFactory {
                 metadataMessageDescriptor.getFields(),
                 localBasePath,
                 writerPolicies,
-                partitionFactory);
+                partitionFactory,
+                new Instrumentation(statsDReporter, LocalStorage.class));
     }
 
     public ObjectStorage createSinkObjectStorage(ObjectStorageSinkConfig sinkConfig, Map<String, String> configuration) {
