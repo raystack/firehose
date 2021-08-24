@@ -14,6 +14,7 @@ import io.opentracing.contrib.kafka.TracingKafkaProducer;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class DlqWriterFactory {
@@ -30,8 +31,9 @@ public class DlqWriterFactory {
                 return new KafkaDlqWriter(tracingProducer, dlqConfig.getDlqKafkaTopic(), new Instrumentation(client, KafkaDlqWriter.class));
 
             case OBJECTSTORAGE:
-                configuration.put("GCS_TYPE", "DLQ_OBJECT_STORAGE");
-                ObjectStorage objectStorage = ObjectStorageFactory.createObjectStorage(dlqConfig.getObjectStorageType(), configuration);
+                HashMap<String, String> mutableConfig = new HashMap<>(configuration);
+                mutableConfig.put("GCS_TYPE", "DLQ_OBJECT_STORAGE");
+                ObjectStorage objectStorage = ObjectStorageFactory.createObjectStorage(dlqConfig.getObjectStorageType(), mutableConfig);
                 return new ObjectStorageDlqWriter(objectStorage);
 
             case LOG:

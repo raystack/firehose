@@ -28,6 +28,7 @@ import org.aeonbits.owner.ConfigFactory;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -94,8 +95,9 @@ public class ObjectStorageSinkFactory implements SinkFactory {
 
     public ObjectStorage createSinkObjectStorage(ObjectStorageSinkConfig sinkConfig, Map<String, String> configuration) {
         if (sinkConfig.getObjectStorageType() == ObjectStorageType.GCS) {
-            configuration.put("GCS_TYPE", "SINK_OBJECT_STORAGE");
-            return ObjectStorageFactory.createObjectStorage(sinkConfig.getObjectStorageType(), configuration);
+            HashMap<String, String> mutableConfig = new HashMap<>(configuration);
+            mutableConfig.put("GCS_TYPE", "SINK_OBJECT_STORAGE");
+            return ObjectStorageFactory.createObjectStorage(sinkConfig.getObjectStorageType(), mutableConfig);
         }
         throw new IllegalArgumentException("Sink Object Storage type " + sinkConfig.getObjectStorageType() + "is not supported");
     }
