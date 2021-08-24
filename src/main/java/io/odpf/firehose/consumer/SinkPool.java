@@ -21,7 +21,7 @@ public class SinkPool implements AutoCloseable {
     private final Set<SinkFuture> sinkFutures = new HashSet<>();
     private final BlockingQueue<Sink> workerSinks;
     private final ExecutorService executorService;
-    private final long defaultPollTimeOutMillis;
+    private final long pollTimeOutMillis;
 
     public Set<Future<List<Message>>> fetchFinishedSinkTasks() {
         Set<SinkFuture> finished = sinkFutures.stream().filter(x -> {
@@ -29,29 +29,27 @@ public class SinkPool implements AutoCloseable {
                 try {
                     x.getFuture().get();
                     workerSinks.put(x.getSink());
+                    return true;
                 } catch (InterruptedException e) {
                     throw new AsyncConsumerFailedException(e);
                 } catch (ExecutionException e) {
                     throw new AsyncConsumerFailedException(e.getCause());
                 }
-                return true;
-            } else {
-                return false;
             }
+            return false;
         }).collect(Collectors.toSet());
-        sinkFutures.removeIf(finished::contains);
+        sinkFutures.removeAll(finished);
         return finished.stream().map(SinkFuture::getFuture).collect(Collectors.toSet());
     }
 
     public Future<List<Message>> submitTask(List<Message> messages) {
         try {
-            Sink s = workerSinks.poll(defaultPollTimeOutMillis, TimeUnit.MILLISECONDS);
-            if (s == null) {
+            Sink workerSink = workerSinks.poll(pollTimeOutMillis, TimeUnit.MILLISECONDS);
+            if (workerSink == null) {
                 return null;
             }
-            Future<List<Message>> future = executorService.submit(new SinkTask(s, messages));
-            SinkFuture sinkFuture = new SinkFuture(future, s);
-            sinkFutures.add(sinkFuture);
+            Future<List<Message>> future = executorService.submit(new SinkTask(workerSink, messages));
+            sinkFutures.add(new SinkFuture(future, workerSink));
             return future;
         } catch (InterruptedException e) {
             return null;
@@ -60,11 +58,12 @@ public class SinkPool implements AutoCloseable {
 
     @Override
     public void close() {
-
+        executorService.shutdown();
     }
 
     @Data
     @AllArgsConstructor
+    @EqualsAndHashCode
     protected static class SinkFuture {
         private Future<List<Message>> future;
         private Sink sink;
@@ -72,6 +71,10 @@ public class SinkPool implements AutoCloseable {
 
     @AllArgsConstructor
     @EqualsAndHashCode
+    /**
+     * Sink Worker task.
+     * It calls the pushMessage() and returns the response.
+     */
     protected static class SinkTask implements Callable<List<Message>> {
         private final Sink sink;
         private final List<Message> messages;

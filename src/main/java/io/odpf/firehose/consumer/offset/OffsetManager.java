@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * OffsetManager keeps tracks of all offsets that can be committed to kafka.
  */
 public class OffsetManager {
-    private final Map<Object, Set<OffsetNode>> batchOffsets = new HashMap<>();
+    private final Map<Object, Set<OffsetNode>> toBeCommittableBatchOffsets = new HashMap<>();
     private final Map<TopicPartition, TreeSet<OffsetNode>> sortedOffsets = new HashMap<>();
 
     /**
@@ -37,23 +37,24 @@ public class OffsetManager {
         messageList.forEach(m -> addOffsetToBatch(batch, m));
     }
 
-    public void addOffsetToBatch(Object batch, OffsetNode node) {
-        batchOffsets.computeIfAbsent(batch, x -> new HashSet<>()).add(node);
+    private void addOffsetToBatch(Object batch, OffsetNode node) {
+        toBeCommittableBatchOffsets.computeIfAbsent(batch, x -> new HashSet<>()).add(node);
         sortedOffsets.computeIfAbsent(
                 node.getTopicPartition(),
-                x -> new TreeSet<>(Comparator.comparingLong(n -> n.getOffsetAndMetadata().offset()))).add(node);
+                topicPartition -> new TreeSet<>(Comparator.comparingLong(offsetNode -> offsetNode.getOffsetAndMetadata().offset()))).add(node);
     }
 
     public Set<OffsetNode> getOffsetsForBatch(Object key) {
-        return batchOffsets.get(key);
+        return toBeCommittableBatchOffsets.get(key);
     }
 
     /**
      * @param batch key for which all offsets can be committed.
+     *              Removes the batch from the global map for the cleanup.
      */
     public void setCommittable(Object batch) {
-        batchOffsets.get(batch).forEach(x -> x.setCommittable(true));
-        batchOffsets.remove(batch);
+        toBeCommittableBatchOffsets.get(batch).forEach(offsetNode -> offsetNode.setCommittable(true));
+        toBeCommittableBatchOffsets.remove(batch);
     }
 
     public TreeSet<OffsetNode> getOffsetsForTopicPartition(TopicPartition topicPartition) {
@@ -75,7 +76,7 @@ public class OffsetManager {
 
     /**
      * @param nodes Sorted List of offsets
-     * @return the first offset that is set to be committable just before a non committable offset in the list.
+     * @return the first offset that is set to be committable just before a non-committable offset in the list.
      */
     public Optional<OffsetNode> compactAndFetchFirstCommittableNode(TreeSet<OffsetNode> nodes) {
         if (nodes.size() == 0) {

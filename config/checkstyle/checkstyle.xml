@@ -95,7 +95,7 @@
         <!-- See http://checkstyle.sf.net/config_sizes.html -->
         <module name="MethodLength"/>
         <module name="ParameterNumber">
-	     <property name="max" value="10"/>
+	     <property name="max" value="8"/>
 	</module>
 
         <!-- Checks for whitespace                               -->
