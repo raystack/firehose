@@ -52,15 +52,6 @@ public interface DlqConfig extends AppConfig {
     @ConverterClass(ObjectStorageTypeConverter.class)
     ObjectStorageType getObjectStorageType();
 
-    @Key("DLQ_OBJECT_STORAGE_BUCKET_NAME")
-    String getDlqObjectStorageBucketName();
-
-    @Key("DLQ_OBJECT_STORAGE_GCS_CREDENTIAL_PATH")
-    String getDlqGCSCredentialPath();
-
-    @Key("DLQ_OBJECT_STORAGE_GCLOUD_PROJECT_ID")
-    String getDlqGcsGcloudProjectID();
-
     @Key("DLQ_MAX_RETRY_ATTEMPTS")
     @DefaultValue("2147483647")
     Integer getDlqMaxRetryAttempts();

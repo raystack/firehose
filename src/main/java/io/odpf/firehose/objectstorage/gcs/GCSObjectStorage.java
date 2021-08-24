@@ -6,6 +6,7 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
+import io.odpf.firehose.config.GCSConfig;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.objectstorage.ObjectStorageException;
 import io.odpf.firehose.objectstorage.gcs.error.GCSErrorType;
@@ -26,14 +27,14 @@ public class GCSObjectStorage implements ObjectStorage {
     public GCSObjectStorage(GCSConfig gcsConfig) throws IOException {
         this.gcsConfig = gcsConfig;
         this.storage = StorageOptions.newBuilder()
-                .setProjectId(gcsConfig.getGcsProjectId())
-                .setCredentials(GoogleCredentials.fromStream(new FileInputStream(gcsConfig.getCredentialPath())))
+                .setProjectId(gcsConfig.getGCloudProjectID())
+                .setCredentials(GoogleCredentials.fromStream(new FileInputStream(gcsConfig.getGCSCredentialPath())))
                 .build().getService();
     }
 
     @Override
     public void store(String localPath) throws ObjectStorageException {
-        String objectName = gcsConfig.getLocalBasePath().relativize(Paths.get(localPath)).toString();
+        String objectName = Paths.get(gcsConfig.getGCSLocalDirectory()).relativize(Paths.get(localPath)).toString();
         byte[] content;
         try {
             content = Files.readAllBytes(Paths.get(localPath));
@@ -46,7 +47,7 @@ public class GCSObjectStorage implements ObjectStorage {
 
     @Override
     public void store(String objectName, byte[] content) throws ObjectStorageException {
-        BlobId blobId = BlobId.of(gcsConfig.getGcsBucketName(), objectName);
+        BlobId blobId = BlobId.of(gcsConfig.getGCSBucketName(), objectName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
         try {
             storage.create(blobInfo, content);

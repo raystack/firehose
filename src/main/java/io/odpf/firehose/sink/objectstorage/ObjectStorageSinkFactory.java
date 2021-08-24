@@ -9,7 +9,6 @@ import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.objectstorage.ObjectStorageFactory;
 import io.odpf.firehose.objectstorage.ObjectStorageType;
-import io.odpf.firehose.objectstorage.gcs.GCSConfig;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.objectstorage.message.KafkaMetadataUtils;
@@ -40,7 +39,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
 
         LocalStorage localStorage = getLocalFileWriterWrapper(sinkConfig, stencilClient);
 
-        ObjectStorage sinkObjectStorage = createSinkObjectStorage(sinkConfig);
+        ObjectStorage sinkObjectStorage = createSinkObjectStorage(sinkConfig, configuration);
 
         WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, sinkObjectStorage, statsDReporter);
         MessageDeSerializer messageDeSerializer = getMessageDeSerializer(sinkConfig, stencilClient);
@@ -93,14 +92,10 @@ public class ObjectStorageSinkFactory implements SinkFactory {
                 partitionFactory);
     }
 
-    public ObjectStorage createSinkObjectStorage(ObjectStorageSinkConfig sinkConfig) {
+    public ObjectStorage createSinkObjectStorage(ObjectStorageSinkConfig sinkConfig, Map<String, String> configuration) {
         if (sinkConfig.getObjectStorageType() == ObjectStorageType.GCS) {
-            GCSConfig gcsConfig = new GCSConfig(
-                    Paths.get(sinkConfig.getLocalDirectory()),
-                    sinkConfig.getGCSBucketName(),
-                    sinkConfig.getGCSCredentialPath(),
-                    sinkConfig.getGCloudProjectID());
-            return ObjectStorageFactory.createObjectStorage(sinkConfig.getObjectStorageType(), gcsConfig.getProperties());
+            configuration.put("GCS_TYPE", "SINK_OBJECT_STORAGE");
+            return ObjectStorageFactory.createObjectStorage(sinkConfig.getObjectStorageType(), configuration);
         }
         throw new IllegalArgumentException("Sink Object Storage type " + sinkConfig.getObjectStorageType() + "is not supported");
     }

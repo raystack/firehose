@@ -63,14 +63,4 @@ public interface ObjectStorageSinkConfig extends AppConfig {
     @DefaultValue("GCS")
     @ConverterClass(ObjectStorageTypeConverter.class)
     ObjectStorageType getObjectStorageType();
-
-    @Key("SINK_OBJECT_STORAGE_GOOGLE_CLOUD_PROJECT_ID")
-    String getGCloudProjectID();
-
-    @Key("SINK_OBJECT_STORAGE_GCS_BUCKET_NAME")
-    String getGCSBucketName();
-
-    @Key("SINK_OBJECT_STORAGE_GCS_CREDENTIAL_PATH")
-    String getGCSCredentialPath();
-
 }
