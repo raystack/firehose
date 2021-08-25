@@ -21,10 +21,10 @@ public interface GCSConfig extends Config {
     String getGCSCredentialPath();
 
     @Key("${GCS_TYPE}_GCS_MAX_RETRY_ATTEMPTS")
-    @DefaultValue("2147483647")
+    @DefaultValue("10")
     Integer getGCSMaxRetryAttempts();
 
     @Key("${GCS_TYPE}_GCS_RETRY_TIMEOUT_DURATION_MS")
-    @DefaultValue("300000")
+    @DefaultValue("5000")
     Long getGCSRetryTimeoutDurationMillis();
 }

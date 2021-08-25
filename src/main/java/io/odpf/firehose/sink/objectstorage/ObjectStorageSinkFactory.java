@@ -40,7 +40,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
 
         LocalStorage localStorage = getLocalFileWriterWrapper(sinkConfig, stencilClient);
 
-        ObjectStorage sinkObjectStorage = createSinkObjectStorage(sinkConfig, configuration);
+        ObjectStorage sinkObjectStorage = createSinkObjectStorage(sinkConfig, new HashMap<>(configuration));
 
         WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, sinkObjectStorage, statsDReporter);
         MessageDeSerializer messageDeSerializer = getMessageDeSerializer(sinkConfig, stencilClient);
@@ -95,9 +95,8 @@ public class ObjectStorageSinkFactory implements SinkFactory {
 
     public ObjectStorage createSinkObjectStorage(ObjectStorageSinkConfig sinkConfig, Map<String, String> configuration) {
         if (sinkConfig.getObjectStorageType() == ObjectStorageType.GCS) {
-            HashMap<String, String> mutableConfig = new HashMap<>(configuration);
-            mutableConfig.put("GCS_TYPE", "SINK_OBJECT_STORAGE");
-            return ObjectStorageFactory.createObjectStorage(sinkConfig.getObjectStorageType(), mutableConfig);
+            configuration.put("GCS_TYPE", "SINK_OBJECT_STORAGE");
+            return ObjectStorageFactory.createObjectStorage(sinkConfig.getObjectStorageType(), configuration);
         }
         throw new IllegalArgumentException("Sink Object Storage type " + sinkConfig.getObjectStorageType() + "is not supported");
     }
