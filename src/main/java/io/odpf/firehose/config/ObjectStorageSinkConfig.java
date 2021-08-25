@@ -31,9 +31,9 @@ public interface ObjectStorageSinkConfig extends AppConfig {
     @DefaultValue("1048576")
     int getWriterPageSize();
 
-    @Key("SINK_OBJECT_STORAGE_ROTATION_DURATION_MILLIS")
+    @Key("SINK_OBJECT_STORAGE_ROTATION_DURATION_MS")
     @DefaultValue("3600000")
-    long getFileRotationDurationMillis();
+    long getFileRotationDurationMS();
 
     @Key("SINK_OBJECT_STORAGE_ROTATION_MAX_SIZE_BYTES")
     @DefaultValue("268435456")

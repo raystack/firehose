@@ -66,7 +66,7 @@ public class SinkWithDlq extends SinkDecorator {
 
         List<Message> returnedMessages = doDLQ(splitLists.get(Boolean.TRUE));
 
-        if (!returnedMessages.isEmpty() && dlqConfig.getDlqFailOnMaxRetryAttemptsExceeded()) {
+        if (!returnedMessages.isEmpty() && dlqConfig.getDlqRetryFailAfterMaxAttemptEnable()) {
             throw new IOException("exhausted maximum number of allowed retry attempts to write messages to DLQ");
         }
         if (super.canManageOffsets()) {
@@ -86,7 +86,7 @@ public class SinkWithDlq extends SinkDecorator {
             instrumentation.captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, m.getErrorInfo().getErrorType(), 1);
         });
         int attemptCount = 1;
-        while (attemptCount <= this.dlqConfig.getDlqMaxRetryAttempts() && !retryQueueMessages.isEmpty()) {
+        while (attemptCount <= this.dlqConfig.getDlqRetryMaxAttempts() && !retryQueueMessages.isEmpty()) {
             instrumentation.incrementCounter(DLQ_RETRY_TOTAL);
             retryQueueMessages = writer.write(retryQueueMessages);
             retryQueueMessages.forEach(message -> Optional.ofNullable(message.getErrorInfo())

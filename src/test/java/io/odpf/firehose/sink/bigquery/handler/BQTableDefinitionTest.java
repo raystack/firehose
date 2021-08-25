@@ -82,7 +82,7 @@ public class BQTableDefinitionTest {
     @Test
     public void shouldCreateTableWithPartitionExpiry() {
         long partitionExpiry = 5184000000L;
-        when(bqConfig.getBigQueryTablePartitionExpiryMillis()).thenReturn(partitionExpiry);
+        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(partitionExpiry);
         when(bqConfig.isTablePartitioningEnabled()).thenReturn(true);
         when(bqConfig.getTablePartitionKey()).thenReturn("timestamp_field");
         Schema bqSchema = Schema.of(
@@ -99,7 +99,7 @@ public class BQTableDefinitionTest {
     @Test
     public void shouldReturnTableWithNullPartitionExpiryIfLessThanZero() {
         long partitionExpiry = -1L;
-        when(bqConfig.getBigQueryTablePartitionExpiryMillis()).thenReturn(partitionExpiry);
+        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(partitionExpiry);
         when(bqConfig.isTablePartitioningEnabled()).thenReturn(true);
         when(bqConfig.getTablePartitionKey()).thenReturn("timestamp_field");
         Schema bqSchema = Schema.of(
@@ -116,7 +116,7 @@ public class BQTableDefinitionTest {
     @Test
     public void shouldReturnTableWithNullPartitionExpiryIfEqualsZero() {
         long partitionExpiry = 0L;
-        when(bqConfig.getBigQueryTablePartitionExpiryMillis()).thenReturn(partitionExpiry);
+        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(partitionExpiry);
         when(bqConfig.isTablePartitioningEnabled()).thenReturn(true);
         when(bqConfig.getTablePartitionKey()).thenReturn("timestamp_field");
         Schema bqSchema = Schema.of(

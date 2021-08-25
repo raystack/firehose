@@ -56,8 +56,8 @@ public class SinkWithDlqTest {
     @Before
     public void setup() {
         initMocks(this);
-        when(dlqConfig.getDlqMaxRetryAttempts()).thenReturn(10);
-        when(dlqConfig.getDlqFailOnMaxRetryAttemptsExceeded()).thenReturn(true);
+        when(dlqConfig.getDlqRetryMaxAttempts()).thenReturn(10);
+        when(dlqConfig.getDlqRetryFailAfterMaxAttemptEnable()).thenReturn(true);
         errorHandler = new ErrorHandler(ConfigFactory.create(ErrorConfig.class, new HashMap<String, String>() {{
             put("ERROR_TYPES_FOR_DLQ", ErrorType.DESERIALIZATION_ERROR.name());
         }}));
@@ -139,7 +139,7 @@ public class SinkWithDlqTest {
     @Test(expected = IOException.class)
     public void shouldThrowIOExceptionWhenExceedMaxRetryAttemptsButButHasFailedToBeDlqProcessedMessages() throws IOException {
         int currentMaxRetryAttempts = 5;
-        when(dlqConfig.getDlqMaxRetryAttempts()).thenReturn(currentMaxRetryAttempts);
+        when(dlqConfig.getDlqRetryMaxAttempts()).thenReturn(currentMaxRetryAttempts);
         Message messageWithError = new Message(this.message, new ErrorInfo(new IOException(), ErrorType.DESERIALIZATION_ERROR));
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(messageWithError);
@@ -163,8 +163,8 @@ public class SinkWithDlqTest {
 
     @Test
     public void shouldNotThrowIOExceptionWhenFailOnMaxRetryAttemptDisabled() throws IOException {
-        when(dlqConfig.getDlqMaxRetryAttempts()).thenReturn(2);
-        when(dlqConfig.getDlqFailOnMaxRetryAttemptsExceeded()).thenReturn(false);
+        when(dlqConfig.getDlqRetryMaxAttempts()).thenReturn(2);
+        when(dlqConfig.getDlqRetryFailAfterMaxAttemptEnable()).thenReturn(false);
         Message messageWithError = new Message(message, new ErrorInfo(new IOException(), ErrorType.SINK_UNKNOWN_ERROR));
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(messageWithError);
@@ -250,7 +250,7 @@ public class SinkWithDlqTest {
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
         messages.add(message);
-        when(dlqConfig.getDlqFailOnMaxRetryAttemptsExceeded()).thenReturn(false);
+        when(dlqConfig.getDlqRetryFailAfterMaxAttemptEnable()).thenReturn(false);
         when(message.getErrorInfo()).thenReturn(new ErrorInfo(new RuntimeException(), ErrorType.DESERIALIZATION_ERROR));
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
         when(dlqWriter.write(anyList())).thenReturn(messages);

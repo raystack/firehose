@@ -61,8 +61,8 @@ public class BigQuerySinkFactory implements SinkFactory {
 
     private BigQuery getBigQueryInstance(BigQuerySinkConfig sinkConfig) throws IOException {
         final TransportOptions transportOptions = BigQueryOptions.getDefaultHttpTransportOptions().toBuilder()
-                .setConnectTimeout(Integer.parseInt(sinkConfig.getBqClientConnectTimeout()))
-                .setReadTimeout(Integer.parseInt(sinkConfig.getBqClientReadTimeout()))
+                .setConnectTimeout(Integer.parseInt(sinkConfig.getBqClientConnectTimeoutMS()))
+                .setReadTimeout(Integer.parseInt(sinkConfig.getBqClientReadTimeoutMS()))
                 .build();
         return BigQueryOptions.newBuilder()
                 .setTransportOptions(transportOptions)

@@ -48,8 +48,8 @@ public class BigQueryClient {
 
     private static BigQuery getBigQueryInstance(BigQuerySinkConfig sinkConfig) throws IOException {
         TransportOptions transportOptions = BigQueryOptions.getDefaultHttpTransportOptions().toBuilder()
-                .setConnectTimeout(Integer.parseInt(sinkConfig.getBqClientConnectTimeout()))
-                .setReadTimeout(Integer.parseInt(sinkConfig.getBqClientReadTimeout()))
+                .setConnectTimeout(Integer.parseInt(sinkConfig.getBqClientConnectTimeoutMS()))
+                .setReadTimeout(Integer.parseInt(sinkConfig.getBqClientReadTimeoutMS()))
                 .build();
         return BigQueryOptions.newBuilder()
                 .setTransportOptions(transportOptions)
@@ -158,7 +158,7 @@ public class BigQueryClient {
         }
         long neverExpireMs = 0L;
         Long currentExpirationMs = timePartitioning.getExpirationMs() == null ? neverExpireMs : timePartitioning.getExpirationMs();
-        Long newExpirationMs = bqConfig.getBigQueryTablePartitionExpiryMillis() > 0 ? bqConfig.getBigQueryTablePartitionExpiryMillis() : neverExpireMs;
+        Long newExpirationMs = bqConfig.getBigQueryTablePartitionExpiryMS() > 0 ? bqConfig.getBigQueryTablePartitionExpiryMS() : neverExpireMs;
         return !currentExpirationMs.equals(newExpirationMs);
     }
 

@@ -50,7 +50,7 @@ public class BQTableDefinition {
                 .setRequirePartitionFilter(true);
 
         Long neverExpireMillis = null;
-        Long partitionExpiry = bqConfig.getBigQueryTablePartitionExpiryMillis() > 0 ? bqConfig.getBigQueryTablePartitionExpiryMillis() : neverExpireMillis;
+        Long partitionExpiry = bqConfig.getBigQueryTablePartitionExpiryMS() > 0 ? bqConfig.getBigQueryTablePartitionExpiryMS() : neverExpireMillis;
         timePartitioningBuilder.setExpirationMs(partitionExpiry);
 
         return tableBuilder

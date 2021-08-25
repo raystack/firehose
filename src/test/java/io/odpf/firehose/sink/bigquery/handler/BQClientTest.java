@@ -50,7 +50,7 @@ public class BQClientTest {
     public void shouldIgnoreExceptionIfDatasetAlreadyExists() {
         when(bqConfig.isTablePartitioningEnabled()).thenReturn(true);
         when(bqConfig.getTablePartitionKey()).thenReturn("partition_column");
-        when(bqConfig.getBigQueryTablePartitionExpiryMillis()).thenReturn(-1L);
+        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(-1L);
         when(bqConfig.getTableName()).thenReturn("bq-table");
         when(bqConfig.getDatasetName()).thenReturn("bq-proto");
         when(bqConfig.getBigQueryDatasetLocation()).thenReturn("US");
@@ -86,7 +86,7 @@ public class BQClientTest {
     public void shouldCreateBigqueryTableWithPartition() {
         when(bqConfig.isTablePartitioningEnabled()).thenReturn(true);
         when(bqConfig.getTablePartitionKey()).thenReturn("partition_column");
-        when(bqConfig.getBigQueryTablePartitionExpiryMillis()).thenReturn(-1L);
+        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(-1L);
         when(bqConfig.getTableName()).thenReturn("bq-table");
         when(bqConfig.getDatasetName()).thenReturn("bq-proto");
         when(bqConfig.getBigQueryDatasetLocation()).thenReturn("US");
@@ -233,7 +233,7 @@ public class BQClientTest {
         when(bqConfig.isTablePartitioningEnabled()).thenReturn(true);
         when(bqConfig.getTableName()).thenReturn("bq-table");
         when(bqConfig.getDatasetName()).thenReturn("bq-proto");
-        when(bqConfig.getBigQueryTablePartitionExpiryMillis()).thenReturn(partitionExpiry);
+        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(partitionExpiry);
         when(bqConfig.getTablePartitionKey()).thenReturn("partition_column");
         when(bqConfig.getBigQueryDatasetLocation()).thenReturn("US");
         bqClient = new BigQueryClient(bigquery, bqConfig, instrumentation);
@@ -309,7 +309,7 @@ public class BQClientTest {
     @Test(expected = RuntimeException.class)
     public void shouldThrowExceptionIfDatasetLocationIsChanged() {
         when(bqConfig.isTablePartitioningEnabled()).thenReturn(false);
-        when(bqConfig.getBigQueryTablePartitionExpiryMillis()).thenReturn(-1L);
+        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(-1L);
         when(bqConfig.getTableName()).thenReturn("bq-table");
         when(bqConfig.getDatasetName()).thenReturn("bq-proto");
         when(bqConfig.getBigQueryDatasetLocation()).thenReturn("new-location");
@@ -343,8 +343,8 @@ public class BQClientTest {
         timePartitioningBuilder.setField(bqConfig.getTablePartitionKey())
                 .setRequirePartitionFilter(true);
 
-        if (bqConfig.getBigQueryTablePartitionExpiryMillis() > 0) {
-            timePartitioningBuilder.setExpirationMs(bqConfig.getBigQueryTablePartitionExpiryMillis());
+        if (bqConfig.getBigQueryTablePartitionExpiryMS() > 0) {
+            timePartitioningBuilder.setExpirationMs(bqConfig.getBigQueryTablePartitionExpiryMS());
         }
 
         Schema schema = Schema.of(bqSchemaFields);

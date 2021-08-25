@@ -27,8 +27,8 @@ public class FirehoseAsyncConsumer implements KafkaConsumer {
         try {
             List<Message> messages = consumerAndOffsetManager.readMessagesFromKafka();
             if (!messages.isEmpty()) {
-                Future<List<Message>> scheduled = scheduleTask(messages);
-                consumerAndOffsetManager.addOffsets(scheduled, messages);
+                Future<List<Message>> scheduledTask = scheduleTask(messages);
+                consumerAndOffsetManager.addOffsets(scheduledTask, messages);
             }
             sinkPool.fetchFinishedSinkTasks().forEach(consumerAndOffsetManager::setCommittable);
             consumerAndOffsetManager.commit();
@@ -39,13 +39,13 @@ public class FirehoseAsyncConsumer implements KafkaConsumer {
 
     private Future<List<Message>> scheduleTask(List<Message> messages) {
         while (true) {
-            Future<List<Message>> scheduled = sinkPool.submitTask(messages);
-            if (scheduled == null) {
+            Future<List<Message>> scheduledTask = sinkPool.submitTask(messages);
+            if (scheduledTask == null) {
                 instrumentation.logInfo("The Queue is full");
                 sinkPool.fetchFinishedSinkTasks().forEach(consumerAndOffsetManager::setCommittable);
             } else {
                 instrumentation.logInfo("Adding sink task");
-                return scheduled;
+                return scheduledTask;
             }
         }
     }
