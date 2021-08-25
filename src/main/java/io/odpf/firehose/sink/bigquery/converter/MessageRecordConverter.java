@@ -5,6 +5,7 @@ import com.google.api.client.util.DateTime;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.odpf.firehose.config.BigQuerySinkConfig;
+import io.odpf.firehose.config.ErrorConfig;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
@@ -33,6 +34,7 @@ public class MessageRecordConverter {
     private final RowMapper rowMapper;
     private final Parser parser;
     private final BigQuerySinkConfig config;
+    private final ErrorConfig errorConfig;
 
     public Records convert(List<Message> messages, Instant now) {
         ArrayList<Record> validRecords = new ArrayList<>();
@@ -64,7 +66,8 @@ public class MessageRecordConverter {
         try {
             DynamicMessage dynamicMessage = parser.parse(message.getLogMessage());
 
-            if (ProtoUtils.hasUnknownField(dynamicMessage)) {
+            if (errorConfig.getOptionalErrorTypesEnabled().contains(ErrorType.UNKNOWN_FIELDS_ERROR)
+                    && ProtoUtils.hasUnknownField(dynamicMessage)) {
                 log.info("unknown fields found at offset: {}, partition: {}, message: {}", message.getOffset(), message.getPartition(), message);
                 throw new UnknownFieldsException(dynamicMessage);
             }

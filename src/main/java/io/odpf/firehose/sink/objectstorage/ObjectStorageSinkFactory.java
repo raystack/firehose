@@ -3,6 +3,7 @@ package io.odpf.firehose.sink.objectstorage;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import com.google.protobuf.Descriptors;
+import io.odpf.firehose.config.ErrorConfig;
 import io.odpf.firehose.config.ObjectStorageSinkConfig;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
@@ -42,7 +43,9 @@ public class ObjectStorageSinkFactory implements SinkFactory {
         ObjectStorage sinkObjectStorage = createSinkObjectStorage(sinkConfig, configuration);
 
         WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, sinkObjectStorage, statsDReporter);
-        MessageDeSerializer messageDeSerializer = getMessageDeSerializer(sinkConfig, stencilClient);
+
+        ErrorConfig errorConfig = ConfigFactory.create(ErrorConfig.class, configuration);
+        MessageDeSerializer messageDeSerializer = getMessageDeSerializer(sinkConfig, errorConfig, stencilClient);
 
         return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer);
     }
@@ -55,10 +58,10 @@ public class ObjectStorageSinkFactory implements SinkFactory {
 
     }
 
-    private MessageDeSerializer getMessageDeSerializer(ObjectStorageSinkConfig sinkConfig, StencilClient stencilClient) {
+    private MessageDeSerializer getMessageDeSerializer(ObjectStorageSinkConfig sinkConfig, ErrorConfig errorConfig, StencilClient stencilClient) {
         ProtoParser protoParser = new ProtoParser(stencilClient, sinkConfig.getInputSchemaProtoClass());
         KafkaMetadataUtils kafkaMetadataUtils = new KafkaMetadataUtils(sinkConfig.getKafkaMetadataColumnName());
-        return new MessageDeSerializer(kafkaMetadataUtils, sinkConfig.getWriteKafkaMetadata(), protoParser);
+        return new MessageDeSerializer(kafkaMetadataUtils, sinkConfig.getWriteKafkaMetadata(), protoParser, errorConfig);
     }
 
     private LocalStorage getLocalFileWriterWrapper(ObjectStorageSinkConfig sinkConfig, StencilClient stencilClient) {

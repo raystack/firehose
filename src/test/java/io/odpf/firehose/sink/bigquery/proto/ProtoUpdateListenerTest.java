@@ -9,6 +9,7 @@ import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import io.odpf.firehose.TestKeyBQ;
 import io.odpf.firehose.config.BigQuerySinkConfig;
+import io.odpf.firehose.config.ErrorConfig;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryClient;
 import io.odpf.firehose.sink.bigquery.models.BQField;
@@ -41,6 +42,8 @@ public class ProtoUpdateListenerTest {
 
     private BigQuerySinkConfig config;
 
+    private ErrorConfig errorConfig;
+
     private MessageRecordConverterCache converterWrapper;
 
     @Before
@@ -48,12 +51,13 @@ public class ProtoUpdateListenerTest {
         System.setProperty("INPUT_SCHEMA_PROTO_CLASS", "io.odpf.firehose.TestKeyBQ");
         System.setProperty("SINK_BIGQUERY_ENABLE_AUTO_SCHEMA_UPDATE", "false");
         config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
+        errorConfig = ConfigFactory.create(ErrorConfig.class, System.getProperties());
         converterWrapper = new MessageRecordConverterCache();
     }
 
     @Test
     public void shouldUseNewSchemaIfProtoChanges() throws IOException {
-        ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper);
+        ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper, errorConfig);
 
         ProtoField returnedProtoField = new ProtoField();
         returnedProtoField.addField(new ProtoField("order_number", 1));
@@ -81,7 +85,7 @@ public class ProtoUpdateListenerTest {
 
     @Test(expected = RuntimeException.class)
     public void shouldThrowExceptionIfParserFails() {
-        ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper);
+        ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper, errorConfig);
 
         HashMap<String, DescriptorAndTypeName> descriptorsMap = new HashMap<String, DescriptorAndTypeName>() {{
             put(String.format("%s.%s", TestKeyBQ.class.getPackage(), TestKeyBQ.class.getName()), new DescriptorAndTypeName(TestKeyBQ.getDescriptor(), String.format(".%s.%s", TestKeyBQ.getDescriptor().getFile().getPackage(), TestKeyBQ.getDescriptor().getName())));
@@ -95,7 +99,7 @@ public class ProtoUpdateListenerTest {
 
     @Test(expected = RuntimeException.class)
     public void shouldThrowExceptionIfConverterFails() throws IOException {
-        ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper);
+        ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper, errorConfig);
         ProtoField returnedProtoField = new ProtoField();
         returnedProtoField.addField(new ProtoField("order_number", 1));
         returnedProtoField.addField(new ProtoField("order_url", 2));
@@ -119,7 +123,7 @@ public class ProtoUpdateListenerTest {
 
     @Test(expected = RuntimeException.class)
     public void shouldThrowExceptionIfDatasetLocationIsChanged() throws IOException {
-        ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper);
+        ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper, errorConfig);
 
         ProtoField returnedProtoField = new ProtoField();
         returnedProtoField.addField(new ProtoField("order_number", 1));
@@ -144,7 +148,7 @@ public class ProtoUpdateListenerTest {
 
     @Test
     public void shouldNotNamespaceMetadataFieldsWhenNamespaceIsNotProvided() throws IOException {
-        ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper);
+        ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper, errorConfig);
 
         ProtoField returnedProtoField = new ProtoField();
         returnedProtoField.addField(new ProtoField("order_number", 1));
@@ -172,7 +176,7 @@ public class ProtoUpdateListenerTest {
     public void shouldNamespaceMetadataFieldsWhenNamespaceIsProvided() throws IOException {
         System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "metadata_ns");
         config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
-        ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper);
+        ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper, errorConfig);
 
         ProtoField returnedProtoField = new ProtoField();
         returnedProtoField.addField(new ProtoField("order_number", 1));
@@ -203,7 +207,7 @@ public class ProtoUpdateListenerTest {
     public void shouldThrowExceptionWhenMetadataNamespaceNameCollidesWithAnyFieldName() throws IOException {
         System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "order_number"); // set field name to an existing column name
         config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
-        ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper);
+        ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper, errorConfig);
 
         ProtoField returnedProtoField = new ProtoField();
         returnedProtoField.addField(new ProtoField("order_number", 1));

@@ -8,16 +8,22 @@ import com.google.protobuf.StringValue;
 import com.gojek.de.stencil.parser.Parser;
 
 import com.google.protobuf.UnknownFieldSet;
+import io.odpf.firehose.config.ErrorConfig;
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.sink.exception.UnknownFieldsException;
 import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProto;
 import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoFile;
 import io.odpf.firehose.sink.objectstorage.proto.NestedKafkaMetadataProto;
+import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.Properties;
 
 import static org.mockito.Mockito.*;
 import static junit.framework.TestCase.assertEquals;
@@ -40,7 +46,12 @@ public class MessageDeSerializerTest {
     @Before
     public void setUp() throws Exception {
         message = new Message(logKey, logMessage, "topic1", 0, 100);
-        deSerializer = new MessageDeSerializer(kafkaMetadataUtils, true, protoParser);
+
+        Properties properties = new Properties();
+        properties.setProperty("OPTIONAL_ERROR_TYPES_ENABLED", ErrorType.UNKNOWN_FIELDS_ERROR.name());
+
+        ErrorConfig errorConfig = ConfigFactory.create(ErrorConfig.class, properties);
+        deSerializer = new MessageDeSerializer(kafkaMetadataUtils, true, protoParser, errorConfig);
     }
 
     @Test
@@ -80,8 +91,37 @@ public class MessageDeSerializerTest {
         deSerializer.deSerialize(emptyMessage);
     }
 
-    @Test(expected = DeserializerException.class)
+    @Test(expected = UnknownFieldsException.class)
     public void shouldThrowExceptionWhenUnknownFieldExist() throws InvalidProtocolBufferException {
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoFile.createFileDescriptor("meta_field");
+        Descriptors.Descriptor nestedDescriptor = fileDescriptor.findMessageTypeByName(NestedKafkaMetadataProto.getTypeName());
+        Descriptors.Descriptor metaDescriptor = fileDescriptor.findMessageTypeByName(KafkaMetadataProto.getTypeName());
+
+        Descriptors.FieldDescriptor fieldDescriptor = nestedDescriptor.findFieldByName("meta_field");
+        DynamicMessage dynamicMessage = DynamicMessage.newBuilder(nestedDescriptor)
+                .setField(fieldDescriptor, DynamicMessage.newBuilder(metaDescriptor)
+                        .setUnknownFields(UnknownFieldSet.newBuilder()
+                                .addField(1, UnknownFieldSet.Field.getDefaultInstance())
+                                .build())
+                        .build())
+                .setUnknownFields(UnknownFieldSet.newBuilder()
+                        .addField(1, UnknownFieldSet.Field.getDefaultInstance())
+                        .addField(2, UnknownFieldSet.Field.getDefaultInstance())
+                        .build())
+                .build();
+
+        when(protoParser.parse(logMessage)).thenReturn(dynamicMessage);
+
+        deSerializer.deSerialize(message);
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenUnknownFieldExistButUnknownFieldErrorTypeIsDisabled() throws InvalidProtocolBufferException {
+        Properties properties = new Properties();
+        properties.setProperty("OPTIONAL_ERROR_TYPES_ENABLED", "");
+        ErrorConfig errorConfig = ConfigFactory.create(ErrorConfig.class, properties);
+        deSerializer = new MessageDeSerializer(kafkaMetadataUtils, true, protoParser, errorConfig);
+
         Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoFile.createFileDescriptor("meta_field");
         Descriptors.Descriptor nestedDescriptor = fileDescriptor.findMessageTypeByName(NestedKafkaMetadataProto.getTypeName());
         Descriptors.Descriptor metaDescriptor = fileDescriptor.findMessageTypeByName(KafkaMetadataProto.getTypeName());

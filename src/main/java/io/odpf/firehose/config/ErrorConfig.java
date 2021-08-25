@@ -10,6 +10,12 @@ import java.util.Set;
 public interface ErrorConfig extends Config, Mutable {
 
     @ConverterClass(SetErrorTypeConverter.class)
+    @Key("OPTIONAL_ERROR_TYPES_ENABLED")
+    @Separator(",")
+    @DefaultValue("")
+    Set<ErrorType> getOptionalErrorTypesEnabled();
+
+    @ConverterClass(SetErrorTypeConverter.class)
     @Key("ERROR_TYPES_FOR_DLQ")
     @Separator(",")
     @DefaultValue("")

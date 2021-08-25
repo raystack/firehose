@@ -8,6 +8,7 @@ import com.google.cloud.bigquery.Field;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.odpf.firehose.config.BigQuerySinkConfig;
+import io.odpf.firehose.config.ErrorConfig;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverter;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.firehose.sink.bigquery.converter.RowMapper;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateListener {
     private final BigQuerySinkConfig config;
+    private final ErrorConfig errorConfig;
     private final ProtoMapper protoMapper = new ProtoMapper();
     private final ProtoFieldParser protoMappingParser = new ProtoFieldParser();
     private final BigQueryClient bqClient;
@@ -37,9 +39,10 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
     @Setter
     private Parser stencilParser;
 
-    public ProtoUpdateListener(BigQuerySinkConfig config, BigQueryClient bqClient, MessageRecordConverterCache messageRecordConverterCache) {
+    public ProtoUpdateListener(BigQuerySinkConfig config, BigQueryClient bqClient, MessageRecordConverterCache messageRecordConverterCache, ErrorConfig errorConfig) {
         super(config.getInputSchemaProtoClass());
         this.config = config;
+        this.errorConfig = errorConfig;
         this.bqClient = bqClient;
         this.messageRecordConverterCache = messageRecordConverterCache;
     }
@@ -108,7 +111,7 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
         Properties columnMapping = mapToProperties(m);
         messageRecordConverterCache.setMessageRecordConverter(
                 new MessageRecordConverter(new RowMapper(columnMapping),
-                        stencilParser, config));
+                        stencilParser, config, errorConfig));
     }
 
     public void close() throws IOException {

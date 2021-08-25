@@ -9,6 +9,7 @@ import com.google.cloud.TransportOptions;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import io.odpf.firehose.config.BigQuerySinkConfig;
+import io.odpf.firehose.config.ErrorConfig;
 import io.odpf.firehose.config.enums.SinkType;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
@@ -34,7 +35,8 @@ public class BigQuerySinkFactory implements SinkFactory {
         try {
             BigQueryClient bigQueryClient = new BigQueryClient(sinkConfig, new Instrumentation(statsDReporter, BigQueryClient.class));
             MessageRecordConverterCache recordConverterWrapper = new MessageRecordConverterCache();
-            ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(sinkConfig, bigQueryClient, recordConverterWrapper);
+            ErrorConfig errorConfig = ConfigFactory.create(ErrorConfig.class, env);
+            ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(sinkConfig, bigQueryClient, recordConverterWrapper, errorConfig);
             StencilClient client = sinkConfig.isSchemaRegistryStencilEnable()
                     ? StencilClientFactory.getClient(sinkConfig.getSchemaRegistryStencilUrls(), env, statsDReporter.getClient(), protoUpdateListener)
                     : StencilClientFactory.getClient();

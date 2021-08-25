@@ -3,7 +3,9 @@ package io.odpf.firehose.sink.objectstorage.message;
 import com.gojek.de.stencil.parser.Parser;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
+import io.odpf.firehose.config.ErrorConfig;
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.sink.exception.EmptyMessageException;
 import io.odpf.firehose.sink.exception.UnknownFieldsException;
@@ -17,6 +19,7 @@ public class MessageDeSerializer {
     private final KafkaMetadataUtils metadataUtils;
     private final boolean doWriteKafkaMetadata;
     private final Parser protoParser;
+    private final ErrorConfig errorConfig;
 
     public Record deSerialize(Message message) throws DeserializerException {
         try {
@@ -25,7 +28,8 @@ public class MessageDeSerializer {
             }
             DynamicMessage dynamicMessage = protoParser.parse(message.getLogMessage());
 
-            if (hasUnknownField(dynamicMessage)) {
+            if (errorConfig.getOptionalErrorTypesEnabled().contains(ErrorType.UNKNOWN_FIELDS_ERROR)
+                    && hasUnknownField(dynamicMessage)) {
                 throw new UnknownFieldsException(dynamicMessage);
             }
 
