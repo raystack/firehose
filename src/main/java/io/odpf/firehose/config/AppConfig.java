@@ -80,11 +80,11 @@ public interface AppConfig extends Config {
     @DefaultValue("60000")
     Integer getRetryExponentialBackoffMaxMs();
 
-    @Key("FAIL_ON_MAX_RETRY_ATTEMPTS")
+    @Key("RETRY_FAIL_AFTER_MAX_ATTEMPTS_ENABLE")
     @DefaultValue("true")
-    boolean getFailOnMaxRetryAttempts();
+    boolean getRetryFailAfterMaxAttemptsEnable();
 
-    @Key("SINK_MAX_RETRY_ATTEMPTS")
+    @Key("RETRY_MAX_ATTEMPTS")
     @DefaultValue("1")
-    Integer getSinkMaxRetryAttempts();
+    Integer getRetryMaxAttempts();
 }

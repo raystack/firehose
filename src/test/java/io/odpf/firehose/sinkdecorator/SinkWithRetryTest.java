@@ -58,8 +58,8 @@ public class SinkWithRetryTest {
     @Before
     public void setUp() {
         initMocks(this);
-        when(appConfig.getSinkMaxRetryAttempts()).thenReturn(3);
-        when(appConfig.getFailOnMaxRetryAttempts()).thenReturn(false);
+        when(appConfig.getRetryMaxAttempts()).thenReturn(3);
+        when(appConfig.getRetryFailAfterMaxAttemptsEnable()).thenReturn(false);
         errorHandler = new ErrorHandler(ConfigFactory.create(ErrorConfig.class, new HashMap<String, String>() {{
             put("ERROR_TYPES_FOR_RETRY", ErrorType.DESERIALIZATION_ERROR.name());
         }}));
@@ -111,7 +111,7 @@ public class SinkWithRetryTest {
 
     @Test
     public void shouldRetryUntilSuccess() throws IOException, DeserializerException {
-        when(appConfig.getSinkMaxRetryAttempts()).thenReturn(Integer.MAX_VALUE);
+        when(appConfig.getRetryMaxAttempts()).thenReturn(Integer.MAX_VALUE);
 
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
@@ -129,7 +129,7 @@ public class SinkWithRetryTest {
 
     @Test
     public void shouldLogRetriesMessages() throws IOException, DeserializerException {
-        when(appConfig.getSinkMaxRetryAttempts()).thenReturn(10);
+        when(appConfig.getRetryMaxAttempts()).thenReturn(10);
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
         messages.add(message);
@@ -152,7 +152,7 @@ public class SinkWithRetryTest {
 
     @Test
     public void shouldAddInstrumentationForRetry() throws Exception {
-        when(appConfig.getSinkMaxRetryAttempts()).thenReturn(3);
+        when(appConfig.getRetryMaxAttempts()).thenReturn(3);
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
         messages.add(message);
@@ -170,7 +170,7 @@ public class SinkWithRetryTest {
 
     @Test
     public void shouldAddInstrumentationForRetryFailures() throws Exception {
-        when(appConfig.getSinkMaxRetryAttempts()).thenReturn(1);
+        when(appConfig.getRetryMaxAttempts()).thenReturn(1);
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
         messages.add(message);
@@ -189,8 +189,8 @@ public class SinkWithRetryTest {
 
     @Test(expected = IOException.class)
     public void shouldThrowIOExceptionWhenExceedMaximumRetryAttempts() throws IOException {
-        when(appConfig.getSinkMaxRetryAttempts()).thenReturn(4);
-        when(appConfig.getFailOnMaxRetryAttempts()).thenReturn(true);
+        when(appConfig.getRetryMaxAttempts()).thenReturn(4);
+        when(appConfig.getRetryFailAfterMaxAttemptsEnable()).thenReturn(true);
 
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);

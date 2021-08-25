@@ -60,7 +60,7 @@ public class SinkWithRetry extends SinkDecorator {
         Map<Boolean, List<Message>> splitLists = errorHandler.split(messages, ErrorScope.RETRY);
 
         List<Message> returnedMessages = doRetry(splitLists.get(Boolean.TRUE));
-        if (!returnedMessages.isEmpty() && appConfig.getFailOnMaxRetryAttempts()) {
+        if (!returnedMessages.isEmpty() && appConfig.getRetryFailAfterMaxAttemptsEnable()) {
             throw new IOException("exceeded maximum Sink retry attempts");
         }
 
@@ -70,7 +70,7 @@ public class SinkWithRetry extends SinkDecorator {
 
     private List<Message> doRetry(List<Message> messages) throws IOException {
         List<Message> retryMessages = new LinkedList<>(messages);
-        instrumentation.logInfo("Maximum retry attempts: {}", appConfig.getSinkMaxRetryAttempts());
+        instrumentation.logInfo("Maximum retry attempts: {}", appConfig.getRetryMaxAttempts());
         retryMessages.forEach(m -> {
             if (m.getErrorInfo() == null) {
                 m.setErrorInfo(new ErrorInfo(null, ErrorType.DEFAULT_ERROR));
@@ -79,8 +79,8 @@ public class SinkWithRetry extends SinkDecorator {
         });
 
         int attemptCount = 1;
-        while ((attemptCount <= appConfig.getSinkMaxRetryAttempts() && !retryMessages.isEmpty())
-               || (appConfig.getSinkMaxRetryAttempts() == Integer.MAX_VALUE && !retryMessages.isEmpty())) {
+        while ((attemptCount <= appConfig.getRetryMaxAttempts() && !retryMessages.isEmpty())
+               || (appConfig.getRetryMaxAttempts() == Integer.MAX_VALUE && !retryMessages.isEmpty())) {
             instrumentation.incrementCounter(RETRY_TOTAL);
             instrumentation.logInfo("Retrying messages attempt count: {}, Number of messages: {}", attemptCount, messages.size());
 

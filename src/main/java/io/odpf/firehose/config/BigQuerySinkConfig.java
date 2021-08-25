@@ -40,36 +40,23 @@ public interface BigQuerySinkConfig extends AppConfig {
     Boolean isRowInsertIdEnabled();
 
     @DefaultValue("-1")
-    @Key("SINK_BIGQUERY_CLIENT_READ_TIMEOUT")
-    String getBqClientReadTimeout();
+    @Key("SINK_BIGQUERY_CLIENT_READ_TIMEOUT_MS")
+    String getBqClientReadTimeoutMS();
 
     @DefaultValue("-1")
-    @Key("SINK_BIGQUERY_CLIENT_CONNECT_TIMEOUT")
-    String getBqClientConnectTimeout();
+    @Key("SINK_BIGQUERY_CLIENT_CONNECT_TIMEOUT_MS")
+    String getBqClientConnectTimeoutMS();
 
     @DefaultValue("-1")
-    @Key("SINK_BIGQUERY_TABLE_PARTITION_EXPIRY_MILLIS")
-    Long getBigQueryTablePartitionExpiryMillis();
+    @Key("SINK_BIGQUERY_TABLE_PARTITION_EXPIRY_MS")
+    Long getBigQueryTablePartitionExpiryMS();
 
     @DefaultValue("US")
     @Key("SINK_BIGQUERY_DATASET_LOCATION")
     String getBigQueryDatasetLocation();
 
-
-    @DefaultValue("false")
-    @Key("SINK_BIGQUERY_FAIL_ON_UNKNOWN_FIELDS")
-    Boolean getFailOnUnknownFields();
-
     @Key("SINK_BIGQUERY_METADATA_NAMESPACE")
     @DefaultValue("")
     String getBqMetadataNamespace();
 
-    @Key("SINK_BIGQUERY_FAIL_ON_NULL_MESSAGE")
-    @DefaultValue("false")
-    Boolean getFailOnNullMessage();
-
-
-    @Key("SINK_BIGQUERY_FAIL_ON_DESERIALIZE_ERROR")
-    @DefaultValue("false")
-    Boolean getFailOnDeserializeError();
 }

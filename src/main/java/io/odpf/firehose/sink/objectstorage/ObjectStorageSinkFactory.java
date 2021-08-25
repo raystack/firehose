@@ -76,7 +76,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
 
 
         List<WriterPolicy> writerPolicies = new ArrayList<>();
-        writerPolicies.add(new TimeBasedRotatingPolicy(sinkConfig.getFileRotationDurationMillis()));
+        writerPolicies.add(new TimeBasedRotatingPolicy(sinkConfig.getFileRotationDurationMS()));
         writerPolicies.add(new SizeBasedRotatingPolicy(sinkConfig.getFileRotationMaxSizeBytes()));
 
         Path localBasePath = Paths.get(sinkConfig.getLocalDirectory());
