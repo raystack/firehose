@@ -33,8 +33,8 @@ public class GCSObjectStorage implements ObjectStorage {
                 .setProjectId(gcsConfig.getGCloudProjectID())
                 .setCredentials(GoogleCredentials.fromStream(new FileInputStream(gcsConfig.getGCSCredentialPath())))
                 .setRetrySettings(RetrySettings.newBuilder()
-                        .setMaxAttempts(gcsConfig.getGCSMaxRetryAttempts())
-                        .setTotalTimeout(Duration.of(gcsConfig.getGCSRetryTimeoutDurationMillis(), ChronoUnit.MILLIS))
+                        .setMaxAttempts(gcsConfig.getGCSRetryExponentialBackoffMaxAttempts())
+                        .setTotalTimeout(Duration.of(gcsConfig.getGCSRetryExponentialBackoffTimeoutDurationMillis(), ChronoUnit.MILLIS))
                         .build())
                 .build().getService();
     }
