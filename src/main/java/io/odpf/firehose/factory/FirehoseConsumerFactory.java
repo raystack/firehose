@@ -51,6 +51,7 @@ import org.aeonbits.owner.ConfigFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -81,8 +82,8 @@ public class FirehoseConsumerFactory {
         instrumentation = new Instrumentation(this.statsDReporter, FirehoseConsumerFactory.class);
 
         String additionalConsumerConfig = String.format(""
-                                                        + "\n\tEnable Async Commit: %s"
-                                                        + "\n\tCommit Only Current Partition: %s",
+                        + "\n\tEnable Async Commit: %s"
+                        + "\n\tCommit Only Current Partition: %s",
                 this.kafkaConsumerConfig.isSourceKafkaAsyncCommitEnable(),
                 this.kafkaConsumerConfig.isSourceKafkaCommitOnlyCurrentPartitionsEnable());
         instrumentation.logDebug(additionalConsumerConfig);
@@ -190,7 +191,7 @@ public class FirehoseConsumerFactory {
     public Sink withDlq(Sink sink, Tracer tracer, ErrorHandler errorHandler) {
         DlqConfig dlqConfig = ConfigFactory.create(DlqConfig.class, config);
         DlqWriterFactory dlqWriterFactory = new DlqWriterFactory();
-        DlqWriter dlqWriter = dlqWriterFactory.create(config, statsDReporter, tracer);
+        DlqWriter dlqWriter = dlqWriterFactory.create(new HashMap<>(config), statsDReporter, tracer);
         BackOffProvider backOffProvider = getBackOffProvider();
         return SinkWithDlq.withInstrumentationFactory(
                 sink,

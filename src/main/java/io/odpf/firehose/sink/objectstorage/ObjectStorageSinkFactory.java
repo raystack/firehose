@@ -28,6 +28,7 @@ import org.aeonbits.owner.ConfigFactory;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +40,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
 
         LocalStorage localStorage = getLocalFileWriterWrapper(sinkConfig, stencilClient, statsDReporter);
 
-        ObjectStorage sinkObjectStorage = createSinkObjectStorage(sinkConfig, configuration);
+        ObjectStorage sinkObjectStorage = createSinkObjectStorage(sinkConfig, new HashMap<>(configuration));
 
         WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, sinkObjectStorage, statsDReporter);
         MessageDeSerializer messageDeSerializer = getMessageDeSerializer(sinkConfig, stencilClient);
