@@ -64,7 +64,7 @@ public class MessageRecordConverter {
         try {
             DynamicMessage dynamicMessage = parser.parse(message.getLogMessage());
 
-            if (ProtoUtils.hasUnknownField(dynamicMessage)) {
+            if (!config.getInputSchemaProtoAllowUnknownFieldsEnable() && ProtoUtils.hasUnknownField(dynamicMessage)) {
                 log.info("unknown fields found at offset: {}, partition: {}, message: {}", message.getOffset(), message.getPartition(), message);
                 throw new UnknownFieldsException(dynamicMessage);
             }

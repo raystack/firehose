@@ -87,4 +87,8 @@ public interface AppConfig extends Config {
     @Key("RETRY_MAX_ATTEMPTS")
     @DefaultValue("1")
     Integer getRetryMaxAttempts();
+
+    @Key("INPUT_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE")
+    @DefaultValue("true")
+    boolean getInputSchemaProtoAllowUnknownFieldsEnable();
 }

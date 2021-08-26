@@ -1,7 +1,6 @@
 package io.odpf.firehose.sink.objectstorage;
 
 import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.de.stencil.parser.ProtoParser;
 import com.google.protobuf.Descriptors;
 import io.odpf.firehose.config.ObjectStorageSinkConfig;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -11,7 +10,6 @@ import io.odpf.firehose.objectstorage.ObjectStorageFactory;
 import io.odpf.firehose.objectstorage.ObjectStorageType;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.SinkFactory;
-import io.odpf.firehose.sink.objectstorage.message.KafkaMetadataUtils;
 import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
 import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProto;
 import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoFile;
@@ -43,7 +41,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
         ObjectStorage sinkObjectStorage = createSinkObjectStorage(sinkConfig, new HashMap<>(configuration));
 
         WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, sinkObjectStorage, statsDReporter);
-        MessageDeSerializer messageDeSerializer = getMessageDeSerializer(sinkConfig, stencilClient);
+        MessageDeSerializer messageDeSerializer = new MessageDeSerializer(sinkConfig, stencilClient);
 
         return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer);
     }
@@ -54,12 +52,6 @@ public class ObjectStorageSinkFactory implements SinkFactory {
                 ? fileDescriptor.findMessageTypeByName(KafkaMetadataProto.getTypeName())
                 : fileDescriptor.findMessageTypeByName(NestedKafkaMetadataProto.getTypeName());
 
-    }
-
-    private MessageDeSerializer getMessageDeSerializer(ObjectStorageSinkConfig sinkConfig, StencilClient stencilClient) {
-        ProtoParser protoParser = new ProtoParser(stencilClient, sinkConfig.getInputSchemaProtoClass());
-        KafkaMetadataUtils kafkaMetadataUtils = new KafkaMetadataUtils(sinkConfig.getKafkaMetadataColumnName());
-        return new MessageDeSerializer(kafkaMetadataUtils, sinkConfig.getWriteKafkaMetadata(), protoParser);
     }
 
     private LocalStorage getLocalFileWriterWrapper(ObjectStorageSinkConfig sinkConfig, StencilClient stencilClient, StatsDReporter statsDReporter) {

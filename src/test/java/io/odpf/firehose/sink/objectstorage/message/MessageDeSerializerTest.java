@@ -8,11 +8,13 @@ import com.google.protobuf.StringValue;
 import com.gojek.de.stencil.parser.Parser;
 
 import com.google.protobuf.UnknownFieldSet;
+import io.odpf.firehose.config.ObjectStorageSinkConfig;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProto;
 import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoFile;
 import io.odpf.firehose.sink.objectstorage.proto.NestedKafkaMetadataProto;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +22,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.mockito.Mockito.*;
-import static junit.framework.TestCase.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageDeSerializerTest {
@@ -37,10 +38,14 @@ public class MessageDeSerializerTest {
     private final byte[] logMessage = "msg".getBytes();
     private Message message;
 
+    @Mock
+    private ObjectStorageSinkConfig sinkConfig;
+
     @Before
     public void setUp() throws Exception {
         message = new Message(logKey, logMessage, "topic1", 0, 100);
-        deSerializer = new MessageDeSerializer(kafkaMetadataUtils, true, protoParser);
+        deSerializer = new MessageDeSerializer(kafkaMetadataUtils, protoParser, sinkConfig);
+        when(sinkConfig.getWriteKafkaMetadata()).thenReturn(true);
     }
 
     @Test
@@ -53,8 +58,8 @@ public class MessageDeSerializerTest {
 
         Record record = deSerializer.deSerialize(message);
 
-        assertEquals(record.getMetadata(), metadataMessage);
-        assertEquals(record.getMessage(), dynamicMessage);
+        Assert.assertEquals(metadataMessage, record.getMetadata());
+        Assert.assertEquals(dynamicMessage, record.getMessage());
 
         verify(protoParser, times(1)).parse(logMessage);
         verify(kafkaMetadataUtils, times(1)).createKafkaMetadata(message);
@@ -100,7 +105,33 @@ public class MessageDeSerializerTest {
                 .build();
 
         when(protoParser.parse(logMessage)).thenReturn(dynamicMessage);
-
+        when(sinkConfig.getInputSchemaProtoAllowUnknownFieldsEnable()).thenReturn(false);
         deSerializer.deSerialize(message);
+    }
+
+    @Test
+    public void shouldNotThrowExceptionWhenUnknownFieldExistWhenConfigIsNotSet() throws InvalidProtocolBufferException {
+        DynamicMessage dynamicMessage = DynamicMessage.newBuilder(StringValue.of("abc"))
+                .setUnknownFields(UnknownFieldSet.newBuilder()
+                        .addField(1, UnknownFieldSet.Field.getDefaultInstance())
+                        .addField(2, UnknownFieldSet.Field.getDefaultInstance())
+                        .build()).build();
+        DynamicMessage metadataMessage = DynamicMessage.newBuilder(Int64Value.of(112)).build();
+        when(sinkConfig.getInputSchemaProtoAllowUnknownFieldsEnable()).thenReturn(true);
+
+        when(protoParser.parse(logMessage)).thenReturn(dynamicMessage);
+        when(kafkaMetadataUtils.createKafkaMetadata(message)).thenReturn(metadataMessage);
+
+        Record record = deSerializer.deSerialize(message);
+
+        Assert.assertEquals(dynamicMessage, record.getMessage());
+        Assert.assertEquals(metadataMessage, record.getMetadata());
+
+        Assert.assertEquals((UnknownFieldSet.newBuilder()
+                .addField(1, UnknownFieldSet.Field.getDefaultInstance())
+                .addField(2, UnknownFieldSet.Field.getDefaultInstance())
+                .build()), record.getMessage().getUnknownFields());
+        verify(protoParser, times(1)).parse(logMessage);
+        verify(kafkaMetadataUtils, times(1)).createKafkaMetadata(message);
     }
 }
