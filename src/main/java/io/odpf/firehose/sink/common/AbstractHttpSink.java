@@ -8,6 +8,7 @@ import io.odpf.firehose.exception.NeedToRetry;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import com.gojek.de.stencil.client.StencilClient;
+import io.odpf.firehose.sink.http.SerializableHttpResponse;
 import joptsimple.internal.Strings;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -50,7 +51,8 @@ public abstract class AbstractHttpSink extends AbstractSink {
                 List<String> contentStringList = null;
                 getInstrumentation().logInfo("Response Status: {}", statusCode(response));
                 if (shouldLogResponse(response)) {
-                    printResponse(response);
+                    SerializableHttpResponse serializableHttpResponse = new SerializableHttpResponse(response);
+                    getInstrumentation().logDebug("Response Body: {}", serializableHttpResponse);
                 }
                 if (shouldLogRequest(response)) {
                     contentStringList = readContent(httpRequest);
@@ -124,14 +126,6 @@ public abstract class AbstractHttpSink extends AbstractSink {
                 Arrays.asList(httpRequest.getAllHeaders()),
                 Strings.join(contentStringList, "\n"));
         getInstrumentation().logInfo(entireRequest);
-    }
-
-    private void printResponse(HttpResponse response) throws IOException {
-        InputStream inputStream = response.getEntity().getContent();
-        String entireRequest = String.format("Response Body: %s",
-                Strings.join(readContent(inputStream), "\n"));
-        getInstrumentation().logDebug(entireRequest);
-        inputStream.reset();
     }
 
     protected abstract List<String> readContent(HttpEntityEnclosingRequestBase httpRequest) throws IOException;
