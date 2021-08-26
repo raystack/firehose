@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.1.1](https://github.com/odpf/firehose/releases/tag/v0.1.1) (2021-08-16)
+
+### Chore
+
+- Enable pool connections and configurations metrics for JDBC sink 
+
 ## [0.1.0](https://github.com/odpf/firehose/releases/tag/v0.1.0) (2021-06-21)
 
 ### Features

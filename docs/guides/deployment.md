@@ -27,7 +27,7 @@ $ docker run -e SOURCE_KAFKA_BROKERS=127.0.0.1:6667 -e SOURCE_KAFKA_CONSUMER_GRO
 
 ## Deploy on Kubernetes
 
-Kubernetes is an open-source container-orchestration system for automating computer application deployment, scaling, and management. Follow [this guide](https://kubernetes.io/docs/setup/) on how to set up and configure a Kubernetes cluster. 
+Kubernetes is an open-source container-orchestration system for automating computer application deployment, scaling, and management. Follow [this guide](https://kubernetes.io/docs/setup/) on how to set up and configure a Kubernetes cluster.
 
 Then create a Firehose deployment using the Helm chart available [here](https://github.com/odpf/charts/tree/main/stable/firehose). The Helm chart Deployment also includes Telegraf container which works as a metrics aggregator and pushes StatsD metrics to InfluxDB. Make sure to configure all Kafka, sink and filter parameters in `values.yaml` file before deploying the Helm chart.
 
@@ -48,7 +48,7 @@ $ ./gradlew clean build
 $ cat env/local.properties
 
 # Run the Firehose
-$ ./gradlew runConsumer 
+$ ./gradlew runConsumer
 ```
 
 **Note:** Sample configuration for other sinks along with some advanced configurations can be found [here](https://github.com/odpf/firehose/blob/main/docs/reference/configuration.md)

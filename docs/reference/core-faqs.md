@@ -49,7 +49,8 @@ Firehose provides various Kafka client configurations. Refer [Generic Configurat
 
 ## What all data formats are supported ?
 
-Only Protobuf is supported by the Stencil client, the schema registry used by Firehose. Nevertheless, support for JSON and Avro is planned to be included in a future Firehose release.
+Elasticsearch and MongoDB sink support both JSON and Protobuf as the input schema.
+For other sinks, we currently support only Protobuf. Support for JSON and Avro is planned and incorporated in our roadmap. Please refer to our Roadmap section for more details.
 
 Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data. Data streams on Kafka topics are bound to a Protobuf schema.
 
@@ -146,8 +147,9 @@ No, all fields from the input key/message will be sent by Firehose to the Sink. 
 
 Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data. Data streams on Kafka topics are bound to a Protobuf schema. Protobuf is much more lightweight that other schema formats like JSON, since it encodes the keys in the message to integers.
 
-Firehose uses the Stencil client which doesn't support any other schema format other than Protobuf. Nevertheless, support for JSON and Avro is planned to be included in a future Firehose release. Do follow the Roadmap section to know about future support for other schema formats
+Elasticsearch and MongoDB sink support both JSON and Protobuf as the input schema.
 
+For other sinks, we currently support only Protobuf. Support for JSON and Avro is planned and incorporated in our roadmap. Please refer to our Roadmap section for more details.
 ## Will I have any data loss if my Firehose fails ?
 
 After a batch of messages is sent successfully, Firehose commits the offset before the consumer polls another batch from Kafka. Thus, failed messages are not committed.

@@ -4,11 +4,11 @@
 
 The following shell variables need to be set in the environment or in `env/local.properties` file in order to apply filters to incoming messages in Firehose
 
-| **Variable Name**  | **Description**  |
+| **Variable Name** | **Description** |
 | :--- | :--- |
-| `FILTER_JEXL_DATA_SOURCE` | `key`/`message`/`none`depending on where to apply filter  |
-| `FILTER_JEXL_EXPRESSION`  |  JEXL filter expression   |
-| `FILTER_JEXL_SCHEMA_PROTO_CLASS` | The fully qualified name of the proto schema so that the key/message in Kafka could be parsed.  |
+| `FILTER_JEXL_DATA_SOURCE` | `key`/`message`/`none`depending on where to apply filter |
+| `FILTER_JEXL_EXPRESSION` | JEXL filter expression |
+| `FILTER_JEXL_SCHEMA_PROTO_CLASS` | The fully qualified name of the proto schema so that the key/message in Kafka could be parsed. |
 
 Example:
 
@@ -25,21 +25,9 @@ Filter expressions are JEXL expressions used to filter messages just after readi
 ### Rules to write expressions:
 
 * All the expressions are like a piece of Java code. Follow rules for every data type, as like writing a Java code. Parenthesis `()`can be used to combine multiple arithmetic or logical expressions into a single JEXL expression, which evaluates to a boolean value ie. `true` or `false`
-
-
-
 * Start with the object reference of the schema proto class of the key/message on which you wish to apply the filter. Make sure to change the first letter of the proto class to lower case.                                                                                                                                                               eg - `sampleLogMessage`  \(if `FILTER_JEXL_SCHEMA_PROTO_CLASS=com.xyz.SampleLogMessage` \)
-
-
-
 * Access a particular field by calling the getter method on the proto object. The name of the getter method will be the field name, changed to camel-case, with all underscore \( `_`\) characters removed, and prefixed by the string `get`                                                                                                                                    eg - if the field name is `vehicle_type` , then the getter method name would be `getVehicleType()`
-
-
-
 * Access nested fields using linked invocations of the getter methods, `.`  and repeatedly call the getter method for the every level of nested field.                                                                                                                            eg - `sampleLogKey.getEventTimestamp().getSeconds()`    
-
-
-
 * You can combine multiple fields of the key/message protobuf in a single JEXL expression and perform any arithmetic or logical operations between them.                                                                                                                                    e.g - `sampleKey.getTime().getSeconds() * 1000 + sampleKey.getTime().getMillis() > 22809`
 
 ## Syntax
@@ -168,8 +156,6 @@ Filter expressions are JEXL expressions used to filter messages just after readi
   </tbody>
 </table>
 
-
-
 ### Operators
 
 In addition to the common arithmetic and logical operations, the following operators are also available.
@@ -241,7 +227,7 @@ In addition to the common arithmetic and logical operations, the following opera
         <p>The usual ternary conditional operator <code>condition ? if_true : if_false</code> operator
           can be used as well as the abbreviation <code>value ?: if_false</code> which
           returns the <code>value</code> if its evaluation is defined, non-null and
-          non-false, e.g. <code>val1 ? val1 : val2</code> and <code>val1 ?: val2 </code>are
+          non-false, e.g. <code>val1 ? val1 : val2</code> and <code>val1 ?: val2</code> are
           equivalent.</p>
         <p><b>NOTE:</b> The condition will evaluate to <code>false</code> when it refers
           to an undefined variable or <code>null</code> for all <code>JexlEngine</code> flag
@@ -308,7 +294,7 @@ In addition to the common arithmetic and logical operations, the following opera
       <td style="text-align:left">Starts With<code>=^</code>
       </td>
       <td style="text-align:left">The <code>=^</code> operator is a short-hand for the &apos;startsWith&apos;
-        method. For example, <code>&quot;abcdef&quot; =^ &quot;abc&quot; </code>returns <code>true</code>.
+        method. For example, <code>&quot;abcdef&quot; =^ &quot;abc&quot;</code> returns <code>true</code>.
         Note that through duck-typing, user classes exposing a public &apos;startsWith&apos;
         method will allow their instances to behave as left-hand side operands
         of this operator.</td>
@@ -324,7 +310,7 @@ In addition to the common arithmetic and logical operations, the following opera
       <td style="text-align:left">Ends With<code>=$</code>
       </td>
       <td style="text-align:left">The <code>=$</code> operator is a short-hand for the &apos;endsWith&apos;
-        method. For example, <code>&quot;abcdef&quot; =$ &quot;def&quot; </code>returns <code>true</code>.
+        method. For example, <code>&quot;abcdef&quot; =$ &quot;def&quot;</code> returns <code>true</code>.
         Note that through duck-typing, user classes exposing an &apos;endsWith&apos;
         method will allow their instances to behave as left-hand side operands
         of this operator.</td>
