@@ -20,11 +20,11 @@ public interface GCSConfig extends Config {
     @Key("${GCS_TYPE}_GCS_CREDENTIAL_PATH")
     String getGCSCredentialPath();
 
-    @Key("${GCS_TYPE}_GCS_RETRY_EXPONENTIAL_BACKOFF_MAX_ATTEMPTS")
+    @Key("${GCS_TYPE}_GCS_RETRY_MAX_ATTEMPTS")
     @DefaultValue("10")
-    Integer getGCSRetryExponentialBackoffMaxAttempts();
+    Integer getGCSRetryMaxAttempts();
 
-    @Key("${GCS_TYPE}_GCS_RETRY_EXPONENTIAL_BACKOFF_TIMEOUT_DURATION_MS")
-    @DefaultValue("5000")
-    Long getGCSRetryExponentialBackoffTimeoutDurationMillis();
+    @Key("${GCS_TYPE}_GCS_RETRY_TIMEOUT_DURATION_MS")
+    @DefaultValue("12000")
+    Long getGCSRetryTimeoutDurationMillis();
 }
