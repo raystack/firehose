@@ -1,5 +1,6 @@
 package io.odpf.firehose.objectstorage.gcs;
 
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
@@ -13,6 +14,7 @@ import io.odpf.firehose.objectstorage.gcs.error.GCSErrorType;
 import io.odpf.firehose.sink.objectstorage.writer.remote.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.threeten.bp.Duration;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -26,9 +28,21 @@ public class GCSObjectStorage implements ObjectStorage {
 
     public GCSObjectStorage(GCSConfig gcsConfig) throws IOException {
         this.gcsConfig = gcsConfig;
+        RetrySettings retrySettings = RetrySettings.newBuilder()
+                .setMaxAttempts(gcsConfig.getGCSRetryMaxAttempts())
+                .setInitialRetryDelay(Duration.ofMillis(gcsConfig.getGCSRetryInitialDelayMS()))
+                .setMaxRetryDelay(Duration.ofMillis(gcsConfig.getGCSRetryMaxDelayMS()))
+                .setRetryDelayMultiplier(gcsConfig.getGCSRetryDelayMultiplier())
+                .setTotalTimeout(Duration.ofMillis(gcsConfig.getGCSRetryTotalTimeoutMS()))
+                .setInitialRpcTimeout(Duration.ofMillis(gcsConfig.getGCSRetryInitialRPCTimeoutMS()))
+                .setRpcTimeoutMultiplier(gcsConfig.getGCSRetryRPCTimeoutMultiplier())
+                .setMaxRpcTimeout(Duration.ofMillis(gcsConfig.getGCSRetryRPCMaxTimeoutMS()))
+                .build();
+        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(gcsConfig.getGCSCredentialPath()));
         this.storage = StorageOptions.newBuilder()
                 .setProjectId(gcsConfig.getGCloudProjectID())
-                .setCredentials(GoogleCredentials.fromStream(new FileInputStream(gcsConfig.getGCSCredentialPath())))
+                .setCredentials(credentials)
+                .setRetrySettings(retrySettings)
                 .build().getService();
     }
 
