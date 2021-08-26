@@ -232,6 +232,7 @@ public class MessageRecordConverterTest {
 
     @Test
     public void shouldReturnInvalidRecordsWhenUnknownFieldsFound() throws InvalidProtocolBufferException {
+        System.setProperty("INPUT_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE", "false");
         Parser mockParser = mock(Parser.class);
 
         OffsetInfo record1Offset = new OffsetInfo("topic1", 1, 101, Instant.now().toEpochMilli());
@@ -252,5 +253,31 @@ public class MessageRecordConverterTest {
         Records records = recordConverter.convert(messages, now);
         consumerRecord.setErrorInfo(new ErrorInfo(new UnknownFieldsException(dynamicMessage), ErrorType.UNKNOWN_FIELDS_ERROR));
         assertEquals(consumerRecord, records.getInvalidRecords().get(0).getMessage());
+    }
+
+    @Test
+    public void shouldIgnoreUnknownFieldsIfTheConfigIsSet() throws InvalidProtocolBufferException {
+        System.setProperty("INPUT_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE", "true");
+        Parser mockParser = mock(Parser.class);
+
+        OffsetInfo record1Offset = new OffsetInfo("topic1", 1, 101, Instant.now().toEpochMilli());
+        Message consumerRecord = util.withOffsetInfo(record1Offset).createConsumerRecord("order-1",
+                "order-url-1", "order-details-1");
+
+        DynamicMessage dynamicMessage = DynamicMessage.newBuilder(TestMessageBQ.getDescriptor())
+                .setUnknownFields(UnknownFieldSet.newBuilder()
+                        .addField(1, UnknownFieldSet.Field.getDefaultInstance())
+                        .build())
+                .build();
+        when(mockParser.parse(consumerRecord.getLogMessage())).thenReturn(dynamicMessage);
+
+        recordConverter = new MessageRecordConverter(rowMapper, mockParser,
+                ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));
+
+        List<Message> messages = Collections.singletonList(consumerRecord);
+        Records records = recordConverter.convert(messages, now);
+        assertEquals(1, records.getValidRecords().size());
+        assertEquals(0, records.getInvalidRecords().size());
+        assertEquals(consumerRecord, records.getValidRecords().get(0).getMessage());
     }
 }

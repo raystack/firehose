@@ -58,5 +58,4 @@ public interface BigQuerySinkConfig extends AppConfig {
     @Key("SINK_BIGQUERY_METADATA_NAMESPACE")
     @DefaultValue("")
     String getBqMetadataNamespace();
-
 }
