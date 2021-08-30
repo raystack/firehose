@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * This class have APIs to read from kafka and also provide offset management.
+ * This class has APIs to read from kafka and also provide offset management.
  * There are 2 use cases for this class.
  * 1. FirehoseConsumer:
  * consumerOffsetManager.readMessagesFromKafka(); // Read messages from kafka.
