@@ -129,7 +129,7 @@ test {
 
 jar {
     from {
-        (configurations.runtime).collect {
+        (configurations.runtimeOnly).collect {
             it.isDirectory() ? it : zipTree(it)
         }
     }
