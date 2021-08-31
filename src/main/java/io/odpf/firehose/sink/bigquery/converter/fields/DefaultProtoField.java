@@ -8,7 +8,6 @@ public class DefaultProtoField implements ProtoField {
     private final Descriptors.FieldDescriptor descriptor;
     private final Object fieldValue;
 
-    // handles primitives, repeated field
     @Override
     public Object getValue() {
         return fieldValue;

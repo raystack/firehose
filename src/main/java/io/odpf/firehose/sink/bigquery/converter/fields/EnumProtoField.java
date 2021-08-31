@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
-public class EnumField implements ProtoField {
+public class EnumProtoField implements ProtoField {
     private final Descriptors.FieldDescriptor descriptor;
     private final Object fieldValue;
 

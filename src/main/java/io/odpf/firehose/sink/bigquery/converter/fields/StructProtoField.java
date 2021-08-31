@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.List;
 
 @AllArgsConstructor
-public class StructField implements ProtoField {
+public class StructProtoField implements ProtoField {
     private final Descriptors.FieldDescriptor descriptor;
     private final Object fieldValue;
 

@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.bigquery.converter;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import io.odpf.firehose.sink.bigquery.converter.fields.NestedField;
+import io.odpf.firehose.sink.bigquery.converter.fields.NestedProtoField;
 import io.odpf.firehose.sink.bigquery.converter.fields.ProtoField;
 import io.odpf.firehose.sink.bigquery.models.Constants;
 import lombok.AllArgsConstructor;
@@ -36,23 +36,23 @@ public class RowMapper {
         Map<String, Object> row = new HashMap<>(columnMapping.size());
         columnMapping.forEach((key, value) -> {
             String columnName = value.toString();
-            String column = key.toString();
-            if (column.equals(Constants.Config.RECORD_NAME)) {
+            String columnIndex = key.toString();
+            if (columnIndex.equals(Constants.Config.RECORD_NAME)) {
                 return;
             }
-            int protoIndex = Integer.parseInt(column);
+            int protoIndex = Integer.parseInt(columnIndex);
             Descriptors.FieldDescriptor fieldDesc = descriptorForType.findFieldByNumber(protoIndex);
             if (fieldDesc != null && !message.getField(fieldDesc).toString().isEmpty()) {
                 Object field = message.getField(fieldDesc);
-                ProtoField protoField = FieldFactory.getField(fieldDesc, field);
+                ProtoField protoField = ProtoFieldFactory.getField(fieldDesc, field);
                 Object fieldValue = protoField.getValue();
 
                 if (fieldValue instanceof List) {
-                    addRepeatedFields(row, (String) key, value, (List<Object>) fieldValue);
+                    addRepeatedFields(row, value, (List<Object>) fieldValue);
                     return;
                 }
 
-                if (protoField.getClass().getName().equals(NestedField.class.getName())) {
+                if (protoField.getClass().getName().equals(NestedProtoField.class.getName())) {
                     try {
                         columnName = getNestedColumnName((Properties) value);
                         fieldValue = getMappings((DynamicMessage) field, (Properties) value);
@@ -71,7 +71,7 @@ public class RowMapper {
         return value.get(Constants.Config.RECORD_NAME).toString();
     }
 
-    private void addRepeatedFields(Map<String, Object> row, String key, Object value, List<Object> fieldValue) {
+    private void addRepeatedFields(Map<String, Object> row, Object value, List<Object> fieldValue) {
         if (fieldValue.isEmpty()) {
             return;
         }

@@ -47,7 +47,7 @@ public class BigQuerySink extends AbstractSink {
         if (records.getValidRecords().size() > 0) {
             InsertAllResponse response = insertIntoBQ(records.getValidRecords());
             if (response.hasErrors()) {
-                invalidMessages.addAll(BigQueryResponseParser.parseResponse(records.getValidRecords(), response));
+                invalidMessages.addAll(BigQueryResponseParser.parseResponse(records.getValidRecords(), response, instrumentation));
             }
         }
         return invalidMessages;

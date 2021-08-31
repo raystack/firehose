@@ -92,7 +92,8 @@ public class Metrics {
         CONSUMER,
         SINK,
         DLQ,
-        IGNORED
+        IGNORED,
+        FILTERED
     }
 
     // MESSAGE TYPE {

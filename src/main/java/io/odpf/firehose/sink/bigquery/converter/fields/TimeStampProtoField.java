@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.List;
 
 @AllArgsConstructor
-public class TimestampField implements ProtoField {
+public class TimeStampProtoField implements ProtoField {
     private final Descriptors.FieldDescriptor descriptor;
     private final Object fieldValue;
 
@@ -40,6 +40,6 @@ public class TimestampField implements ProtoField {
     @Override
     public boolean matches() {
         return descriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE
-               && descriptor.getMessageType().getFullName().equals(com.google.protobuf.Timestamp.getDescriptor().getFullName());
+                && descriptor.getMessageType().getFullName().equals(com.google.protobuf.Timestamp.getDescriptor().getFullName());
     }
 }
