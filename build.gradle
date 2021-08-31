@@ -24,6 +24,7 @@ configurations {
     compile
     testCompile
     compileClasspath
+    runtime
 }
 
 lombok {
@@ -129,7 +130,7 @@ test {
 
 jar {
     from {
-        (configurations.runtimeOnly).collect {
+        (configurations.runtime).collect {
             it.isDirectory() ? it : zipTree(it)
         }
     }
