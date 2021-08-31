@@ -1,9 +1,8 @@
 package io.odpf.firehose.sink.redis;
 
-
+import com.gojek.de.stencil.client.StencilClient;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.AbstractSink;
-import io.odpf.stencil.client.StencilClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
