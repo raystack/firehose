@@ -3,7 +3,7 @@ buildscript {
         maven { url 'https://plugins.gradle.org/m2/' }
     }
     dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.8'
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.17'
         classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.4.7"
         classpath "org.ajoberstar:gradle-git:1.6.0"
     }
@@ -14,10 +14,16 @@ plugins {
     id 'idea'
     id 'checkstyle'
     id 'jacoco'
-    id "com.google.protobuf" version "0.8.7"
+    id "com.google.protobuf" version "0.8.17"
     id 'nebula.ospackage' version '8.6.3'
     id 'io.franzbecker.gradle-lombok' version '1.14'
     id 'maven-publish'
+}
+
+configurations {
+    compile
+    testCompile
+    compileClasspath
 }
 
 lombok {
@@ -37,7 +43,7 @@ repositories {
     mavenCentral()
     jcenter()
     maven {
-        url "http://packages.confluent.io/maven"
+        url "https://packages.confluent.io/maven"
     }
 }
 
