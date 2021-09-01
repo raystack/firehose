@@ -200,7 +200,7 @@ public class HttpSinkTest {
                     + "\nRequest Headers: [Accept: text/plain]"
                     + "\nRequest Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]");
         verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_messages_drop_total", 2, "cause= 500");
+        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_messages_drop_total", 1, "cause= 500");
     }
 
     @Test
