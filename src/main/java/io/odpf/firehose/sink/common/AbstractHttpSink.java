@@ -13,7 +13,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.util.EntityUtils;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -109,13 +108,14 @@ public abstract class AbstractHttpSink extends AbstractSink {
 
 
     private void printRequest(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
-        InputStream inputStream = new BufferedInputStream(httpRequest.getEntity().getContent());
+        InputStream inputStream = httpRequest.getEntity().getContent();
         String entireRequest = String.format("\nRequest Method: %s\nRequest Url: %s\nRequest Headers: %s\nRequest Body: %s",
                 httpRequest.getMethod(),
                 httpRequest.getURI(),
                 Arrays.asList(httpRequest.getAllHeaders()),
                 Strings.join(readContent(inputStream), "\n"));
         getInstrumentation().logInfo(entireRequest);
+        inputStream.reset();
     }
 
     protected abstract List<String> readContent(InputStream inputStream) throws IOException;
