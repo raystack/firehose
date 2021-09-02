@@ -98,7 +98,7 @@ List of comma-separated status codes for which Firehose should not retry in case
 
 ## `SINK_MONGO_PRESERVE_PROTO_FIELD_NAMES_ENABLE`
 
-Whether or not the protobuf field names should be preserved in the Elasticsearch document. If false the fields will be converted to camel case.
+Whether or not the protobuf field names should be preserved in the MongoDB document. If false the fields will be converted to camel case.
 
 * Example value: `false`
 * Type: `optional`
