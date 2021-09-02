@@ -69,6 +69,8 @@ Lastly, set up Telegraf to send metrics to InfluxDB, following the corresponding
 3. In `telegraf.conf`, check these 2 configs in INPUT PLUGINS in the StatsD plugin configuration, set `datadog_extensions = true` and `datadog_distributions = true`
 4. Configure the URL and port of the InfluxDB server in the Telegraf configuration file, i.e.`~/.telegraf/telegraf.conf`
 
+
+
 #### Firehose deployed on Kubernetes _\*\*_
 
 1. Follow[ this guide](https://github.com/odpf/charts/tree/main/stable/firehose#readme) for deploying Firehose on a Kubernetes cluster using a Helm chart. 
@@ -91,6 +93,7 @@ $ helm install my-release -f values.yaml odpf/firehose
 [Grafana](https://grafana.com/) is a multi-platform open-source analytics and interactive visualization web application. It provides charts, graphs, and alerts for the web when connected to supported data sources. A licensed Grafana Enterprise version with additional capabilities is also available as a self-hosted installation or an account on the Grafana Labs cloud service.
 
 Grafana dashboard can be loaded on your Grafana cloud account by importing the JSON file `firehose-grafana-dashboard-updated.json` in the `docs/assets/` directory.
+
 
 ![Firehose Grafana dashboard](../.gitbook/assets/screenshot-from-2021-07-12-17-55-11.png)
 

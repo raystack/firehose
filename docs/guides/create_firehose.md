@@ -111,8 +111,15 @@ _**Note:**_ [_**DATABASE**_](../reference/configuration/#-sink_influx_db_name) _
 * Data read from Kafka is written to a GRPC endpoint and it requires the following [variables](../reference/configuration/#-grpc-sink) to be set.
 * You need to create your own GRPC endpoint so that the Firehose can send data to it. The response proto should have a field “success” with value as true or false.
 
+## Create an MongoDB Sink
+
+* it requires the following [variables](../reference/configuration.md#mongodb-sink) to be set.
+* In the MongoDB sink, each message is converted into a BSON Document and then inserted/updated/upserted into the specified Mongo Collection 
+* MongoDB sink supports reading messages in both JSON and Protobuf formats.
+
 ## Define Standard Configurations
 
 * These are the configurations that remain common across all the Sink Types.
 * You don’t need to modify them necessarily, It is recommended to use them with the default values. More details [here](../reference/configuration/#-standard).
+
 
