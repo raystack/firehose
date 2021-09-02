@@ -12,6 +12,7 @@ This page contains reference for all the application configurations for Firehose
 * [JDBC Sink](jdbc-sink.md)
 * [Influx Sink](influxdb-sink.md)
 * [Redis Sink](redis-sink.md)
+* [MongoDB Sink](generic.md)
 * [Elasticsearch Sink](elasticsearch-sink.md)
 * [GRPC Sink](grpc-sink.md)
 * [Prometheus Sink](prometheus-sink.md)

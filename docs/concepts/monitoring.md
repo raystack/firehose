@@ -28,7 +28,7 @@ StatsD is a simple protocol for sending application metrics via UDP. StatsD is s
 
 ### Set Up Grafana service
 
-Create a [Grafana Cloud](https://grafana.com/products/cloud/) account, to set up Grafana metrics dashboard on the cloud, or [download Grafana ](https://grafana.com/grafana/download)to set up Grafana dashboard locally. Grafana can also be deployed on Docker by pulling InfluxDB image from DockerHub. 
+Create a [Grafana Cloud](https://grafana.com/products/cloud/) account, to set up Grafana metrics dashboard on the cloud, or [download Grafana ](https://grafana.com/grafana/download)to set up Grafana dashboard locally. Grafana can also be deployed on Docker by pulling InfluxDB image from DockerHub.
 
 ```text
 $ docker pull grafana/grafana
@@ -36,9 +36,9 @@ $ docker pull grafana/grafana
 
 Grafana server runs on `localhost:3000` by default. Make sure to add your InfluxDB server as the data source in Grafana Data Sources section.
 
-If your using InfluxDB version 1.8 or earlier, then Grafana dashboard can be loaded on your Grafana cloud account or local Grafana server by importing the JSON file `firehose-grafana-dashboard-updated.json` in the `docs/assets/` directory of the Firehose. 
+If your using InfluxDB version 1.8 or earlier, then Grafana dashboard can be loaded on your Grafana cloud account or local Grafana server by importing the JSON file `firehose-grafana-dashboard-updated.json` in the `docs/assets/` directory of the Firehose.
 
-Make sure to select InfluxQL as the query language while configuring the InfluxDB as the Grafana data source, since the InfluxDB queries for the Firehose metrics in the  `firehose-grafana-dashboard-updated.json` currently support only InfluxDB 1.x. Then provide the InfluxDB login credentials and other parameters like organization name and bucket name.  
+Make sure to select InfluxQL as the query language while configuring the InfluxDB as the Grafana data source, since the InfluxDB queries for the Firehose metrics in the `firehose-grafana-dashboard-updated.json` currently support only InfluxDB 1.x. Then provide the InfluxDB login credentials and other parameters like organization name and bucket name.
 
 ### Set Up InfluxDB Server
 
@@ -54,11 +54,9 @@ For compatibity with the sample Firehose Grafana dashboard \(which current only 
 $ docker pull influxdb:1.8
 ```
 
-Make sure to add the InfluxDB server URLs, port and the login credentials to the `telegraf.conf` file. By default, InfluxDB server is hosted on `localhost:8086`  . Create a new bucket for the Firehose metrics and configure the bucket name in the `telegraf.conf` file, as well as in the InfluxDB source properties in the Grafana Data Sources section
+Make sure to add the InfluxDB server URLs, port and the login credentials to the `telegraf.conf` file. By default, InfluxDB server is hosted on `localhost:8086` . Create a new bucket for the Firehose metrics and configure the bucket name in the `telegraf.conf` file, as well as in the InfluxDB source properties in the Grafana Data Sources section
 
-The Telegraf output plugin  configuration for InfluxDB v2 + can be found [here](https://github.com/influxdata/telegraf/tree/release-1.14/plugins/outputs/influxdb_v2). The Telegraf output plugin  configuration for InfluxDB v1.x can be found [here](https://github.com/influxdata/telegraf/tree/master/plugins/outputs/influxdb). 
-
-
+The Telegraf output plugin configuration for InfluxDB v2 + can be found [here](https://github.com/influxdata/telegraf/tree/release-1.14/plugins/outputs/influxdb_v2). The Telegraf output plugin configuration for InfluxDB v1.x can be found [here](https://github.com/influxdata/telegraf/tree/master/plugins/outputs/influxdb).
 
 ### Set Up Telegraf Server
 
