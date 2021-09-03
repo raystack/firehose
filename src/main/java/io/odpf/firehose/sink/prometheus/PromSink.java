@@ -62,25 +62,24 @@ public class PromSink extends AbstractHttpSink {
         }
     }
 
-    protected void captureMessageDropCount(HttpResponse response, HttpEntityEnclosingRequestBase httpRequest) throws IOException {
-        InputStream inputStream = httpRequest.getEntity().getContent();
-        List<String> result = readContent(inputStream);
-
-        getInstrumentation().captureCountWithTags(SINK_MESSAGES_DROP_TOTAL, result.size(), "cause= " + statusCode(response));
+    protected void captureMessageDropCount(HttpResponse response, List<String> contentStringList) {
+        getInstrumentation().captureCountWithTags(SINK_MESSAGES_DROP_TOTAL, contentStringList.size(), "cause= " + statusCode(response));
         getInstrumentation().logInfo("Message dropped because of status code: " + statusCode(response));
     }
 
     /**
      * read compressed request body.
      *
-     * @param inputStream the inputstream
+     * @param httpRequest http request object
      * @return list of request body string
      * @throws IOException the io exception
      */
-    protected List<String> readContent(InputStream inputStream) throws IOException {
-        byte[] byteArrayIs = IOUtils.toByteArray(inputStream);
-        byte[] uncompressedSnappy = Snappy.uncompress(byteArrayIs);
-        String requestBody = DynamicMessage.parseFrom(Cortex.WriteRequest.getDescriptor(), uncompressedSnappy).toString();
-        return Arrays.asList(requestBody.split("\\s(?=timeseries)"));
+    protected List<String> readContent(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
+        try (InputStream inputStream = httpRequest.getEntity().getContent()) {
+            byte[] byteArrayIs = IOUtils.toByteArray(inputStream);
+            byte[] uncompressedSnappy = Snappy.uncompress(byteArrayIs);
+            String requestBody = DynamicMessage.parseFrom(Cortex.WriteRequest.getDescriptor(), uncompressedSnappy).toString();
+            return Arrays.asList(requestBody.split("\\s(?=timeseries)"));
+        }
     }
 }

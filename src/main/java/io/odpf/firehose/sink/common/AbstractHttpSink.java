@@ -15,7 +15,6 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,14 +47,17 @@ public abstract class AbstractHttpSink extends AbstractSink {
         for (HttpEntityEnclosingRequestBase httpRequest : httpRequests) {
             try {
                 response = httpClient.execute(httpRequest);
+                List<String> contentStringList = null;
                 getInstrumentation().logInfo("Response Status: {}", statusCode(response));
                 if (shouldLogRequest(response)) {
-                    printRequest(httpRequest);
+                    contentStringList = readContent(httpRequest);
+                    printRequest(httpRequest, contentStringList);
                 }
                 if (shouldRetry(response)) {
                     throw new NeedToRetry(statusCode(response));
                 } else if (!Pattern.compile(SUCCESS_CODE_PATTERN).matcher(String.valueOf(response.getStatusLine().getStatusCode())).matches()) {
-                    captureMessageDropCount(response, httpRequest);
+                    contentStringList = contentStringList == null ? readContent(httpRequest) : contentStringList;
+                    captureMessageDropCount(response, contentStringList);
                 }
             } catch (IOException e) {
                 NewRelic.noticeError(e);
@@ -108,20 +110,18 @@ public abstract class AbstractHttpSink extends AbstractSink {
     }
 
 
-    private void printRequest(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
-        InputStream inputStream = httpRequest.getEntity().getContent();
+    private void printRequest(HttpEntityEnclosingRequestBase httpRequest, List<String> contentStringList) throws IOException {
         String entireRequest = String.format("\nRequest Method: %s\nRequest Url: %s\nRequest Headers: %s\nRequest Body: %s",
                 httpRequest.getMethod(),
                 httpRequest.getURI(),
                 Arrays.asList(httpRequest.getAllHeaders()),
-                Strings.join(readContent(inputStream), "\n"));
+                Strings.join(contentStringList, "\n"));
         getInstrumentation().logInfo(entireRequest);
-        inputStream.reset();
     }
 
-    protected abstract List<String> readContent(InputStream inputStream) throws IOException;
+    protected abstract List<String> readContent(HttpEntityEnclosingRequestBase httpRequest) throws IOException;
 
-    protected abstract void captureMessageDropCount(HttpResponse response, HttpEntityEnclosingRequestBase httpRequest) throws IOException;
+    protected abstract void captureMessageDropCount(HttpResponse response, List<String> contentString) throws IOException;
 
     public void setHttpRequests(List<HttpEntityEnclosingRequestBase> httpRequests) {
         this.httpRequests.clear();

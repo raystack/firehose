@@ -57,13 +57,14 @@ public class HttpSink extends AbstractHttpSink {
     }
 
     @Override
-    protected List<String> readContent(InputStream inputStream) {
-        return new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
+    protected List<String> readContent(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
+        try (InputStream inputStream = httpRequest.getEntity().getContent()) {
+            return new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
+        }
     }
 
-    protected void captureMessageDropCount(HttpResponse response, HttpEntityEnclosingRequestBase httpRequest) throws IOException {
-        InputStream inputStream = httpRequest.getEntity().getContent();
-        String requestBody = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
+    protected void captureMessageDropCount(HttpResponse response, List<String> contentStringList) {
+        String requestBody = joptsimple.internal.Strings.join(contentStringList, "\n");
 
         List<String> result = Arrays.asList(requestBody.replaceAll("^\\[|]$", "").split("},\\s*\\{"));
 

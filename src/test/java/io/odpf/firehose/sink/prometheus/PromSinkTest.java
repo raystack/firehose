@@ -307,7 +307,7 @@ public class PromSinkTest {
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
 
-        List<String> requestBody = promSink.readContent(inputStream);
+        List<String> requestBody = promSink.readContent(httpPost);
         assertEquals(body, requestBody.toString());
     }
 }
