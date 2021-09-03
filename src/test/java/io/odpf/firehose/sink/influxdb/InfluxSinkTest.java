@@ -1,8 +1,8 @@
 package io.odpf.firehose.sink.influxdb;
 
-import com.gojek.de.stencil.StencilClientFactory;
-import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.de.stencil.parser.ProtoParser;
+
+
+
 import io.odpf.firehose.config.InfluxSinkConfig;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.consumer.TestBookingLogMessage;
@@ -13,6 +13,9 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.Sink;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Timestamp;
+import com.gojek.de.stencil.StencilClientFactory;
+import com.gojek.de.stencil.client.StencilClient;
+import com.gojek.de.stencil.parser.ProtoParser;
 import org.aeonbits.owner.ConfigFactory;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.BatchPoints;
