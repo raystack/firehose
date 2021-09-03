@@ -25,7 +25,7 @@ Firehose environment variables can be configured in either of the following ways
 
 ### Kafka Server
 
-Apache Kafka server service must be set up, from which Firehose's Kafka consumer will pull messages. Kafka Server version greater than 2.4 is currently supported by Firehose. Kafka Server URL and port address, as well as other Kafka-specific parameters must be configured in the corresponding environment variables as defined in the [Generic configuration](../reference/configuration.md#generic) section.
+Apache Kafka server service must be set up, from which Firehose's Kafka consumer will pull messages. Kafka Server version greater than 2.4 is currently supported by Firehose. Kafka Server URL and port address, as well as other Kafka-specific parameters must be configured in the corresponding environment variables as defined in the [Generic configuration](../reference/configuration/#generic) section.
 
 Read the[ official guide](https://kafka.apache.org/quickstart) on how to install and configure Apache Kafka Server.
 
@@ -33,7 +33,8 @@ Read the[ official guide](https://kafka.apache.org/quickstart) on how to install
 
 The sink to which Firehose will stream Kafka's data to, must have its corresponding server set up and configured. The URL and port address of the database server / HTTP/GRPC endpoint , along with other sink - specific parameters must be configured the environment variables corresponding to that particular sink.
 
-Configuration parameter variables of each sink can be found in the [Configurations](../reference/configuration.md) section.
+Configuration parameter variables of each sink can be found in the [Configurations](../reference/configuration/) section.
+
 
 ### Schema Registry
 
@@ -65,7 +66,7 @@ $ cat env/local.properties
 $ ./gradlew runConsumer
 ```
 
-**Note:** Sample configuration for other sinks along with some advanced configurations can be found [here](../reference/configuration.md)
+**Note:** Sample configuration for other sinks along with some advanced configurations can be found [here](../reference/configuration/)
 
 ### Running tests
 
