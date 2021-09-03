@@ -188,7 +188,6 @@ public class HttpSinkTest {
         when(httpClient.execute(httpPut)).thenReturn(response);
         when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
         when(response.getEntity()).thenReturn(httpEntity);
-        when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value1\"},{\"key\":\"value2\"}]"));
 
         HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-505"));

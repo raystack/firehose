@@ -8,7 +8,6 @@ import io.odpf.firehose.sink.common.AbstractHttpSink;
 import io.odpf.firehose.sink.http.request.types.Request;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -60,9 +59,8 @@ public class HttpSink extends AbstractHttpSink {
         return new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
     }
 
-    protected void captureMessageDropCount(HttpResponse response, HttpEntityEnclosingRequestBase httpRequest) throws IOException {
-        InputStream inputStream = httpRequest.getEntity().getContent();
-        String requestBody = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining("\n"));
+    protected void captureMessageDropCount(HttpResponse response, List<String> contentStringList) {
+        String requestBody = joptsimple.internal.Strings.join(contentStringList, "\n");
 
         List<String> result = Arrays.asList(requestBody.replaceAll("^\\[|]$", "").split("},\\s*\\{"));
 
