@@ -14,7 +14,6 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,13 +49,13 @@ public abstract class AbstractHttpSink extends AbstractSink {
                 List<String> contentStringList = null;
                 getInstrumentation().logInfo("Response Status: {}", statusCode(response));
                 if (shouldLogRequest(response)) {
-                    contentStringList = readContent(httpRequest.getEntity().getContent());
+                    contentStringList = readContent(httpRequest);
                     printRequest(httpRequest, contentStringList);
                 }
                 if (shouldRetry(response)) {
                     throw new NeedToRetry(statusCode(response));
                 } else if (!Pattern.compile(SUCCESS_CODE_PATTERN).matcher(String.valueOf(response.getStatusLine().getStatusCode())).matches()) {
-                    contentStringList = contentStringList == null ? readContent(httpRequest.getEntity().getContent()) : contentStringList;
+                    contentStringList = contentStringList == null ? readContent(httpRequest) : contentStringList;
                     captureMessageDropCount(response, contentStringList);
                 }
             } catch (IOException e) {
@@ -119,7 +118,7 @@ public abstract class AbstractHttpSink extends AbstractSink {
         getInstrumentation().logInfo(entireRequest);
     }
 
-    protected abstract List<String> readContent(InputStream inputStream) throws IOException;
+    protected abstract List<String> readContent(HttpEntityEnclosingRequestBase httpRequest) throws IOException;
 
     protected abstract void captureMessageDropCount(HttpResponse response, List<String> contentString) throws IOException;
 

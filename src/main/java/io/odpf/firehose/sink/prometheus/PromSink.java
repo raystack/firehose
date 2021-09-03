@@ -11,6 +11,7 @@ import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.xerial.snappy.Snappy;
 
 import java.io.IOException;
@@ -68,14 +69,16 @@ public class PromSink extends AbstractHttpSink {
     /**
      * read compressed request body.
      *
-     * @param inputStream the inputstream
+     * @param httpRequest http request object
      * @return list of request body string
      * @throws IOException the io exception
      */
-    protected List<String> readContent(InputStream inputStream) throws IOException {
-        byte[] byteArrayIs = IOUtils.toByteArray(inputStream);
-        byte[] uncompressedSnappy = Snappy.uncompress(byteArrayIs);
-        String requestBody = DynamicMessage.parseFrom(Cortex.WriteRequest.getDescriptor(), uncompressedSnappy).toString();
-        return Arrays.asList(requestBody.split("\\s(?=timeseries)"));
+    protected List<String> readContent(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
+        try (InputStream inputStream = httpRequest.getEntity().getContent()) {
+            byte[] byteArrayIs = IOUtils.toByteArray(inputStream);
+            byte[] uncompressedSnappy = Snappy.uncompress(byteArrayIs);
+            String requestBody = DynamicMessage.parseFrom(Cortex.WriteRequest.getDescriptor(), uncompressedSnappy).toString();
+            return Arrays.asList(requestBody.split("\\s(?=timeseries)"));
+        }
     }
 }

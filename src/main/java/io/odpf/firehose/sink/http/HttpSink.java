@@ -8,6 +8,7 @@ import io.odpf.firehose.sink.common.AbstractHttpSink;
 import io.odpf.firehose.sink.http.request.types.Request;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -55,8 +56,10 @@ public class HttpSink extends AbstractHttpSink {
     }
 
     @Override
-    protected List<String> readContent(InputStream inputStream) {
-        return new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
+    protected List<String> readContent(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
+        try (InputStream inputStream = httpRequest.getEntity().getContent()) {
+            return new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
+        }
     }
 
     protected void captureMessageDropCount(HttpResponse response, List<String> contentStringList) {
