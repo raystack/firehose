@@ -19,7 +19,7 @@ Firehose has the capability to run parallelly on threads. Each thread does the f
 
 _**Consumer**_
 
-* Firehose Consumer consumes messages from the configured Kafka in batches, [`SOURCE_KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS`](../reference/configuration.md#source_kafka_consumer_config_max_poll_records) can be configured which decides this batch size.
+* Firehose Consumer consumes messages from the configured Kafka in batches, [`SOURCE_KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS`](../reference/configuration/#source_kafka_consumer_config_max_poll_records) can be configured which decides this batch size.
 * The consumer then processes each message and sends the messages’ list to Filter.
 
 _**Filter**_
@@ -63,7 +63,7 @@ The section details all integrating systems for Firehose deployment. These are e
 
 ### Kafka
 
-* The Kafka topic\(s\) where Firehose reads from. The [`SOURCE_KAFKA_TOPIC`](../reference/configuration.md#source_kafka_topic) config can be set in Firehose.
+* The Kafka topic\(s\) where Firehose reads from. The [`SOURCE_KAFKA_TOPIC`](../reference/configuration/#source_kafka_topic) config can be set in Firehose.
 
 ### ProtoDescriptors
 
@@ -81,5 +81,5 @@ The section details all integrating systems for Firehose deployment. These are e
 
 * InfluxDB - time-series database where all Firehose metrics are stored. Integration through the Telegraf component.
 
-For a complete set of configurations please refer to the sink-specific [configuration](../reference/configuration.md).
+For a complete set of configurations please refer to the sink-specific [configuration](../reference/configuration/).
 
