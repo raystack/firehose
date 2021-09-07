@@ -7,6 +7,8 @@ import io.odpf.firehose.TestMessageBQ;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
+import io.odpf.firehose.metrics.BigQueryMetrics;
+import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.bigquery.MessageUtils;
 import io.odpf.firehose.sink.bigquery.OffsetInfo;
 import io.odpf.firehose.sink.bigquery.exception.BigQuerySinkException;
@@ -29,6 +31,9 @@ public class BigQueryResponseParserTest {
     private final MessageUtils util = new MessageUtils();
     @Mock
     private InsertAllResponse response;
+
+    @Mock
+    private Instrumentation instrumentation;
 
     @Before
     public void setup() {
@@ -63,7 +68,7 @@ public class BigQueryResponseParserTest {
         }};
         Mockito.when(response.hasErrors()).thenReturn(true);
         Mockito.when(response.getInsertErrors()).thenReturn(insertErrorsMap);
-        List<Message> messages = BigQueryResponseParser.parseResponse(records, response);
+        List<Message> messages = BigQueryResponseParser.parseResponse(records, response, instrumentation);
 
         Assert.assertEquals(4, messages.size());
         Assert.assertEquals(TestMessageBQ.newBuilder()
@@ -90,5 +95,10 @@ public class BigQueryResponseParserTest {
         Assert.assertEquals(new ErrorInfo(new BigQuerySinkException(), ErrorType.SINK_4XX_ERROR), messages.get(1).getErrorInfo());
         Assert.assertEquals(new ErrorInfo(new BigQuerySinkException(), ErrorType.SINK_4XX_ERROR), messages.get(2).getErrorInfo());
         Assert.assertEquals(new ErrorInfo(new BigQuerySinkException(), ErrorType.SINK_5XX_ERROR), messages.get(3).getErrorInfo());
+
+        Mockito.verify(instrumentation, Mockito.times(1)).incrementCounter(BigQueryMetrics.SINK_BIGQUERY_ERRORS_TOTAL, String.format(BigQueryMetrics.BIGQUERY_ERROR_TAG, BigQueryMetrics.BigQueryErrorType.UNKNOWN_ERROR));
+        Mockito.verify(instrumentation, Mockito.times(1)).incrementCounter(BigQueryMetrics.SINK_BIGQUERY_ERRORS_TOTAL, String.format(BigQueryMetrics.BIGQUERY_ERROR_TAG, BigQueryMetrics.BigQueryErrorType.INVALID_SCHEMA_ERROR));
+        Mockito.verify(instrumentation, Mockito.times(1)).incrementCounter(BigQueryMetrics.SINK_BIGQUERY_ERRORS_TOTAL, String.format(BigQueryMetrics.BIGQUERY_ERROR_TAG, BigQueryMetrics.BigQueryErrorType.OOB_ERROR));
+        Mockito.verify(instrumentation, Mockito.times(1)).incrementCounter(BigQueryMetrics.SINK_BIGQUERY_ERRORS_TOTAL, String.format(BigQueryMetrics.BIGQUERY_ERROR_TAG, BigQueryMetrics.BigQueryErrorType.STOPPED_ERROR));
     }
 }

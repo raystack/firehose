@@ -76,6 +76,7 @@ public class GenericConsumer implements AutoCloseable {
         int filteredMessageCount = messages.size() - filteredMessage.size();
         if (filteredMessageCount > 0) {
             instrumentation.captureFilteredMessageCount(filteredMessageCount, consumerConfig.getFilterJexlExpression());
+            instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.FILTERED, filteredMessageCount);
         }
         return filteredMessage;
     }
@@ -110,7 +111,7 @@ public class GenericConsumer implements AutoCloseable {
                 offsets.entrySet()
                         .stream()
                         .filter(metadataEntry -> !committedOffsets.containsKey(metadataEntry.getKey())
-                                                 || metadataEntry.getValue().offset() > committedOffsets.get(metadataEntry.getKey()).offset())
+                                || metadataEntry.getValue().offset() > committedOffsets.get(metadataEntry.getKey()).offset())
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         if (latestOffsets.isEmpty()) {
             return;

@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 import java.util.Base64;
 
 @AllArgsConstructor
-public class ByteField implements ProtoField {
+public class ByteProtoField implements ProtoField {
 
     private final Descriptors.FieldDescriptor descriptor;
     private final Object fieldValue;

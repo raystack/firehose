@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import java.util.List;
 
 @AllArgsConstructor
-public class NestedField implements ProtoField {
+public class NestedProtoField implements ProtoField {
     private final Descriptors.FieldDescriptor descriptor;
     private final Object fieldValue;
 

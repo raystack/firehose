@@ -16,7 +16,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
- * OffsetManager keeps tracks of all offsets that can be committed to kafka.
+ * OffsetManager is a data structure which keeps tracks of all offsets that can be committed to kafka.
  */
 public class OffsetManager {
     private final Map<Object, Set<OffsetNode>> toBeCommittableBatchOffsets = new HashMap<>();

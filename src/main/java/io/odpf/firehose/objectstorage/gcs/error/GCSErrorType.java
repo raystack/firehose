@@ -54,8 +54,4 @@ public enum GCSErrorType {
     GCSErrorType() {
 
     }
-
-    public int getCodeValue() {
-        return codeValue;
-    }
 }
