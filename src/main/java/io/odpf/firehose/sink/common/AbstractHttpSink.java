@@ -8,19 +8,23 @@ import io.odpf.firehose.exception.NeedToRetry;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import com.gojek.de.stencil.client.StencilClient;
-import io.odpf.firehose.sink.http.SerializableHttpResponse;
 import joptsimple.internal.Strings;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.util.EntityUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static io.odpf.firehose.metrics.Metrics.SINK_HTTP_RESPONSE_CODE_TOTAL;
 
@@ -51,8 +55,7 @@ public abstract class AbstractHttpSink extends AbstractSink {
                 List<String> contentStringList = null;
                 getInstrumentation().logInfo("Response Status: {}", statusCode(response));
                 if (shouldLogResponse(response)) {
-                    SerializableHttpResponse serializableHttpResponse = new SerializableHttpResponse(response);
-                    getInstrumentation().logDebug("Response Body: {}", serializableHttpResponse);
+                    printResponse(response);
                 }
                 if (shouldLogRequest(response)) {
                     contentStringList = readContent(httpRequest);
@@ -94,7 +97,7 @@ public abstract class AbstractHttpSink extends AbstractSink {
     }
 
     private boolean shouldLogResponse(HttpResponse response) {
-        return response != null;
+        return getInstrumentation().isDebugEnabled() && response != null;
     }
 
     private boolean shouldRetry(HttpResponse response) {
@@ -126,6 +129,16 @@ public abstract class AbstractHttpSink extends AbstractSink {
                 Arrays.asList(httpRequest.getAllHeaders()),
                 Strings.join(contentStringList, "\n"));
         getInstrumentation().logInfo(entireRequest);
+    }
+
+    private void printResponse(HttpResponse httpResponse) throws IOException {
+        try (InputStream inputStream = httpResponse.getEntity().getContent()) {
+            String responseBody = String.format("Response Body: %s",
+                    Strings.join(new BufferedReader(new InputStreamReader(
+                            inputStream,
+                            StandardCharsets.UTF_8)).lines().collect(Collectors.toList()), "\n"));
+            getInstrumentation().logDebug(responseBody);
+        }
     }
 
     protected abstract List<String> readContent(HttpEntityEnclosingRequestBase httpRequest) throws IOException;

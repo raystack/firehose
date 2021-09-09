@@ -75,6 +75,9 @@ public class Instrumentation {
         logger.error(template, t);
     }
 
+    public boolean isDebugEnabled() {
+        return logger.isDebugEnabled();
+    }
     // ============== FILTER MESSAGES ==============
 
     /**
