@@ -6,6 +6,7 @@ import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TimePartitioning;
 import io.odpf.firehose.config.BigQuerySinkConfig;
+import io.odpf.firehose.sink.bigquery.exception.BQPartitionKeyNotSpecified;
 import lombok.AllArgsConstructor;
 
 import java.util.Optional;
@@ -28,7 +29,7 @@ public class BQTableDefinition {
         StandardTableDefinition.Builder tableDefinition = StandardTableDefinition.newBuilder();
         Optional<Field> partitionFieldOptional = schema.getFields().stream().filter(obj -> obj.getName().equals(bqConfig.getTablePartitionKey())).findFirst();
         if (!partitionFieldOptional.isPresent()) {
-            throw new RuntimeException(String.format("Partition key %s is not present in the schema", bqConfig.getTablePartitionKey()));
+            throw new BQPartitionKeyNotSpecified(String.format("Partition key %s is not present in the schema", bqConfig.getTablePartitionKey()));
         }
 
         Field partitionField = partitionFieldOptional.get();
@@ -44,7 +45,7 @@ public class BQTableDefinition {
     private StandardTableDefinition.Builder createTimePartitionBuilder(StandardTableDefinition.Builder tableBuilder) {
         TimePartitioning.Builder timePartitioningBuilder = TimePartitioning.newBuilder(TimePartitioning.Type.DAY);
         if (bqConfig.getTablePartitionKey() == null) {
-            throw new RuntimeException(String.format("Partition key not specified for the table: %s", bqConfig.getTableName()));
+            throw new BQPartitionKeyNotSpecified(String.format("Partition key not specified for the table: %s", bqConfig.getTableName()));
         }
         timePartitioningBuilder.setField(bqConfig.getTablePartitionKey())
                 .setRequirePartitionFilter(true);

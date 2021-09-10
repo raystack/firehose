@@ -66,7 +66,6 @@ public class LocalStorage {
     }
 
     public Boolean shouldRotate(LocalFileWriter writer) {
-        return this.policies.stream().reduce(false,
-                (accumulated, writerPolicy) -> accumulated || writerPolicy.shouldRotate(writer), (left, right) -> left || right);
+        return policies.stream().anyMatch(writerPolicy -> writerPolicy.shouldRotate(writer));
     }
 }

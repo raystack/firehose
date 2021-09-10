@@ -37,6 +37,7 @@ public class LocalFileChecker implements Runnable {
 
     @Override
     public void run() {
+        instrumentation.captureValue(LOCAL_FILE_OPEN_TOTAL, timePartitionWriterMap.size());
         Map<String, LocalFileWriter> toBeRotated;
         toBeRotated = timePartitionWriterMap.entrySet().stream().filter(kv -> localStorage.shouldRotate(kv.getValue()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -58,7 +59,6 @@ public class LocalFileChecker implements Runnable {
                 throw new LocalFileWriterFailedException(e);
             }
         });
-        instrumentation.captureValue(LOCAL_FILE_OPEN_TOTAL, timePartitionWriterMap.size());
     }
 
     private void captureFileClosedSuccessMetric(Instant startTime, FileMeta fileMeta) {

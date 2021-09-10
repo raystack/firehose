@@ -19,6 +19,7 @@ import com.google.cloud.bigquery.TimePartitioning;
 import io.odpf.firehose.config.BigQuerySinkConfig;
 import io.odpf.firehose.metrics.BigQueryMetrics;
 import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.sink.bigquery.exception.BQDatasetLocationChangedException;
 import lombok.Getter;
 
 import java.io.FileInputStream;
@@ -140,7 +141,7 @@ public class BigQueryClient {
 
     private boolean shouldUpdateDataset(Dataset dataSet) {
         if (!dataSet.getLocation().equals(bqConfig.getBigQueryDatasetLocation())) {
-            throw new RuntimeException("Dataset location cannot be changed from "
+            throw new BQDatasetLocationChangedException("Dataset location cannot be changed from "
                     + dataSet.getLocation() + " to " + bqConfig.getBigQueryDatasetLocation());
         }
 
@@ -162,7 +163,7 @@ public class BigQueryClient {
         return !currentExpirationMs.equals(newExpirationMs);
     }
 
-    private TableDefinition getTableDefinition(Schema schema) throws RuntimeException {
+    private TableDefinition getTableDefinition(Schema schema) {
         return bqTableDefinition.getTableDefinition(schema);
     }
 }

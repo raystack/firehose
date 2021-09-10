@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import static io.odpf.firehose.metrics.Metrics.RETRY_MESSAGES_TOTAL;
-import static io.odpf.firehose.metrics.Metrics.RETRY_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.RETRY_ATTEMPTS_TOTAL;
 
 /**
  * Pushes messages with configured retry.
@@ -81,7 +81,7 @@ public class SinkWithRetry extends SinkDecorator {
         int attemptCount = 1;
         while ((attemptCount <= appConfig.getRetryMaxAttempts() && !retryMessages.isEmpty())
                || (appConfig.getRetryMaxAttempts() == Integer.MAX_VALUE && !retryMessages.isEmpty())) {
-            instrumentation.incrementCounter(RETRY_TOTAL);
+            instrumentation.incrementCounter(RETRY_ATTEMPTS_TOTAL);
             instrumentation.logInfo("Retrying messages attempt count: {}, Number of messages: {}", attemptCount, messages.size());
 
             List<DynamicMessage> serializedBody = new ArrayList<>();

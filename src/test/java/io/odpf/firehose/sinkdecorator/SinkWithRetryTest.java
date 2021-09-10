@@ -27,7 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static io.odpf.firehose.metrics.Metrics.RETRY_MESSAGES_TOTAL;
-import static io.odpf.firehose.metrics.Metrics.RETRY_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.RETRY_ATTEMPTS_TOTAL;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
@@ -164,7 +164,7 @@ public class SinkWithRetryTest {
         assertTrue(messageList.isEmpty());
         verify(instrumentation, times(1)).logInfo("Maximum retry attempts: {}", 3);
         verify(instrumentation, times(3)).captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, ErrorType.DESERIALIZATION_ERROR, 1);
-        verify(instrumentation, times(2)).incrementCounter(RETRY_TOTAL);
+        verify(instrumentation, times(2)).incrementCounter(RETRY_ATTEMPTS_TOTAL);
         verify(instrumentation, times(1)).captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 3);
     }
 
@@ -182,7 +182,7 @@ public class SinkWithRetryTest {
         assertFalse(messageList.isEmpty());
         verify(instrumentation, times(1)).logInfo("Maximum retry attempts: {}", 1);
         verify(instrumentation, times(3)).captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, ErrorType.DESERIALIZATION_ERROR, 1);
-        verify(instrumentation, times(1)).incrementCounter(RETRY_TOTAL);
+        verify(instrumentation, times(1)).incrementCounter(RETRY_ATTEMPTS_TOTAL);
         verify(instrumentation, times(1)).captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 0);
         verify(instrumentation, times(3)).captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, ErrorType.DESERIALIZATION_ERROR, 1);
     }
