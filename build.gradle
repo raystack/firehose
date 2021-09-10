@@ -24,7 +24,7 @@ configurations {
     compile
     testCompile
     compileClasspath
-    runtime
+    runtimeClasspath
 }
 
 lombok {
@@ -129,14 +129,13 @@ test {
 }
 
 jar {
-    from {
-        (configurations.runtime).collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-    manifest {
-        attributes 'Main-Class': 'io.odpf.firehose.launch.Main'
-    }
+  manifest {
+     attributes 'Main-Class': 'io.odpf.firehose.launch.Main'
+     duplicatesStrategy = 'exclude'
+  }
+  from {
+    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+  }
 }
 
 publishing {
