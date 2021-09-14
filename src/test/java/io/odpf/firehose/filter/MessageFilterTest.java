@@ -1,7 +1,7 @@
 package io.odpf.firehose.filter;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.config.enums.FilterType;
+import io.odpf.firehose.config.enums.FilterDataSource;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.consumer.TestBookingLogKey;
 import io.odpf.firehose.consumer.TestBookingLogMessage;
@@ -111,7 +111,7 @@ public class MessageFilterTest {
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         new MessageFilter(kafkaConsumerConfig, instrumentation);
-        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter type: {}", FilterType.MESSAGE);
+        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter type: {}", FilterDataSource.MESSAGE);
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter schema: {}", TestMessage.class.getName());
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter expression: {}", "testMessage.getOrderNumber() == 123");
     }

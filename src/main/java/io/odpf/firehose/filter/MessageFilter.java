@@ -1,7 +1,7 @@
 package io.odpf.firehose.filter;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.config.enums.FilterType;
+import io.odpf.firehose.config.enums.FilterDataSource;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.commons.jexl2.Expression;
@@ -27,7 +27,7 @@ public class MessageFilter implements Filter {
 
     private JexlEngine engine;
     private Expression expression;
-    private FilterType filterType;
+    private FilterDataSource filterDataSource;
     private String protoSchema;
     private Instrumentation instrumentation;
 
@@ -43,10 +43,10 @@ public class MessageFilter implements Filter {
         this.engine.setStrict(true);
 
         this.instrumentation = instrumentation;
-        this.filterType = consumerConfig.getFilterJexlDataSource();
+        this.filterDataSource = consumerConfig.getFilterJexlDataSource();
         this.protoSchema = consumerConfig.getFilterJexlSchemaProtoClass();
 
-        this.instrumentation.logInfo("\n\tFilter type: {}", this.filterType);
+        this.instrumentation.logInfo("\n\tFilter type: {}", this.filterDataSource);
         if (isNotNone(consumerConfig.getFilterJexlDataSource())) {
             this.expression = this.engine.createExpression(consumerConfig.getFilterJexlExpression());
             this.instrumentation.logInfo("\n\tFilter schema: {}", this.protoSchema);
@@ -66,14 +66,14 @@ public class MessageFilter implements Filter {
      */
     @Override
     public List<Message> filter(List<Message> messages) throws FilterException {
-        if (isNone(filterType)) {
+        if (isNone(filterDataSource)) {
             return messages;
         } else {
             List<Message> filteredMessages = new ArrayList<>();
 
             for (Message message : messages) {
                 try {
-                    Object data = (filterType.equals(FilterType.KEY)) ? message.getLogKey() : message.getLogMessage();
+                    Object data = (filterDataSource.equals(FilterDataSource.KEY)) ? message.getLogKey() : message.getLogMessage();
                     Object obj = MethodUtils.invokeStaticMethod(Class.forName(protoSchema), "parseFrom", data);
                     if (evaluate(obj)) {
                         filteredMessages.add(message);
@@ -118,11 +118,11 @@ public class MessageFilter implements Filter {
         return objectAccessor.substring(0, 1).toLowerCase() + objectAccessor.substring(1);
     }
 
-    private boolean isNone(FilterType filterTypeVal) {
-        return filterTypeVal.equals(FilterType.NONE);
+    private boolean isNone(FilterDataSource filterDataSourceVal) {
+        return filterDataSourceVal.equals(FilterDataSource.NONE);
     }
 
-    private boolean isNotNone(FilterType filterTypeVal) {
-        return !isNone(filterTypeVal);
+    private boolean isNotNone(FilterDataSource filterDataSourceVal) {
+        return !isNone(filterDataSourceVal);
     }
 }
