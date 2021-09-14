@@ -101,7 +101,11 @@ public abstract class AbstractHttpSink extends AbstractSink {
     }
 
     private boolean shouldRetry(HttpResponse response) {
-        return response == null || getRetryStatusCodeRanges().containsKey(response.getStatusLine().getStatusCode());
+        if (response == null) {
+            return true;
+        }
+        int statusCode = response.getStatusLine().getStatusCode();
+        return statusCode == 0 || getRetryStatusCodeRanges().containsKey(statusCode);
     }
 
     protected String statusCode(HttpResponse response) {
