@@ -1,5 +1,5 @@
 package io.odpf.firehose.config.enums;
 
-public enum FilterDataSource {
+public enum FilterDataSourceType {
     NONE, KEY, MESSAGE
 }

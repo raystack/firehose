@@ -11,7 +11,8 @@ import io.odpf.firehose.consumer.FirehoseConsumer;
 import io.odpf.firehose.consumer.GenericConsumer;
 import io.odpf.firehose.exception.EglcConfigurationException;
 import io.odpf.firehose.filter.Filter;
-import io.odpf.firehose.filter.MessageFilter;
+import io.odpf.firehose.filter.jexl.JexlFilter;
+import io.odpf.firehose.filter.json.JSONFilter;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
@@ -25,11 +26,7 @@ import io.odpf.firehose.sink.log.LogSinkFactory;
 import io.odpf.firehose.sink.mongodb.MongoSinkFactory;
 import io.odpf.firehose.sink.prometheus.PromSinkFactory;
 import io.odpf.firehose.sink.redis.RedisSinkFactory;
-import io.odpf.firehose.sinkdecorator.BackOff;
-import io.odpf.firehose.sinkdecorator.BackOffProvider;
-import io.odpf.firehose.sinkdecorator.ExponentialBackOffProvider;
-import io.odpf.firehose.sinkdecorator.SinkWithRetry;
-import io.odpf.firehose.sinkdecorator.SinkWithDlq;
+import io.odpf.firehose.sinkdecorator.*;
 import io.odpf.firehose.tracer.SinkTracer;
 import io.odpf.firehose.util.Clock;
 import io.opentracing.Tracer;
@@ -39,6 +36,8 @@ import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 
 import java.util.Map;
+
+import static io.odpf.firehose.config.enums.FilterEngineType.JEXL;
 
 /**
  * Factory for Firehose consumer.
@@ -87,7 +86,10 @@ public class FirehoseConsumerFactory {
      */
     public FirehoseConsumer buildConsumer() {
 
-        Filter filter = new MessageFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, MessageFilter.class));
+        Filter filter = (kafkaConsumerConfig.getFilterEngine() == JEXL) ?
+                new JexlFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, JexlFilter.class)) :
+                new JSONFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, JSONFilter.class));
+
         GenericKafkaFactory genericKafkaFactory = new GenericKafkaFactory();
         Tracer tracer = NoopTracerFactory.create();
         if (kafkaConsumerConfig.isTraceJaegarEnable()) {

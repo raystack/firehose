@@ -1,8 +1,10 @@
-package io.odpf.firehose.filter;
+package io.odpf.firehose.filter.jexl;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.config.enums.FilterDataSource;
+import io.odpf.firehose.config.enums.FilterDataSourceType;
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.filter.Filter;
+import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
@@ -23,11 +25,11 @@ import java.util.List;
  * along with configurations for {@link KafkaConsumerConfig#getFilterJexlDataSource()} - [key|message]
  * and {@link KafkaConsumerConfig#getFilterJexlSchemaProtoClass()} - FQCN of the protobuf schema.
  */
-public class MessageFilter implements Filter {
+public class JexlFilter implements Filter {
 
     private JexlEngine engine;
     private Expression expression;
-    private FilterDataSource filterDataSource;
+    private FilterDataSourceType filterDataSourceType;
     private String protoSchema;
     private Instrumentation instrumentation;
 
@@ -37,16 +39,16 @@ public class MessageFilter implements Filter {
      * @param consumerConfig  the consumer config
      * @param instrumentation the instrumentation
      */
-    public MessageFilter(KafkaConsumerConfig consumerConfig, Instrumentation instrumentation) {
+    public JexlFilter(KafkaConsumerConfig consumerConfig, Instrumentation instrumentation) {
         this.engine = new JexlEngine();
         this.engine.setSilent(false);
         this.engine.setStrict(true);
 
         this.instrumentation = instrumentation;
-        this.filterDataSource = consumerConfig.getFilterJexlDataSource();
+        this.filterDataSourceType = consumerConfig.getFilterJexlDataSource();
         this.protoSchema = consumerConfig.getFilterJexlSchemaProtoClass();
 
-        this.instrumentation.logInfo("\n\tFilter type: {}", this.filterDataSource);
+        this.instrumentation.logInfo("\n\tFilter type: {}", this.filterDataSourceType);
         if (isNotNone(consumerConfig.getFilterJexlDataSource())) {
             this.expression = this.engine.createExpression(consumerConfig.getFilterJexlExpression());
             this.instrumentation.logInfo("\n\tFilter schema: {}", this.protoSchema);
@@ -66,14 +68,14 @@ public class MessageFilter implements Filter {
      */
     @Override
     public List<Message> filter(List<Message> messages) throws FilterException {
-        if (isNone(filterDataSource)) {
+        if (isNone(filterDataSourceType)) {
             return messages;
         } else {
             List<Message> filteredMessages = new ArrayList<>();
 
             for (Message message : messages) {
                 try {
-                    Object data = (filterDataSource.equals(FilterDataSource.KEY)) ? message.getLogKey() : message.getLogMessage();
+                    Object data = (filterDataSourceType.equals(FilterDataSourceType.KEY)) ? message.getLogKey() : message.getLogMessage();
                     Object obj = MethodUtils.invokeStaticMethod(Class.forName(protoSchema), "parseFrom", data);
                     if (evaluate(obj)) {
                         filteredMessages.add(message);
@@ -118,11 +120,11 @@ public class MessageFilter implements Filter {
         return objectAccessor.substring(0, 1).toLowerCase() + objectAccessor.substring(1);
     }
 
-    private boolean isNone(FilterDataSource filterDataSourceVal) {
-        return filterDataSourceVal.equals(FilterDataSource.NONE);
+    private boolean isNone(FilterDataSourceType filterDataSourceTypeVal) {
+        return filterDataSourceTypeVal.equals(FilterDataSourceType.NONE);
     }
 
-    private boolean isNotNone(FilterDataSource filterDataSourceVal) {
-        return !isNone(filterDataSourceVal);
+    private boolean isNotNone(FilterDataSourceType filterDataSourceTypeVal) {
+        return !isNone(filterDataSourceTypeVal);
     }
 }
