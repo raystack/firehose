@@ -11,6 +11,8 @@ import io.odpf.firehose.config.BigQuerySinkConfig;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverter;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.firehose.sink.bigquery.converter.RowMapper;
+import io.odpf.firehose.sink.bigquery.exception.BQSchemaMappingException;
+import io.odpf.firehose.sink.bigquery.exception.BQTableUpdateFailure;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryClient;
 import io.odpf.firehose.sink.bigquery.models.BQField;
 import io.odpf.firehose.sink.bigquery.models.ProtoField;
@@ -58,7 +60,7 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
         } catch (BigQueryException | IOException e) {
             String errMsg = "Error while updating bigquery table on callback:" + e.getMessage();
             log.error(errMsg);
-            throw new RuntimeException(errMsg, e);
+            throw new BQTableUpdateFailure(errMsg, e);
         }
     }
 
@@ -95,7 +97,7 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
 
         List<String> duplicateFields = getDuplicateFields(bqSchemaFields, bqMetadataFields).stream().map(Field::getName).collect(Collectors.toList());
         if (duplicateFields.size() > 0) {
-            throw new RuntimeException(String.format("Metadata field(s) is already present in the schema. "
+            throw new BQSchemaMappingException(String.format("Metadata field(s) is already present in the schema. "
                     + "fields: %s", duplicateFields));
         }
         bqSchemaFields.addAll(bqMetadataFields);

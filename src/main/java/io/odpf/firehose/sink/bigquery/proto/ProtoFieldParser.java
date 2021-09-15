@@ -1,6 +1,7 @@
 package io.odpf.firehose.sink.bigquery.proto;
 
 import com.google.protobuf.Descriptors;
+import io.odpf.firehose.sink.bigquery.exception.ProtoNotFoundException;
 import io.odpf.firehose.sink.bigquery.models.ProtoField;
 
 import java.util.Map;
@@ -24,8 +25,7 @@ public class ProtoFieldParser {
 
         Descriptors.Descriptor currentProto = descriptorCache.fetch(allDescriptors, typeNameToPackageNameMap, protoSchema);
         if (currentProto == null) {
-            // statsClient.increment(String.format("proto.notfound.errors,proto=%s", protoSchema));
-            throw new RuntimeException("No Proto found for class " + protoSchema);
+            throw new ProtoNotFoundException("No Proto found for class " + protoSchema);
         }
         for (Descriptors.FieldDescriptor field : currentProto.getFields()) {
             ProtoField fieldModel = new ProtoField(field.toProto());

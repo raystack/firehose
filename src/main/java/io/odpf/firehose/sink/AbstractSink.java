@@ -4,7 +4,7 @@ import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.exception.EglcConfigurationException;
+import io.odpf.firehose.exception.ConfigurationException;
 import io.odpf.firehose.exception.SinkException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.Metrics;
@@ -45,7 +45,7 @@ public abstract class AbstractSink implements Closeable, Sink {
             instrumentation.startExecution();
             failedMessages = execute();
             instrumentation.logInfo("Pushed {} messages", messages.size() - failedMessages.size());
-        } catch (DeserializerException | EglcConfigurationException | NullPointerException | SinkException e) {
+        } catch (DeserializerException | ConfigurationException | NullPointerException | SinkException e) {
             throw e;
         } catch (Exception e) {
             if (!messages.isEmpty()) {

@@ -9,8 +9,8 @@ import io.odpf.firehose.config.ObjectStorageSinkConfig;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.sink.common.ProtoUtils;
-import io.odpf.firehose.sink.exception.EmptyMessageException;
-import io.odpf.firehose.sink.exception.UnknownFieldsException;
+import io.odpf.firehose.exception.EmptyMessageException;
+import io.odpf.firehose.exception.UnknownFieldsException;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor

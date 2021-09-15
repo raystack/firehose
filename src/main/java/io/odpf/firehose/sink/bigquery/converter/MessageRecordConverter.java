@@ -9,8 +9,8 @@ import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.sink.exception.EmptyMessageException;
-import io.odpf.firehose.sink.exception.UnknownFieldsException;
+import io.odpf.firehose.exception.EmptyMessageException;
+import io.odpf.firehose.exception.UnknownFieldsException;
 import io.odpf.firehose.sink.bigquery.models.Constants;
 import io.odpf.firehose.sink.bigquery.models.Record;
 import io.odpf.firehose.sink.bigquery.models.Records;
@@ -63,12 +63,10 @@ public class MessageRecordConverter {
 
         try {
             DynamicMessage dynamicMessage = parser.parse(message.getLogMessage());
-
             if (!config.getInputSchemaProtoAllowUnknownFieldsEnable() && ProtoUtils.hasUnknownField(dynamicMessage)) {
                 log.info("unknown fields found at offset: {}, partition: {}, message: {}", message.getOffset(), message.getPartition(), message);
                 throw new UnknownFieldsException(dynamicMessage);
             }
-
             Map<String, Object> columns = rowMapper.map(dynamicMessage);
             addMetadata(columns, message, now);
             return new Record(message, columns);

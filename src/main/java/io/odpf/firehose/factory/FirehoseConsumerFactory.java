@@ -15,7 +15,7 @@ import io.odpf.firehose.consumer.FirehoseConsumer;
 import io.odpf.firehose.consumer.GenericConsumer;
 import io.odpf.firehose.consumer.KafkaConsumer;
 import io.odpf.firehose.consumer.SinkPool;
-import io.odpf.firehose.exception.EglcConfigurationException;
+import io.odpf.firehose.exception.ConfigurationException;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.MessageFilter;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -174,7 +174,7 @@ public class FirehoseConsumerFactory {
             case MONGODB:
                 return new MongoSinkFactory().create(config, statsDReporter, stencilClient);
             default:
-                throw new EglcConfigurationException("Invalid Firehose SINK_TYPE");
+                throw new ConfigurationException("Invalid Firehose SINK_TYPE");
 
         }
     }

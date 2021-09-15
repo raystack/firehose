@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.exception;
+package io.odpf.firehose.exception;
 
 
 import com.google.protobuf.DynamicMessage;

@@ -4,6 +4,7 @@ import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorHandler;
 import io.odpf.firehose.error.ErrorScope;
 import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.exception.SinkException;
 import io.odpf.firehose.sink.Sink;
 
 import java.io.IOException;
@@ -33,7 +34,8 @@ public class SinkWithFailHandler extends SinkDecorator {
         List<Message> messages = super.pushMessage(inputMessages);
         Optional<Message> m = messages.stream().filter(x -> errorHandler.filter(x, ErrorScope.FAIL)).findFirst();
         if (m.isPresent()) {
-            throw new IOException(m.get().getErrorInfo().getException());
+            throw new SinkException("Failing Firehose for error " + m.get().getErrorInfo().getErrorType(),
+                    m.get().getErrorInfo().getException());
         }
         return messages;
     }

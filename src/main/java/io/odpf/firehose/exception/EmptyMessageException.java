@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.exception;
+package io.odpf.firehose.exception;
 
 import io.odpf.firehose.exception.DeserializerException;
 

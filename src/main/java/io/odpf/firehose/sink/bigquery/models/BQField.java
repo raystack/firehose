@@ -4,6 +4,7 @@ import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.protobuf.DescriptorProtos;
+import io.odpf.firehose.sink.bigquery.exception.BQSchemaMappingException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,8 +76,7 @@ public class BQField {
                 ? FIELD_NAME_TO_BQ_TYPE_MAP.get(protoField.getTypeName())
                 : FIELD_TYPE_TO_BQ_TYPE_MAP.get(protoField.getType());
         if (typeFromFieldName == null) {
-            //statsClient.increment(String.format("proto.bq.typemapping.notfound.errors,field=%s,type=%s,typeName=%s", protoField.getName(), protoField.getType(), protoField.getTypeName()));
-            throw new RuntimeException(String.format("No type mapping found for field: %s, fieldType: %s, typeName: %s", protoField.getName(), protoField.getType(), protoField.getTypeName()));
+            throw new BQSchemaMappingException(String.format("No type mapping found for field: %s, fieldType: %s, typeName: %s", protoField.getName(), protoField.getType(), protoField.getTypeName()));
         }
         return typeFromFieldName;
     }

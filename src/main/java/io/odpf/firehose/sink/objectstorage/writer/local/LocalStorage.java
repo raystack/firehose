@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.objectstorage.writer.local;
 
 import com.google.protobuf.Descriptors;
-import io.odpf.firehose.exception.EglcConfigurationException;
+import io.odpf.firehose.exception.ConfigurationException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.objectstorage.Constants;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
@@ -48,7 +48,7 @@ public class LocalStorage {
                     throw new LocalFileWriterFailedException(e);
                 }
             default:
-                throw new EglcConfigurationException("unsupported file writer type");
+                throw new ConfigurationException("unsupported file writer type");
         }
     }
 
