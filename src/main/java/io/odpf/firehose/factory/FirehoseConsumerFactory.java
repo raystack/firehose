@@ -11,8 +11,8 @@ import io.odpf.firehose.consumer.FirehoseConsumer;
 import io.odpf.firehose.consumer.GenericConsumer;
 import io.odpf.firehose.exception.EglcConfigurationException;
 import io.odpf.firehose.filter.Filter;
-import io.odpf.firehose.filter.jexl.JexlFilter;
-import io.odpf.firehose.filter.json.JSONFilter;
+import io.odpf.firehose.filter.JexlFilter;
+import io.odpf.firehose.filter.JsonFilter;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
@@ -88,7 +88,7 @@ public class FirehoseConsumerFactory {
 
         Filter filter = (kafkaConsumerConfig.getFilterEngine() == JEXL) ?
                 new JexlFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, JexlFilter.class)) :
-                new JSONFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, JSONFilter.class));
+                new JsonFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, JsonFilter.class));
 
         GenericKafkaFactory genericKafkaFactory = new GenericKafkaFactory();
         Tracer tracer = NoopTracerFactory.create();

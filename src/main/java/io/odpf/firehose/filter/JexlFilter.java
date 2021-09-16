@@ -1,4 +1,4 @@
-package io.odpf.firehose.filter.jexl;
+package io.odpf.firehose.filter;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.config.enums.FilterDataSourceType;

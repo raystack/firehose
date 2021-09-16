@@ -22,7 +22,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class JexlFilterTest {
+public class JsonFilterTest {
 
     private KafkaConsumerConfig kafkaConsumerConfig;
 
