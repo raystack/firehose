@@ -50,7 +50,7 @@ public class JsonFilterTest {
     @Test
     public void shouldFilterEsbMessages() throws FilterException {
         Message message = new Message(key.toByteArray(), this.testMessage.toByteArray(), "topic1", 0, 100);
-        filter = new JexlFilter(kafkaConsumerConfig, instrumentation);
+        filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
         List<Message> filteredMessages = filter.filter(Arrays.asList(message));
         assertEquals(filteredMessages.get(0), message);
     }
@@ -65,7 +65,7 @@ public class JsonFilterTest {
         bookingFilterConfigs.put("FILTER_JEXL_EXPRESSION", "testBookingLogMessage.getCustomerDynamicSurgeEnabled() == false");
         bookingFilterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
         KafkaConsumerConfig bookingConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, bookingFilterConfigs);
-        JexlFilter bookingFilter = new JexlFilter(bookingConsumerConfig, instrumentation);
+        JsonFilter bookingFilter = new JsonFilter(bookingConsumerConfig, instrumentation);
         List<Message> filteredMessages = bookingFilter.filter(Arrays.asList(message));
         assertEquals(filteredMessages.get(0), message);
     }
@@ -78,7 +78,7 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
-        filter = new JexlFilter(kafkaConsumerConfig, instrumentation);
+        filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
         this.testMessage = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
 
@@ -93,7 +93,7 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
-        filter = new JexlFilter(kafkaConsumerConfig, instrumentation);
+        filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
         this.testMessage = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
 
@@ -110,7 +110,7 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
-        new JexlFilter(kafkaConsumerConfig, instrumentation);
+        new JsonFilter(kafkaConsumerConfig, instrumentation);
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter type: {}", FilterDataSourceType.MESSAGE);
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter schema: {}", TestMessage.class.getName());
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter expression: {}", "testMessage.getOrderNumber() == 123");
@@ -122,7 +122,7 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_JEXL_DATA_SOURCE", "none");
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
-        new JexlFilter(kafkaConsumerConfig, instrumentation);
+        new JsonFilter(kafkaConsumerConfig, instrumentation);
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("No filter is selected");
     }
 }
