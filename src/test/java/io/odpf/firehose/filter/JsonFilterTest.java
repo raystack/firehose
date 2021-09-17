@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +29,11 @@ public class JsonFilterTest {
 
     private Filter filter;
 
-    private TestMessage testMessage;
-    private TestKey key;
+    private TestMessage testMessageProto;
+    private TestKey testKeyProto;
+    private String testMessageJson;
+    private String testKeyJson;
+
 
     @Mock
     private Instrumentation instrumentation;
@@ -38,18 +42,22 @@ public class JsonFilterTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         Map<String, String> filterConfigs = new HashMap<>();
+
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":123}}}");
         filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
-        key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
-        testMessage = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
+        testKeyProto = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
+        testMessageProto = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
+
+        testKeyJson = "{\"order_number\":123,\"order_url\":\"abc\"}";
+        testMessageJson = "{\"order_number\":123,\"order_url\":\"abc\",\"order_details\":\"details\"}";
     }
 
     @Test
     public void shouldFilterEsbMessages() throws FilterException {
-        Message message = new Message(key.toByteArray(), this.testMessage.toByteArray(), "topic1", 0, 100);
+        Message message = new Message(testKeyProto.toByteArray(), testMessageProto.toByteArray(), "topic1", 0, 100);
         filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
         List<Message> filteredMessages = filter.filter(Arrays.asList(message));
         assertEquals(filteredMessages.get(0), message);
@@ -61,9 +69,11 @@ public class JsonFilterTest {
         TestBookingLogKey bookingLogKey = TestBookingLogKey.newBuilder().build();
         Message message = new Message(bookingLogKey.toByteArray(), bookingLogMessage.toByteArray(), "topic1", 0, 100);
         HashMap<String, String> bookingFilterConfigs = new HashMap<>();
+
         bookingFilterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
         bookingFilterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"customer_dynamic_surge_enabled\":{\"const\":\"true\"}}}");
         bookingFilterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
+
         KafkaConsumerConfig bookingConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, bookingFilterConfigs);
         JsonFilter bookingFilter = new JsonFilter(bookingConsumerConfig, instrumentation);
         List<Message> filteredMessages = bookingFilter.filter(Arrays.asList(message));
@@ -79,10 +89,8 @@ public class JsonFilterTest {
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
-        key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
-        this.testMessage = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
 
-        Message message = new Message(key.toByteArray(), this.testMessage.toByteArray(), "topic1", 0, 100);
+        Message message = new Message(testKeyProto.toByteArray(), testMessageProto.toByteArray(), "topic1", 0, 100);
         filter.filter(Arrays.asList(message));
     }
 
@@ -94,10 +102,8 @@ public class JsonFilterTest {
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
-        key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
-        this.testMessage = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
 
-        Message message = new Message(key.toByteArray(), this.testMessage.toByteArray(), "topic1", 0, 100);
+        Message message = new Message(testKeyProto.toByteArray(), testMessageProto.toByteArray(), "topic1", 0, 100);
         List<Message> filteredMessages = this.filter.filter(Arrays.asList(message));
         assertEquals(filteredMessages.get(0), message);
     }
@@ -115,6 +121,61 @@ public class JsonFilterTest {
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter schema: {}", TestMessage.class.getName());
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter expression: {}", "{\"properties\":{\"order_number\":{\"const\":123}}}");
     }
+
+
+    @Test
+    public void shouldFilterEsbMessagesJson() throws FilterException {
+        Message message = new Message(testKeyJson.getBytes(Charset.defaultCharset()), testMessageJson.getBytes(Charset.defaultCharset()), "topic1", 0, 100);
+        filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
+        List<Message> filteredMessages = filter.filter(Arrays.asList(message));
+        assertEquals(filteredMessages.get(0), message);
+    }
+
+    @Test
+    public void shouldNotFilterEsbMessagesForEmptyBooleanValuesJson() throws FilterException {
+        String bookingLogMessageJson = "{\"customer_id\":\"customerid\"}";
+        String bookingLogKeyJson = "";
+        Message message = new Message(bookingLogKeyJson.getBytes(Charset.defaultCharset()), bookingLogMessageJson.getBytes(Charset.defaultCharset()), "topic1", 0, 100);
+        HashMap<String, String> bookingFilterConfigs = new HashMap<>();
+
+        bookingFilterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        bookingFilterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"customer_dynamic_surge_enabled\":{\"const\":\"true\"}}}");
+        bookingFilterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
+
+        KafkaConsumerConfig bookingConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, bookingFilterConfigs);
+        JsonFilter bookingFilter = new JsonFilter(bookingConsumerConfig, instrumentation);
+        List<Message> filteredMessages = bookingFilter.filter(Arrays.asList(message));
+        assertEquals(filteredMessages.get(0), message);
+    }
+
+    @Test(expected = FilterException.class)
+    public void shouldThrowExceptionOnInvalidFilterExpressionJson() throws FilterException {
+        Map<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "12/s");
+        filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
+
+        filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
+
+        Message message = new Message(testKeyJson.getBytes(Charset.defaultCharset()), testMessageJson.getBytes(Charset.defaultCharset()), "topic1", 0, 100);
+        filter.filter(Arrays.asList(message));
+    }
+
+    @Test
+    public void shouldNotApplyFilterOnEmptyFilterTypeJson() throws FilterException {
+        Map<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":123}}}");
+        filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "JSON");
+        kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
+
+        filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
+
+        Message message = new Message(testKeyJson.getBytes(Charset.defaultCharset()), testMessageJson.getBytes(Charset.defaultCharset()), "topic1", 0, 100);
+        List<Message> filteredMessages = this.filter.filter(Arrays.asList(message));
+        assertEquals(filteredMessages.get(0), message);
+    }
+
 
     @Test
     public void shouldLogFilterTypeIfFilterTypeIsNone() {
