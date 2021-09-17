@@ -26,7 +26,11 @@ import io.odpf.firehose.sink.log.LogSinkFactory;
 import io.odpf.firehose.sink.mongodb.MongoSinkFactory;
 import io.odpf.firehose.sink.prometheus.PromSinkFactory;
 import io.odpf.firehose.sink.redis.RedisSinkFactory;
-import io.odpf.firehose.sinkdecorator.*;
+import io.odpf.firehose.sinkdecorator.BackOff;
+import io.odpf.firehose.sinkdecorator.BackOffProvider;
+import io.odpf.firehose.sinkdecorator.ExponentialBackOffProvider;
+import io.odpf.firehose.sinkdecorator.SinkWithDlq;
+import io.odpf.firehose.sinkdecorator.SinkWithRetry;
 import io.odpf.firehose.tracer.SinkTracer;
 import io.odpf.firehose.util.Clock;
 import io.opentracing.Tracer;
@@ -86,9 +90,7 @@ public class FirehoseConsumerFactory {
      */
     public FirehoseConsumer buildConsumer() {
 
-        Filter filter = (kafkaConsumerConfig.getFilterEngine() == JEXL) ?
-                new JexlFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, JexlFilter.class)) :
-                new JsonFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, JsonFilter.class));
+        Filter filter = (kafkaConsumerConfig.getFilterEngine() == JEXL) ? new JexlFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, JexlFilter.class)) : new JsonFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, JsonFilter.class));
 
         GenericKafkaFactory genericKafkaFactory = new GenericKafkaFactory();
         Tracer tracer = NoopTracerFactory.create();

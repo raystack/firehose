@@ -1,6 +1,10 @@
 package io.odpf.firehose.config;
 
-import io.odpf.firehose.config.converter.*;
+import io.odpf.firehose.config.converter.FilterDataSourceTypeConverter;
+import io.odpf.firehose.config.converter.FilterEngineTypeConverter;
+import io.odpf.firehose.config.converter.FilterMessageTypeConverter;
+import io.odpf.firehose.config.converter.ProtoIndexToFieldMapConverter;
+import io.odpf.firehose.config.converter.SinkTypeConverter;
 import io.odpf.firehose.config.enums.FilterDataSourceType;
 import io.odpf.firehose.config.enums.FilterEngineType;
 import io.odpf.firehose.config.enums.FilterMessageType;
@@ -101,8 +105,8 @@ public interface AppConfig extends Config {
     @DefaultValue("NONE")
     FilterDataSourceType getFilterJsonDataSource();
 
-    @Key("FILTER_JSON_RULE")
-    String getFilterJsonRule();
+    @Key("FILTER_JSON_SCHEMA")
+    String getFilterJsonSchema();
 
     @Key("FILTER_JSON_SCHEMA_PROTO_CLASS")
     String getFilterJsonSchemaProtoClass();

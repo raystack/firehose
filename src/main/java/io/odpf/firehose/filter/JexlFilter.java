@@ -3,8 +3,6 @@ package io.odpf.firehose.filter;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.config.enums.FilterDataSourceType;
 import io.odpf.firehose.consumer.Message;
-import io.odpf.firehose.filter.Filter;
-import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;

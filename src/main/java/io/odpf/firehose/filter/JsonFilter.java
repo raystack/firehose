@@ -1,18 +1,26 @@
 package io.odpf.firehose.filter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.util.JsonFormat;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaException;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationMessage;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.config.enums.FilterDataSourceType;
 import io.odpf.firehose.config.enums.FilterMessageType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.metrics.Instrumentation;
-import org.apache.commons.jexl2.JexlException;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static io.odpf.firehose.config.enums.FilterDataSourceType.KEY;
 import static io.odpf.firehose.config.enums.FilterMessageType.JSON;
@@ -29,14 +37,14 @@ public class JsonFilter implements Filter {
     public JsonFilter(KafkaConsumerConfig consumerConfig, Instrumentation instrumentation) {
 
         this.instrumentation = instrumentation;
-        filterDataSourceType = consumerConfig.getFilterJexlDataSource();
-        protoSchema = consumerConfig.getFilterJexlSchemaProtoClass();
+        filterDataSourceType = consumerConfig.getFilterJsonDataSource();
+        protoSchema = consumerConfig.getFilterJsonSchemaProtoClass();
         messageType = consumerConfig.getFilterMessageType();
 
         this.instrumentation.logInfo("\n\tFilter type: {}", filterDataSourceType);
-        if (isNotNone(consumerConfig.getFilterJexlDataSource())) {
+        if (isNotNone(consumerConfig.getFilterJsonDataSource())) {
 
-            this.filterRule = consumerConfig.getFilterJsonRule();
+            this.filterRule = consumerConfig.getFilterJsonSchema();
             this.instrumentation.logInfo("\n\tFilter schema: {}", protoSchema);
             this.instrumentation.logInfo("\n\tFilter expression: {}", filterRule);
 
@@ -44,7 +52,6 @@ public class JsonFilter implements Filter {
             this.instrumentation.logInfo("No filter is selected");
         }
     }
-
 
     /**
      * method to filter the EsbMessages.
@@ -88,19 +95,21 @@ public class JsonFilter implements Filter {
 
 
     private boolean evaluate(String data, String rule) throws FilterException {
-        Object result;
 
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4);
+
+        JsonNode json;
+        JsonSchema schema;
         try {
-            result = expression.evaluate(convertDataToContext(data));
-        } catch (JexlException | IllegalAccessException e) {
+            json = objectMapper.readTree(data);
+            schema = schemaFactory.getSchema(rule);
+        } catch (JsonProcessingException | JsonSchemaException e) {
             throw new FilterException("Failed while filtering " + e.getMessage());
         }
+        Set<ValidationMessage> validationResult = schema.validate(json);
 
-        if (result instanceof Boolean) {
-            return (Boolean) result;
-        } else {
-            throw new FilterException("Expression should be correct!!");
-        }
+        return validationResult.isEmpty();
     }
 
 

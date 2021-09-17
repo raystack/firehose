@@ -38,9 +38,9 @@ public class JsonFilterTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JEXL_DATA_SOURCE", "message");
-        filterConfigs.put("FILTER_JEXL_EXPRESSION", "testMessage.getOrderNumber() == 123");
-        filterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":123}}}");
+        filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
@@ -61,9 +61,9 @@ public class JsonFilterTest {
         TestBookingLogKey bookingLogKey = TestBookingLogKey.newBuilder().build();
         Message message = new Message(bookingLogKey.toByteArray(), bookingLogMessage.toByteArray(), "topic1", 0, 100);
         HashMap<String, String> bookingFilterConfigs = new HashMap<>();
-        bookingFilterConfigs.put("FILTER_JEXL_DATA_SOURCE", "message");
-        bookingFilterConfigs.put("FILTER_JEXL_EXPRESSION", "testBookingLogMessage.getCustomerDynamicSurgeEnabled() == false");
-        bookingFilterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
+        bookingFilterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        bookingFilterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"customer_dynamic_surge_enabled\":{\"const\":\"true\"}}}");
+        bookingFilterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
         KafkaConsumerConfig bookingConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, bookingFilterConfigs);
         JsonFilter bookingFilter = new JsonFilter(bookingConsumerConfig, instrumentation);
         List<Message> filteredMessages = bookingFilter.filter(Arrays.asList(message));
@@ -73,9 +73,9 @@ public class JsonFilterTest {
     @Test(expected = FilterException.class)
     public void shouldThrowExceptionOnInvalidFilterExpression() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JEXL_DATA_SOURCE", "message");
-        filterConfigs.put("FILTER_JEXL_EXPRESSION", "1+2");
-        filterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "12/s");
+        filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
@@ -89,8 +89,8 @@ public class JsonFilterTest {
     @Test
     public void shouldNotApplyFilterOnEmptyFilterType() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JEXL_EXPRESSION", "testMessage.getOrderNumber() == 123");
-        filterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":123}}}");
+        filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
@@ -105,21 +105,21 @@ public class JsonFilterTest {
     @Test
     public void shouldLogFilterTypeIfFilterTypeIsNotNone() {
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JEXL_DATA_SOURCE", "message");
-        filterConfigs.put("FILTER_JEXL_EXPRESSION", "testMessage.getOrderNumber() == 123");
-        filterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":123}}}");
+        filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         new JsonFilter(kafkaConsumerConfig, instrumentation);
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter type: {}", FilterDataSourceType.MESSAGE);
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter schema: {}", TestMessage.class.getName());
-        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter expression: {}", "testMessage.getOrderNumber() == 123");
+        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter expression: {}", "{\"properties\":{\"order_number\":{\"const\":123}}}");
     }
 
     @Test
     public void shouldLogFilterTypeIfFilterTypeIsNone() {
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JEXL_DATA_SOURCE", "none");
+        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "none");
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         new JsonFilter(kafkaConsumerConfig, instrumentation);
