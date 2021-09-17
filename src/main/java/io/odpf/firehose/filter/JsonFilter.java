@@ -34,17 +34,19 @@ public class JsonFilter implements Filter {
     private final FilterMessageType messageType;
     private final ObjectMapper objectMapper;
     private final JsonSchemaFactory schemaFactory;
+    private Instrumentation instrumentation;
 
 
     public JsonFilter(KafkaConsumerConfig consumerConfig, Instrumentation instrumentation) {
 
         objectMapper = new ObjectMapper();
-        schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4);
+        schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
 
         filterDataSourceType = consumerConfig.getFilterJsonDataSource();
         protoSchema = consumerConfig.getFilterJsonSchemaProtoClass();
         messageType = consumerConfig.getFilterMessageType();
 
+        this.instrumentation = instrumentation;
         instrumentation.logInfo("\n\tFilter type: {}", filterDataSourceType);
         if (isNotNone(consumerConfig.getFilterJsonDataSource())) {
 
@@ -67,34 +69,31 @@ public class JsonFilter implements Filter {
     @Override
     public List<Message> filter(List<Message> messages) throws FilterException {
 
-        if (isNone(filterDataSourceType)) {
+        if (isNone(filterDataSourceType))
             return messages;
 
-        } else {
-            List<Message> filteredMessages = new ArrayList<>();
-            for (Message message : messages) {
-                byte[] data = (filterDataSourceType.equals(KEY)) ? message.getLogKey() : message.getLogMessage();
-                String jsonMessage = "";
+        List<Message> filteredMessages = new ArrayList<>();
+        for (Message message : messages) {
+            byte[] data = (filterDataSourceType.equals(KEY)) ? message.getLogKey() : message.getLogMessage();
+            String jsonMessage = "";
 
-                if (messageType == PROTOBUF) {
-                    try {
-                        Object obj = MethodUtils.invokeStaticMethod(Class.forName(protoSchema), "parseFrom", data);
-                        JsonFormat.Printer printer = JsonFormat.printer().preservingProtoFieldNames();
-                        jsonMessage = printer.print((GeneratedMessageV3) obj);
+            if (messageType == PROTOBUF) {
+                try {
+                    Object obj = MethodUtils.invokeStaticMethod(Class.forName(protoSchema), "parseFrom", data);
+                    JsonFormat.Printer printer = JsonFormat.printer().preservingProtoFieldNames();
+                    jsonMessage = printer.print((GeneratedMessageV3) obj);
 
-                    } catch (Exception e) {
-                        throw new FilterException("Failed while filtering EsbMessages", e);
-                    }
-                } else if (messageType == JSON) {
-                    jsonMessage = new String(data, Charset.defaultCharset());
-
+                } catch (Exception e) {
+                    throw new FilterException("Failed while filtering EsbMessages", e);
                 }
-                if (evaluate(jsonMessage, filterRule)) {
-                    filteredMessages.add(message);
-                }
+            } else if (messageType == JSON) {
+                jsonMessage = new String(data, Charset.defaultCharset());
             }
-            return filteredMessages;
+            if (evaluate(jsonMessage, filterRule)) {
+                filteredMessages.add(message);
+            }
         }
+        return filteredMessages;
     }
 
 
