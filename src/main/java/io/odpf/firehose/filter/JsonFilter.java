@@ -74,22 +74,22 @@ public class JsonFilter implements Filter {
             List<Message> filteredMessages = new ArrayList<>();
             for (Message message : messages) {
                 byte[] data = (filterDataSourceType.equals(KEY)) ? message.getLogKey() : message.getLogMessage();
-                String ss = "";
+                String jsonMessage = "";
 
                 if (messageType == PROTOBUF) {
                     try {
                         Object obj = MethodUtils.invokeStaticMethod(Class.forName(protoSchema), "parseFrom", data);
-                        JsonFormat.Printer d = JsonFormat.printer().preservingProtoFieldNames();
-                        ss = d.print((GeneratedMessageV3) obj);
+                        JsonFormat.Printer printer = JsonFormat.printer().preservingProtoFieldNames();
+                        jsonMessage = printer.print((GeneratedMessageV3) obj);
 
                     } catch (Exception e) {
                         throw new FilterException("Failed while filtering EsbMessages", e);
                     }
                 } else if (messageType == JSON) {
-                    ss = new String(data, Charset.defaultCharset());
+                    jsonMessage = new String(data, Charset.defaultCharset());
 
                 }
-                if (evaluate(ss, filterRule)) {
+                if (evaluate(jsonMessage, filterRule)) {
                     filteredMessages.add(message);
                 }
             }

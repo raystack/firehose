@@ -165,7 +165,7 @@ public class JsonFilterTest {
     @Test
     public void shouldNotApplyFilterOnEmptyFilterTypeJson() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"1232\"}}}");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "JSON");
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "KEY");
 
