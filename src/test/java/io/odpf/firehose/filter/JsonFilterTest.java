@@ -10,7 +10,9 @@ import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -34,6 +36,9 @@ public class JsonFilterTest {
     private String testMessageJson;
     private String testKeyJson;
 
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private Instrumentation instrumentation;
@@ -80,7 +85,7 @@ public class JsonFilterTest {
         assertEquals(filteredMessages.get(0), message);
     }
 
-    @Test(expected = FilterException.class)
+    @Test
     public void shouldThrowExceptionOnInvalidFilterExpression() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
@@ -91,6 +96,7 @@ public class JsonFilterTest {
         filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
 
         Message message = new Message(testKeyProto.toByteArray(), testMessageProto.toByteArray(), "topic1", 0, 100);
+        thrown.expect(FilterException.class);
         filter.filter(Arrays.asList(message));
     }
 
@@ -140,7 +146,6 @@ public class JsonFilterTest {
 
         bookingFilterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
         bookingFilterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"customer_dynamic_surge_enabled\":{\"const\":\"true\"}}}");
-        bookingFilterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
 
         KafkaConsumerConfig bookingConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, bookingFilterConfigs);
         JsonFilter bookingFilter = new JsonFilter(bookingConsumerConfig, instrumentation);
@@ -148,7 +153,7 @@ public class JsonFilterTest {
         assertEquals(filteredMessages.get(0), message);
     }
 
-    @Test(expected = FilterException.class)
+    @Test
     public void shouldThrowExceptionOnInvalidFilterExpressionJson() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
@@ -159,18 +164,19 @@ public class JsonFilterTest {
         filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
 
         Message message = new Message(testKeyJson.getBytes(Charset.defaultCharset()), testMessageJson.getBytes(Charset.defaultCharset()), "topic1", 0, 100);
+        thrown.expect(FilterException.class);
+
         filter.filter(Arrays.asList(message));
     }
 
     @Test
     public void shouldNotApplyFilterOnEmptyFilterTypeJson() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"1253\"}}}");
         filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "JSON");
-        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "KEY");
+        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
 
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
-
         filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
 
         Message message = new Message(testKeyJson.getBytes(Charset.defaultCharset()), testMessageJson.getBytes(Charset.defaultCharset()), "topic1", 0, 100);
