@@ -46,11 +46,6 @@ public class JsonFilterTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
-        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":123}}}");
-        filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
-        kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         testKeyProto = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
         testMessageProto = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
@@ -62,6 +57,14 @@ public class JsonFilterTest {
     @Test
     public void shouldFilterEsbMessages() throws FilterException {
         Message message = new Message(testKeyProto.toByteArray(), testMessageProto.toByteArray(), "topic1", 0, 100);
+        Map<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "PROTOBUF");
+
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
+        filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
+
         filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
         List<Message> filteredMessages = filter.filter(Arrays.asList(message));
         assertEquals(filteredMessages.get(0), message);
