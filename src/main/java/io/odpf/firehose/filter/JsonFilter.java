@@ -39,7 +39,7 @@ public class JsonFilter implements Filter {
     public JsonFilter(KafkaConsumerConfig consumerConfig, Instrumentation instrumentation) {
 
         objectMapper = new ObjectMapper();
-        schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4);
+        schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
 
         filterDataSourceType = consumerConfig.getFilterJsonDataSource();
         protoSchema = consumerConfig.getFilterJsonSchemaProtoClass();
