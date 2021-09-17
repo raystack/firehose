@@ -30,26 +30,30 @@ public class JsonFilter implements Filter {
 
     private final FilterDataSourceType filterDataSourceType;
     private final String protoSchema;
-    private Instrumentation instrumentation;
     private String filterRule;
     private final FilterMessageType messageType;
+    private final ObjectMapper objectMapper;
+    private final JsonSchemaFactory schemaFactory;
+
 
     public JsonFilter(KafkaConsumerConfig consumerConfig, Instrumentation instrumentation) {
 
-        this.instrumentation = instrumentation;
+        objectMapper = new ObjectMapper();
+        schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4);
+
         filterDataSourceType = consumerConfig.getFilterJsonDataSource();
         protoSchema = consumerConfig.getFilterJsonSchemaProtoClass();
         messageType = consumerConfig.getFilterMessageType();
 
-        this.instrumentation.logInfo("\n\tFilter type: {}", filterDataSourceType);
+        instrumentation.logInfo("\n\tFilter type: {}", filterDataSourceType);
         if (isNotNone(consumerConfig.getFilterJsonDataSource())) {
 
             this.filterRule = consumerConfig.getFilterJsonSchema();
-            this.instrumentation.logInfo("\n\tFilter schema: {}", protoSchema);
-            this.instrumentation.logInfo("\n\tFilter expression: {}", filterRule);
+            instrumentation.logInfo("\n\tFilter schema: {}", protoSchema);
+            instrumentation.logInfo("\n\tFilter expression: {}", filterRule);
 
         } else {
-            this.instrumentation.logInfo("No filter is selected");
+            instrumentation.logInfo("No filter is selected");
         }
     }
 
@@ -95,9 +99,6 @@ public class JsonFilter implements Filter {
 
 
     private boolean evaluate(String data, String rule) throws FilterException {
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4);
 
         JsonNode json;
         JsonSchema schema;
