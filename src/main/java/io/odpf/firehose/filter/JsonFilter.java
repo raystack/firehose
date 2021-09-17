@@ -69,8 +69,9 @@ public class JsonFilter implements Filter {
     @Override
     public List<Message> filter(List<Message> messages) throws FilterException {
 
-        if (isNone(filterDataSourceType))
+        if (isNone(filterDataSourceType)) {
             return messages;
+        }
 
         List<Message> filteredMessages = new ArrayList<>();
         for (Message message : messages) {
