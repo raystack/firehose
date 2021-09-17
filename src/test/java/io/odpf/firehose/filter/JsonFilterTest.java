@@ -132,7 +132,7 @@ public class JsonFilterTest {
     public void shouldFilterEsbMessagesJson() throws FilterException {
         Message message = new Message(testKeyJson.getBytes(Charset.defaultCharset()), testMessageJson.getBytes(Charset.defaultCharset()), "topic1", 0, 100);
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_ESB_MESSAGE_TYPE","JSON");
+        filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "JSON");
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":123}}}");
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
