@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.util.JsonFormat;
 import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaException;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
@@ -63,7 +62,7 @@ public class JsonFilter implements Filter {
 
             try {
                 schema = schemaFactory.getSchema(filterJsonSchema);
-            } catch (JsonSchemaException e) {
+            } catch (Exception e) {
                 instrumentation.logError("Failed to parse JSON Schema " + e.getMessage());
             }
         } else {
@@ -83,6 +82,9 @@ public class JsonFilter implements Filter {
 
         if (filterDataSourceType == NONE) {
             return messages;
+        }
+        if (schema == null) {
+            throw new FilterException("Filter JSON Schema is invalid");
         }
 
         List<Message> filteredMessages = new ArrayList<>();
