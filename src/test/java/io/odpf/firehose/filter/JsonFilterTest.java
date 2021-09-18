@@ -51,14 +51,14 @@ public class JsonFilterTest {
         testKeyProto1 = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
         testMessageProto1 = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
 
-        testKeyJson1 = "{\"order_number\":123,\"order_url\":\"abc\"}";
-        testMessageJson1 = "{\"order_number\":123,\"order_url\":\"abc\",\"order_details\":\"details\"}";
+        testKeyJson1 = "{\"order_number\":\"123\",\"order_url\":\"abc\"}";
+        testMessageJson1 = "{\"order_number\":\"123\",\"order_url\":\"abc\",\"order_details\":\"details\"}";
 
-        testKeyProto2 = TestKey.newBuilder().setOrderNumber("92").setOrderUrl("awbc").build();
-        testMessageProto2 = TestMessage.newBuilder().setOrderNumber("92").setOrderUrl("awbc").setOrderDetails("details").build();
+        testKeyProto2 = TestKey.newBuilder().setOrderNumber("92").setOrderUrl("pqr").build();
+        testMessageProto2 = TestMessage.newBuilder().setOrderNumber("92").setOrderUrl("pqr").setOrderDetails("details").build();
 
-        testKeyJson2 = "{\"order_number\":92,\"order_url\":\"awbc\"}";
-        testMessageJson2 = "{\"order_number\":92,\"order_url\":\"awbc\",\"order_details\":\"details\"}";
+        testKeyJson2 = "{\"order_number\":\"92\",\"order_url\":\"pqr\"}";
+        testMessageJson2 = "{\"order_number\":\"92\",\"order_url\":\"pqr\",\"order_details\":\"details\"}";
 
     }
 
@@ -118,9 +118,9 @@ public class JsonFilterTest {
     }
 
     @Test
-    public void shouldNotApplyFilterOnEmptyFilterTypeForProtobufMessageType() throws FilterException {
+    public void shouldNotApplyFilterOnEmptyFilterDataSourceForProtobufMessageType() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":123}}}");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "PROTOBUF");
 
@@ -134,19 +134,19 @@ public class JsonFilterTest {
     }
 
     @Test
-    public void shouldLogFilterTypeIfFilterTypeIsNotNoneForProtobufMessageType() {
+    public void shouldLogFilterTypeIfFilterDataSourceIsNotNoneForProtobufMessageType() {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "PROTOBUF");
 
-        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":123}}}");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         new JsonFilter(kafkaConsumerConfig, instrumentation);
         verify(instrumentation, times(1)).logInfo("\n\tFilter type: {}", FilterDataSourceType.MESSAGE);
         verify(instrumentation, times(1)).logInfo("\n\tMessage Proto class: {}", TestMessage.class.getName());
-        verify(instrumentation, times(1)).logInfo("\n\tFilter JSON Schema: {}", "{\"properties\":{\"order_number\":{\"const\":123}}}");
+        verify(instrumentation, times(1)).logInfo("\n\tFilter JSON Schema: {}", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
     }
 
 
@@ -158,7 +158,7 @@ public class JsonFilterTest {
 
         filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "JSON");
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
-        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":123}}}");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
 
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
         jsonFilter = new JsonFilter(kafkaConsumerConfig, instrumentation);
@@ -203,7 +203,7 @@ public class JsonFilterTest {
     }
 
     @Test
-    public void shouldNotApplyFilterOnEmptyFilterTypeForJsonMessageType() throws FilterException {
+    public void shouldNotApplyFilterOnEmptyFilterDataSourceForJsonMessageType() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"1253\"}}}");
         filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "JSON");
