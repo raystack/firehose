@@ -135,7 +135,7 @@ public class JsonFilterTest {
 
         new JsonFilter(kafkaConsumerConfig, instrumentation);
         verify(instrumentation, times(1)).logInfo("\n\tFilter type: {}", FilterDataSourceType.MESSAGE);
-        verify(instrumentation, times(1)).logInfo("\n\tMessage Proto schema: {}", TestMessage.class.getName());
+        verify(instrumentation, times(1)).logInfo("\n\tMessage Proto class: {}", TestMessage.class.getName());
         verify(instrumentation, times(1)).logInfo("\n\tFilter JSON Schema: {}", "{\"properties\":{\"order_number\":{\"const\":123}}}");
     }
 

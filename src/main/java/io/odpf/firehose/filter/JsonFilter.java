@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.GeneratedMessageV3;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
@@ -16,6 +17,7 @@ import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -57,7 +59,7 @@ public class JsonFilter implements Filter {
 
             String filterJsonSchema = consumerConfig.getFilterJsonSchema();
             if (messageType == PROTOBUF) {
-                instrumentation.logInfo("\n\tMessage Proto schema: {}", protoSchema);
+                instrumentation.logInfo("\n\tMessage Proto class: {}", protoSchema);
             }
             instrumentation.logInfo("\n\tFilter JSON Schema: {}", filterJsonSchema);
 
@@ -87,7 +89,6 @@ public class JsonFilter implements Filter {
         if (schema == null) {
             throw new FilterException("Filter JSON Schema is invalid");
         }
-
         List<Message> filteredMessages = new ArrayList<>();
         for (Message message : messages) {
             byte[] data = (filterDataSourceType.equals(KEY)) ? message.getLogKey() : message.getLogMessage();
@@ -98,8 +99,11 @@ public class JsonFilter implements Filter {
                     Object protoPojo = protoParser.invoke(null, data);
                     jsonMessage = jsonPrinter.print((GeneratedMessageV3) protoPojo);
 
-                } catch (Exception e) {
-                    throw new FilterException("Failed while filtering EsbMessages", e);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new FilterException("Failed to parse protobuf message", e);
+
+                } catch (InvalidProtocolBufferException e) {
+                    throw new FilterException("Protobuf message is invalid ", e);
                 }
             } else if (messageType == JSON) {
                 jsonMessage = new String(data, Charset.defaultCharset());
