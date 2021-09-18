@@ -14,7 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.nio.charset.Charset;
@@ -24,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class JsonFilterTest {
 
@@ -125,9 +126,9 @@ public class JsonFilterTest {
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         new JsonFilter(kafkaConsumerConfig, instrumentation);
-        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter type: {}", FilterDataSourceType.MESSAGE);
-        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter schema: {}", TestMessage.class.getName());
-        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter expression: {}", "{\"properties\":{\"order_number\":{\"const\":123}}}");
+        verify(instrumentation, times(1)).logInfo("\n\tFilter type: {}", FilterDataSourceType.MESSAGE);
+        verify(instrumentation, times(1)).logInfo("\n\tFilter schema: {}", TestMessage.class.getName());
+        verify(instrumentation, times(1)).logInfo("\n\tFilter expression: {}", "{\"properties\":{\"order_number\":{\"const\":123}}}");
     }
 
 
@@ -135,9 +136,11 @@ public class JsonFilterTest {
     public void shouldFilterEsbMessagesJson() throws FilterException {
         Message message = new Message(testKeyJson.getBytes(Charset.defaultCharset()), testMessageJson.getBytes(Charset.defaultCharset()), "topic1", 0, 100);
         Map<String, String> filterConfigs = new HashMap<>();
+
         filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "JSON");
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":123}}}");
+
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
         filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
         List<Message> filteredMessages = filter.filter(Arrays.asList(message));
@@ -198,6 +201,6 @@ public class JsonFilterTest {
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
         new JsonFilter(kafkaConsumerConfig, instrumentation);
-        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("No filter is selected");
+        verify(instrumentation, times(1)).logInfo("No filter is selected");
     }
 }

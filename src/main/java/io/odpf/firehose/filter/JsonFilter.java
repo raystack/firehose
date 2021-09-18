@@ -17,6 +17,7 @@ import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,10 +36,10 @@ public class JsonFilter implements Filter {
     private final ObjectMapper objectMapper;
     private final JsonSchemaFactory schemaFactory;
     private Instrumentation instrumentation;
+    private Method parser;
 
 
     public JsonFilter(KafkaConsumerConfig consumerConfig, Instrumentation instrumentation) {
-
         objectMapper = new ObjectMapper();
         schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
 
@@ -46,6 +47,13 @@ public class JsonFilter implements Filter {
         protoSchema = consumerConfig.getFilterJsonSchemaProtoClass();
         messageType = consumerConfig.getFilterMessageType();
 
+        if (messageType == PROTOBUF) {
+            try {
+                parser = MethodUtils.getAccessibleMethod(Class.forName(protoSchema), "parseFrom", byte[].class);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
         this.instrumentation = instrumentation;
         instrumentation.logInfo("\n\tFilter type: {}", filterDataSourceType);
         if (isNotNone(consumerConfig.getFilterJsonDataSource())) {
@@ -80,7 +88,7 @@ public class JsonFilter implements Filter {
 
             if (messageType == PROTOBUF) {
                 try {
-                    Object obj = MethodUtils.invokeStaticMethod(Class.forName(protoSchema), "parseFrom", data);
+                    Object obj = parser.invoke(null, data);
                     JsonFormat.Printer printer = JsonFormat.printer().preservingProtoFieldNames();
                     jsonMessage = printer.print((GeneratedMessageV3) obj);
 
