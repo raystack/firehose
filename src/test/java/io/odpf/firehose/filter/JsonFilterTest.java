@@ -16,8 +16,8 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,12 +30,12 @@ public class JsonFilterTest {
 
     private KafkaConsumerConfig kafkaConsumerConfig;
 
-    private Filter filter;
+    private JsonFilter jsonFilter;
 
-    private TestMessage testMessageProto;
-    private TestKey testKeyProto;
-    private String testMessageJson;
-    private String testKeyJson;
+    private TestMessage testMessageProto1, testMessageProto2;
+    private TestKey testKeyProto1, testKeyProto2;
+    private String testMessageJson1, testMessageJson2;
+    private String testKeyJson1, testKeyJson2;
 
 
     @Rule
@@ -48,16 +48,25 @@ public class JsonFilterTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
 
-        testKeyProto = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
-        testMessageProto = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
+        testKeyProto1 = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
+        testMessageProto1 = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
 
-        testKeyJson = "{\"order_number\":123,\"order_url\":\"abc\"}";
-        testMessageJson = "{\"order_number\":123,\"order_url\":\"abc\",\"order_details\":\"details\"}";
+        testKeyJson1 = "{\"order_number\":123,\"order_url\":\"abc\"}";
+        testMessageJson1 = "{\"order_number\":123,\"order_url\":\"abc\",\"order_details\":\"details\"}";
+
+        testKeyProto2 = TestKey.newBuilder().setOrderNumber("92").setOrderUrl("awbc").build();
+        testMessageProto2 = TestMessage.newBuilder().setOrderNumber("92").setOrderUrl("awbc").setOrderDetails("details").build();
+
+        testKeyJson2 = "{\"order_number\":92,\"order_url\":\"awbc\"}";
+        testMessageJson2 = "{\"order_number\":92,\"order_url\":\"awbc\",\"order_details\":\"details\"}";
+
     }
 
     @Test
     public void shouldFilterEsbMessagesForProtobufMessageType() throws FilterException {
-        Message message = new Message(testKeyProto.toByteArray(), testMessageProto.toByteArray(), "topic1", 0, 100);
+        Message message1 = new Message(testKeyProto1.toByteArray(), testMessageProto1.toByteArray(), "topic1", 0, 100);
+        Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 101);
+
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "PROTOBUF");
@@ -66,10 +75,11 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
-        filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
+        jsonFilter = new JsonFilter(kafkaConsumerConfig, instrumentation);
 
-        List<Message> filteredMessages = filter.filter(Arrays.asList(message));
-        assertEquals(filteredMessages.get(0), message);
+        List<Message> filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
+        assertEquals(filteredMessages.size(), 1);
+        assertEquals(filteredMessages.get(0), message1);
     }
 
     @Test
@@ -86,12 +96,12 @@ public class JsonFilterTest {
 
         KafkaConsumerConfig bookingConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, bookingFilterConfigs);
         JsonFilter bookingFilter = new JsonFilter(bookingConsumerConfig, instrumentation);
-        List<Message> filteredMessages = bookingFilter.filter(Arrays.asList(message));
+        List<Message> filteredMessages = bookingFilter.filter(Collections.singletonList(message));
         assertEquals(filteredMessages.get(0), message);
     }
 
     @Test
-    public void shouldThrowExceptionOnInvalidFilterExpressionForProtobufMessageType() throws FilterException {
+    public void shouldThrowExceptionOnInvalidFilterSchemaForProtobufMessageType() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "12/s");
@@ -100,11 +110,11 @@ public class JsonFilterTest {
 
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
-        filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
+        jsonFilter = new JsonFilter(kafkaConsumerConfig, instrumentation);
 
-        Message message = new Message(testKeyProto.toByteArray(), testMessageProto.toByteArray(), "topic1", 0, 100);
+        Message message = new Message(testKeyProto1.toByteArray(), testMessageProto1.toByteArray(), "topic1", 0, 100);
         thrown.expect(FilterException.class);
-        filter.filter(Arrays.asList(message));
+        jsonFilter.filter(Collections.singletonList(message));
     }
 
     @Test
@@ -116,10 +126,10 @@ public class JsonFilterTest {
 
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
-        filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
+        jsonFilter = new JsonFilter(kafkaConsumerConfig, instrumentation);
 
-        Message message = new Message(testKeyProto.toByteArray(), testMessageProto.toByteArray(), "topic1", 0, 100);
-        List<Message> filteredMessages = this.filter.filter(Arrays.asList(message));
+        Message message = new Message(testKeyProto1.toByteArray(), testMessageProto1.toByteArray(), "topic1", 0, 100);
+        List<Message> filteredMessages = this.jsonFilter.filter(Collections.singletonList(message));
         assertEquals(filteredMessages.get(0), message);
     }
 
@@ -142,7 +152,8 @@ public class JsonFilterTest {
 
     @Test
     public void shouldFilterEsbMessagesForJsonMessageType() throws FilterException {
-        Message message = new Message(testKeyJson.getBytes(Charset.defaultCharset()), testMessageJson.getBytes(Charset.defaultCharset()), "topic1", 0, 100);
+        Message message1 = new Message(testKeyJson1.getBytes(), testMessageJson1.getBytes(), "topic1", 0, 100);
+        Message message2 = new Message(testKeyJson2.getBytes(), testMessageJson2.getBytes(), "topic1", 0, 101);
         Map<String, String> filterConfigs = new HashMap<>();
 
         filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "JSON");
@@ -150,16 +161,17 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":123}}}");
 
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
-        filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
-        List<Message> filteredMessages = filter.filter(Arrays.asList(message));
-        assertEquals(filteredMessages.get(0), message);
+        jsonFilter = new JsonFilter(kafkaConsumerConfig, instrumentation);
+        List<Message> filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
+        assertEquals(filteredMessages.size(), 1);
+        assertEquals(filteredMessages.get(0), message1);
     }
 
     @Test
     public void shouldNotFilterEsbMessagesForEmptyBooleanValuesForJsonMessageType() throws FilterException {
         String bookingLogMessageJson = "{\"customer_id\":\"customerid\"}";
         String bookingLogKeyJson = "";
-        Message message = new Message(bookingLogKeyJson.getBytes(Charset.defaultCharset()), bookingLogMessageJson.getBytes(Charset.defaultCharset()), "topic1", 0, 100);
+        Message message = new Message(bookingLogKeyJson.getBytes(), bookingLogMessageJson.getBytes(), "topic1", 0, 100);
         HashMap<String, String> bookingFilterConfigs = new HashMap<>();
         bookingFilterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "JSON");
 
@@ -168,12 +180,12 @@ public class JsonFilterTest {
 
         KafkaConsumerConfig bookingConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, bookingFilterConfigs);
         JsonFilter bookingFilter = new JsonFilter(bookingConsumerConfig, instrumentation);
-        List<Message> filteredMessages = bookingFilter.filter(Arrays.asList(message));
+        List<Message> filteredMessages = bookingFilter.filter(Collections.singletonList(message));
         assertEquals(filteredMessages.get(0), message);
     }
 
     @Test
-    public void shouldThrowExceptionOnInvalidFilterExpressionForJsonMessageType() throws FilterException {
+    public void shouldThrowExceptionOnInvalidFilterSchemaForJsonMessageType() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "12/s");
@@ -182,12 +194,12 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
-        filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
+        jsonFilter = new JsonFilter(kafkaConsumerConfig, instrumentation);
 
-        Message message = new Message(testKeyJson.getBytes(Charset.defaultCharset()), testMessageJson.getBytes(Charset.defaultCharset()), "topic1", 0, 100);
+        Message message = new Message(testKeyJson1.getBytes(), testMessageJson1.getBytes(), "topic1", 0, 100);
         thrown.expect(FilterException.class);
 
-        filter.filter(Arrays.asList(message));
+        jsonFilter.filter(Collections.singletonList(message));
     }
 
     @Test
@@ -197,10 +209,10 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "JSON");
 
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
-        filter = new JsonFilter(kafkaConsumerConfig, instrumentation);
+        jsonFilter = new JsonFilter(kafkaConsumerConfig, instrumentation);
 
-        Message message = new Message(testKeyJson.getBytes(Charset.defaultCharset()), testMessageJson.getBytes(Charset.defaultCharset()), "topic1", 0, 100);
-        List<Message> filteredMessages = this.filter.filter(Arrays.asList(message));
+        Message message = new Message(testKeyJson1.getBytes(), testMessageJson1.getBytes(), "topic1", 0, 100);
+        List<Message> filteredMessages = jsonFilter.filter(Collections.singletonList(message));
         assertEquals(filteredMessages.get(0), message);
     }
 
