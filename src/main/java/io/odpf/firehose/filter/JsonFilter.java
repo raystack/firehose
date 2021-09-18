@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import static io.odpf.firehose.config.enums.FilterDataSourceType.KEY;
+import static io.odpf.firehose.config.enums.FilterDataSourceType.NONE;
 import static io.odpf.firehose.config.enums.FilterMessageType.JSON;
 import static io.odpf.firehose.config.enums.FilterMessageType.PROTOBUF;
 
@@ -56,7 +57,7 @@ public class JsonFilter implements Filter {
         }
         this.instrumentation = instrumentation;
         instrumentation.logInfo("\n\tFilter type: {}", filterDataSourceType);
-        if (isNotNone(consumerConfig.getFilterJsonDataSource())) {
+        if (consumerConfig.getFilterJsonDataSource() != NONE) {
 
             this.filterRule = consumerConfig.getFilterJsonSchema();
             instrumentation.logInfo("\n\tFilter schema: {}", protoSchema);
@@ -77,7 +78,7 @@ public class JsonFilter implements Filter {
     @Override
     public List<Message> filter(List<Message> messages) throws FilterException {
 
-        if (isNone(filterDataSourceType)) {
+        if (filterDataSourceType == NONE) {
             return messages;
         }
 
@@ -119,14 +120,5 @@ public class JsonFilter implements Filter {
         Set<ValidationMessage> validationResult = schema.validate(json);
 
         return validationResult.isEmpty();
-    }
-
-
-    private boolean isNone(FilterDataSourceType filterDataSourceTypeVal) {
-        return filterDataSourceTypeVal.equals(FilterDataSourceType.NONE);
-    }
-
-    private boolean isNotNone(FilterDataSourceType filterDataSourceTypeVal) {
-        return !isNone(filterDataSourceTypeVal);
     }
 }
