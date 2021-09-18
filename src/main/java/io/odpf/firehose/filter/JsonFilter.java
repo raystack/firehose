@@ -29,6 +29,10 @@ import static io.odpf.firehose.config.enums.FilterDataSourceType.NONE;
 import static io.odpf.firehose.config.enums.FilterMessageType.JSON;
 import static io.odpf.firehose.config.enums.FilterMessageType.PROTOBUF;
 
+/**
+ *  JSON-based filter to filter protobuf/JSON messages based on rules
+ *  defined in a JSON Schema string.
+ */
 public class JsonFilter implements Filter {
 
     private final ObjectMapper objectMapper;
@@ -38,6 +42,12 @@ public class JsonFilter implements Filter {
     private JsonSchema schema;
     private final JsonFormat.Printer jsonPrinter;
 
+    /**
+     * Instantiates a new Json filter.
+     *
+     * @param consumerConfig  the consumer config
+     * @param instrumentation the instrumentation
+     */
     public JsonFilter(KafkaConsumerConfig consumerConfig, Instrumentation instrumentation) {
         objectMapper = new ObjectMapper();
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
@@ -62,7 +72,6 @@ public class JsonFilter implements Filter {
                 instrumentation.logInfo("\n\tMessage Proto class: {}", protoSchema);
             }
             instrumentation.logInfo("\n\tFilter JSON Schema: {}", filterJsonSchema);
-
             try {
                 schema = schemaFactory.getSchema(filterJsonSchema);
             } catch (Exception e) {
