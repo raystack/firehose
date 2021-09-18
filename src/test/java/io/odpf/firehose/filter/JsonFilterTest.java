@@ -56,7 +56,7 @@ public class JsonFilterTest {
     }
 
     @Test
-    public void shouldFilterEsbMessages() throws FilterException {
+    public void shouldFilterEsbMessagesForProtobufMessageType() throws FilterException {
         Message message = new Message(testKeyProto.toByteArray(), testMessageProto.toByteArray(), "topic1", 0, 100);
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
@@ -73,7 +73,7 @@ public class JsonFilterTest {
     }
 
     @Test
-    public void shouldNotFilterEsbMessagesForEmptyBooleanValues() throws FilterException {
+    public void shouldNotFilterEsbMessagesForEmptyBooleanValuesForProtobufMessageType() throws FilterException {
         TestBookingLogMessage bookingLogMessage = TestBookingLogMessage.newBuilder().setCustomerId("customerId").build();
         TestBookingLogKey bookingLogKey = TestBookingLogKey.newBuilder().build();
         Message message = new Message(bookingLogKey.toByteArray(), bookingLogMessage.toByteArray(), "topic1", 0, 100);
@@ -91,7 +91,7 @@ public class JsonFilterTest {
     }
 
     @Test
-    public void shouldThrowExceptionOnInvalidFilterExpression() throws FilterException {
+    public void shouldThrowExceptionOnInvalidFilterExpressionForProtobufMessageType() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "12/s");
@@ -108,7 +108,7 @@ public class JsonFilterTest {
     }
 
     @Test
-    public void shouldNotApplyFilterOnEmptyFilterType() throws FilterException {
+    public void shouldNotApplyFilterOnEmptyFilterTypeForProtobufMessageType() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":123}}}");
         filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
@@ -124,7 +124,7 @@ public class JsonFilterTest {
     }
 
     @Test
-    public void shouldLogFilterTypeIfFilterTypeIsNotNone() {
+    public void shouldLogFilterTypeIfFilterTypeIsNotNoneForProtobufMessageType() {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "PROTOBUF");
@@ -141,7 +141,7 @@ public class JsonFilterTest {
 
 
     @Test
-    public void shouldFilterEsbMessagesJson() throws FilterException {
+    public void shouldFilterEsbMessagesForJsonMessageType() throws FilterException {
         Message message = new Message(testKeyJson.getBytes(Charset.defaultCharset()), testMessageJson.getBytes(Charset.defaultCharset()), "topic1", 0, 100);
         Map<String, String> filterConfigs = new HashMap<>();
 
@@ -156,7 +156,7 @@ public class JsonFilterTest {
     }
 
     @Test
-    public void shouldNotFilterEsbMessagesForEmptyBooleanValuesJson() throws FilterException {
+    public void shouldNotFilterEsbMessagesForEmptyBooleanValuesForJsonMessageType() throws FilterException {
         String bookingLogMessageJson = "{\"customer_id\":\"customerid\"}";
         String bookingLogKeyJson = "";
         Message message = new Message(bookingLogKeyJson.getBytes(Charset.defaultCharset()), bookingLogMessageJson.getBytes(Charset.defaultCharset()), "topic1", 0, 100);
@@ -172,7 +172,7 @@ public class JsonFilterTest {
     }
 
     @Test
-    public void shouldThrowExceptionOnInvalidFilterExpressionJson() throws FilterException {
+    public void shouldThrowExceptionOnInvalidFilterExpressionForJsonMessageType() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "12/s");
@@ -188,7 +188,7 @@ public class JsonFilterTest {
     }
 
     @Test
-    public void shouldNotApplyFilterOnEmptyFilterTypeJson() throws FilterException {
+    public void shouldNotApplyFilterOnEmptyFilterTypeForJsonMessageType() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"1253\"}}}");
         filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "JSON");
@@ -203,7 +203,7 @@ public class JsonFilterTest {
 
 
     @Test
-    public void shouldLogFilterTypeIfFilterTypeIsNone() {
+    public void shouldLogFilterTypeIfFilterTypeIsNoneForJsonMessageType() {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "none");
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
