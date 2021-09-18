@@ -9,7 +9,6 @@ import com.google.protobuf.util.JsonFormat;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.config.enums.FilterDataSourceType;
 import io.odpf.firehose.config.enums.FilterMessageType;
@@ -22,7 +21,6 @@ import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static io.odpf.firehose.config.enums.FilterDataSourceType.KEY;
 import static io.odpf.firehose.config.enums.FilterDataSourceType.NONE;
@@ -30,8 +28,8 @@ import static io.odpf.firehose.config.enums.FilterMessageType.JSON;
 import static io.odpf.firehose.config.enums.FilterMessageType.PROTOBUF;
 
 /**
- *  JSON-based filter to filter protobuf/JSON messages based on rules
- *  defined in a JSON Schema string.
+ * JSON-based filter to filter protobuf/JSON messages based on rules
+ * defined in a JSON Schema string.
  */
 public class JsonFilter implements Filter {
 
@@ -82,11 +80,12 @@ public class JsonFilter implements Filter {
         }
     }
 
+
     /**
      * method to filter the EsbMessages.
      *
      * @param messages the json/protobuf records in binary format that are wrapped in {@link Message}
-     * @return {@link Message}
+     * @return the list of filtered Messages
      * @throws FilterException the filter exception
      */
     @Override
@@ -124,7 +123,6 @@ public class JsonFilter implements Filter {
         return filteredMessages;
     }
 
-
     private boolean evaluate(String jsonMessage) throws FilterException {
         JsonNode message;
         try {
@@ -133,7 +131,6 @@ public class JsonFilter implements Filter {
 
             throw new FilterException("Failed to parse JSON message " + e.getMessage());
         }
-        Set<ValidationMessage> validationResult = schema.validate(message);
-        return validationResult.isEmpty();
+        return schema.validate(message).isEmpty();
     }
 }
