@@ -30,17 +30,16 @@ import static io.odpf.firehose.config.enums.FilterMessageType.PROTOBUF;
 
 public class JsonFilter implements Filter {
 
-    private final FilterDataSourceType filterDataSourceType;
-    private String filterJsonSchema;
-    private final FilterMessageType messageType;
     private final ObjectMapper objectMapper;
-    private final JsonSchemaFactory schemaFactory;
+    private final FilterDataSourceType filterDataSourceType;
+    private final FilterMessageType messageType;
     private Method protoParser;
+    private JsonSchema schema;
 
 
     public JsonFilter(KafkaConsumerConfig consumerConfig, Instrumentation instrumentation) {
         objectMapper = new ObjectMapper();
-        schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
+        JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
 
         filterDataSourceType = consumerConfig.getFilterJsonDataSource();
         String protoSchema = consumerConfig.getFilterJsonSchemaProtoClass();
@@ -56,11 +55,17 @@ public class JsonFilter implements Filter {
         instrumentation.logInfo("\n\tFilter type: {}", filterDataSourceType);
         if (consumerConfig.getFilterJsonDataSource() != NONE) {
 
-            filterJsonSchema = consumerConfig.getFilterJsonSchema();
+            String filterJsonSchema = consumerConfig.getFilterJsonSchema();
             if (messageType == PROTOBUF) {
                 instrumentation.logInfo("\n\tMessage Proto schema: {}", protoSchema);
             }
             instrumentation.logInfo("\n\tFilter JSON Schema: {}", filterJsonSchema);
+
+            try {
+                schema = schemaFactory.getSchema(filterJsonSchema);
+            } catch (JsonSchemaException e) {
+                instrumentation.logError("Failed to parse JSON Schema " + e.getMessage());
+            }
         } else {
             instrumentation.logInfo("No filter is selected");
         }
@@ -97,7 +102,7 @@ public class JsonFilter implements Filter {
             } else if (messageType == JSON) {
                 jsonMessage = new String(data, Charset.defaultCharset());
             }
-            if (evaluate(jsonMessage, filterJsonSchema)) {
+            if (evaluate(jsonMessage)) {
                 filteredMessages.add(message);
             }
         }
@@ -105,22 +110,15 @@ public class JsonFilter implements Filter {
     }
 
 
-    private boolean evaluate(String jsonMessage, String schemaString) throws FilterException {
-
-        JsonSchema schema;
+    private boolean evaluate(String jsonMessage) throws FilterException {
         JsonNode message;
         try {
             message = objectMapper.readTree(jsonMessage);
-            schema = schemaFactory.getSchema(schemaString);
-
         } catch (JsonProcessingException e) {
-            throw new FilterException("Failed to parse JSON message " + e.getMessage());
 
-        } catch (JsonSchemaException e) {
-            throw new FilterException("Failed to parse JSON Schema " + e.getMessage());
+            throw new FilterException("Failed to parse JSON message " + e.getMessage());
         }
         Set<ValidationMessage> validationResult = schema.validate(message);
-
         return validationResult.isEmpty();
     }
 }
