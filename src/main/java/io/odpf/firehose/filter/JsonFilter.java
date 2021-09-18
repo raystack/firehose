@@ -34,11 +34,12 @@ public class JsonFilter implements Filter {
     private final FilterMessageType messageType;
     private Method protoParser;
     private JsonSchema schema;
-
+    private final JsonFormat.Printer jsonPrinter;
 
     public JsonFilter(KafkaConsumerConfig consumerConfig, Instrumentation instrumentation) {
         objectMapper = new ObjectMapper();
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
+        jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
 
         filterDataSourceType = consumerConfig.getFilterJsonDataSource();
         String protoSchema = consumerConfig.getFilterJsonSchemaProtoClass();
@@ -95,7 +96,6 @@ public class JsonFilter implements Filter {
             if (messageType == PROTOBUF) {
                 try {
                     Object protoPojo = protoParser.invoke(null, data);
-                    JsonFormat.Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
                     jsonMessage = jsonPrinter.print((GeneratedMessageV3) protoPojo);
 
                 } catch (Exception e) {
