@@ -161,6 +161,7 @@ public class JsonFilterTest {
         String bookingLogKeyJson = "";
         Message message = new Message(bookingLogKeyJson.getBytes(Charset.defaultCharset()), bookingLogMessageJson.getBytes(Charset.defaultCharset()), "topic1", 0, 100);
         HashMap<String, String> bookingFilterConfigs = new HashMap<>();
+        bookingFilterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "JSON");
 
         bookingFilterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
         bookingFilterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"customer_dynamic_surge_enabled\":{\"const\":\"true\"}}}");
@@ -176,6 +177,8 @@ public class JsonFilterTest {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "12/s");
+        filterConfigs.put("FILTER_ESB_MESSAGE_TYPE", "JSON");
+
         filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
 
@@ -203,7 +206,7 @@ public class JsonFilterTest {
 
 
     @Test
-    public void shouldLogFilterTypeIfFilterTypeIsNoneForJsonMessageType() {
+    public void shouldLogFilterTypeIfFilterTypeIsNone() {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "none");
         kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
