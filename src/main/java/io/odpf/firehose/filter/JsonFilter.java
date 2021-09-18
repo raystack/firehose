@@ -106,12 +106,13 @@ public class JsonFilter implements Filter {
 
 
     private boolean evaluate(String jsonMessage, String schemaString) throws FilterException {
+
         JsonSchema schema;
         JsonNode message;
-
         try {
             message = objectMapper.readTree(jsonMessage);
             schema = schemaFactory.getSchema(schemaString);
+
         } catch (JsonProcessingException e) {
             throw new FilterException("Failed to parse JSON message " + e.getMessage());
 
