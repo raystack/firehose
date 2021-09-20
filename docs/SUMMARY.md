@@ -25,6 +25,7 @@
 * [Configuration](reference/configuration/README.md)
   * [Generic](reference/configuration/generic-1.md)
   * [Kafka Consumer](reference/configuration/kafka-consumer-1.md)
+  * [Filters](reference/configuration/filters.md)
   * [Stencil Client](reference/configuration/stencil-client.md)
   * [Retries](reference/configuration/retries.md)
   * [ElasticSearch Sink](reference/configuration/elasticsearch-sink.md)
