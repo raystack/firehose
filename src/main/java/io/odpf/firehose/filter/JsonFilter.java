@@ -59,8 +59,8 @@ public class JsonFilter implements Filter {
         messageType = consumerConfig.getFilterMessageType();
         filterDataSourceType = consumerConfig.getFilterJsonDataSource();
         protoSchemaClass = consumerConfig.getFilterJsonSchemaProtoClass();
-        filterJsonSchema = consumerConfig.getFilterJsonSchema();
 
+        filterJsonSchema = consumerConfig.getFilterJsonSchema();
         this.instrumentation = instrumentation;
         logConfigs();
 
@@ -113,22 +113,8 @@ public class JsonFilter implements Filter {
         List<Message> filteredMessages = new ArrayList<>();
         for (Message message : messages) {
             byte[] data = (filterDataSourceType.equals(KEY)) ? message.getLogKey() : message.getLogMessage();
-            String jsonMessage = "";
+            String jsonMessage = deserialize(data);
 
-            if (messageType == PROTOBUF) {
-                try {
-                    Object protoPojo = protoParser.invoke(null, data);
-                    jsonMessage = jsonPrinter.print((GeneratedMessageV3) protoPojo);
-
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new FilterException("Failed to parse protobuf message", e);
-
-                } catch (InvalidProtocolBufferException e) {
-                    throw new FilterException("Protobuf message is invalid ", e);
-                }
-            } else if (messageType == JSON) {
-                jsonMessage = new String(data, Charset.defaultCharset());
-            }
             if (evaluate(jsonMessage)) {
                 filteredMessages.add(message);
             }
@@ -151,6 +137,28 @@ public class JsonFilter implements Filter {
             instrumentation.logDebug("Message filtered out due to: ", error.getMessage());
         });
         return validationErrors.isEmpty();
+    }
+
+
+    private String deserialize(byte[] data) throws FilterException {
+        String jsonMessage = "";
+
+        if (messageType == PROTOBUF) {
+            try {
+                Object protoPojo = protoParser.invoke(null, data);
+                jsonMessage = jsonPrinter.print((GeneratedMessageV3) protoPojo);
+
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new FilterException("Failed to parse protobuf message", e);
+
+            } catch (InvalidProtocolBufferException e) {
+                throw new FilterException("Protobuf message is invalid ", e);
+            }
+        } else if (messageType == JSON) {
+            jsonMessage = new String(data, Charset.defaultCharset());
+        }
+        return jsonMessage;
+
     }
 
 
