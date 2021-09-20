@@ -16,8 +16,8 @@ import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoFile;
 import io.odpf.firehose.sink.objectstorage.proto.NestedKafkaMetadataProto;
 import io.odpf.firehose.sink.objectstorage.writer.WriterOrchestrator;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
-import io.odpf.firehose.sink.objectstorage.writer.local.PartitionConfig;
-import io.odpf.firehose.sink.objectstorage.writer.local.PartitionFactory;
+import io.odpf.firehose.sink.objectstorage.writer.local.FilePartitionPathConfig;
+import io.odpf.firehose.sink.objectstorage.writer.local.FilePartitionPathFactory;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.SizeBasedRotatingPolicy;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.TimeBasedRotatingPolicy;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
@@ -58,10 +58,10 @@ public class ObjectStorageSinkFactory implements SinkFactory {
         Descriptors.Descriptor outputMessageDescriptor = stencilClient.get(sinkConfig.getInputSchemaProtoClass());
         Descriptors.Descriptor metadataMessageDescriptor = getMetadataMessageDescriptor(sinkConfig);
 
-        PartitionFactory partitionFactory = new PartitionFactory(
+        FilePartitionPathFactory filePartitionPathFactory = new FilePartitionPathFactory(
                 sinkConfig.getKafkaMetadataColumnName(),
                 sinkConfig.getTimePartitioningFieldName(),
-                new PartitionConfig(
+                new FilePartitionPathConfig(
                         sinkConfig.getTimePartitioningTimeZone(),
                         sinkConfig.getPartitioningType(),
                         sinkConfig.getTimePartitioningDatePrefix(),
@@ -82,7 +82,7 @@ public class ObjectStorageSinkFactory implements SinkFactory {
                 metadataMessageDescriptor.getFields(),
                 localBasePath,
                 writerPolicies,
-                partitionFactory,
+                filePartitionPathFactory,
                 new Instrumentation(statsDReporter, LocalStorage.class));
     }
 

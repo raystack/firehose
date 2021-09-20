@@ -69,12 +69,12 @@ public class SinkPool implements AutoCloseable {
         private Sink sink;
     }
 
-    @AllArgsConstructor
-    @EqualsAndHashCode
     /**
      * Sink Worker task.
      * It calls the pushMessage() and returns the response.
      */
+    @AllArgsConstructor
+    @EqualsAndHashCode
     protected static class SinkTask implements Callable<List<Message>> {
         private final Sink sink;
         private final List<Message> messages;

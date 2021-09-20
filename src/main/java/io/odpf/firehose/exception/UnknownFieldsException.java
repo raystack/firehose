@@ -2,7 +2,6 @@ package io.odpf.firehose.exception;
 
 
 import com.google.protobuf.DynamicMessage;
-import io.odpf.firehose.exception.DeserializerException;
 
 /**
  * UnknownFieldsException is thrown when unknown fields is detected on the log message although the proto message was succesfuly parsed.

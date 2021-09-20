@@ -27,7 +27,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class LocalFileCheckerTest {
 
     @Mock
-    private PartitionFactory partitionFactory;
+    private FilePartitionPathFactory filePartitionPathFactory;
 
     @Mock
     private LocalFileWriter writer1;
@@ -53,7 +53,7 @@ public class LocalFileCheckerTest {
     private final long recordCount = 100L;
     private final Instant startTime = Instant.parse("2021-01-01T00:10:00.000Z");
 
-    private final Partition partition = new Partition("default", Instant.ofEpochSecond(1L), new PartitionConfig("UTC", Constants.PartitioningType.HOUR, "dt=", "hr="));
+    private final FilePartitionPath filePartitionPath = new FilePartitionPath("default", Instant.ofEpochSecond(1L), new FilePartitionPathConfig("UTC", Constants.FilePartitionType.HOUR, "dt=", "hr="));
 
     @Before
     public void setup() throws IOException {
@@ -64,8 +64,8 @@ public class LocalFileCheckerTest {
         when(localStorage.getFileSize(anyString())).thenReturn(fileSize);
         when(writer1.getRecordCount()).thenReturn(recordCount);
         when(writer2.getRecordCount()).thenReturn(recordCount);
-        when(partitionFactory.fromPartitionPath(anyString())).thenReturn(partition);
-        when(localStorage.getPartitionFactory()).thenReturn(partitionFactory);
+        when(filePartitionPathFactory.fromFilePartitionPath(anyString())).thenReturn(filePartitionPath);
+        when(localStorage.getFilePartitionPathFactory()).thenReturn(filePartitionPathFactory);
         worker = new LocalFileChecker(toBeFlushedToRemotePaths, writerMap, localStorage, instrumentation);
     }
 
@@ -107,8 +107,8 @@ public class LocalFileCheckerTest {
         Assert.assertEquals(2, toBeFlushedToRemotePaths.size());
         verify(writer1, times(1)).getRecordCount();
         verify(writer2, times(1)).getRecordCount();
-        Assert.assertTrue(toBeFlushedToRemotePaths.contains(new FileMeta("/tmp/a/random-file-name", recordCount, fileSize1, partition)));
-        Assert.assertTrue(toBeFlushedToRemotePaths.contains(new FileMeta("/tmp/a/random-file-name-2", recordCount, fileSize2, partition)));
+        Assert.assertTrue(toBeFlushedToRemotePaths.contains(new FileMeta("/tmp/a/random-file-name", recordCount, fileSize1, filePartitionPath)));
+        Assert.assertTrue(toBeFlushedToRemotePaths.contains(new FileMeta("/tmp/a/random-file-name-2", recordCount, fileSize2, filePartitionPath)));
         Assert.assertEquals(0, writerMap.size());
     }
 
@@ -150,7 +150,7 @@ public class LocalFileCheckerTest {
         when(writer2.getFullPath()).thenReturn("/tmp/a/random-file-name-2");
         worker.run();
         Assert.assertEquals(1, toBeFlushedToRemotePaths.size());
-        Assert.assertTrue(toBeFlushedToRemotePaths.contains(new FileMeta("/tmp/a/random-file-name", recordCount, fileSize, partition)));
+        Assert.assertTrue(toBeFlushedToRemotePaths.contains(new FileMeta("/tmp/a/random-file-name", recordCount, fileSize, filePartitionPath)));
         Assert.assertEquals(1, writerMap.size());
         Assert.assertEquals(writer2, writerMap.get("/tmp/b"));
     }
@@ -164,8 +164,8 @@ public class LocalFileCheckerTest {
         worker.run();
         verify(instrumentation).incrementCounter(LOCAL_FILE_CLOSE_TOTAL,
                 SUCCESS_TAG,
-                tag(TOPIC_TAG, partition.getTopic()),
-                tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, filePartitionPath.getTopic()),
+                tag(PARTITION_PATH_TAG, filePartitionPath.getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -177,8 +177,8 @@ public class LocalFileCheckerTest {
         worker.run();
 
         verify(instrumentation, times(1)).captureDurationSince(eq(LOCAL_FILE_CLOSING_TIME_MILLISECONDS), any(Instant.class),
-                eq(tag(TOPIC_TAG, partition.getTopic())),
-                eq(tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix())));
+                eq(tag(TOPIC_TAG, filePartitionPath.getTopic())),
+                eq(tag(PARTITION_PATH_TAG, filePartitionPath.getDatetimePathWithoutPrefix())));
     }
 
     @Test
@@ -190,8 +190,8 @@ public class LocalFileCheckerTest {
         worker.run();
 
         verify(instrumentation, times(1)).captureCount(LOCAL_FILE_SIZE_BYTES, fileSize,
-                tag(TOPIC_TAG, partition.getTopic()),
-                tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, filePartitionPath.getTopic()),
+                tag(PARTITION_PATH_TAG, filePartitionPath.getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -209,8 +209,8 @@ public class LocalFileCheckerTest {
 
         verify(instrumentation, times(1)).incrementCounter(LOCAL_FILE_CLOSE_TOTAL,
                 FAILURE_TAG,
-                tag(TOPIC_TAG, partition.getTopic()),
-                tag(PARTITION_TAG, partition.getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, filePartitionPath.getTopic()),
+                tag(PARTITION_PATH_TAG, filePartitionPath.getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -224,13 +224,14 @@ public class LocalFileCheckerTest {
         when(writer2.getFullPath()).thenReturn("/tmp/b/random-file-name-2");
 
         worker.run();
-        verify(instrumentation, times(1)).captureValue(LOCAL_FILE_OPEN_TOTAL, 2);
+        worker.run();
         worker.run();
 
         verify(writer1, times(1)).close();
         verify(writer2, times(1)).close();
         Assert.assertEquals(2, toBeFlushedToRemotePaths.size());
         Assert.assertEquals(0, writerMap.size());
-        verify(instrumentation, times(1)).captureValue(LOCAL_FILE_OPEN_TOTAL, 0);
+        verify(instrumentation, times(3)).captureValue(LOCAL_FILE_OPEN_TOTAL, 2);
+        verify(instrumentation, times(3)).captureValue(LOCAL_FILE_OPEN_TOTAL, 0);
     }
 }

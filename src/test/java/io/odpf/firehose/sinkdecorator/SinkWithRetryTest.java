@@ -141,7 +141,7 @@ public class SinkWithRetryTest {
         List<Message> messageList = sinkWithRetry.pushMessage(Collections.singletonList(message));
         assertTrue(messageList.isEmpty());
         verify(instrumentation, times(1)).logInfo("Maximum retry attempts: {}", 10);
-        verify(instrumentation, times(5)).incrementCounter("firehose_retry_total");
+        verify(instrumentation, times(5)).incrementCounter("firehose_retry_attempts_total");
         verify(instrumentation, times(1)).logInfo("Retrying messages attempt count: {}, Number of messages: {}", 1, 2);
         verify(instrumentation, times(1)).logInfo("Retrying messages attempt count: {}, Number of messages: {}", 2, 2);
         verify(instrumentation, times(1)).logInfo("Retrying messages attempt count: {}, Number of messages: {}", 3, 2);

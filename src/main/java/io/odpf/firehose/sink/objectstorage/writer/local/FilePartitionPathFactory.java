@@ -14,32 +14,32 @@ import java.time.Instant;
  * Create path partition from Record.
  */
 @AllArgsConstructor
-public class PartitionFactory {
+public class FilePartitionPathFactory {
 
     private final String kafkaMetadataFieldName;
     private final String fieldName;
-    private PartitionConfig partitionConfig;
+    private FilePartitionPathConfig filePartitionPathConfig;
 
     public Path getPartitionPath(Record record) {
-        Partition partition = getPartition(record);
-        return partition.getPath();
+        FilePartitionPath filePartitionPath = getFilePartitionPath(record);
+        return filePartitionPath.getPath();
     }
 
-    public Partition getPartition(Record record) {
+    public FilePartitionPath getFilePartitionPath(Record record) {
         DynamicMessage metadataMessage = record.getMetadata();
         String topic = getTopic(metadataMessage);
 
         Instant timestamp = null;
-        if (partitionConfig.getPartitioningType() != Constants.PartitioningType.NONE) {
+        if (filePartitionPathConfig.getFilePartitionType() != Constants.FilePartitionType.NONE) {
             DynamicMessage message = record.getMessage();
             timestamp = getTimestamp(message);
         }
 
-        return new Partition(topic, timestamp, partitionConfig);
+        return new FilePartitionPath(topic, timestamp, filePartitionPathConfig);
     }
 
-    public Partition fromPartitionPath(String partitionPath) {
-        return Partition.parseFrom(partitionPath, partitionConfig);
+    public FilePartitionPath fromFilePartitionPath(String filePartitionPath) {
+        return FilePartitionPath.parseFrom(filePartitionPath, filePartitionPathConfig);
     }
 
     private String getTopic(DynamicMessage dynamicMessage) {

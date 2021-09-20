@@ -16,7 +16,7 @@ import java.time.Instant;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
-public class PartitionFactoryTest {
+public class FilePartitionPathFactoryTest {
 
     private final String zone = "UTC";
     private final String fieldName = MessageProto.CREATED_TIME_FIELD_NAME;
@@ -28,7 +28,7 @@ public class PartitionFactoryTest {
     private final int defaultPartition = 1;
     private final String defaultTopic = "booking-log";
 
-    private PartitionFactory factory;
+    private FilePartitionPathFactory factory;
 
     @Test
     public void shouldCreateDayPartitioningPath() {
@@ -39,7 +39,7 @@ public class PartitionFactoryTest {
         DynamicMessage metadata = TestUtils.createMetadata(kafkaMetadataFieldName, defaultTimestamp, defaultOffset, defaultPartition, defaultTopic);
         Record record = new Record(message, metadata);
 
-        factory = new PartitionFactory(kafkaMetadataFieldName, fieldName, new PartitionConfig(zone, Constants.PartitioningType.DAY, "date=", ""));
+        factory = new FilePartitionPathFactory(kafkaMetadataFieldName, fieldName, new FilePartitionPathConfig(zone, Constants.FilePartitionType.DAY, "date=", ""));
         Path path = factory.getPartitionPath(record);
 
         assertEquals(partitionPath, path);
@@ -54,7 +54,7 @@ public class PartitionFactoryTest {
         DynamicMessage metadata = TestUtils.createMetadata(kafkaMetadataFieldName, defaultTimestamp, defaultOffset, defaultPartition, defaultTopic);
         Record record = new Record(message, metadata);
 
-        factory = new PartitionFactory(kafkaMetadataFieldName, fieldName, new PartitionConfig(zone, Constants.PartitioningType.HOUR, datePrefix, hourPrefix));
+        factory = new FilePartitionPathFactory(kafkaMetadataFieldName, fieldName, new FilePartitionPathConfig(zone, Constants.FilePartitionType.HOUR, datePrefix, hourPrefix));
         Path path = factory.getPartitionPath(record);
 
         assertEquals(partitionPath, path);
@@ -69,7 +69,7 @@ public class PartitionFactoryTest {
         DynamicMessage metadata = TestUtils.createMetadata(kafkaMetadataFieldName, defaultTimestamp, defaultOffset, defaultPartition, defaultTopic);
         Record record = new Record(message, metadata);
 
-        factory = new PartitionFactory(kafkaMetadataFieldName, fieldName, new PartitionConfig(zone, Constants.PartitioningType.NONE, datePrefix, hourPrefix));
+        factory = new FilePartitionPathFactory(kafkaMetadataFieldName, fieldName, new FilePartitionPathConfig(zone, Constants.FilePartitionType.NONE, datePrefix, hourPrefix));
         Path path = factory.getPartitionPath(record);
 
         assertEquals(partitionPath, path);
@@ -84,7 +84,7 @@ public class PartitionFactoryTest {
         DynamicMessage metadata = TestUtils.createMetadata(kafkaMetadataFieldName, defaultTimestamp, defaultOffset, defaultPartition, defaultTopic);
         Record record = new Record(message, metadata);
 
-        factory = new PartitionFactory(kafkaMetadataFieldName, fieldName, new PartitionConfig(zone, Constants.PartitioningType.DAY, datePrefix, hourPrefix));
+        factory = new FilePartitionPathFactory(kafkaMetadataFieldName, fieldName, new FilePartitionPathConfig(zone, Constants.FilePartitionType.DAY, datePrefix, hourPrefix));
         Path path = factory.getPartitionPath(record);
 
         assertEquals(partitionPath, path);
@@ -99,7 +99,7 @@ public class PartitionFactoryTest {
         DynamicMessage metadata = TestUtils.createMetadata(kafkaMetadataFieldName, defaultTimestamp, defaultOffset, defaultPartition, defaultTopic);
         Record record = new Record(message, metadata);
 
-        factory = new PartitionFactory(kafkaMetadataFieldName, fieldName, new PartitionConfig(zone, Constants.PartitioningType.DAY, datePrefix, hourPrefix));
+        factory = new FilePartitionPathFactory(kafkaMetadataFieldName, fieldName, new FilePartitionPathConfig(zone, Constants.FilePartitionType.DAY, datePrefix, hourPrefix));
         Path path = factory.getPartitionPath(record);
 
         assertEquals(partitionPath, path);
@@ -109,8 +109,8 @@ public class PartitionFactoryTest {
     public void shouldParsePathWithNoneAsPartition() {
         Path path = Paths.get("topic");
         String partitionPathString = "/topic";
-        Partition partition = Partition.parseFrom(partitionPathString, new PartitionConfig(zone, Constants.PartitioningType.NONE, "", ""));
-        Path result = partition.getPath();
+        FilePartitionPath filePartitionPath = FilePartitionPath.parseFrom(partitionPathString, new FilePartitionPathConfig(zone, Constants.FilePartitionType.NONE, "", ""));
+        Path result = filePartitionPath.getPath();
 
         assertEquals(path, result);
     }
@@ -119,8 +119,8 @@ public class PartitionFactoryTest {
     public void shouldParseDayPartition() {
         Path path = Paths.get("topic", "dt=2021-01-01");
         String partitionPathString = "/topic/dt=2021-01-01";
-        Partition partition = Partition.parseFrom(partitionPathString, new PartitionConfig(zone, Constants.PartitioningType.DAY, datePrefix, ""));
-        Path result = partition.getPath();
+        FilePartitionPath filePartitionPath = FilePartitionPath.parseFrom(partitionPathString, new FilePartitionPathConfig(zone, Constants.FilePartitionType.DAY, datePrefix, ""));
+        Path result = filePartitionPath.getPath();
         assertEquals(path, result);
     }
 
@@ -128,8 +128,8 @@ public class PartitionFactoryTest {
     public void shouldParseHourPartition() {
         Path path = Paths.get("topic", "dt=2021-01-01", "hr=03");
         String partitionPathString = "/topic/dt=2021-01-01/hr=03";
-        Partition partition = Partition.parseFrom(partitionPathString, new PartitionConfig(zone, Constants.PartitioningType.HOUR, datePrefix, hourPrefix));
-        Path result = partition.getPath();
+        FilePartitionPath filePartitionPath = FilePartitionPath.parseFrom(partitionPathString, new FilePartitionPathConfig(zone, Constants.FilePartitionType.HOUR, datePrefix, hourPrefix));
+        Path result = filePartitionPath.getPath();
         assertEquals(path, result);
     }
 }

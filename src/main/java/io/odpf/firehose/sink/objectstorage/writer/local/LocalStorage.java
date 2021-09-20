@@ -27,7 +27,7 @@ public class LocalStorage {
     @Getter
     private final List<WriterPolicy> policies;
     @Getter
-    private final PartitionFactory partitionFactory;
+    private final FilePartitionPathFactory filePartitionPathFactory;
     private final Instrumentation instrumentation;
 
     public LocalFileWriter createLocalFileWriter(Path partitionPath) {

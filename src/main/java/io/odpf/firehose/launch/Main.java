@@ -43,10 +43,7 @@ public class Main {
 
                     KafkaConsumer firehoseConsumer = null;
                     try {
-                        firehoseConsumer = new FirehoseConsumerFactory(
-                                kafkaConsumerConfig,
-                                statsDReporter)
-                                .buildConsumer();
+                        firehoseConsumer = new FirehoseConsumerFactory(kafkaConsumerConfig, statsDReporter).buildConsumer();
                         while (true) {
                             if (Thread.interrupted()) {
                                 instrumentation.logWarn("Consumer Thread interrupted, leaving the loop!");

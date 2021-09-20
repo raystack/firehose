@@ -53,7 +53,7 @@ public interface ObjectStorageSinkConfig extends AppConfig {
     @Key("SINK_OBJECT_STORAGE_TIME_PARTITIONING_TYPE")
     @DefaultValue("day")
     @ConverterClass(ObjectStorageSinkPartitioningTypeConverter.class)
-    Constants.PartitioningType getPartitioningType();
+    Constants.FilePartitionType getPartitioningType();
 
     @Key("SINK_OBJECT_STORAGE_TIME_PARTITIONING_HOUR_PREFIX")
     @DefaultValue("hr=")

@@ -48,13 +48,4 @@ public interface KafkaConsumerConfig extends AppConfig {
     @ConverterClass(ConsumerModeConverter.class)
     @DefaultValue("SYNC")
     KafkaConsumerMode getSourceKafkaConsumerMode();
-
-    @Key("SOURCE_KAFKA_CONSUMER_THREADS")
-    @DefaultValue("1")
-    int getSourceKafkaConsumerThreads();
-
-    @Key("SOURCE_KAFKA_CONSUMER_SINK_POLL_TIMEOUT_MILLIS")
-    @DefaultValue("1000")
-    int getSourceKafkaConsumerSinkPollTimeoutMillis();
-
 }

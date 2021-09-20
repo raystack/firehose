@@ -6,9 +6,9 @@ import lombok.Data;
 
 @AllArgsConstructor
 @Data
-public class PartitionConfig {
+public class FilePartitionPathConfig {
     private String zone;
-    private Constants.PartitioningType partitioningType;
+    private Constants.FilePartitionType filePartitionType;
     private String datePrefix;
     private String hourPrefix;
 }

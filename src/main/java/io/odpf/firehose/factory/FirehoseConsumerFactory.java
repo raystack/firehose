@@ -8,6 +8,7 @@ import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.config.ErrorConfig;
 import io.odpf.firehose.config.KafkaConsumerConfig;
+import io.odpf.firehose.config.SinkPoolConfig;
 import io.odpf.firehose.config.enums.KafkaConsumerMode;
 import io.odpf.firehose.consumer.ConsumerAndOffsetManager;
 import io.odpf.firehose.consumer.FirehoseAsyncConsumer;
@@ -103,7 +104,6 @@ public class FirehoseConsumerFactory {
      * @return FirehoseConsumer firehose consumer
      */
     public KafkaConsumer buildConsumer() {
-
         Filter filter = new MessageFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, MessageFilter.class));
         GenericKafkaFactory genericKafkaFactory = new GenericKafkaFactory();
         Tracer tracer = NoopTracerFactory.create();
@@ -124,7 +124,8 @@ public class FirehoseConsumerFactory {
                     consumerAndOffsetManager,
                     new Instrumentation(statsDReporter, FirehoseConsumer.class));
         } else {
-            int nThreads = kafkaConsumerConfig.getSourceKafkaConsumerThreads();
+            SinkPoolConfig sinkPoolConfig = ConfigFactory.create(SinkPoolConfig.class, config);
+            int nThreads = sinkPoolConfig.getSinkPoolNumThreads();
             List<Sink> sinks = new ArrayList<>(nThreads);
             for (int ii = 0; ii < nThreads; ii++) {
                 sinks.add(createSink(tracer));
@@ -133,7 +134,7 @@ public class FirehoseConsumerFactory {
             SinkPool sinkPool = new SinkPool(
                     new LinkedBlockingQueue<>(sinks),
                     Executors.newCachedThreadPool(),
-                    kafkaConsumerConfig.getSourceKafkaConsumerSinkPollTimeoutMillis());
+                    sinkPoolConfig.getSinkPoolQueuePollTimeoutMS());
             return new FirehoseAsyncConsumer(
                     sinkPool,
                     clockInstance,
@@ -205,13 +206,14 @@ public class FirehoseConsumerFactory {
     /**
      * to enable the retry feature for the basic sinks based on the config.
      *
-     * @param basicSink
-     * @return Sink
+     * @param sink         Sink To wrap with retry decorator
+     * @param errorHandler error handler
+     * @return Sink with retry decorator
      */
-    private Sink withRetry(Sink basicSink, ErrorHandler errorHandler) {
+    private Sink withRetry(Sink sink, ErrorHandler errorHandler) {
         AppConfig appConfig = ConfigFactory.create(AppConfig.class, config);
         BackOffProvider backOffProvider = getBackOffProvider();
-        return new SinkWithRetry(basicSink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), appConfig, parser, errorHandler);
+        return new SinkWithRetry(sink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), appConfig, parser, errorHandler);
     }
 
     private BackOffProvider getBackOffProvider() {

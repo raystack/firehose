@@ -6,8 +6,8 @@ import io.odpf.firehose.objectstorage.ObjectStorageException;
 import io.odpf.firehose.objectstorage.gcs.error.GCSErrorType;
 import io.odpf.firehose.sink.objectstorage.Constants;
 import io.odpf.firehose.sink.objectstorage.writer.local.FileMeta;
-import io.odpf.firehose.sink.objectstorage.writer.local.Partition;
-import io.odpf.firehose.sink.objectstorage.writer.local.PartitionConfig;
+import io.odpf.firehose.sink.objectstorage.writer.local.FilePartitionPath;
+import io.odpf.firehose.sink.objectstorage.writer.local.FilePartitionPathConfig;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,7 +37,7 @@ public class ObjectStorageCheckerTest {
     private final BlockingQueue<FileMeta> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
     private final BlockingQueue<String> flushedToRemotePaths = new LinkedBlockingQueue<>();
     private final ExecutorService remoteUploadScheduler = Mockito.mock(ExecutorService.class);
-    private final Set<ObjectStorageWriterWorkerFuture> remoteUploadFutures = new HashSet<>();
+    private final Set<ObjectStorageWriterFutureHandler> remoteUploadFutures = new HashSet<>();
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
     @Mock
@@ -50,12 +50,12 @@ public class ObjectStorageCheckerTest {
 
     @Before
     public void setup() {
-        PartitionConfig partitionConfig = new PartitionConfig("UTC", Constants.PartitioningType.HOUR, "dt=", "hr=");
-        Partition partition = new Partition("default", Instant.parse("2021-01-01T10:00:00.000Z"), partitionConfig);
+        FilePartitionPathConfig filePartitionPathConfig = new FilePartitionPathConfig("UTC", Constants.FilePartitionType.HOUR, "dt=", "hr=");
+        FilePartitionPath filePartitionPath = new FilePartitionPath("default", Instant.parse("2021-01-01T10:00:00.000Z"), filePartitionPathConfig);
         fileMeta = new FileMeta("/tmp/dt=2021-01-01/hr=10/random-filename",
                 10L,
                 128L,
-                partition);
+                filePartitionPath);
         worker = new ObjectStorageChecker(
                 toBeFlushedToRemotePaths,
                 flushedToRemotePaths,
@@ -63,6 +63,9 @@ public class ObjectStorageCheckerTest {
                 remoteUploadScheduler,
                 objectStorage,
                 instrumentation);
+        toBeFlushedToRemotePaths.clear();
+        flushedToRemotePaths.clear();
+        remoteUploadFutures.clear();
     }
 
     @Test
@@ -75,7 +78,7 @@ public class ObjectStorageCheckerTest {
         Assert.assertEquals(0, toBeFlushedToRemotePaths.size());
         Assert.assertEquals(0, flushedToRemotePaths.size());
         Assert.assertEquals(1, remoteUploadFutures.size());
-        ArrayList<ObjectStorageWriterWorkerFuture> workerFutures = new ArrayList<>(remoteUploadFutures);
+        ArrayList<ObjectStorageWriterFutureHandler> workerFutures = new ArrayList<>(remoteUploadFutures);
         assertEquals(f, workerFutures.get(0).getFuture());
         assertEquals(fileMeta, workerFutures.get(0).getFileMeta());
     }
@@ -91,12 +94,11 @@ public class ObjectStorageCheckerTest {
         Assert.assertEquals(0, flushedToRemotePaths.size());
         Assert.assertEquals(1, remoteUploadFutures.size());
 
-        ArrayList<ObjectStorageWriterWorkerFuture> workerFutures = new ArrayList<>(remoteUploadFutures);
+        ArrayList<ObjectStorageWriterFutureHandler> workerFutures = new ArrayList<>(remoteUploadFutures);
         assertEquals(f, workerFutures.get(0).getFuture());
         assertEquals(fileMeta, workerFutures.get(0).getFileMeta());
 
         when(f.isDone()).thenReturn(true);
-        when(f.get()).thenReturn(null);
         when(f.get()).thenReturn(19L);
         worker.run();
         Assert.assertEquals(0, toBeFlushedToRemotePaths.size());
@@ -155,8 +157,8 @@ public class ObjectStorageCheckerTest {
 
         verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL,
                 SUCCESS_TAG,
-                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()),
+                tag(PARTITION_PATH_TAG, fileMeta.getFilePartitionPath().getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -169,8 +171,8 @@ public class ObjectStorageCheckerTest {
         worker.run();
 
         verify(instrumentation).captureCount(FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
-                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()),
+                tag(PARTITION_PATH_TAG, fileMeta.getFilePartitionPath().getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -184,8 +186,8 @@ public class ObjectStorageCheckerTest {
         worker.run();
 
         verify(instrumentation, (times(1))).captureDuration(FILE_UPLOAD_TIME_MILLISECONDS, totalTime,
-                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()),
+                tag(PARTITION_PATH_TAG, fileMeta.getFilePartitionPath().getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -206,8 +208,8 @@ public class ObjectStorageCheckerTest {
         verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
                 tag(OBJECT_STORE_ERROR_TYPE_TAG, ""),
-                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()),
+                tag(PARTITION_PATH_TAG, fileMeta.getFilePartitionPath().getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -236,8 +238,8 @@ public class ObjectStorageCheckerTest {
         verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
                 tag(OBJECT_STORE_ERROR_TYPE_TAG, GCSErrorType.FORBIDDEN.name()),
-                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()),
+                tag(PARTITION_PATH_TAG, fileMeta.getFilePartitionPath().getDatetimePathWithoutPrefix()));
     }
 
     @Test
@@ -265,7 +267,7 @@ public class ObjectStorageCheckerTest {
         verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
                 tag(OBJECT_STORE_ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.FILE_IO_ERROR),
-                tag(TOPIC_TAG, fileMeta.getPartition().getTopic()),
-                tag(PARTITION_TAG, fileMeta.getPartition().getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()),
+                tag(PARTITION_PATH_TAG, fileMeta.getFilePartitionPath().getDatetimePathWithoutPrefix()));
     }
 }

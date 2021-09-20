@@ -1,7 +1,5 @@
 package io.odpf.firehose.exception;
 
-import io.odpf.firehose.exception.DeserializerException;
-
 /**
  * Empty thrown when the message is contains zero bytes.
  */

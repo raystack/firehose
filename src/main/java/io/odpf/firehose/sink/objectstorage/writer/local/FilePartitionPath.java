@@ -20,21 +20,21 @@ import java.time.format.DateTimeFormatter;
  */
 @AllArgsConstructor
 @Data
-public class Partition {
+public class FilePartitionPath {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH");
 
     private String topic;
     private Instant timestamp;
-    private PartitionConfig partitionConfig;
+    private FilePartitionPathConfig filePartitionPathConfig;
 
     private String getDate() {
-        LocalDate localDate = LocalDateTime.ofInstant(timestamp, ZoneId.of(partitionConfig.getZone())).toLocalDate();
+        LocalDate localDate = LocalDateTime.ofInstant(timestamp, ZoneId.of(filePartitionPathConfig.getZone())).toLocalDate();
         return DATE_FORMATTER.format(localDate);
     }
 
     private String getHour() {
-        LocalTime localTime = LocalDateTime.ofInstant(timestamp, ZoneId.of(partitionConfig.getZone())).toLocalTime();
+        LocalTime localTime = LocalDateTime.ofInstant(timestamp, ZoneId.of(filePartitionPathConfig.getZone())).toLocalTime();
         return TIME_FORMATTER.format(localTime);
     }
 
@@ -46,7 +46,7 @@ public class Partition {
     }
 
     private String getPath(String datePart, String hourPart) {
-        switch (partitionConfig.getPartitioningType()) {
+        switch (filePartitionPathConfig.getFilePartitionType()) {
             case DAY:
                 return String.format("%s", datePart);
             case HOUR:
@@ -58,17 +58,17 @@ public class Partition {
 
     private String getDatetimePath() {
         String datePart = getDate();
-        String dateSegment = String.format("%s%s", partitionConfig.getDatePrefix(), datePart);
+        String dateSegment = String.format("%s%s", filePartitionPathConfig.getDatePrefix(), datePart);
 
         String hourPart = getHour();
-        String hourSegment = String.format("%s%s", partitionConfig.getHourPrefix(), hourPart);
+        String hourSegment = String.format("%s%s", filePartitionPathConfig.getHourPrefix(), hourPart);
 
         return getPath(dateSegment, hourSegment);
     }
 
 
     private String getPartitionPath() {
-        if (partitionConfig.getPartitioningType() == Constants.PartitioningType.NONE) {
+        if (filePartitionPathConfig.getFilePartitionType() == Constants.FilePartitionType.NONE) {
             return topic;
         }
 
@@ -79,28 +79,28 @@ public class Partition {
     /**
      * Create PartitionPath object from partition path.
      *
-     * @param partitionPath   partition path is a relative path, it should only contains partition segment, it should not contains file name or base directory path
-     * @param partitionConfig
+     * @param filePartitionPath   partition path is a relative path, it should only contains partition segment, it should not contains file name or base directory path
+     * @param filePartitionPathConfig
      * @return
      */
-    public static Partition parseFrom(String partitionPath, PartitionConfig partitionConfig) {
-        Path path = Paths.get(partitionPath);
+    public static FilePartitionPath parseFrom(String filePartitionPath, FilePartitionPathConfig filePartitionPathConfig) {
+        Path path = Paths.get(filePartitionPath);
         String topic = path.getName(0).toString();
-        if (partitionConfig.getPartitioningType() == Constants.PartitioningType.NONE) {
-            return new Partition(topic, null, partitionConfig);
+        if (filePartitionPathConfig.getFilePartitionType() == Constants.FilePartitionType.NONE) {
+            return new FilePartitionPath(topic, null, filePartitionPathConfig);
         }
 
-        String datePath = path.getName(1).toString().replace(partitionConfig.getDatePrefix(), "");
-        ZonedDateTime zonedDateTime = LocalDate.parse(datePath, DATE_FORMATTER).atStartOfDay(ZoneId.of(partitionConfig.getZone()));
-        if (partitionConfig.getPartitioningType() == Constants.PartitioningType.DAY) {
-            return new Partition(topic, zonedDateTime.toInstant(), partitionConfig);
+        String datePath = path.getName(1).toString().replace(filePartitionPathConfig.getDatePrefix(), "");
+        ZonedDateTime zonedDateTime = LocalDate.parse(datePath, DATE_FORMATTER).atStartOfDay(ZoneId.of(filePartitionPathConfig.getZone()));
+        if (filePartitionPathConfig.getFilePartitionType() == Constants.FilePartitionType.DAY) {
+            return new FilePartitionPath(topic, zonedDateTime.toInstant(), filePartitionPathConfig);
         }
 
-        String timePath = path.getName(2).toString().replace(partitionConfig.getHourPrefix(), "");
+        String timePath = path.getName(2).toString().replace(filePartitionPathConfig.getHourPrefix(), "");
         LocalTime localTime = LocalTime.parse(timePath, TIME_FORMATTER);
         zonedDateTime = zonedDateTime.plusHours(localTime.getHour());
-        if (partitionConfig.getPartitioningType() == Constants.PartitioningType.HOUR) {
-            return new Partition(topic, zonedDateTime.toInstant(), partitionConfig);
+        if (filePartitionPathConfig.getFilePartitionType() == Constants.FilePartitionType.HOUR) {
+            return new FilePartitionPath(topic, zonedDateTime.toInstant(), filePartitionPathConfig);
         }
 
         throw new IllegalArgumentException();
