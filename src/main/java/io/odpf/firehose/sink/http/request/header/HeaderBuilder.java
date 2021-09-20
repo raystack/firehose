@@ -57,8 +57,6 @@ public class HeaderBuilder {
     }
 
     private String convertToCustomHeaders(String parameter) {
-        String customHeader = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, parameter);
-        customHeader = "X-" + customHeader;
-        return customHeader;
+        return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, parameter);
     }
 }

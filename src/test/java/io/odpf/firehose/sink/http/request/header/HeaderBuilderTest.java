@@ -99,7 +99,7 @@ public class HeaderBuilderTest {
 
         Map<String, String> header = headerBuilder.build(message);
 
-        assertEquals("RB_1234", header.get("X-OrderNumber"));
+        assertEquals("RB_1234", header.get("OrderNumber"));
     }
 
     @Test
@@ -113,7 +113,7 @@ public class HeaderBuilderTest {
 
         Map<String, String> header = headerBuilder.build(message);
 
-        assertEquals("RB_1234", header.get("X-OrderNumber"));
+        assertEquals("RB_1234", header.get("OrderNumber"));
         assertEquals("json", header.get("content-type"));
     }
 
