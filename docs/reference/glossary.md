@@ -86,7 +86,7 @@
 
 [metrics](metrics.md)
 
-[MongoDB sink configs](configuration.md#mongodb-sink)
+[MongoDB sink configs](https://github.com/sumitaich1998/firehose/tree/ebdab0c700724e026d8aac80d3df061030661eb6/docs/reference/configuration.md#mongodb-sink)
 
 ## P
 
