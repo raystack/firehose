@@ -54,16 +54,13 @@ public class JsonFilter implements Filter {
     public JsonFilter(KafkaConsumerConfig consumerConfig, Instrumentation instrumentation) {
         objectMapper = new ObjectMapper();
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-
         jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
         messageType = consumerConfig.getFilterMessageType();
         filterDataSourceType = consumerConfig.getFilterJsonDataSource();
         protoSchemaClass = consumerConfig.getFilterJsonSchemaProtoClass();
-
         filterJsonSchema = consumerConfig.getFilterJsonSchema();
         this.instrumentation = instrumentation;
         logConfigs();
-
         if (filterDataSourceType != NONE) {
             try {
                 schema = schemaFactory.getSchema(filterJsonSchema);
@@ -71,7 +68,6 @@ public class JsonFilter implements Filter {
                 instrumentation.logError("Failed to parse JSON Schema " + e.getMessage());
             }
         }
-
         if (messageType == PROTOBUF) {
             try {
                 protoParser = MethodUtils.getAccessibleMethod(Class.forName(protoSchemaClass), "parseFrom", byte[].class);
@@ -86,7 +82,6 @@ public class JsonFilter implements Filter {
         if (filterDataSourceType != NONE) {
             instrumentation.logInfo("\n\tFilter JSON Schema: {}", filterJsonSchema);
             instrumentation.logInfo("\n\tFilter message type: {}", messageType);
-
             if (messageType == PROTOBUF) {
                 instrumentation.logInfo("\n\tMessage Proto class: {}", protoSchemaClass);
             }
@@ -104,17 +99,14 @@ public class JsonFilter implements Filter {
      */
     @Override
     public List<Message> filter(List<Message> messages) throws FilterException {
-
         if (filterDataSourceType == NONE) {
             return messages;
         }
         validateConfigs();
-
         List<Message> filteredMessages = new ArrayList<>();
         for (Message message : messages) {
             byte[] data = (filterDataSourceType.equals(KEY)) ? message.getLogKey() : message.getLogMessage();
             String jsonMessage = deserialize(data);
-
             if (evaluate(jsonMessage)) {
                 filteredMessages.add(message);
             }
@@ -132,17 +124,14 @@ public class JsonFilter implements Filter {
             throw new FilterException("Failed to parse JSON message " + e.getMessage());
         }
         Set<ValidationMessage> validationErrors = schema.validate(message);
-
         validationErrors.forEach(error -> {
             instrumentation.logDebug("Message filtered out due to: ", error.getMessage());
         });
         return validationErrors.isEmpty();
     }
 
-
     private String deserialize(byte[] data) throws FilterException {
         String jsonMessage = "";
-
         if (messageType == PROTOBUF) {
             try {
                 Object protoPojo = protoParser.invoke(null, data);
@@ -158,9 +147,7 @@ public class JsonFilter implements Filter {
             jsonMessage = new String(data, Charset.defaultCharset());
         }
         return jsonMessage;
-
     }
-
 
     private void validateConfigs() throws FilterException {
         if (schema == null) {
