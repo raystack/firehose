@@ -120,7 +120,6 @@ public class JsonFilter implements Filter {
         try {
             message = objectMapper.readTree(jsonMessage);
         } catch (JsonProcessingException e) {
-
             throw new FilterException("Failed to parse JSON message " + e.getMessage());
         }
         Set<ValidationMessage> validationErrors = schema.validate(message);
