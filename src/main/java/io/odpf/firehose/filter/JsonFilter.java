@@ -115,17 +115,16 @@ public class JsonFilter implements Filter {
 
 
     private boolean evaluate(String jsonMessage) throws FilterException {
-        JsonNode message;
         try {
-            message = objectMapper.readTree(jsonMessage);
+            JsonNode message = objectMapper.readTree(jsonMessage);
+            Set<ValidationMessage> validationErrors = schema.validate(message);
+            validationErrors.forEach(error -> {
+                instrumentation.logDebug("Message filtered out due to: ", error.getMessage());
+            });
+            return validationErrors.isEmpty();
         } catch (JsonProcessingException e) {
             throw new FilterException("Failed to parse JSON message " + e.getMessage());
         }
-        Set<ValidationMessage> validationErrors = schema.validate(message);
-        validationErrors.forEach(error -> {
-            instrumentation.logDebug("Message filtered out due to: ", error.getMessage());
-        });
-        return validationErrors.isEmpty();
     }
 
     private String deserialize(byte[] data) throws FilterException {
