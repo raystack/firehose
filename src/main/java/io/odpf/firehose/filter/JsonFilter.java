@@ -26,7 +26,6 @@ import java.util.Set;
 
 import static io.odpf.firehose.config.enums.FilterDataSourceType.KEY;
 import static io.odpf.firehose.config.enums.FilterDataSourceType.NONE;
-import static io.odpf.firehose.config.enums.FilterMessageType.JSON;
 import static io.odpf.firehose.config.enums.FilterMessageType.PROTOBUF;
 
 /**
@@ -130,11 +129,10 @@ public class JsonFilter implements Filter {
     }
 
     private String deserialize(byte[] data) throws FilterException {
-        String jsonMessage = "";
         if (messageType == PROTOBUF) {
             try {
                 Object protoPojo = protoParser.invoke(null, data);
-                jsonMessage = jsonPrinter.print((GeneratedMessageV3) protoPojo);
+                return jsonPrinter.print((GeneratedMessageV3) protoPojo);
 
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new FilterException("Failed to parse protobuf message", e);
@@ -142,10 +140,8 @@ public class JsonFilter implements Filter {
             } catch (InvalidProtocolBufferException e) {
                 throw new FilterException("Protobuf message is invalid ", e);
             }
-        } else if (messageType == JSON) {
-            jsonMessage = new String(data, Charset.defaultCharset());
         }
-        return jsonMessage;
+        return new String(data, Charset.defaultCharset());
     }
 
     private void validateConfigs() throws FilterException {
