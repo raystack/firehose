@@ -19,9 +19,9 @@ import java.util.List;
  * A concrete class of Filter. This class is responsible
  * for filtering the messages based on a filter condition.
  * <p>
- * The filter expression is obtained from the {@link KafkaConsumerConfig#getFilterJexlExpression()}
- * along with configurations for {@link KafkaConsumerConfig#getFilterJexlDataSource()} - [key|message]
- * and {@link KafkaConsumerConfig#getFilterJexlSchemaProtoClass()} - FQCN of the protobuf schema.
+ * The filter expression is obtained from the {@link FilterConfig#getFilterJexlExpression()}
+ * along with configurations for {@link FilterConfig#getFilterJexlDataSource()} - [key|message]
+ * and {@link FilterConfig#getFilterJexlSchemaProtoClass()} - FQCN of the protobuf schema.
  */
 public class JexlFilter implements Filter {
 
