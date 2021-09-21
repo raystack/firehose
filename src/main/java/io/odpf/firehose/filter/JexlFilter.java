@@ -1,6 +1,6 @@
 package io.odpf.firehose.filter;
 
-import io.odpf.firehose.config.KafkaConsumerConfig;
+import io.odpf.firehose.config.FilterConfig;
 import io.odpf.firehose.config.enums.FilterDataSourceType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -34,23 +34,23 @@ public class JexlFilter implements Filter {
     /**
      * Instantiates a new Message filter.
      *
-     * @param consumerConfig  the consumer config
+     * @param filterConfig    the consumer config
      * @param instrumentation the instrumentation
      */
-    public JexlFilter(KafkaConsumerConfig consumerConfig, Instrumentation instrumentation) {
+    public JexlFilter(FilterConfig filterConfig, Instrumentation instrumentation) {
         this.engine = new JexlEngine();
         this.engine.setSilent(false);
         this.engine.setStrict(true);
 
         this.instrumentation = instrumentation;
-        this.filterDataSourceType = consumerConfig.getFilterJexlDataSource();
-        this.protoSchema = consumerConfig.getFilterJexlSchemaProtoClass();
+        this.filterDataSourceType = filterConfig.getFilterJexlDataSource();
+        this.protoSchema = filterConfig.getFilterJexlSchemaProtoClass();
 
         this.instrumentation.logInfo("\n\tFilter type: {}", this.filterDataSourceType);
-        if (isNotNone(consumerConfig.getFilterJexlDataSource())) {
-            this.expression = this.engine.createExpression(consumerConfig.getFilterJexlExpression());
+        if (isNotNone(filterConfig.getFilterJexlDataSource())) {
+            this.expression = this.engine.createExpression(filterConfig.getFilterJexlExpression());
             this.instrumentation.logInfo("\n\tFilter schema: {}", this.protoSchema);
-            this.instrumentation.logInfo("\n\tFilter expression: {}", consumerConfig.getFilterJexlExpression());
+            this.instrumentation.logInfo("\n\tFilter expression: {}", filterConfig.getFilterJexlExpression());
 
         } else {
             this.instrumentation.logInfo("No filter is selected");

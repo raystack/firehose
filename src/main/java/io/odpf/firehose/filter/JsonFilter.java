@@ -10,7 +10,7 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
-import io.odpf.firehose.config.KafkaConsumerConfig;
+import io.odpf.firehose.config.FilterConfig;
 import io.odpf.firehose.config.enums.FilterDataSourceType;
 import io.odpf.firehose.config.enums.FilterMessageType;
 import io.odpf.firehose.consumer.Message;
@@ -47,17 +47,17 @@ public class JsonFilter implements Filter {
     /**
      * Instantiates a new Json filter.
      *
-     * @param consumerConfig  the consumer config
+     * @param filterConfig    the consumer config
      * @param instrumentation the instrumentation
      */
-    public JsonFilter(KafkaConsumerConfig consumerConfig, Instrumentation instrumentation) {
+    public JsonFilter(FilterConfig filterConfig, Instrumentation instrumentation) {
         objectMapper = new ObjectMapper();
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
         jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
-        messageType = consumerConfig.getFilterMessageType();
-        filterDataSourceType = consumerConfig.getFilterJsonDataSource();
-        protoSchemaClass = consumerConfig.getFilterJsonSchemaProtoClass();
-        filterJsonSchema = consumerConfig.getFilterJsonSchema();
+        messageType = filterConfig.getFilterMessageType();
+        filterDataSourceType = filterConfig.getFilterJsonDataSource();
+        protoSchemaClass = filterConfig.getFilterJsonSchemaProtoClass();
+        filterJsonSchema = filterConfig.getFilterJsonSchema();
         this.instrumentation = instrumentation;
         logConfigs();
         if (filterDataSourceType != NONE) {

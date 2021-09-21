@@ -1,13 +1,7 @@
 package io.odpf.firehose.config;
 
-import io.odpf.firehose.config.converter.FilterDataSourceTypeConverter;
-import io.odpf.firehose.config.converter.FilterEngineTypeConverter;
-import io.odpf.firehose.config.converter.FilterMessageTypeConverter;
 import io.odpf.firehose.config.converter.ProtoIndexToFieldMapConverter;
 import io.odpf.firehose.config.converter.SinkTypeConverter;
-import io.odpf.firehose.config.enums.FilterDataSourceType;
-import io.odpf.firehose.config.enums.FilterEngineType;
-import io.odpf.firehose.config.enums.FilterMessageType;
 import io.odpf.firehose.config.enums.SinkType;
 import org.aeonbits.owner.Config;
 
@@ -79,37 +73,6 @@ public interface AppConfig extends Config {
     @Key("KAFKA_RECORD_PARSER_MODE")
     @DefaultValue("message")
     String getKafkaRecordParserMode();
-
-    @Key("FILTER_ENGINE")
-    @ConverterClass(FilterEngineTypeConverter.class)
-    @DefaultValue("JEXL")
-    FilterEngineType getFilterEngine();
-
-    @Key("FILTER_ESB_MESSAGE_TYPE")
-    @ConverterClass(FilterMessageTypeConverter.class)
-    FilterMessageType getFilterMessageType();
-
-    @Key("FILTER_JEXL_DATA_SOURCE")
-    @ConverterClass(FilterDataSourceTypeConverter.class)
-    @DefaultValue("NONE")
-    FilterDataSourceType getFilterJexlDataSource();
-
-    @Key("FILTER_JEXL_EXPRESSION")
-    String getFilterJexlExpression();
-
-    @Key("FILTER_JEXL_SCHEMA_PROTO_CLASS")
-    String getFilterJexlSchemaProtoClass();
-
-    @Key("FILTER_JSON_DATA_SOURCE")
-    @ConverterClass(FilterDataSourceTypeConverter.class)
-    @DefaultValue("NONE")
-    FilterDataSourceType getFilterJsonDataSource();
-
-    @Key("FILTER_JSON_SCHEMA")
-    String getFilterJsonSchema();
-
-    @Key("FILTER_JSON_SCHEMA_PROTO_CLASS")
-    String getFilterJsonSchemaProtoClass();
 
     @Key("TRACE_JAEGAR_ENABLE")
     @DefaultValue("false")

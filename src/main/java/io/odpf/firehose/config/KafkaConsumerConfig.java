@@ -3,7 +3,7 @@ package io.odpf.firehose.config;
 /**
  * The interface for configurations required to instantiate a consumer.
  */
-public interface KafkaConsumerConfig extends AppConfig {
+public interface KafkaConsumerConfig extends AppConfig, FilterConfig {
     @Key("SOURCE_KAFKA_ASYNC_COMMIT_ENABLE")
     @DefaultValue("true")
     boolean isSourceKafkaAsyncCommitEnable();

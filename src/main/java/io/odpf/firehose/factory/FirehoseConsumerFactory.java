@@ -6,6 +6,7 @@ import com.gojek.de.stencil.parser.ProtoParser;
 import io.jaegertracing.Configuration;
 import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.config.DlqConfig;
+import io.odpf.firehose.config.FilterConfig;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.consumer.FirehoseConsumer;
 import io.odpf.firehose.consumer.GenericConsumer;
@@ -89,8 +90,8 @@ public class FirehoseConsumerFactory {
      * @return FirehoseConsumer firehose consumer
      */
     public FirehoseConsumer buildConsumer() {
-
-        Filter filter = (kafkaConsumerConfig.getFilterEngine() == JEXL) ? new JexlFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, JexlFilter.class)) : new JsonFilter(kafkaConsumerConfig, new Instrumentation(statsDReporter, JsonFilter.class));
+        FilterConfig filterConfig = ConfigFactory.create(FilterConfig.class, config);
+        Filter filter = (filterConfig.getFilterEngine() == JEXL) ? new JexlFilter(filterConfig, new Instrumentation(statsDReporter, JexlFilter.class)) : new JsonFilter(filterConfig, new Instrumentation(statsDReporter, JsonFilter.class));
 
         GenericKafkaFactory genericKafkaFactory = new GenericKafkaFactory();
         Tracer tracer = NoopTracerFactory.create();
