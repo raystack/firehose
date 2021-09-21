@@ -448,4 +448,25 @@ public class HttpSinkTest {
         httpSink.execute();
         verify(instrumentation, times(1)).logDebug("Response Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]");
     }
+
+    @Test
+    public void shouldNotLogResponseBodyWhenDebugIsEnabledWithNullHttpResponseEntity() throws Exception {
+        when(response.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(200);
+
+        List<HttpEntityEnclosingRequestBase> httpRequests = Collections.singletonList(httpPut);
+
+        when(httpPut.getMethod()).thenReturn("PUT");
+        when(httpPut.getURI()).thenReturn(new URI("http://dummy.com"));
+        when(httpClient.execute(httpPut)).thenReturn(response);
+        when(response.getEntity()).thenReturn(null);
+        when(request.build(messages)).thenReturn(httpRequests);
+        when(instrumentation.isDebugEnabled()).thenReturn(true);
+
+        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+                retryStatusCodeRange, requestLogStatusCodeRanges);
+        httpSink.prepare(messages);
+        httpSink.execute();
+        verify(instrumentation, times(0)).logDebug(any());
+    }
 }
