@@ -129,19 +129,23 @@ public class JsonFilter implements Filter {
     }
 
     private String deserialize(byte[] data) throws FilterException {
-        if (messageType == PROTOBUF) {
-            try {
-                Object protoPojo = protoParser.invoke(null, data);
-                return jsonPrinter.print((GeneratedMessageV3) protoPojo);
+        switch (messageType) {
+            case PROTOBUF:
+                try {
+                    Object protoPojo = protoParser.invoke(null, data);
+                    return jsonPrinter.print((GeneratedMessageV3) protoPojo);
 
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new FilterException("Failed to parse protobuf message", e);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new FilterException("Failed to parse protobuf message", e);
 
-            } catch (InvalidProtocolBufferException e) {
-                throw new FilterException("Protobuf message is invalid ", e);
-            }
+                } catch (InvalidProtocolBufferException e) {
+                    throw new FilterException("Protobuf message is invalid ", e);
+                }
+            case JSON:
+                return new String(data, Charset.defaultCharset());
+            default:
+                throw new FilterException("Invalid message format type");
         }
-        return new String(data, Charset.defaultCharset());
     }
 
     private void validateConfigs() throws FilterException {
