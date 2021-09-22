@@ -90,7 +90,7 @@ public class FirehoseConsumerFactory {
      */
     public FirehoseConsumer buildConsumer() {
         FilterConfig filterConfig = ConfigFactory.create(FilterConfig.class, config);
-        Filter filter = null;
+        Filter filter;
         switch (filterConfig.getFilterEngine()) {
             case JSON:
                 Instrumentation filterInstrumentation = new Instrumentation(statsDReporter, JsonFilter.class);
