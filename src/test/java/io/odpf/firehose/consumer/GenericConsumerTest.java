@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
+import io.odpf.firehose.config.enums.FilterEngineType;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -114,6 +115,7 @@ public class GenericConsumerTest {
         ConsumerRecord<byte[], byte[]> record2 = new ConsumerRecord<>("topic2", 1, 0, key.toByteArray(), message.toByteArray());
         when(consumerRecords.iterator()).thenReturn(Arrays.asList(record1, record2).iterator());
         when(consumerConfig.getFilterJexlExpression()).thenReturn("test");
+        when(consumerConfig.getFilterEngine()).thenReturn(FilterEngineType.JEXL);
 
         Message expectedMsg1 = new Message(key.toByteArray(), message.toByteArray(), "topic1", 0, 100);
 

@@ -2,10 +2,10 @@ package io.odpf.firehose.config;
 
 import io.odpf.firehose.config.converter.FilterDataSourceTypeConverter;
 import io.odpf.firehose.config.converter.FilterEngineTypeConverter;
-import io.odpf.firehose.config.converter.FilterMessageTypeConverter;
+import io.odpf.firehose.config.converter.FilterMessageFormatTypeConverter;
 import io.odpf.firehose.config.enums.FilterDataSourceType;
 import io.odpf.firehose.config.enums.FilterEngineType;
-import io.odpf.firehose.config.enums.FilterMessageType;
+import io.odpf.firehose.config.enums.FilterMessageFormatType;
 import org.aeonbits.owner.Config;
 
 public interface FilterConfig extends Config {
@@ -15,9 +15,9 @@ public interface FilterConfig extends Config {
     @DefaultValue("JEXL")
     FilterEngineType getFilterEngine();
 
-    @Key("FILTER_ESB_MESSAGE_TYPE")
-    @ConverterClass(FilterMessageTypeConverter.class)
-    FilterMessageType getFilterMessageType();
+    @Key("FILTER_ESB_MESSAGE_FORMAT")
+    @ConverterClass(FilterMessageFormatTypeConverter.class)
+    FilterMessageFormatType getFilterMessageFormat();
 
     @Key("FILTER_JEXL_DATA_SOURCE")
     @ConverterClass(FilterDataSourceTypeConverter.class)

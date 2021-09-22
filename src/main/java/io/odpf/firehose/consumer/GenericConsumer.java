@@ -1,18 +1,19 @@
 package io.odpf.firehose.consumer;
 
+import com.newrelic.api.agent.Trace;
+import io.odpf.firehose.config.KafkaConsumerConfig;
+import io.odpf.firehose.filter.Filter;
+import io.odpf.firehose.filter.FilterException;
+import io.odpf.firehose.metrics.Instrumentation;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.filter.FilterException;
-import io.odpf.firehose.filter.Filter;
-import io.odpf.firehose.metrics.Instrumentation;
-import com.newrelic.api.agent.Trace;
-
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
+import static io.odpf.firehose.config.enums.FilterEngineType.JEXL;
 
 /**
  * A class responsible for consuming the messages in kafka.
@@ -32,11 +33,11 @@ public class GenericConsumer {
     /**
      * A Constructor.
      *
-     * @param kafkaConsumer      {@see KafkaConsumer}
-     * @param config             Consumer configuration.
-     * @param filter             a Filter implementation to filter the messages. {@see Filter}, {@see io.odpf.firehose.filter.EsbMessageFilter}
-     * @param offsets            {@see Offsets}
-     * @param instrumentation     Contain logging and metrics collection
+     * @param kafkaConsumer   {@see KafkaConsumer}
+     * @param config          Consumer configuration.
+     * @param filter          a Filter implementation to filter the messages. {@see Filter}, {@see io.odpf.firehose.filter.EsbMessageFilter}
+     * @param offsets         {@see Offsets}
+     * @param instrumentation Contain logging and metrics collection
      */
     public GenericConsumer(Consumer kafkaConsumer, KafkaConsumerConfig config, Filter filter,
                            Offsets offsets, Instrumentation instrumentation) {
@@ -70,7 +71,8 @@ public class GenericConsumer {
         List<Message> filteredMessage = filter.filter(messages);
         Integer filteredMessageCount = messages.size() - filteredMessage.size();
         if (filteredMessageCount > 0) {
-            instrumentation.captureFilteredMessageCount(filteredMessageCount, consumerConfig.getFilterJexlExpression());
+            instrumentation.captureFilteredMessageCount(filteredMessageCount,
+                    (consumerConfig.getFilterEngine() == JEXL) ? consumerConfig.getFilterJexlExpression() : consumerConfig.getFilterJsonSchema());
         }
         return filteredMessage;
     }

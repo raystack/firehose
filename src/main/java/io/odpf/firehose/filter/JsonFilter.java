@@ -12,7 +12,7 @@ import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import io.odpf.firehose.config.FilterConfig;
 import io.odpf.firehose.config.enums.FilterDataSourceType;
-import io.odpf.firehose.config.enums.FilterMessageType;
+import io.odpf.firehose.config.enums.FilterMessageFormatType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -26,7 +26,7 @@ import java.util.Set;
 
 import static io.odpf.firehose.config.enums.FilterDataSourceType.KEY;
 import static io.odpf.firehose.config.enums.FilterDataSourceType.NONE;
-import static io.odpf.firehose.config.enums.FilterMessageType.PROTOBUF;
+import static io.odpf.firehose.config.enums.FilterMessageFormatType.PROTOBUF;
 
 /**
  * JSON-based filter to filter protobuf/JSON messages based on rules
@@ -36,7 +36,7 @@ public class JsonFilter implements Filter {
 
     private final ObjectMapper objectMapper;
     private final FilterDataSourceType filterDataSourceType;
-    private final FilterMessageType messageType;
+    private final FilterMessageFormatType messageType;
     private Method protoParser;
     private final Instrumentation instrumentation;
     private JsonSchema schema;
@@ -52,7 +52,7 @@ public class JsonFilter implements Filter {
         objectMapper = new ObjectMapper();
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
         jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
-        messageType = filterConfig.getFilterMessageType();
+        messageType = filterConfig.getFilterMessageFormat();
         filterDataSourceType = filterConfig.getFilterJsonDataSource();
         String protoSchemaClass = filterConfig.getFilterJsonSchemaProtoClass();
         String filterJsonSchema = filterConfig.getFilterJsonSchema();
@@ -83,8 +83,8 @@ public class JsonFilter implements Filter {
         instrumentation.logInfo("\n\tFilter type: {}", filterConfig.getFilterJsonDataSource());
         if (filterConfig.getFilterJsonDataSource() != NONE) {
             instrumentation.logInfo("\n\tFilter JSON Schema: {}", filterConfig.getFilterJsonSchema());
-            instrumentation.logInfo("\n\tFilter message type: {}", filterConfig.getFilterMessageType());
-            if (filterConfig.getFilterMessageType() == PROTOBUF) {
+            instrumentation.logInfo("\n\tFilter message type: {}", filterConfig.getFilterMessageFormat());
+            if (filterConfig.getFilterMessageFormat() == PROTOBUF) {
                 instrumentation.logInfo("\n\tMessage Proto class: {}", filterConfig.getFilterJsonSchemaProtoClass());
             }
         } else {
@@ -158,10 +158,10 @@ public class JsonFilter implements Filter {
         if (filterConfig.getFilterJsonSchema() == null) {
             throw new FilterException("Filter JSON Schema is invalid");
         }
-        if (filterConfig.getFilterMessageType() == null) {
+        if (filterConfig.getFilterMessageFormat() == null) {
             throw new FilterException("Filter ESB message type cannot be null");
         }
-        if (filterConfig.getFilterMessageType() == PROTOBUF && filterConfig.getFilterJsonSchemaProtoClass() == null) {
+        if (filterConfig.getFilterMessageFormat() == PROTOBUF && filterConfig.getFilterJsonSchemaProtoClass() == null) {
             throw new FilterException("Proto Schema class cannot be null");
         }
     }
