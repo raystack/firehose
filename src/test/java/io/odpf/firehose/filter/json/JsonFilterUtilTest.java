@@ -34,7 +34,7 @@ public class JsonFilterUtilTest {
     }
 
     @Test
-    public void shouldLogFilterTypeIfFilterDataSourceIsNone() {
+    public void shouldLogNoFilterSelectedIfFilterDataSourceIsNone() {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JSON_DATA_SOURCE", "none");
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
