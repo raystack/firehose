@@ -34,7 +34,7 @@ public class JsonFilter implements Filter {
 
     private final ObjectMapper objectMapper;
     private final Instrumentation instrumentation;
-    private JsonSchema schema;
+    private final JsonSchema schema;
     private final JsonFormat.Printer jsonPrinter;
     private final FilterConfig filterConfig;
 
@@ -52,6 +52,8 @@ public class JsonFilter implements Filter {
         this.instrumentation = instrumentation;
         if (filterConfig.getFilterJsonDataSource() != NONE) {
             schema = schemaFactory.getSchema(filterConfig.getFilterJsonSchema());
+        } else {
+            schema = null;
         }
     }
 
