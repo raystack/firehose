@@ -17,4 +17,6 @@ public interface Filter {
      * @throws FilterException the filter exception
      */
     List<Message> filter(List<Message> messages) throws FilterException;
+
+    String getFilterRule();
 }

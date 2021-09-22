@@ -1,12 +1,15 @@
-package io.odpf.firehose.filter;
+package io.odpf.firehose.filter.jexl;
 
-import io.odpf.firehose.config.KafkaConsumerConfig;
+import io.odpf.firehose.config.FilterConfig;
 import io.odpf.firehose.config.enums.FilterDataSourceType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.consumer.TestBookingLogKey;
 import io.odpf.firehose.consumer.TestBookingLogMessage;
 import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;
+import io.odpf.firehose.filter.Filter;
+import io.odpf.firehose.filter.FilterException;
+import io.odpf.firehose.filter.jexl.JexlFilter;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
@@ -24,7 +27,7 @@ import static org.junit.Assert.assertEquals;
 
 public class JexlFilterTest {
 
-    private KafkaConsumerConfig kafkaConsumerConfig;
+    private FilterConfig kafkaConsumerConfig;
 
     private Filter filter;
 
@@ -41,7 +44,7 @@ public class JexlFilterTest {
         filterConfigs.put("FILTER_JEXL_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JEXL_EXPRESSION", "testMessage.getOrderNumber() == 123");
         filterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
-        kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
+        kafkaConsumerConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
 
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
         testMessage = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
@@ -64,7 +67,7 @@ public class JexlFilterTest {
         bookingFilterConfigs.put("FILTER_JEXL_DATA_SOURCE", "message");
         bookingFilterConfigs.put("FILTER_JEXL_EXPRESSION", "testBookingLogMessage.getCustomerDynamicSurgeEnabled() == false");
         bookingFilterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
-        KafkaConsumerConfig bookingConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, bookingFilterConfigs);
+        FilterConfig bookingConsumerConfig = ConfigFactory.create(FilterConfig.class, bookingFilterConfigs);
         JexlFilter bookingFilter = new JexlFilter(bookingConsumerConfig, instrumentation);
         List<Message> filteredMessages = bookingFilter.filter(Arrays.asList(message));
         assertEquals(filteredMessages.get(0), message);
@@ -76,7 +79,7 @@ public class JexlFilterTest {
         filterConfigs.put("FILTER_JEXL_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JEXL_EXPRESSION", "1+2");
         filterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
-        kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
+        kafkaConsumerConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
 
         filter = new JexlFilter(kafkaConsumerConfig, instrumentation);
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
@@ -91,7 +94,7 @@ public class JexlFilterTest {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JEXL_EXPRESSION", "testMessage.getOrderNumber() == 123");
         filterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
-        kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
+        kafkaConsumerConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
 
         filter = new JexlFilter(kafkaConsumerConfig, instrumentation);
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
@@ -108,7 +111,7 @@ public class JexlFilterTest {
         filterConfigs.put("FILTER_JEXL_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JEXL_EXPRESSION", "testMessage.getOrderNumber() == 123");
         filterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
-        kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
+        kafkaConsumerConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
 
         new JexlFilter(kafkaConsumerConfig, instrumentation);
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter type: {}", FilterDataSourceType.MESSAGE);
@@ -120,7 +123,7 @@ public class JexlFilterTest {
     public void shouldLogFilterTypeIfFilterTypeIsNone() {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_JEXL_DATA_SOURCE", "none");
-        kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
+        kafkaConsumerConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
 
         new JexlFilter(kafkaConsumerConfig, instrumentation);
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("No filter is selected");

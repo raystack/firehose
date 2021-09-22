@@ -1,4 +1,4 @@
-package io.odpf.firehose.filter;
+package io.odpf.firehose.filter.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,14 +11,13 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import io.odpf.firehose.config.FilterConfig;
-import io.odpf.firehose.config.enums.FilterDataSourceType;
-import io.odpf.firehose.config.enums.FilterMessageFormatType;
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.filter.Filter;
+import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +25,6 @@ import java.util.Set;
 
 import static io.odpf.firehose.config.enums.FilterDataSourceType.KEY;
 import static io.odpf.firehose.config.enums.FilterDataSourceType.NONE;
-import static io.odpf.firehose.config.enums.FilterMessageFormatType.PROTOBUF;
 
 /**
  * JSON-based filter to filter protobuf/JSON messages based on rules
@@ -35,12 +33,10 @@ import static io.odpf.firehose.config.enums.FilterMessageFormatType.PROTOBUF;
 public class JsonFilter implements Filter {
 
     private final ObjectMapper objectMapper;
-    private final FilterDataSourceType filterDataSourceType;
-    private final FilterMessageFormatType messageType;
-    private Method protoParser;
     private final Instrumentation instrumentation;
     private JsonSchema schema;
     private final JsonFormat.Printer jsonPrinter;
+    private final FilterConfig filterConfig;
 
     /**
      * Instantiates a new Json filter.
@@ -50,45 +46,12 @@ public class JsonFilter implements Filter {
      */
     public JsonFilter(FilterConfig filterConfig, Instrumentation instrumentation) {
         objectMapper = new ObjectMapper();
+        this.filterConfig = filterConfig;
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
         jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
-        messageType = filterConfig.getFilterMessageFormat();
-        filterDataSourceType = filterConfig.getFilterJsonDataSource();
-        String protoSchemaClass = filterConfig.getFilterJsonSchemaProtoClass();
-        String filterJsonSchema = filterConfig.getFilterJsonSchema();
         this.instrumentation = instrumentation;
-        if (filterDataSourceType != NONE) {
-            try {
-                schema = schemaFactory.getSchema(filterJsonSchema);
-            } catch (Exception e) {
-                throw new FilterException("Failed to parse JSON Schema " + e.getMessage());
-            }
-        }
-        if (messageType == PROTOBUF) {
-            try {
-                protoParser = MethodUtils.getAccessibleMethod(Class.forName(protoSchemaClass), "parseFrom", byte[].class);
-            } catch (ClassNotFoundException e) {
-                throw new FilterException("Failed to load Proto schema class " + e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * Log configs.
-     *
-     * @param filterConfig    the filter config
-     * @param instrumentation the instrumentation
-     */
-    public static void logConfigs(FilterConfig filterConfig, Instrumentation instrumentation) {
-        instrumentation.logInfo("\n\tFilter type: {}", filterConfig.getFilterJsonDataSource());
         if (filterConfig.getFilterJsonDataSource() != NONE) {
-            instrumentation.logInfo("\n\tFilter JSON Schema: {}", filterConfig.getFilterJsonSchema());
-            instrumentation.logInfo("\n\tFilter message type: {}", filterConfig.getFilterMessageFormat());
-            if (filterConfig.getFilterMessageFormat() == PROTOBUF) {
-                instrumentation.logInfo("\n\tMessage Proto class: {}", filterConfig.getFilterJsonSchemaProtoClass());
-            }
-        } else {
-            instrumentation.logInfo("No filter is selected");
+            schema = schemaFactory.getSchema(filterConfig.getFilterJsonSchema());
         }
     }
 
@@ -100,13 +63,13 @@ public class JsonFilter implements Filter {
      * @throws FilterException the filter exception
      */
     @Override
-    public List<Message> filter(List<Message> messages) {
-        if (filterDataSourceType == NONE) {
+    public List<Message> filter(List<Message> messages) throws FilterException {
+        if (filterConfig.getFilterJsonDataSource() == NONE) {
             return messages;
         }
         List<Message> filteredMessages = new ArrayList<>();
         for (Message message : messages) {
-            byte[] data = (filterDataSourceType.equals(KEY)) ? message.getLogKey() : message.getLogMessage();
+            byte[] data = (filterConfig.getFilterJsonDataSource().equals(KEY)) ? message.getLogKey() : message.getLogMessage();
             String jsonMessage = deserialize(data);
             if (evaluate(jsonMessage)) {
                 filteredMessages.add(message);
@@ -115,8 +78,7 @@ public class JsonFilter implements Filter {
         return filteredMessages;
     }
 
-
-    private boolean evaluate(String jsonMessage) {
+    private boolean evaluate(String jsonMessage) throws FilterException {
         try {
             JsonNode message = objectMapper.readTree(jsonMessage);
             Set<ValidationMessage> validationErrors = schema.validate(message);
@@ -125,22 +87,22 @@ public class JsonFilter implements Filter {
             });
             return validationErrors.isEmpty();
         } catch (JsonProcessingException e) {
-            throw new FilterException("Failed to parse JSON message " + e.getMessage());
+            throw new FilterException("Failed to parse JSON message ", e);
         }
     }
 
-    private String deserialize(byte[] data) {
-        switch (messageType) {
+    private String deserialize(byte[] data) throws FilterException {
+        switch (filterConfig.getFilterMessageFormat()) {
             case PROTOBUF:
                 try {
-                    Object protoPojo = protoParser.invoke(null, data);
+                    Object protoPojo = MethodUtils.invokeStaticMethod(Class.forName(filterConfig.getFilterJsonSchemaProtoClass()), "parseFrom", data);
                     return jsonPrinter.print((GeneratedMessageV3) protoPojo);
-
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     throw new FilterException("Failed to parse protobuf message", e);
-
                 } catch (InvalidProtocolBufferException e) {
                     throw new FilterException("Protobuf message is invalid ", e);
+                } catch (NoSuchMethodException | ClassNotFoundException e) {
+                    throw new FilterException("Proto schema class is invalid ", e);
                 }
             case JSON:
                 return new String(data, Charset.defaultCharset());
@@ -149,20 +111,8 @@ public class JsonFilter implements Filter {
         }
     }
 
-    /**
-     * Validate configs.
-     *
-     * @param filterConfig the filter config
-     */
-    public static void validateConfigs(FilterConfig filterConfig) {
-        if (filterConfig.getFilterJsonSchema() == null) {
-            throw new FilterException("Filter JSON Schema is invalid");
-        }
-        if (filterConfig.getFilterMessageFormat() == null) {
-            throw new FilterException("Filter ESB message type cannot be null");
-        }
-        if (filterConfig.getFilterMessageFormat() == PROTOBUF && filterConfig.getFilterJsonSchemaProtoClass() == null) {
-            throw new FilterException("Proto Schema class cannot be null");
-        }
+    @Override
+    public String getFilterRule() {
+        return filterConfig.getFilterJsonSchema();
     }
 }

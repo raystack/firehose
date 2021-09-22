@@ -13,8 +13,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.odpf.firehose.config.enums.FilterEngineType.JEXL;
-
 /**
  * A class responsible for consuming the messages in kafka.
  * It is capable of applying filters supplied while instantiating this consumer {@see io.odpf.firehose.factory.GenericKafkaFactory},
@@ -71,8 +69,7 @@ public class GenericConsumer {
         List<Message> filteredMessage = filter.filter(messages);
         Integer filteredMessageCount = messages.size() - filteredMessage.size();
         if (filteredMessageCount > 0) {
-            instrumentation.captureFilteredMessageCount(filteredMessageCount,
-                    (consumerConfig.getFilterEngine() == JEXL) ? consumerConfig.getFilterJexlExpression() : consumerConfig.getFilterJsonSchema());
+            instrumentation.captureFilteredMessageCount(filteredMessageCount, filter.getFilterRule());
         }
         return filteredMessage;
     }

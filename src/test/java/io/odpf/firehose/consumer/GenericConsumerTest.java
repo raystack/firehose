@@ -114,8 +114,7 @@ public class GenericConsumerTest {
         ConsumerRecord<byte[], byte[]> record1 = new ConsumerRecord<>("topic1", 1, 0, key.toByteArray(), message.toByteArray());
         ConsumerRecord<byte[], byte[]> record2 = new ConsumerRecord<>("topic2", 1, 0, key.toByteArray(), message.toByteArray());
         when(consumerRecords.iterator()).thenReturn(Arrays.asList(record1, record2).iterator());
-        when(consumerConfig.getFilterJexlExpression()).thenReturn("test");
-        when(consumerConfig.getFilterEngine()).thenReturn(FilterEngineType.JEXL);
+        when(filter.getFilterRule()).thenReturn("test");
 
         Message expectedMsg1 = new Message(key.toByteArray(), message.toByteArray(), "topic1", 0, 100);
 

@@ -12,9 +12,9 @@ import io.odpf.firehose.consumer.FirehoseConsumer;
 import io.odpf.firehose.consumer.GenericConsumer;
 import io.odpf.firehose.exception.EglcConfigurationException;
 import io.odpf.firehose.filter.Filter;
-import io.odpf.firehose.filter.FilterException;
-import io.odpf.firehose.filter.JexlFilter;
-import io.odpf.firehose.filter.JsonFilter;
+import io.odpf.firehose.filter.jexl.JexlFilter;
+import io.odpf.firehose.filter.json.JsonFilter;
+import io.odpf.firehose.filter.json.JsonFilterUtil;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
@@ -83,6 +83,19 @@ public class FirehoseConsumerFactory {
         parser = new KeyOrMessageParser(new ProtoParser(stencilClient, kafkaConsumerConfig.getInputSchemaProtoClass()), kafkaConsumerConfig);
     }
 
+    private Filter buildFilter(FilterConfig filterConfig) {
+        switch (filterConfig.getFilterEngine()) {
+            case JSON:
+                JsonFilterUtil.logConfigs(filterConfig, instrumentation);
+                JsonFilterUtil.validateConfigs(filterConfig, instrumentation);
+                return new JsonFilter(filterConfig, new Instrumentation(statsDReporter, JsonFilter.class));
+            case JEXL:
+                return new JexlFilter(filterConfig, new Instrumentation(statsDReporter, JexlFilter.class));
+            default:
+                throw new IllegalArgumentException("Invalid filter engine type");
+        }
+    }
+
     /**
      * Helps to create consumer based on the config.
      *
@@ -90,25 +103,7 @@ public class FirehoseConsumerFactory {
      */
     public FirehoseConsumer buildConsumer() {
         FilterConfig filterConfig = ConfigFactory.create(FilterConfig.class, config);
-        Filter filter;
-        switch (filterConfig.getFilterEngine()) {
-            case JSON:
-                Instrumentation filterInstrumentation = new Instrumentation(statsDReporter, JsonFilter.class);
-                JsonFilter.logConfigs(filterConfig, filterInstrumentation);
-                try {
-                    JsonFilter.validateConfigs(filterConfig);
-                } catch (FilterException e) {
-                    instrumentation.logError("Failed to create filter due to invalid config");
-                    throw e;
-                }
-                filter = new JsonFilter(filterConfig, filterInstrumentation);
-                break;
-            case JEXL:
-                filter = new JexlFilter(filterConfig, new Instrumentation(statsDReporter, JexlFilter.class));
-                break;
-            default:
-                throw new FilterException("Invalid filter engine type");
-        }
+        Filter filter = buildFilter(filterConfig);
         GenericKafkaFactory genericKafkaFactory = new GenericKafkaFactory();
         Tracer tracer = NoopTracerFactory.create();
         if (kafkaConsumerConfig.isTraceJaegarEnable()) {

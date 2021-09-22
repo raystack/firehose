@@ -1,8 +1,10 @@
-package io.odpf.firehose.filter;
+package io.odpf.firehose.filter.jexl;
 
 import io.odpf.firehose.config.FilterConfig;
 import io.odpf.firehose.config.enums.FilterDataSourceType;
 import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.filter.Filter;
+import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
@@ -30,6 +32,7 @@ public class JexlFilter implements Filter {
     private FilterDataSourceType filterDataSourceType;
     private String protoSchema;
     private Instrumentation instrumentation;
+    private FilterConfig filterConfig;
 
     /**
      * Instantiates a new Message filter.
@@ -41,7 +44,7 @@ public class JexlFilter implements Filter {
         this.engine = new JexlEngine();
         this.engine.setSilent(false);
         this.engine.setStrict(true);
-
+        this.filterConfig = filterConfig;
         this.instrumentation = instrumentation;
         this.filterDataSourceType = filterConfig.getFilterJexlDataSource();
         this.protoSchema = filterConfig.getFilterJexlSchemaProtoClass();
@@ -124,5 +127,10 @@ public class JexlFilter implements Filter {
 
     private boolean isNotNone(FilterDataSourceType filterDataSourceTypeVal) {
         return !isNone(filterDataSourceTypeVal);
+    }
+
+    @Override
+    public String getFilterRule() {
+        return filterConfig.getFilterJexlExpression();
     }
 }
