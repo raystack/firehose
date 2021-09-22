@@ -73,6 +73,12 @@ public class JsonFilter implements Filter {
         }
     }
 
+    /**
+     * Log configs.
+     *
+     * @param filterConfig    the filter config
+     * @param instrumentation the instrumentation
+     */
     public static void logConfigs(FilterConfig filterConfig, Instrumentation instrumentation) {
         instrumentation.logInfo("\n\tFilter type: {}", filterConfig.getFilterJsonDataSource());
         if (filterConfig.getFilterJsonDataSource() != NONE) {
@@ -94,7 +100,7 @@ public class JsonFilter implements Filter {
      * @throws FilterException the filter exception
      */
     @Override
-    public List<Message> filter(List<Message> messages) throws FilterException {
+    public List<Message> filter(List<Message> messages) {
         if (filterDataSourceType == NONE) {
             return messages;
         }
@@ -110,7 +116,7 @@ public class JsonFilter implements Filter {
     }
 
 
-    private boolean evaluate(String jsonMessage) throws FilterException {
+    private boolean evaluate(String jsonMessage) {
         try {
             JsonNode message = objectMapper.readTree(jsonMessage);
             Set<ValidationMessage> validationErrors = schema.validate(message);
@@ -123,7 +129,7 @@ public class JsonFilter implements Filter {
         }
     }
 
-    private String deserialize(byte[] data) throws FilterException {
+    private String deserialize(byte[] data) {
         switch (messageType) {
             case PROTOBUF:
                 try {
@@ -143,6 +149,11 @@ public class JsonFilter implements Filter {
         }
     }
 
+    /**
+     * Validate configs.
+     *
+     * @param filterConfig the filter config
+     */
     public static void validateConfigs(FilterConfig filterConfig) {
         if (filterConfig.getFilterJsonSchema() == null) {
             throw new FilterException("Filter JSON Schema is invalid");
