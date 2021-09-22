@@ -20,7 +20,7 @@ public class JsonFilterUtil {
      * @param instrumentation the instrumentation
      */
     public static void logConfigs(FilterConfig filterConfig, Instrumentation instrumentation) {
-        instrumentation.logInfo("\n\tFilter type: {}", filterConfig.getFilterJsonDataSource());
+        instrumentation.logInfo("\n\tFilter data source type: {}", filterConfig.getFilterJsonDataSource());
         if (filterConfig.getFilterJsonDataSource() != NONE) {
             instrumentation.logInfo("\n\tFilter JSON Schema: {}", filterConfig.getFilterJsonSchema());
             instrumentation.logInfo("\n\tFilter message type: {}", filterConfig.getFilterMessageFormat());
