@@ -9,7 +9,6 @@ import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
-import io.odpf.firehose.filter.jexl.JexlFilter;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;

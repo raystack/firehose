@@ -1,7 +1,6 @@
 package io.odpf.firehose.filter.json;
 
 import io.odpf.firehose.config.FilterConfig;
-import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.config.enums.FilterDataSourceType;
 import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.metrics.Instrumentation;
