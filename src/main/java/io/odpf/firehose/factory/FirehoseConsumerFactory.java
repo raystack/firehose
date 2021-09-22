@@ -87,7 +87,7 @@ public class FirehoseConsumerFactory {
         instrumentation.logInfo("Filter Engine: ", filterConfig.getFilterEngine());
         switch (filterConfig.getFilterEngine()) {
             case JSON:
-                Instrumentation jsonFilterUtilInstrumentation=new Instrumentation(statsDReporter,JsonFilterUtil.class);
+                Instrumentation jsonFilterUtilInstrumentation = new Instrumentation(statsDReporter, JsonFilterUtil.class);
                 JsonFilterUtil.logConfigs(filterConfig, jsonFilterUtilInstrumentation);
                 JsonFilterUtil.validateConfigs(filterConfig, jsonFilterUtilInstrumentation);
                 return new JsonFilter(filterConfig, new Instrumentation(statsDReporter, JsonFilter.class));
