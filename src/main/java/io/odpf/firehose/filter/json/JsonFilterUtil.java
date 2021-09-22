@@ -7,6 +7,9 @@ import lombok.experimental.UtilityClass;
 import static io.odpf.firehose.config.enums.FilterDataSourceType.NONE;
 import static io.odpf.firehose.config.enums.FilterMessageFormatType.PROTOBUF;
 
+/**
+ * The type Json filter util.
+ */
 @UtilityClass
 public class JsonFilterUtil {
 
@@ -32,7 +35,8 @@ public class JsonFilterUtil {
     /**
      * Validate configs.
      *
-     * @param filterConfig the filter config
+     * @param filterConfig    the filter config
+     * @param instrumentation the instrumentation
      */
     public static void validateConfigs(FilterConfig filterConfig, Instrumentation instrumentation) {
         try {

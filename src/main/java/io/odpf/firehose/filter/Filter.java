@@ -18,5 +18,10 @@ public interface Filter {
      */
     List<Message> filter(List<Message> messages) throws FilterException;
 
+    /**
+     * Gets filter rule.
+     *
+     * @return the filter rule
+     */
     String getFilterRule();
 }
