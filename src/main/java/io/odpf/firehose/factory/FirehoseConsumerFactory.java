@@ -84,10 +84,12 @@ public class FirehoseConsumerFactory {
     }
 
     private Filter buildFilter(FilterConfig filterConfig) {
+        instrumentation.logInfo("Filter Engine: ", filterConfig.getFilterEngine());
         switch (filterConfig.getFilterEngine()) {
             case JSON:
-                JsonFilterUtil.logConfigs(filterConfig, instrumentation);
-                JsonFilterUtil.validateConfigs(filterConfig, instrumentation);
+                Instrumentation jsonFilterUtilInstrumentation=new Instrumentation(statsDReporter,JsonFilterUtil.class);
+                JsonFilterUtil.logConfigs(filterConfig, jsonFilterUtilInstrumentation);
+                JsonFilterUtil.validateConfigs(filterConfig, jsonFilterUtilInstrumentation);
                 return new JsonFilter(filterConfig, new Instrumentation(statsDReporter, JsonFilter.class));
             case JEXL:
                 return new JexlFilter(filterConfig, new Instrumentation(statsDReporter, JexlFilter.class));
