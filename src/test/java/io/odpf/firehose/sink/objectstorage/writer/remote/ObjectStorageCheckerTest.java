@@ -157,8 +157,7 @@ public class ObjectStorageCheckerTest {
 
         verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL,
                 SUCCESS_TAG,
-                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()),
-                tag(PARTITION_PATH_TAG, fileMeta.getFilePartitionPath().getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()));
     }
 
     @Test
@@ -171,8 +170,7 @@ public class ObjectStorageCheckerTest {
         worker.run();
 
         verify(instrumentation).captureCount(FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
-                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()),
-                tag(PARTITION_PATH_TAG, fileMeta.getFilePartitionPath().getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()));
     }
 
     @Test
@@ -186,8 +184,7 @@ public class ObjectStorageCheckerTest {
         worker.run();
 
         verify(instrumentation, (times(1))).captureDuration(FILE_UPLOAD_TIME_MILLISECONDS, totalTime,
-                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()),
-                tag(PARTITION_PATH_TAG, fileMeta.getFilePartitionPath().getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()));
     }
 
     @Test
@@ -208,8 +205,7 @@ public class ObjectStorageCheckerTest {
         verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
                 tag(OBJECT_STORE_ERROR_TYPE_TAG, ""),
-                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()),
-                tag(PARTITION_PATH_TAG, fileMeta.getFilePartitionPath().getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()));
     }
 
     @Test
@@ -238,8 +234,7 @@ public class ObjectStorageCheckerTest {
         verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
                 tag(OBJECT_STORE_ERROR_TYPE_TAG, GCSErrorType.FORBIDDEN.name()),
-                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()),
-                tag(PARTITION_PATH_TAG, fileMeta.getFilePartitionPath().getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()));
     }
 
     @Test
@@ -267,7 +262,6 @@ public class ObjectStorageCheckerTest {
         verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
                 tag(OBJECT_STORE_ERROR_TYPE_TAG, io.odpf.firehose.sink.objectstorage.writer.remote.Constants.FILE_IO_ERROR),
-                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()),
-                tag(PARTITION_PATH_TAG, fileMeta.getFilePartitionPath().getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, fileMeta.getFilePartitionPath().getTopic()));
     }
 }

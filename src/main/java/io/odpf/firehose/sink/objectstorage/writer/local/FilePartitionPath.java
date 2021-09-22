@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 
 
 /**
- * Partition generate partition formatted string topic/dt=yyyy-MM-dd/hr=HH .
+ * FilePartitionPath contains formatted path string topic/dt=yyyy-MM-dd/hr=HH .
  */
 @AllArgsConstructor
 @Data
@@ -79,7 +79,7 @@ public class FilePartitionPath {
     /**
      * Create PartitionPath object from partition path.
      *
-     * @param filePartitionPath   partition path is a relative path, it should only contains partition segment, it should not contains file name or base directory path
+     * @param filePartitionPath       partition path is a relative path, it should only contains partition segment, it should not contains file name or base directory path
      * @param filePartitionPathConfig
      * @return
      */

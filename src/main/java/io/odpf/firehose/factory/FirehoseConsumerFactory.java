@@ -191,6 +191,9 @@ public class FirehoseConsumerFactory {
 
     public Sink withDlq(Sink sink, Tracer tracer, ErrorHandler errorHandler) {
         DlqConfig dlqConfig = ConfigFactory.create(DlqConfig.class, config);
+        if (!dlqConfig.getDlqSinkEnable()) {
+            return sink;
+        }
         DlqWriterFactory dlqWriterFactory = new DlqWriterFactory();
         DlqWriter dlqWriter = dlqWriterFactory.create(new HashMap<>(config), statsDReporter, tracer);
         BackOffProvider backOffProvider = getBackOffProvider();

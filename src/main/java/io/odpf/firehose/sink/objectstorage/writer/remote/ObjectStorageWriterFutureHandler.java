@@ -47,18 +47,14 @@ public class ObjectStorageWriterFutureHandler {
         instrumentation.logInfo("Flushed to Object storage " + fileMeta.getFullPath());
         FilePartitionPath filePartitionPath = fileMeta.getFilePartitionPath();
         String topic = filePartitionPath.getTopic();
-        String datetimeTag = filePartitionPath.getDatetimePathWithoutPrefix();
 
         instrumentation.incrementCounter(FILE_UPLOAD_TOTAL,
                 SUCCESS_TAG,
-                tag(TOPIC_TAG, topic),
-                tag(PARTITION_PATH_TAG, datetimeTag));
+                tag(TOPIC_TAG, topic));
         instrumentation.captureCount(FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
-                tag(TOPIC_TAG, topic),
-                tag(PARTITION_PATH_TAG, datetimeTag));
+                tag(TOPIC_TAG, topic));
         instrumentation.captureDuration(FILE_UPLOAD_TIME_MILLISECONDS, totalTime,
-                tag(TOPIC_TAG, topic),
-                tag(PARTITION_PATH_TAG, datetimeTag));
+                tag(TOPIC_TAG, topic));
     }
 
     private void captureUploadFailedMetric(Throwable e) {
@@ -71,11 +67,9 @@ public class ObjectStorageWriterFutureHandler {
         }
         FilePartitionPath filePartitionPath = fileMeta.getFilePartitionPath();
         String topic = filePartitionPath.getTopic();
-        String datetimeTag = filePartitionPath.getDatetimePathWithoutPrefix();
         instrumentation.incrementCounter(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
                 tag(OBJECT_STORE_ERROR_TYPE_TAG, errorType),
-                tag(TOPIC_TAG, topic),
-                tag(PARTITION_PATH_TAG, datetimeTag));
+                tag(TOPIC_TAG, topic));
     }
 }

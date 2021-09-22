@@ -60,5 +60,9 @@ public interface DlqConfig extends AppConfig {
     @DefaultValue("true")
     boolean getDlqRetryFailAfterMaxAttemptEnable();
 
+    @Key("DLQ_SINK_ENABLE")
+    @DefaultValue("false")
+    boolean getDlqSinkEnable();
+
 
 }
