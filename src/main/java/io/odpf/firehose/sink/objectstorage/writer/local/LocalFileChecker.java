@@ -15,7 +15,6 @@ import static io.odpf.firehose.metrics.ObjectStorageMetrics.LOCAL_FILE_CLOSE_TOT
 import static io.odpf.firehose.metrics.ObjectStorageMetrics.LOCAL_FILE_CLOSING_TIME_MILLISECONDS;
 import static io.odpf.firehose.metrics.ObjectStorageMetrics.LOCAL_FILE_OPEN_TOTAL;
 import static io.odpf.firehose.metrics.ObjectStorageMetrics.LOCAL_FILE_SIZE_BYTES;
-import static io.odpf.firehose.metrics.ObjectStorageMetrics.PARTITION_PATH_TAG;
 import static io.odpf.firehose.metrics.ObjectStorageMetrics.TOPIC_TAG;
 
 public class LocalFileChecker implements Runnable {
@@ -63,28 +62,22 @@ public class LocalFileChecker implements Runnable {
     }
 
     private void captureFileClosedSuccessMetric(Instant startTime, FileMeta fileMeta) {
-        String dateTimeTag = fileMeta.getFilePartitionPath().getDatetimePathWithoutPrefix();
         String topic = fileMeta.getFilePartitionPath().getTopic();
         instrumentation.incrementCounter(LOCAL_FILE_CLOSE_TOTAL,
                 SUCCESS_TAG,
-                tag(TOPIC_TAG, topic),
-                tag(PARTITION_PATH_TAG, dateTimeTag));
+                tag(TOPIC_TAG, topic));
 
         instrumentation.captureDurationSince(LOCAL_FILE_CLOSING_TIME_MILLISECONDS, startTime,
-                tag(TOPIC_TAG, topic),
-                tag(PARTITION_PATH_TAG, dateTimeTag));
+                tag(TOPIC_TAG, topic));
 
         instrumentation.captureCount(LOCAL_FILE_SIZE_BYTES, fileMeta.getFileSizeBytes(),
-                tag(TOPIC_TAG, topic),
-                tag(PARTITION_PATH_TAG, dateTimeTag));
+                tag(TOPIC_TAG, topic));
     }
 
     private void captureFileCloseFailedMetric(FilePartitionPath filePartitionPath) {
-        String dateTimeTag = filePartitionPath.getDatetimePathWithoutPrefix();
         String topic = filePartitionPath.getTopic();
         instrumentation.incrementCounter(LOCAL_FILE_CLOSE_TOTAL,
                 FAILURE_TAG,
-                tag(TOPIC_TAG, topic),
-                tag(PARTITION_PATH_TAG, dateTimeTag));
+                tag(TOPIC_TAG, topic));
     }
 }

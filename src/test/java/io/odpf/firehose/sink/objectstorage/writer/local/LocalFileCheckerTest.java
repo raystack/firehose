@@ -164,8 +164,7 @@ public class LocalFileCheckerTest {
         worker.run();
         verify(instrumentation).incrementCounter(LOCAL_FILE_CLOSE_TOTAL,
                 SUCCESS_TAG,
-                tag(TOPIC_TAG, filePartitionPath.getTopic()),
-                tag(PARTITION_PATH_TAG, filePartitionPath.getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, filePartitionPath.getTopic()));
     }
 
     @Test
@@ -177,8 +176,7 @@ public class LocalFileCheckerTest {
         worker.run();
 
         verify(instrumentation, times(1)).captureDurationSince(eq(LOCAL_FILE_CLOSING_TIME_MILLISECONDS), any(Instant.class),
-                eq(tag(TOPIC_TAG, filePartitionPath.getTopic())),
-                eq(tag(PARTITION_PATH_TAG, filePartitionPath.getDatetimePathWithoutPrefix())));
+                eq(tag(TOPIC_TAG, filePartitionPath.getTopic())));
     }
 
     @Test
@@ -190,8 +188,7 @@ public class LocalFileCheckerTest {
         worker.run();
 
         verify(instrumentation, times(1)).captureCount(LOCAL_FILE_SIZE_BYTES, fileSize,
-                tag(TOPIC_TAG, filePartitionPath.getTopic()),
-                tag(PARTITION_PATH_TAG, filePartitionPath.getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, filePartitionPath.getTopic()));
     }
 
     @Test
@@ -209,8 +206,7 @@ public class LocalFileCheckerTest {
 
         verify(instrumentation, times(1)).incrementCounter(LOCAL_FILE_CLOSE_TOTAL,
                 FAILURE_TAG,
-                tag(TOPIC_TAG, filePartitionPath.getTopic()),
-                tag(PARTITION_PATH_TAG, filePartitionPath.getDatetimePathWithoutPrefix()));
+                tag(TOPIC_TAG, filePartitionPath.getTopic()));
     }
 
     @Test
