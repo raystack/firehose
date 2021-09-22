@@ -161,5 +161,8 @@ public class JsonFilter implements Filter {
         if (filterConfig.getFilterMessageType() == null) {
             throw new FilterException("Filter ESB message type cannot be null");
         }
+        if (filterConfig.getFilterMessageType() == PROTOBUF && filterConfig.getFilterJsonSchemaProtoClass() == null) {
+            throw new FilterException("Proto Schema class cannot be null");
+        }
     }
 }
