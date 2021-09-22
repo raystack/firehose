@@ -12,7 +12,7 @@ public class FilterEngineTypeConverter implements Converter<FilterEngineType> {
         if (StringUtils.isNotEmpty(input)) {
             return FilterEngineType.valueOf(input.toUpperCase());
         } else {
-            return FilterEngineType.JEXL;
+            throw new IllegalArgumentException("FILTER_ENGINE must be JSON or JEXL");
         }
     }
 }

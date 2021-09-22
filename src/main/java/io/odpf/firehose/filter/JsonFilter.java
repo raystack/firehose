@@ -38,11 +38,9 @@ public class JsonFilter implements Filter {
     private final FilterDataSourceType filterDataSourceType;
     private final FilterMessageType messageType;
     private Method protoParser;
-    private final String filterJsonSchema;
     private final Instrumentation instrumentation;
     private JsonSchema schema;
     private final JsonFormat.Printer jsonPrinter;
-    private final String protoSchemaClass;
 
     /**
      * Instantiates a new Json filter.
@@ -56,33 +54,32 @@ public class JsonFilter implements Filter {
         jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
         messageType = filterConfig.getFilterMessageType();
         filterDataSourceType = filterConfig.getFilterJsonDataSource();
-        protoSchemaClass = filterConfig.getFilterJsonSchemaProtoClass();
-        filterJsonSchema = filterConfig.getFilterJsonSchema();
+        String protoSchemaClass = filterConfig.getFilterJsonSchemaProtoClass();
+        String filterJsonSchema = filterConfig.getFilterJsonSchema();
         this.instrumentation = instrumentation;
-        logConfigs();
         if (filterDataSourceType != NONE) {
             try {
                 schema = schemaFactory.getSchema(filterJsonSchema);
             } catch (Exception e) {
-                instrumentation.logError("Failed to parse JSON Schema " + e.getMessage());
+                throw new FilterException("Failed to parse JSON Schema " + e.getMessage());
             }
         }
         if (messageType == PROTOBUF) {
             try {
                 protoParser = MethodUtils.getAccessibleMethod(Class.forName(protoSchemaClass), "parseFrom", byte[].class);
             } catch (ClassNotFoundException e) {
-                instrumentation.logError("Failed to load Proto schema class " + e.getMessage());
+                throw new FilterException("Failed to load Proto schema class " + e.getMessage());
             }
         }
     }
 
-    private void logConfigs() {
-        instrumentation.logInfo("\n\tFilter type: {}", filterDataSourceType);
-        if (filterDataSourceType != NONE) {
-            instrumentation.logInfo("\n\tFilter JSON Schema: {}", filterJsonSchema);
-            instrumentation.logInfo("\n\tFilter message type: {}", messageType);
-            if (messageType == PROTOBUF) {
-                instrumentation.logInfo("\n\tMessage Proto class: {}", protoSchemaClass);
+    public static void logConfigs(FilterConfig filterConfig, Instrumentation instrumentation) {
+        instrumentation.logInfo("\n\tFilter type: {}", filterConfig.getFilterJsonDataSource());
+        if (filterConfig.getFilterJsonDataSource() != NONE) {
+            instrumentation.logInfo("\n\tFilter JSON Schema: {}", filterConfig.getFilterJsonSchema());
+            instrumentation.logInfo("\n\tFilter message type: {}", filterConfig.getFilterMessageType());
+            if (filterConfig.getFilterMessageType() == PROTOBUF) {
+                instrumentation.logInfo("\n\tMessage Proto class: {}", filterConfig.getFilterJsonSchemaProtoClass());
             }
         } else {
             instrumentation.logInfo("No filter is selected");
@@ -101,7 +98,6 @@ public class JsonFilter implements Filter {
         if (filterDataSourceType == NONE) {
             return messages;
         }
-        validateConfigs();
         List<Message> filteredMessages = new ArrayList<>();
         for (Message message : messages) {
             byte[] data = (filterDataSourceType.equals(KEY)) ? message.getLogKey() : message.getLogMessage();
@@ -147,15 +143,12 @@ public class JsonFilter implements Filter {
         }
     }
 
-    private void validateConfigs() throws FilterException {
-        if (schema == null) {
+    public static void validateConfigs(FilterConfig filterConfig) {
+        if (filterConfig.getFilterJsonSchema() == null) {
             throw new FilterException("Filter JSON Schema is invalid");
         }
-        if (messageType == null) {
+        if (filterConfig.getFilterMessageType() == null) {
             throw new FilterException("Filter ESB message type cannot be null");
-        }
-        if (messageType == PROTOBUF && protoParser == null) {
-            throw new FilterException("Invalid Proto Schema class");
         }
     }
 }

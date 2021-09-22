@@ -12,6 +12,7 @@ import io.odpf.firehose.consumer.FirehoseConsumer;
 import io.odpf.firehose.consumer.GenericConsumer;
 import io.odpf.firehose.exception.EglcConfigurationException;
 import io.odpf.firehose.filter.Filter;
+import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.JexlFilter;
 import io.odpf.firehose.filter.JsonFilter;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -41,8 +42,6 @@ import org.aeonbits.owner.ConfigFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 
 import java.util.Map;
-
-import static io.odpf.firehose.config.enums.FilterEngineType.JEXL;
 
 /**
  * Factory for Firehose consumer.
@@ -91,8 +90,25 @@ public class FirehoseConsumerFactory {
      */
     public FirehoseConsumer buildConsumer() {
         FilterConfig filterConfig = ConfigFactory.create(FilterConfig.class, config);
-        Filter filter = (filterConfig.getFilterEngine() == JEXL) ? new JexlFilter(filterConfig, new Instrumentation(statsDReporter, JexlFilter.class)) : new JsonFilter(filterConfig, new Instrumentation(statsDReporter, JsonFilter.class));
-
+        Filter filter = null;
+        switch (filterConfig.getFilterEngine()) {
+            case JSON:
+                Instrumentation filterInstrumentation = new Instrumentation(statsDReporter, JsonFilter.class);
+                JsonFilter.logConfigs(filterConfig, filterInstrumentation);
+                try {
+                    JsonFilter.validateConfigs(filterConfig);
+                } catch (FilterException e) {
+                    instrumentation.logError("Failed to create filter due to invalid config");
+                    throw e;
+                }
+                filter = new JsonFilter(filterConfig, filterInstrumentation);
+                break;
+            case JEXL:
+                filter = new JexlFilter(filterConfig, new Instrumentation(statsDReporter, JexlFilter.class));
+                break;
+            default:
+                throw new FilterException("Invalid filter engine type");
+        }
         GenericKafkaFactory genericKafkaFactory = new GenericKafkaFactory();
         Tracer tracer = NoopTracerFactory.create();
         if (kafkaConsumerConfig.isTraceJaegarEnable()) {
