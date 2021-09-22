@@ -169,7 +169,7 @@ public class JsonFilterTest {
         filterConfig = ConfigFactory.create(KafkaConsumerConfig.class, filterConfigs);
         thrown.expect(FilterException.class);
         jsonFilter = new JsonFilter(filterConfig, instrumentation);
-         }
+    }
 
     @Test
     public void shouldNotApplyFilterOnEmptyFilterDataSourceForJsonMessageType() throws FilterException {
