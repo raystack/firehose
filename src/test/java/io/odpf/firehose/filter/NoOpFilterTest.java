@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -44,5 +45,11 @@ public class NoOpFilterTest {
         NoOpFilter noOpFilter = new NoOpFilter(instrumentation);
         List<Message> filteredMessages = noOpFilter.filter(Arrays.asList(message1, message2));
         assertEquals(inputMessages, filteredMessages);
+    }
+
+    @Test
+    public void shouldReturnNullFilterRule() {
+        NoOpFilter noOpFilter = new NoOpFilter(instrumentation);
+        assertNull(noOpFilter.getFilterRule());
     }
 }
