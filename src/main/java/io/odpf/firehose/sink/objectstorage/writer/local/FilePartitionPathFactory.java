@@ -4,7 +4,7 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import io.odpf.firehose.sink.objectstorage.Constants;
 import io.odpf.firehose.sink.objectstorage.message.Record;
-import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProto;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataMessage;
 import lombok.AllArgsConstructor;
 
 import java.nio.file.Path;
@@ -48,10 +48,10 @@ public class FilePartitionPathFactory {
         if (!kafkaMetadataFieldName.isEmpty()) {
             DynamicMessage nestedMetadataMessage = (DynamicMessage) dynamicMessage.getField(metadataDescriptor.findFieldByName(kafkaMetadataFieldName));
             Descriptors.Descriptor nestedMetadataMessageDescriptor = nestedMetadataMessage.getDescriptorForType();
-            return (String) nestedMetadataMessage.getField(nestedMetadataMessageDescriptor.findFieldByName(KafkaMetadataProto.MESSAGE_TOPIC_FIELD_NAME));
+            return (String) nestedMetadataMessage.getField(nestedMetadataMessageDescriptor.findFieldByName(KafkaMetadataMessage.MESSAGE_TOPIC_FIELD_NAME));
         }
 
-        return (String) dynamicMessage.getField(metadataDescriptor.findFieldByName(KafkaMetadataProto.MESSAGE_TOPIC_FIELD_NAME));
+        return (String) dynamicMessage.getField(metadataDescriptor.findFieldByName(KafkaMetadataMessage.MESSAGE_TOPIC_FIELD_NAME));
     }
 
     private Instant getTimestamp(DynamicMessage dynamicMessage) {

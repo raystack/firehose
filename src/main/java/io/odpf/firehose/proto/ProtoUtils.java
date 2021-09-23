@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.common;
+package io.odpf.firehose.proto;
 
 import com.google.protobuf.DynamicMessage;
 
