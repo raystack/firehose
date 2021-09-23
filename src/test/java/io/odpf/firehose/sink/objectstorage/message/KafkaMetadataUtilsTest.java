@@ -4,8 +4,8 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Timestamp;
 import io.odpf.firehose.consumer.Message;
-import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataMessage;
-import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoUtils;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoMessage;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoMessageUtils;
 import org.junit.Test;
 
 import java.time.Instant;
@@ -30,19 +30,19 @@ public class KafkaMetadataUtilsTest {
         String kafkaMetadataColumnName = "";
 
         Message message = new Message(logKey, logMessage, topic, partition, offset, null, timestamp.toEpochMilli(), consumeTimestamp.toEpochMilli());
-        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoUtils.createFileDescriptor(kafkaMetadataColumnName);
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(kafkaMetadataColumnName);
         DynamicMessage kafkaMetadata = KafkaMetadataUtils.createKafkaMetadata(fileDescriptor, message, kafkaMetadataColumnName);
 
         Descriptors.Descriptor descriptor = kafkaMetadata.getDescriptorForType();
 
-        assertEquals(topic, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataMessage.MESSAGE_TOPIC_FIELD_NAME)));
-        assertEquals(partition, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataMessage.MESSAGE_PARTITION_FIELD_NAME)));
-        assertEquals(offset, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataMessage.MESSAGE_OFFSET_FIELD_NAME)));
+        assertEquals(topic, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_TOPIC_FIELD_NAME)));
+        assertEquals(partition, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_PARTITION_FIELD_NAME)));
+        assertEquals(offset, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_OFFSET_FIELD_NAME)));
         assertEquals(Timestamp.newBuilder()
                         .setSeconds(timestamp.getEpochSecond())
                         .setNanos(timestamp.getNano()).build(),
-                kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataMessage.MESSAGE_TIMESTAMP_FIELD_NAME)));
-        assertThat(kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataMessage.LOAD_TIME_FIELD_NAME)), is(instanceOf(Timestamp.class)));
+                kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_TIMESTAMP_FIELD_NAME)));
+        assertThat(kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.LOAD_TIME_FIELD_NAME)), is(instanceOf(Timestamp.class)));
     }
 
     @Test
@@ -51,21 +51,21 @@ public class KafkaMetadataUtilsTest {
 
         Message message = new Message(logKey, logMessage, topic, partition, offset, null, timestamp.toEpochMilli(), consumeTimestamp.toEpochMilli());
 
-        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoUtils.createFileDescriptor(kafkaMetadataColumnName);
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(kafkaMetadataColumnName);
         DynamicMessage nestedKafkaMetadata = KafkaMetadataUtils.createKafkaMetadata(fileDescriptor, message, kafkaMetadataColumnName);
         Descriptors.Descriptor nestedMetadataDescriptor = nestedKafkaMetadata.getDescriptorForType();
 
         DynamicMessage kafkaMetadata = (DynamicMessage) nestedKafkaMetadata.getField(nestedMetadataDescriptor.findFieldByName(kafkaMetadataColumnName));
         Descriptors.Descriptor descriptor = kafkaMetadata.getDescriptorForType();
 
-        assertEquals(topic, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataMessage.MESSAGE_TOPIC_FIELD_NAME)));
-        assertEquals(partition, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataMessage.MESSAGE_PARTITION_FIELD_NAME)));
-        assertEquals(offset, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataMessage.MESSAGE_OFFSET_FIELD_NAME)));
+        assertEquals(topic, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_TOPIC_FIELD_NAME)));
+        assertEquals(partition, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_PARTITION_FIELD_NAME)));
+        assertEquals(offset, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_OFFSET_FIELD_NAME)));
         assertEquals(Timestamp.newBuilder()
                         .setSeconds(timestamp.getEpochSecond())
                         .setNanos(timestamp.getNano()).build(),
-                kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataMessage.MESSAGE_TIMESTAMP_FIELD_NAME)));
-        assertThat(kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataMessage.LOAD_TIME_FIELD_NAME)), is(instanceOf(Timestamp.class)));
+                kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_TIMESTAMP_FIELD_NAME)));
+        assertThat(kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.LOAD_TIME_FIELD_NAME)), is(instanceOf(Timestamp.class)));
     }
 
 }

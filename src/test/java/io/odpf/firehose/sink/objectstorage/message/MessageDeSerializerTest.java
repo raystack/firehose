@@ -10,9 +10,9 @@ import com.google.protobuf.UnknownFieldSet;
 import io.odpf.firehose.config.ObjectStorageSinkConfig;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataMessage;
-import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoUtils;
-import io.odpf.firehose.sink.objectstorage.proto.NestedKafkaMetadataMessage;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoMessage;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoMessageUtils;
+import io.odpf.firehose.sink.objectstorage.proto.NestedKafkaMetadataProtoMessage;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +42,7 @@ public class MessageDeSerializerTest {
     public void setUp() throws Exception {
         message = new Message(logKey, logMessage, "topic1", 0, 100);
 
-        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoUtils.createFileDescriptor("");
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor("");
         deSerializer = new MessageDeSerializer(fileDescriptor, protoParser, sinkConfig);
         when(sinkConfig.getWriteKafkaMetadata()).thenReturn(true);
         when(sinkConfig.getKafkaMetadataColumnName()).thenReturn("");
@@ -101,9 +101,9 @@ public class MessageDeSerializerTest {
 
     @Test(expected = DeserializerException.class)
     public void shouldThrowExceptionWhenUnknownFieldExist() throws InvalidProtocolBufferException {
-        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoUtils.createFileDescriptor("meta_field");
-        Descriptors.Descriptor nestedDescriptor = fileDescriptor.findMessageTypeByName(NestedKafkaMetadataMessage.getTypeName());
-        Descriptors.Descriptor metaDescriptor = fileDescriptor.findMessageTypeByName(KafkaMetadataMessage.getTypeName());
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor("meta_field");
+        Descriptors.Descriptor nestedDescriptor = fileDescriptor.findMessageTypeByName(NestedKafkaMetadataProtoMessage.getTypeName());
+        Descriptors.Descriptor metaDescriptor = fileDescriptor.findMessageTypeByName(KafkaMetadataProtoMessage.getTypeName());
 
         Descriptors.FieldDescriptor fieldDescriptor = nestedDescriptor.findFieldByName("meta_field");
         DynamicMessage dynamicMessage = DynamicMessage.newBuilder(nestedDescriptor)

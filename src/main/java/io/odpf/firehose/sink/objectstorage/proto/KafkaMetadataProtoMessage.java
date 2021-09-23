@@ -8,7 +8,7 @@ import com.google.protobuf.Timestamp;
 import java.time.Instant;
 
 /**
- * KafkaMetadataMessage is a class that contains schema of proto message that contains kafka metadata.
+ * KafkaMetadataProtoMessage is a class that contains schema of proto message that contains kafka metadata.
  * This class provides {@link com.github.os72.protobuf.dynamic.MessageDefinition} to generate protobuf descriptor and builder of kafka metadata {@link com.google.protobuf.DynamicMessage}.
  *
  * message KafkaOffsetMetadata{
@@ -20,7 +20,7 @@ import java.time.Instant;
  * }
  *
  */
-public class KafkaMetadataMessage {
+public class KafkaMetadataProtoMessage {
     private static final String TYPE_NAME = "KafkaOffsetMetadata";
 
     public static final String MESSAGE_OFFSET_FIELD_NAME = "message_offset";
@@ -91,13 +91,13 @@ public class KafkaMetadataMessage {
         }
 
         public DynamicMessage build() {
-            Timestamp timestamp = TimestampMetadataMessage.newBuilder()
+            Timestamp timestamp = TimestampMetadataProtoMessage.newBuilder()
                     .setSeconds(loadTime.getEpochSecond())
                     .setNanos(loadTime.getNano())
                     .build();
             return DynamicMessage.newBuilder(descriptor)
                     .setField(descriptor.findFieldByName(LOAD_TIME_FIELD_NAME), timestamp)
-                    .setField(descriptor.findFieldByName(MESSAGE_TIMESTAMP_FIELD_NAME), TimestampMetadataMessage.newBuilder()
+                    .setField(descriptor.findFieldByName(MESSAGE_TIMESTAMP_FIELD_NAME), TimestampMetadataProtoMessage.newBuilder()
                             .setSeconds(messageTimestamp.getEpochSecond())
                             .setNanos(messageTimestamp.getNano())
                             .build())

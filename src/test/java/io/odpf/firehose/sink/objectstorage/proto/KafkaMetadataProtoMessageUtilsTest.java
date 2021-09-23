@@ -7,14 +7,14 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class KafkaMetadataProtoUtilsTest {
+public class KafkaMetadataProtoMessageUtilsTest {
 
     @Test
     public void shouldCreateDescriptors() {
         String kafkaMetadataColumnName = "";
-        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoUtils.createFileDescriptor(kafkaMetadataColumnName);
-        Descriptors.Descriptor kafkaMetadataDescriptor = fileDescriptor.findMessageTypeByName(KafkaMetadataMessage.getTypeName());
-        Descriptors.Descriptor timestampDescriptor = fileDescriptor.findMessageTypeByName(TimestampMetadataMessage.getTypeName());
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(kafkaMetadataColumnName);
+        Descriptors.Descriptor kafkaMetadataDescriptor = fileDescriptor.findMessageTypeByName(KafkaMetadataProtoMessage.getTypeName());
+        Descriptors.Descriptor timestampDescriptor = fileDescriptor.findMessageTypeByName(TimestampMetadataProtoMessage.getTypeName());
 
         assertNotNull(kafkaMetadataDescriptor);
         assertNotNull(timestampDescriptor);
@@ -23,10 +23,10 @@ public class KafkaMetadataProtoUtilsTest {
     @Test
     public void shouldCreateDescriptorsForNestedMetadata() {
         String kafkaMetadataColumnName = "metadata_column_name";
-        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoUtils.createFileDescriptor(kafkaMetadataColumnName);
-        Descriptors.Descriptor kafkaMetadataDescriptor = fileDescriptor.findMessageTypeByName(KafkaMetadataMessage.getTypeName());
-        Descriptors.Descriptor timestampDescriptor = fileDescriptor.findMessageTypeByName(TimestampMetadataMessage.getTypeName());
-        Descriptors.Descriptor nestedKafkaMetadataDescriptor = fileDescriptor.findMessageTypeByName(NestedKafkaMetadataMessage.getTypeName());
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(kafkaMetadataColumnName);
+        Descriptors.Descriptor kafkaMetadataDescriptor = fileDescriptor.findMessageTypeByName(KafkaMetadataProtoMessage.getTypeName());
+        Descriptors.Descriptor timestampDescriptor = fileDescriptor.findMessageTypeByName(TimestampMetadataProtoMessage.getTypeName());
+        Descriptors.Descriptor nestedKafkaMetadataDescriptor = fileDescriptor.findMessageTypeByName(NestedKafkaMetadataProtoMessage.getTypeName());
 
         assertNotNull(kafkaMetadataDescriptor);
         assertNotNull(timestampDescriptor);
@@ -37,7 +37,7 @@ public class KafkaMetadataProtoUtilsTest {
     @Test
     public void shouldCreateFileDescriptor() {
         DynamicSchema dynamicSchema = TestProtoMessage.createSchema();
-        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoUtils.createFileDescriptor(dynamicSchema);
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(dynamicSchema);
         Descriptors.Descriptor descriptor = fileDescriptor.findMessageTypeByName(TestProtoMessage.getTypeName());
 
         assertNotNull(descriptor);

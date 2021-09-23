@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.objectstorage.message;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataMessage;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoMessage;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -20,10 +20,10 @@ public class Record {
         if (!fieldName.isEmpty()) {
             DynamicMessage nestedMetadataMessage = (DynamicMessage) metadata.getField(metadataDescriptor.findFieldByName(fieldName));
             Descriptors.Descriptor nestedMetadataMessageDescriptor = nestedMetadataMessage.getDescriptorForType();
-            return (String) nestedMetadataMessage.getField(nestedMetadataMessageDescriptor.findFieldByName(KafkaMetadataMessage.MESSAGE_TOPIC_FIELD_NAME));
+            return (String) nestedMetadataMessage.getField(nestedMetadataMessageDescriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_TOPIC_FIELD_NAME));
         }
 
-        return (String) metadata.getField(metadataDescriptor.findFieldByName(KafkaMetadataMessage.MESSAGE_TOPIC_FIELD_NAME));
+        return (String) metadata.getField(metadataDescriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_TOPIC_FIELD_NAME));
     }
 
     public Instant getTimestamp(String fieldName) {

@@ -5,8 +5,8 @@ import com.github.os72.protobuf.dynamic.MessageDefinition;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Timestamp;
-import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoUtils;
-import io.odpf.firehose.sink.objectstorage.proto.TimestampMetadataMessage;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoMessageUtils;
+import io.odpf.firehose.sink.objectstorage.proto.TimestampMetadataProtoMessage;
 
 import java.time.Instant;
 
@@ -21,7 +21,7 @@ public class TestProtoMessage {
     public MessageDefinition createMessageDefinition() {
         return MessageDefinition.newBuilder(TYPE_NAME)
                 .addField("required", "int64", ORDER_NUMBER_FIELD_NAME, 1)
-                .addField("required", TimestampMetadataMessage.getTypeName(), CREATED_TIME_FIELD_NAME, 2)
+                .addField("required", TimestampMetadataProtoMessage.getTypeName(), CREATED_TIME_FIELD_NAME, 2)
                 .build();
     }
 
@@ -33,7 +33,7 @@ public class TestProtoMessage {
         DynamicSchema.Builder schemaBuilder = DynamicSchema.newBuilder().setName(FILE_NAME).setPackage(PACKAGE);
         MessageDefinition messageDefinition = new TestProtoMessage().createMessageDefinition();
         schemaBuilder.addMessageDefinition(messageDefinition);
-        schemaBuilder.addMessageDefinition(TimestampMetadataMessage.createMessageDefinition());
+        schemaBuilder.addMessageDefinition(TimestampMetadataProtoMessage.createMessageDefinition());
 
         DynamicSchema schema;
         try {
@@ -46,7 +46,7 @@ public class TestProtoMessage {
 
     public static MessageBuilder createMessageBuilder() {
         DynamicSchema schema = createSchema();
-        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoUtils.createFileDescriptor(schema);
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(schema);
         Descriptors.Descriptor descriptor = fileDescriptor.findMessageTypeByName(getTypeName());
         return new MessageBuilder(descriptor);
     }
@@ -72,7 +72,7 @@ public class TestProtoMessage {
         }
 
         public DynamicMessage build() {
-            Timestamp timestamp = TimestampMetadataMessage.newBuilder()
+            Timestamp timestamp = TimestampMetadataProtoMessage.newBuilder()
                     .setSeconds(createdTime.getEpochSecond())
                     .setNanos(createdTime.getNano())
                     .build();

@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 
 
 /**
- * NestedKafkaMetadataMessage contains schema of kafka metadata proto message nested under a top level field.
+ * NestedKafkaMetadataProtoMessage contains schema of kafka metadata proto message nested under a top level field.
  * This class provides {@link com.github.os72.protobuf.dynamic.MessageDefinition} to generate protobuf descriptor and builder of kafka metadata {@link com.google.protobuf.DynamicMessage}.
  * message KafkaNestedOffsetMetadata{
  *     KafkaOffsetMetadata ${kafka_metadata_column_name} = 536870911;
@@ -15,7 +15,7 @@ import lombok.AllArgsConstructor;
  *
  */
 @AllArgsConstructor
-public class NestedKafkaMetadataMessage {
+public class NestedKafkaMetadataProtoMessage {
     private static final String NESTED_OFFSET_METADATA_PROTO_NAME = "KafkaNestedOffsetMetadata";
     public static final int METADATA_FIELD_NUMBER = 536870911;
 
@@ -25,7 +25,7 @@ public class NestedKafkaMetadataMessage {
 
     public static MessageDefinition createMessageDefinition(String nestedKafkaMetadataColumnName, String kafkaMetadataProtoTypeName, MessageDefinition metadataMessageDefinition) {
 
-        return MessageDefinition.newBuilder(NestedKafkaMetadataMessage.getTypeName())
+        return MessageDefinition.newBuilder(NestedKafkaMetadataProtoMessage.getTypeName())
                 .addMessageDefinition(metadataMessageDefinition)
                 .addField("optional", kafkaMetadataProtoTypeName, nestedKafkaMetadataColumnName, METADATA_FIELD_NUMBER)
                 .build();

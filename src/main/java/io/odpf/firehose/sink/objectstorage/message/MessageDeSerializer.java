@@ -12,7 +12,7 @@ import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.proto.ProtoUtils;
 import io.odpf.firehose.exception.EmptyMessageException;
 import io.odpf.firehose.exception.UnknownFieldsException;
-import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoUtils;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoMessageUtils;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -25,7 +25,7 @@ public class MessageDeSerializer {
     public MessageDeSerializer(ObjectStorageSinkConfig sinkConfig, StencilClient stencilClient) {
         this.sinkConfig = sinkConfig;
         this.protoParser = new ProtoParser(stencilClient, sinkConfig.getInputSchemaProtoClass());
-        this.kafkaMetadataFileDescriptor = KafkaMetadataProtoUtils.createFileDescriptor(sinkConfig.getKafkaMetadataColumnName());
+        this.kafkaMetadataFileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(sinkConfig.getKafkaMetadataColumnName());
     }
 
     public Record deSerialize(Message message) throws DeserializerException {

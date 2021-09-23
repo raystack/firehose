@@ -11,7 +11,7 @@ import lombok.Getter;
  * KafkaMetadataProtoUtils provide function to create {@link com.google.protobuf.Descriptors.FileDescriptor FileDescriptor} of kafka metadata proto message.
  */
 @Getter
-public class KafkaMetadataProtoUtils {
+public class KafkaMetadataProtoMessageUtils {
     public static final String FILE_NAME = "Metadata.proto";
     public static final String PACKAGE = "google.protobuf";
 
@@ -23,17 +23,17 @@ public class KafkaMetadataProtoUtils {
     private static DynamicSchema createSchema(String kafkaMetadataColumnName) {
         DynamicSchema.Builder schemaBuilder = DynamicSchema.newBuilder().setName(FILE_NAME).setPackage(PACKAGE);
 
-        MessageDefinition timestampMessageDefinition = TimestampMetadataMessage.createMessageDefinition();
+        MessageDefinition timestampMessageDefinition = TimestampMetadataProtoMessage.createMessageDefinition();
         schemaBuilder.addMessageDefinition(timestampMessageDefinition);
 
-        MessageDefinition kafkaMetadataMessageDefinition = KafkaMetadataMessage.createMessageDefinition();
+        MessageDefinition kafkaMetadataMessageDefinition = KafkaMetadataProtoMessage.createMessageDefinition();
         schemaBuilder.addMessageDefinition(kafkaMetadataMessageDefinition);
 
         if (!kafkaMetadataColumnName.isEmpty()) {
-            MessageDefinition kafkaNestedMetadataProtoMessageDefinition = NestedKafkaMetadataMessage
+            MessageDefinition kafkaNestedMetadataProtoMessageDefinition = NestedKafkaMetadataProtoMessage
                     .createMessageDefinition(
                             kafkaMetadataColumnName,
-                            KafkaMetadataMessage.getTypeName(),
+                            KafkaMetadataProtoMessage.getTypeName(),
                             kafkaMetadataMessageDefinition);
             schemaBuilder.addMessageDefinition(kafkaNestedMetadataProtoMessageDefinition);
         }
