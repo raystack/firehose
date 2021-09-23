@@ -7,7 +7,20 @@ import com.google.protobuf.Timestamp;
 
 import java.time.Instant;
 
-public class KafkaMetadataProto {
+/**
+ * KafkaMetadataMessage is a class that contains schema of proto message that contains kafka metadata.
+ * This class provides {@link com.github.os72.protobuf.dynamic.MessageDefinition} to generate protobuf descriptor and builder of kafka metadata {@link com.google.protobuf.DynamicMessage}.
+ *
+ * message KafkaOffsetMetadata{
+ *     int64 message_offset = 536870907;
+ *     int32 message_partition = 536870908;
+ *     string message_topic = 536870909;
+ *     Timestamp message_timestamp = 536870910;
+ *     Timestamp load_time = 536870911;
+ * }
+ *
+ */
+public class KafkaMetadataMessage {
     private static final String TYPE_NAME = "KafkaOffsetMetadata";
 
     public static final String MESSAGE_OFFSET_FIELD_NAME = "message_offset";
@@ -35,7 +48,9 @@ public class KafkaMetadataProto {
         return TYPE_NAME;
     }
 
-
+    /**
+     * Builder of KafkaOffsetMetadata dynamic message.
+     */
     public static class MessageBuilder {
 
         private String topic;
@@ -49,7 +64,6 @@ public class KafkaMetadataProto {
         public MessageBuilder(Descriptors.Descriptor descriptor) {
             this.descriptor = descriptor;
         }
-
 
         public MessageBuilder setTopic(String topic) {
             this.topic = topic;
@@ -77,13 +91,13 @@ public class KafkaMetadataProto {
         }
 
         public DynamicMessage build() {
-            Timestamp timestamp = TimestampProto.newBuilder()
+            Timestamp timestamp = TimestampMetadataMessage.newBuilder()
                     .setSeconds(loadTime.getEpochSecond())
                     .setNanos(loadTime.getNano())
                     .build();
             return DynamicMessage.newBuilder(descriptor)
                     .setField(descriptor.findFieldByName(LOAD_TIME_FIELD_NAME), timestamp)
-                    .setField(descriptor.findFieldByName(MESSAGE_TIMESTAMP_FIELD_NAME), TimestampProto.newBuilder()
+                    .setField(descriptor.findFieldByName(MESSAGE_TIMESTAMP_FIELD_NAME), TimestampMetadataMessage.newBuilder()
                             .setSeconds(messageTimestamp.getEpochSecond())
                             .setNanos(messageTimestamp.getNano())
                             .build())

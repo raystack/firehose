@@ -11,9 +11,9 @@ import io.odpf.firehose.objectstorage.ObjectStorageType;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
-import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProto;
-import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoFile;
-import io.odpf.firehose.sink.objectstorage.proto.NestedKafkaMetadataProto;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataMessage;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoUtils;
+import io.odpf.firehose.sink.objectstorage.proto.NestedKafkaMetadataMessage;
 import io.odpf.firehose.sink.objectstorage.writer.WriterOrchestrator;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
 import io.odpf.firehose.sink.objectstorage.writer.local.FilePartitionPathConfig;
@@ -47,10 +47,10 @@ public class ObjectStorageSinkFactory implements SinkFactory {
     }
 
     private Descriptors.Descriptor getMetadataMessageDescriptor(ObjectStorageSinkConfig sinkConfig) {
-        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoFile.createFileDescriptor(sinkConfig.getKafkaMetadataColumnName());
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoUtils.createFileDescriptor(sinkConfig.getKafkaMetadataColumnName());
         return sinkConfig.getKafkaMetadataColumnName().isEmpty()
-                ? fileDescriptor.findMessageTypeByName(KafkaMetadataProto.getTypeName())
-                : fileDescriptor.findMessageTypeByName(NestedKafkaMetadataProto.getTypeName());
+                ? fileDescriptor.findMessageTypeByName(KafkaMetadataMessage.getTypeName())
+                : fileDescriptor.findMessageTypeByName(NestedKafkaMetadataMessage.getTypeName());
 
     }
 

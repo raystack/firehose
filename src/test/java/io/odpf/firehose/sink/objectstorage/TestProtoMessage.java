@@ -1,16 +1,16 @@
-package io.odpf.firehose.sink.objectstorage.message;
+package io.odpf.firehose.sink.objectstorage;
 
 import com.github.os72.protobuf.dynamic.DynamicSchema;
 import com.github.os72.protobuf.dynamic.MessageDefinition;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Timestamp;
-import io.odpf.firehose.sink.objectstorage.proto.TimestampProto;
-import io.odpf.firehose.sink.objectstorage.proto.ProtoUtils;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoUtils;
+import io.odpf.firehose.sink.objectstorage.proto.TimestampMetadataMessage;
 
 import java.time.Instant;
 
-public class MessageProto {
+public class TestProtoMessage {
     private static final String PACKAGE = "io.odpf";
     private static final String FILE_NAME = "booking.proto";
     private static final String TYPE_NAME = "BookingLogMessage";
@@ -21,7 +21,7 @@ public class MessageProto {
     public MessageDefinition createMessageDefinition() {
         return MessageDefinition.newBuilder(TYPE_NAME)
                 .addField("required", "int64", ORDER_NUMBER_FIELD_NAME, 1)
-                .addField("required", TimestampProto.getTypeName(), CREATED_TIME_FIELD_NAME, 2)
+                .addField("required", TimestampMetadataMessage.getTypeName(), CREATED_TIME_FIELD_NAME, 2)
                 .build();
     }
 
@@ -29,11 +29,11 @@ public class MessageProto {
         return TYPE_NAME;
     }
 
-    private static DynamicSchema createSchema() {
+    public static DynamicSchema createSchema() {
         DynamicSchema.Builder schemaBuilder = DynamicSchema.newBuilder().setName(FILE_NAME).setPackage(PACKAGE);
-        MessageDefinition messageDefinition = new MessageProto().createMessageDefinition();
+        MessageDefinition messageDefinition = new TestProtoMessage().createMessageDefinition();
         schemaBuilder.addMessageDefinition(messageDefinition);
-        schemaBuilder.addMessageDefinition(TimestampProto.createMessageDefinition());
+        schemaBuilder.addMessageDefinition(TimestampMetadataMessage.createMessageDefinition());
 
         DynamicSchema schema;
         try {
@@ -46,7 +46,7 @@ public class MessageProto {
 
     public static MessageBuilder createMessageBuilder() {
         DynamicSchema schema = createSchema();
-        Descriptors.FileDescriptor fileDescriptor = ProtoUtils.createFileDescriptor(schema);
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoUtils.createFileDescriptor(schema);
         Descriptors.Descriptor descriptor = fileDescriptor.findMessageTypeByName(getTypeName());
         return new MessageBuilder(descriptor);
     }
@@ -72,7 +72,7 @@ public class MessageProto {
         }
 
         public DynamicMessage build() {
-            Timestamp timestamp = TimestampProto.newBuilder()
+            Timestamp timestamp = TimestampMetadataMessage.newBuilder()
                     .setSeconds(createdTime.getEpochSecond())
                     .setNanos(createdTime.getNano())
                     .build();

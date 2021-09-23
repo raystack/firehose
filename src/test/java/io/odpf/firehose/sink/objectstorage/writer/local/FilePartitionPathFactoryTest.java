@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.objectstorage.writer.local;
 import com.google.protobuf.DynamicMessage;
 import io.odpf.firehose.sink.objectstorage.Constants;
 import io.odpf.firehose.sink.objectstorage.TestUtils;
-import io.odpf.firehose.sink.objectstorage.message.MessageProto;
+import io.odpf.firehose.sink.objectstorage.TestProtoMessage;
 import io.odpf.firehose.sink.objectstorage.message.Record;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 public class FilePartitionPathFactoryTest {
 
     private final String zone = "UTC";
-    private final String fieldName = MessageProto.CREATED_TIME_FIELD_NAME;
+    private final String fieldName = TestProtoMessage.CREATED_TIME_FIELD_NAME;
     private final String datePrefix = "dt=";
     private final String hourPrefix = "hr=";
     private final Instant defaultTimestamp = Instant.parse("2020-01-01T10:00:00.000Z");

@@ -15,7 +15,7 @@ import io.odpf.firehose.sink.bigquery.models.Constants;
 import io.odpf.firehose.sink.bigquery.models.Record;
 import io.odpf.firehose.sink.bigquery.models.Records;
 import io.odpf.firehose.sink.bigquery.proto.UnknownProtoFields;
-import io.odpf.firehose.sink.common.ProtoUtils;
+import io.odpf.firehose.proto.ProtoUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
