@@ -21,12 +21,9 @@ public class NoOpFilterTest {
     @Mock
     private Instrumentation instrumentation;
 
-    private NoOpFilter noOpFilter;
-
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        noOpFilter = new NoOpFilter(instrumentation);
     }
 
     @Test
@@ -44,6 +41,7 @@ public class NoOpFilterTest {
         Message message1 = new Message(testKeyProto1.toByteArray(), testMessageProto1.toByteArray(), "topic1", 0, 100);
         Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 101);
         List<Message> inputMessages = Arrays.asList(message1, message2);
+        NoOpFilter noOpFilter = new NoOpFilter(instrumentation);
         List<Message> filteredMessages = noOpFilter.filter(Arrays.asList(message1, message2));
         assertEquals(inputMessages, filteredMessages);
     }
