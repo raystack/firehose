@@ -98,19 +98,4 @@ public class JsonFilterTest {
         assertEquals(filteredMessages.size(), 1);
         assertEquals(filteredMessages.get(0), message1);
     }
-
-    @Test
-    public void shouldNotFilterEsbMessagesForEmptyBooleanValuesForJsonMessageType() throws FilterException {
-        String bookingLogMessageJson = "{\"customer_id\":\"customerid\"}";
-        String bookingLogKeyJson = "";
-        Message message = new Message(bookingLogKeyJson.getBytes(), bookingLogMessageJson.getBytes(), "topic1", 0, 100);
-        HashMap<String, String> bookingFilterConfigs = new HashMap<>();
-        bookingFilterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "JSON");
-        bookingFilterConfigs.put("FILTER_DATA_SOURCE", "message");
-        bookingFilterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"customer_dynamic_surge_enabled\":{\"const\":\"true\"}}}");
-        FilterConfig bookingConsumerConfig = ConfigFactory.create(FilterConfig.class, bookingFilterConfigs);
-        JsonFilter bookingFilter = new JsonFilter(bookingConsumerConfig, instrumentation);
-        List<Message> filteredMessages = bookingFilter.filter(Collections.singletonList(message));
-        assertEquals(filteredMessages.get(0), message);
-    }
 }
