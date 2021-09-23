@@ -40,7 +40,7 @@ public class MessageDeSerializer {
             }
 
             DynamicMessage kafkaMetadata = null;
-            if (sinkConfig.getWriteKafkaMetadata()) {
+            if (sinkConfig.getWriteKafkaMetadataEnable()) {
                 kafkaMetadata = KafkaMetadataUtils.createKafkaMetadata(kafkaMetadataFileDescriptor, message, sinkConfig.getKafkaMetadataColumnName());
             }
             return new Record(dynamicMessage, kafkaMetadata);
