@@ -12,33 +12,24 @@ public interface FilterConfig extends Config {
 
     @Key("FILTER_ENGINE")
     @ConverterClass(FilterEngineTypeConverter.class)
-    @DefaultValue("JEXL")
+    @DefaultValue("NO_OP")
     FilterEngineType getFilterEngine();
+
+    @Key("FILTER_SCHEMA_PROTO_CLASS")
+    String getFilterSchemaProtoClass();
 
     @Key("FILTER_ESB_MESSAGE_FORMAT")
     @ConverterClass(FilterMessageFormatTypeConverter.class)
     FilterMessageFormatType getFilterMessageFormat();
 
-    @Key("FILTER_JEXL_DATA_SOURCE")
+    @Key("FILTER_DATA_SOURCE")
     @ConverterClass(FilterDataSourceTypeConverter.class)
-    @DefaultValue("NONE")
-    FilterDataSourceType getFilterJexlDataSource();
+    FilterDataSourceType getFilterDataSource();
 
     @Key("FILTER_JEXL_EXPRESSION")
     String getFilterJexlExpression();
 
-    @Key("FILTER_JEXL_SCHEMA_PROTO_CLASS")
-    String getFilterJexlSchemaProtoClass();
-
-    @Key("FILTER_JSON_DATA_SOURCE")
-    @ConverterClass(FilterDataSourceTypeConverter.class)
-    @DefaultValue("NONE")
-    FilterDataSourceType getFilterJsonDataSource();
-
     @Key("FILTER_JSON_SCHEMA")
     String getFilterJsonSchema();
-
-    @Key("FILTER_JSON_SCHEMA_PROTO_CLASS")
-    String getFilterJsonSchemaProtoClass();
 
 }

@@ -40,9 +40,9 @@ public class JexlFilterTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JEXL_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JEXL_EXPRESSION", "testMessage.getOrderNumber() == 123");
-        filterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
 
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
@@ -63,9 +63,9 @@ public class JexlFilterTest {
         TestBookingLogKey bookingLogKey = TestBookingLogKey.newBuilder().build();
         Message message = new Message(bookingLogKey.toByteArray(), bookingLogMessage.toByteArray(), "topic1", 0, 100);
         HashMap<String, String> bookingFilterConfigs = new HashMap<>();
-        bookingFilterConfigs.put("FILTER_JEXL_DATA_SOURCE", "message");
+        bookingFilterConfigs.put("FILTER_DATA_SOURCE", "message");
         bookingFilterConfigs.put("FILTER_JEXL_EXPRESSION", "testBookingLogMessage.getCustomerDynamicSurgeEnabled() == false");
-        bookingFilterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
+        bookingFilterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
         FilterConfig bookingConsumerConfig = ConfigFactory.create(FilterConfig.class, bookingFilterConfigs);
         JexlFilter bookingFilter = new JexlFilter(bookingConsumerConfig, instrumentation);
         List<Message> filteredMessages = bookingFilter.filter(Arrays.asList(message));
@@ -75,9 +75,9 @@ public class JexlFilterTest {
     @Test(expected = FilterException.class)
     public void shouldThrowExceptionOnInvalidFilterExpression() throws FilterException {
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JEXL_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JEXL_EXPRESSION", "1+2");
-        filterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
 
         filter = new JexlFilter(kafkaConsumerConfig, instrumentation);
@@ -89,42 +89,16 @@ public class JexlFilterTest {
     }
 
     @Test
-    public void shouldNotApplyFilterOnEmptyFilterType() throws FilterException {
-        Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JEXL_EXPRESSION", "testMessage.getOrderNumber() == 123");
-        filterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
-        kafkaConsumerConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-
-        filter = new JexlFilter(kafkaConsumerConfig, instrumentation);
-        key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
-        this.testMessage = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
-
-        Message message = new Message(key.toByteArray(), this.testMessage.toByteArray(), "topic1", 0, 100);
-        List<Message> filteredMessages = this.filter.filter(Arrays.asList(message));
-        assertEquals(filteredMessages.get(0), message);
-    }
-
-    @Test
     public void shouldLogFilterTypeIfFilterTypeIsNotNone() {
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JEXL_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JEXL_EXPRESSION", "testMessage.getOrderNumber() == 123");
-        filterConfigs.put("FILTER_JEXL_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         kafkaConsumerConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
 
         new JexlFilter(kafkaConsumerConfig, instrumentation);
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter type: {}", FilterDataSourceType.MESSAGE);
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter schema: {}", TestMessage.class.getName());
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo("\n\tFilter expression: {}", "testMessage.getOrderNumber() == 123");
-    }
-
-    @Test
-    public void shouldLogFilterTypeIfFilterTypeIsNone() {
-        Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JEXL_DATA_SOURCE", "none");
-        kafkaConsumerConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-
-        new JexlFilter(kafkaConsumerConfig, instrumentation);
-        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("No filter is selected");
     }
 }

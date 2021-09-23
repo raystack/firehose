@@ -22,8 +22,8 @@ import java.util.List;
  * for filtering the messages based on a filter condition.
  * <p>
  * The filter expression is obtained from the {@link FilterConfig#getFilterJexlExpression()}
- * along with configurations for {@link FilterConfig#getFilterJexlDataSource()} - [key|message]
- * and {@link FilterConfig#getFilterJexlSchemaProtoClass()} - FQCN of the protobuf schema.
+ * along with configurations for {@link FilterConfig#getFilterDataSource()} - [key|message]
+ * and {@link FilterConfig#getFilterSchemaProtoClass()} - FQCN of the protobuf schema.
  */
 public class JexlFilter implements Filter {
 
@@ -46,18 +46,15 @@ public class JexlFilter implements Filter {
         this.engine.setStrict(true);
         this.filterConfig = filterConfig;
         this.instrumentation = instrumentation;
-        this.filterDataSourceType = filterConfig.getFilterJexlDataSource();
-        this.protoSchema = filterConfig.getFilterJexlSchemaProtoClass();
+        this.filterDataSourceType = filterConfig.getFilterDataSource();
+        this.protoSchema = filterConfig.getFilterSchemaProtoClass();
 
         this.instrumentation.logInfo("\n\tFilter type: {}", this.filterDataSourceType);
-        if (isNotNone(filterConfig.getFilterJexlDataSource())) {
-            this.expression = this.engine.createExpression(filterConfig.getFilterJexlExpression());
-            this.instrumentation.logInfo("\n\tFilter schema: {}", this.protoSchema);
-            this.instrumentation.logInfo("\n\tFilter expression: {}", filterConfig.getFilterJexlExpression());
+        this.expression = this.engine.createExpression(filterConfig.getFilterJexlExpression());
+        this.instrumentation.logInfo("\n\tFilter schema: {}", this.protoSchema);
+        this.instrumentation.logInfo("\n\tFilter expression: {}", filterConfig.getFilterJexlExpression());
 
-        } else {
-            this.instrumentation.logInfo("No filter is selected");
-        }
+
     }
 
     /**
@@ -69,25 +66,22 @@ public class JexlFilter implements Filter {
      */
     @Override
     public List<Message> filter(List<Message> messages) throws FilterException {
-        if (isNone(filterDataSourceType)) {
-            return messages;
-        } else {
-            List<Message> filteredMessages = new ArrayList<>();
+        List<Message> filteredMessages = new ArrayList<>();
 
-            for (Message message : messages) {
-                try {
-                    Object data = (filterDataSourceType.equals(FilterDataSourceType.KEY)) ? message.getLogKey() : message.getLogMessage();
-                    Object obj = MethodUtils.invokeStaticMethod(Class.forName(protoSchema), "parseFrom", data);
-                    if (evaluate(obj)) {
-                        filteredMessages.add(message);
-                    }
-                } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                    throw new FilterException("Failed while filtering EsbMessages", e);
+        for (Message message : messages) {
+            try {
+                Object data = (filterDataSourceType.equals(FilterDataSourceType.KEY)) ? message.getLogKey() : message.getLogMessage();
+                Object obj = MethodUtils.invokeStaticMethod(Class.forName(protoSchema), "parseFrom", data);
+                if (evaluate(obj)) {
+                    filteredMessages.add(message);
                 }
+            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                throw new FilterException("Failed while filtering EsbMessages", e);
             }
-
-            return filteredMessages;
         }
+
+        return filteredMessages;
+
     }
 
     private boolean evaluate(Object data) throws FilterException {
@@ -119,14 +113,6 @@ public class JexlFilter implements Filter {
         String objectAccessor = schemaNameSplit[schemaNameSplit.length - 1];
 
         return objectAccessor.substring(0, 1).toLowerCase() + objectAccessor.substring(1);
-    }
-
-    private boolean isNone(FilterDataSourceType filterDataSourceTypeVal) {
-        return filterDataSourceTypeVal.equals(FilterDataSourceType.NONE);
-    }
-
-    private boolean isNotNone(FilterDataSourceType filterDataSourceTypeVal) {
-        return !isNone(filterDataSourceTypeVal);
     }
 
     @Override

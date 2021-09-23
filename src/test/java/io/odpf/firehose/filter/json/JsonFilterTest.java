@@ -57,10 +57,10 @@ public class JsonFilterTest {
         Message message1 = new Message(testKeyProto1.toByteArray(), testMessageProto1.toByteArray(), "topic1", 0, 100);
         Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 101);
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
-        filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         jsonFilter = new JsonFilter(filterConfig, instrumentation);
         List<Message> filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
@@ -74,9 +74,9 @@ public class JsonFilterTest {
         TestBookingLogKey bookingLogKey = TestBookingLogKey.newBuilder().build();
         Message message = new Message(bookingLogKey.toByteArray(), bookingLogMessage.toByteArray(), "topic1", 0, 100);
         HashMap<String, String> bookingFilterConfigs = new HashMap<>();
-        bookingFilterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        bookingFilterConfigs.put("FILTER_DATA_SOURCE", "message");
         bookingFilterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"customer_dynamic_surge_enabled\":{\"const\":\"true\"}}}");
-        bookingFilterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
+        bookingFilterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
         bookingFilterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         FilterConfig bookingConsumerConfig = ConfigFactory.create(FilterConfig.class, bookingFilterConfigs);
         JsonFilter bookingFilter = new JsonFilter(bookingConsumerConfig, instrumentation);
@@ -85,26 +85,12 @@ public class JsonFilterTest {
     }
 
     @Test
-    public void shouldNotApplyFilterOnEmptyFilterDataSourceForProtobufMessageType() throws FilterException {
-        Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
-        filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
-        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
-        filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        jsonFilter = new JsonFilter(filterConfig, instrumentation);
-        Message message = new Message(testKeyProto1.toByteArray(), testMessageProto1.toByteArray(), "topic1", 0, 100);
-        List<Message> filteredMessages = this.jsonFilter.filter(Collections.singletonList(message));
-        assertEquals(filteredMessages.get(0), message);
-    }
-
-
-    @Test
     public void shouldFilterEsbMessagesForJsonMessageType() throws FilterException {
         Message message1 = new Message(testKeyJson1.getBytes(), testMessageJson1.getBytes(), "topic1", 0, 100);
         Message message2 = new Message(testKeyJson2.getBytes(), testMessageJson2.getBytes(), "topic1", 0, 101);
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "JSON");
-        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         jsonFilter = new JsonFilter(filterConfig, instrumentation);
@@ -120,23 +106,11 @@ public class JsonFilterTest {
         Message message = new Message(bookingLogKeyJson.getBytes(), bookingLogMessageJson.getBytes(), "topic1", 0, 100);
         HashMap<String, String> bookingFilterConfigs = new HashMap<>();
         bookingFilterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "JSON");
-        bookingFilterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        bookingFilterConfigs.put("FILTER_DATA_SOURCE", "message");
         bookingFilterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"customer_dynamic_surge_enabled\":{\"const\":\"true\"}}}");
         FilterConfig bookingConsumerConfig = ConfigFactory.create(FilterConfig.class, bookingFilterConfigs);
         JsonFilter bookingFilter = new JsonFilter(bookingConsumerConfig, instrumentation);
         List<Message> filteredMessages = bookingFilter.filter(Collections.singletonList(message));
-        assertEquals(filteredMessages.get(0), message);
-    }
-
-    @Test
-    public void shouldNotApplyFilterOnEmptyFilterDataSourceForJsonMessageType() throws FilterException {
-        Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"1253\"}}}");
-        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "JSON");
-        filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        jsonFilter = new JsonFilter(filterConfig, instrumentation);
-        Message message = new Message(testKeyJson1.getBytes(), testMessageJson1.getBytes(), "topic1", 0, 100);
-        List<Message> filteredMessages = jsonFilter.filter(Collections.singletonList(message));
         assertEquals(filteredMessages.get(0), message);
     }
 }

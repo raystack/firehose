@@ -34,21 +34,12 @@ public class JsonFilterUtilTest {
     }
 
     @Test
-    public void shouldLogNoFilterSelectedIfFilterDataSourceIsNone() {
-        Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "none");
-        filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        JsonFilterUtil.logConfigs(filterConfig, instrumentation);
-        verify(instrumentation, times(1)).logInfo("No filter is selected");
-    }
-
-    @Test
     public void shouldLogFilterConfigsIfFilterDataSourceIsNotNone() {
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
-        filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         JsonFilterUtil.logConfigs(filterConfig, instrumentation);
         verify(instrumentation, times(1)).logInfo("\n\tFilter data source type: {}", FilterDataSourceType.MESSAGE);
@@ -59,9 +50,9 @@ public class JsonFilterUtilTest {
     @Test
     public void shouldThrowIllegalArgumentExceptionForNullJsonSchema() {
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
-        filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         thrown.expect(IllegalArgumentException.class);
         JsonFilterUtil.validateConfigs(filterConfig, instrumentation);
@@ -71,9 +62,9 @@ public class JsonFilterUtilTest {
     @Test
     public void shouldThrowIllegalArgumentExceptionForNullMessageFormat() {
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
-        filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         thrown.expect(IllegalArgumentException.class);
         JsonFilterUtil.validateConfigs(filterConfig, instrumentation);
@@ -83,7 +74,7 @@ public class JsonFilterUtilTest {
     @Test
     public void shouldThrowExceptionForNullProtoSchemaClassForProtobufMessageFormat() {
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
@@ -95,10 +86,10 @@ public class JsonFilterUtilTest {
     @Test
     public void shouldNotThrowIllegalArgumentExceptionForValidFilterConfig() {
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
-        filterConfigs.put("FILTER_JSON_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         JsonFilterUtil.validateConfigs(filterConfig, instrumentation);
         verify(instrumentation, times(1)).logError("Failed to create filter due to invalid config");

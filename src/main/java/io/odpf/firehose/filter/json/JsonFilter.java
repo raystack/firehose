@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 
 import static io.odpf.firehose.config.enums.FilterDataSourceType.KEY;
-import static io.odpf.firehose.config.enums.FilterDataSourceType.NONE;
 
 /**
  * JSON-based filter to filter protobuf/JSON messages based on rules
@@ -32,10 +31,10 @@ import static io.odpf.firehose.config.enums.FilterDataSourceType.NONE;
  */
 public class JsonFilter implements Filter {
 
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final Instrumentation instrumentation;
     private final JsonSchema schema;
-    private final JsonFormat.Printer jsonPrinter;
+    private final JsonFormat.Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
     private final FilterConfig filterConfig;
 
     /**
@@ -45,16 +44,10 @@ public class JsonFilter implements Filter {
      * @param instrumentation the instrumentation
      */
     public JsonFilter(FilterConfig filterConfig, Instrumentation instrumentation) {
-        objectMapper = new ObjectMapper();
+        this.instrumentation = instrumentation;
         this.filterConfig = filterConfig;
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-        jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
-        this.instrumentation = instrumentation;
-        if (filterConfig.getFilterJsonDataSource() != NONE) {
-            schema = schemaFactory.getSchema(filterConfig.getFilterJsonSchema());
-        } else {
-            schema = null;
-        }
+        schema = schemaFactory.getSchema(filterConfig.getFilterJsonSchema());
     }
 
     /**
@@ -66,12 +59,9 @@ public class JsonFilter implements Filter {
      */
     @Override
     public List<Message> filter(List<Message> messages) throws FilterException {
-        if (filterConfig.getFilterJsonDataSource() == NONE) {
-            return messages;
-        }
         List<Message> filteredMessages = new ArrayList<>();
         for (Message message : messages) {
-            byte[] data = (filterConfig.getFilterJsonDataSource().equals(KEY)) ? message.getLogKey() : message.getLogMessage();
+            byte[] data = (filterConfig.getFilterDataSource().equals(KEY)) ? message.getLogKey() : message.getLogMessage();
             String jsonMessage = deserialize(data);
             if (evaluate(jsonMessage)) {
                 filteredMessages.add(message);
@@ -97,7 +87,7 @@ public class JsonFilter implements Filter {
         switch (filterConfig.getFilterMessageFormat()) {
             case PROTOBUF:
                 try {
-                    Object protoPojo = MethodUtils.invokeStaticMethod(Class.forName(filterConfig.getFilterJsonSchemaProtoClass()), "parseFrom", data);
+                    Object protoPojo = MethodUtils.invokeStaticMethod(Class.forName(filterConfig.getFilterSchemaProtoClass()), "parseFrom", data);
                     return jsonPrinter.print((GeneratedMessageV3) protoPojo);
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     throw new FilterException("Failed to parse protobuf message", e);

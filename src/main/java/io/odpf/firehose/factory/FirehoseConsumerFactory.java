@@ -12,6 +12,7 @@ import io.odpf.firehose.consumer.FirehoseConsumer;
 import io.odpf.firehose.consumer.GenericConsumer;
 import io.odpf.firehose.exception.EglcConfigurationException;
 import io.odpf.firehose.filter.Filter;
+import io.odpf.firehose.filter.NoOpFilter;
 import io.odpf.firehose.filter.jexl.JexlFilter;
 import io.odpf.firehose.filter.json.JsonFilter;
 import io.odpf.firehose.filter.json.JsonFilterUtil;
@@ -84,7 +85,7 @@ public class FirehoseConsumerFactory {
     }
 
     private Filter buildFilter(FilterConfig filterConfig) {
-        instrumentation.logInfo("Filter Engine: ", filterConfig.getFilterEngine());
+        instrumentation.logInfo("Filter Engine: {}", filterConfig.getFilterEngine());
         switch (filterConfig.getFilterEngine()) {
             case JSON:
                 Instrumentation jsonFilterUtilInstrumentation = new Instrumentation(statsDReporter, JsonFilterUtil.class);
@@ -93,6 +94,8 @@ public class FirehoseConsumerFactory {
                 return new JsonFilter(filterConfig, new Instrumentation(statsDReporter, JsonFilter.class));
             case JEXL:
                 return new JexlFilter(filterConfig, new Instrumentation(statsDReporter, JexlFilter.class));
+            case NO_OP:
+                return new NoOpFilter(new Instrumentation(statsDReporter, NoOpFilter.class));
             default:
                 throw new IllegalArgumentException("Invalid filter engine type");
         }

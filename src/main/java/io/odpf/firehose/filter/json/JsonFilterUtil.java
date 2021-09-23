@@ -4,7 +4,6 @@ import io.odpf.firehose.config.FilterConfig;
 import io.odpf.firehose.metrics.Instrumentation;
 import lombok.experimental.UtilityClass;
 
-import static io.odpf.firehose.config.enums.FilterDataSourceType.NONE;
 import static io.odpf.firehose.config.enums.FilterMessageFormatType.PROTOBUF;
 
 /**
@@ -20,15 +19,11 @@ public class JsonFilterUtil {
      * @param instrumentation the instrumentation
      */
     public static void logConfigs(FilterConfig filterConfig, Instrumentation instrumentation) {
-        instrumentation.logInfo("\n\tFilter data source type: {}", filterConfig.getFilterJsonDataSource());
-        if (filterConfig.getFilterJsonDataSource() != NONE) {
-            instrumentation.logInfo("\n\tFilter JSON Schema: {}", filterConfig.getFilterJsonSchema());
-            instrumentation.logInfo("\n\tFilter message type: {}", filterConfig.getFilterMessageFormat());
-            if (filterConfig.getFilterMessageFormat() == PROTOBUF) {
-                instrumentation.logInfo("\n\tMessage Proto class: {}", filterConfig.getFilterJsonSchemaProtoClass());
-            }
-        } else {
-            instrumentation.logInfo("No filter is selected");
+        instrumentation.logInfo("\n\tFilter data source type: {}", filterConfig.getFilterDataSource());
+        instrumentation.logInfo("\n\tFilter JSON Schema: {}", filterConfig.getFilterJsonSchema());
+        instrumentation.logInfo("\n\tFilter message type: {}", filterConfig.getFilterMessageFormat());
+        if (filterConfig.getFilterMessageFormat() == PROTOBUF) {
+            instrumentation.logInfo("\n\tMessage Proto class: {}", filterConfig.getFilterSchemaProtoClass());
         }
     }
 
@@ -46,7 +41,7 @@ public class JsonFilterUtil {
             if (filterConfig.getFilterMessageFormat() == null) {
                 throw new IllegalArgumentException("Filter ESB message type cannot be null");
             }
-            if (filterConfig.getFilterMessageFormat() == PROTOBUF && filterConfig.getFilterJsonSchemaProtoClass() == null) {
+            if (filterConfig.getFilterMessageFormat() == PROTOBUF && filterConfig.getFilterSchemaProtoClass() == null) {
                 throw new IllegalArgumentException("Proto Schema class cannot be null");
             }
         } finally {
