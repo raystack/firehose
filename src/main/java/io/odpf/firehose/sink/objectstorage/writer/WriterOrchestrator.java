@@ -9,7 +9,7 @@ import io.odpf.firehose.sink.objectstorage.writer.local.FileMeta;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileChecker;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriter;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
-import io.odpf.firehose.sink.objectstorage.writer.local.FilePartitionPathUtil;
+import io.odpf.firehose.sink.objectstorage.writer.local.path.TimePartitionedPathUtils;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageChecker;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterFutureHandler;
 
@@ -107,7 +107,7 @@ public class WriterOrchestrator implements Closeable {
      */
     public String write(Record record) throws Exception {
         checkStatus();
-        Path timePartitionedPath = FilePartitionPathUtil.getFilePartitionPath(record, sinkConfig);
+        Path timePartitionedPath = TimePartitionedPathUtils.getTimePartitionedPath(record, sinkConfig);
         return write(record, timePartitionedPath);
     }
 

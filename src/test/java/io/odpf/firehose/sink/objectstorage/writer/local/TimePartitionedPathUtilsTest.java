@@ -6,6 +6,7 @@ import io.odpf.firehose.sink.objectstorage.Constants;
 import io.odpf.firehose.sink.objectstorage.TestUtils;
 import io.odpf.firehose.sink.objectstorage.TestProtoMessage;
 import io.odpf.firehose.sink.objectstorage.message.Record;
+import io.odpf.firehose.sink.objectstorage.writer.local.path.TimePartitionedPathUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -18,7 +19,7 @@ import java.time.Instant;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
-public class FilePartitionPathUtilTest {
+public class TimePartitionedPathUtilsTest {
 
     private final String zone = "UTC";
     private final String timeStampFieldName = TestProtoMessage.CREATED_TIME_FIELD_NAME;
@@ -43,7 +44,7 @@ public class FilePartitionPathUtilTest {
         Mockito.when(sinkConfig.getKafkaMetadataColumnName()).thenReturn(kafkaMetadataFieldName);
         Mockito.when(sinkConfig.getTimePartitioningDatePrefix()).thenReturn("date=");
         Mockito.when(sinkConfig.getTimePartitioningHourPrefix()).thenReturn("");
-        Path path = FilePartitionPathUtil.getFilePartitionPath(record, sinkConfig);
+        Path path = TimePartitionedPathUtils.getTimePartitionedPath(record, sinkConfig);
         assertEquals(Paths.get("booking-log/date=2020-01-01"), path);
     }
 
@@ -60,7 +61,7 @@ public class FilePartitionPathUtilTest {
         Mockito.when(sinkConfig.getPartitioningType()).thenReturn(Constants.FilePartitionType.HOUR);
         Mockito.when(sinkConfig.getTimePartitioningDatePrefix()).thenReturn(datePrefix);
         Mockito.when(sinkConfig.getTimePartitioningHourPrefix()).thenReturn(hourPrefix);
-        Path path = FilePartitionPathUtil.getFilePartitionPath(record, sinkConfig);
+        Path path = TimePartitionedPathUtils.getTimePartitionedPath(record, sinkConfig);
         assertEquals(Paths.get("booking-log/dt=2020-01-01/hr=10"), path);
     }
 
@@ -77,7 +78,7 @@ public class FilePartitionPathUtilTest {
         Mockito.when(sinkConfig.getPartitioningType()).thenReturn(Constants.FilePartitionType.NONE);
         Mockito.when(sinkConfig.getTimePartitioningDatePrefix()).thenReturn(datePrefix);
         Mockito.when(sinkConfig.getTimePartitioningHourPrefix()).thenReturn(hourPrefix);
-        Path path = FilePartitionPathUtil.getFilePartitionPath(record, sinkConfig);
+        Path path = TimePartitionedPathUtils.getTimePartitionedPath(record, sinkConfig);
         assertEquals(Paths.get("booking-log"), path);
     }
 
@@ -94,7 +95,7 @@ public class FilePartitionPathUtilTest {
         Mockito.when(sinkConfig.getTimePartitioningDatePrefix()).thenReturn(datePrefix);
         Mockito.when(sinkConfig.getTimePartitioningHourPrefix()).thenReturn(hourPrefix);
         Mockito.when(sinkConfig.getKafkaMetadataColumnName()).thenReturn(kafkaMetadataFieldName);
-        Path path = FilePartitionPathUtil.getFilePartitionPath(record, sinkConfig);
+        Path path = TimePartitionedPathUtils.getTimePartitionedPath(record, sinkConfig);
         assertEquals(Paths.get("booking-log/dt=2020-01-01"), path);
     }
 
@@ -111,7 +112,7 @@ public class FilePartitionPathUtilTest {
         Mockito.when(sinkConfig.getTimePartitioningDatePrefix()).thenReturn(datePrefix);
         Mockito.when(sinkConfig.getTimePartitioningHourPrefix()).thenReturn(hourPrefix);
         Mockito.when(sinkConfig.getKafkaMetadataColumnName()).thenReturn(kafkaMetadataFieldName);
-        Path path = FilePartitionPathUtil.getFilePartitionPath(record, sinkConfig);
+        Path path = TimePartitionedPathUtils.getTimePartitionedPath(record, sinkConfig);
         assertEquals(Paths.get("booking-log/dt=2020-01-01"), path);
     }
 }

@@ -30,7 +30,6 @@ public class LocalStorage {
         String fileName = UUID.randomUUID().toString();
         Path dir = basePath.resolve(partitionPath);
         Path fullPath = dir.resolve(Paths.get(fileName));
-
         return createWriter(fullPath);
     }
 

@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.objectstorage.writer.local;
+package io.odpf.firehose.sink.objectstorage.writer.local.path;
 
 import io.odpf.firehose.config.ObjectStorageSinkConfig;
 import io.odpf.firehose.sink.objectstorage.Constants;
@@ -18,12 +18,12 @@ import java.time.format.DateTimeFormatter;
  * Create path partition from Record.
  */
 @AllArgsConstructor
-public class FilePartitionPathUtil {
+public class TimePartitionedPathUtils {
 
     public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     public static final DateTimeFormatter HOUR_FORMATTER = DateTimeFormatter.ofPattern("HH");
 
-    public static Path getFilePartitionPath(Record record, ObjectStorageSinkConfig sinkConfig) {
+    public static Path getTimePartitionedPath(Record record, ObjectStorageSinkConfig sinkConfig) {
         String topic = record.getTopic(sinkConfig.getKafkaMetadataColumnName());
         Instant timestamp = record.getTimestamp(sinkConfig.getTimePartitioningFieldName());
         if (sinkConfig.getPartitioningType() == Constants.FilePartitionType.NONE) {

@@ -43,7 +43,7 @@ public class ObjectStorageWriterFutureHandler {
     }
 
     private void captureFileUploadSuccessMetric(long totalTime) {
-        instrumentation.logInfo("Flushed to Object storage " + fileMeta.getFullPath());
+        instrumentation.logInfo("Flushed to Object storage {}", fileMeta.getFullPath());
         instrumentation.incrementCounter(FILE_UPLOAD_TOTAL, SUCCESS_TAG);
         instrumentation.captureCount(FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes());
         instrumentation.captureCount(FILE_UPLOAD_RECORDS_TOTAL, fileMeta.getRecordCount());
