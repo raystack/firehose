@@ -31,11 +31,11 @@ import static io.odpf.firehose.config.enums.FilterDataSourceType.KEY;
  */
 public class JsonFilter implements Filter {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final FilterConfig filterConfig;
     private final Instrumentation instrumentation;
     private final JsonSchema schema;
     private final JsonFormat.Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
-    private final FilterConfig filterConfig;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * Instantiates a new Json filter.
