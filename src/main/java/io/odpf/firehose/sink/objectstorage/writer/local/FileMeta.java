@@ -11,5 +11,4 @@ public class FileMeta {
     private String fullPath;
     private Long recordCount;
     private Long fileSizeBytes;
-    private FilePartitionPath filePartitionPath;
 }

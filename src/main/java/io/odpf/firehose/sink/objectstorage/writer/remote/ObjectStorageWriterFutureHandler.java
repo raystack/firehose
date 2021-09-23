@@ -3,7 +3,6 @@ package io.odpf.firehose.sink.objectstorage.writer.remote;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.objectstorage.ObjectStorageException;
 import io.odpf.firehose.sink.objectstorage.writer.local.FileMeta;
-import io.odpf.firehose.sink.objectstorage.writer.local.FilePartitionPath;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -45,16 +44,10 @@ public class ObjectStorageWriterFutureHandler {
 
     private void captureFileUploadSuccessMetric(long totalTime) {
         instrumentation.logInfo("Flushed to Object storage " + fileMeta.getFullPath());
-        FilePartitionPath filePartitionPath = fileMeta.getFilePartitionPath();
-        String topic = filePartitionPath.getTopic();
-
-        instrumentation.incrementCounter(FILE_UPLOAD_TOTAL,
-                SUCCESS_TAG,
-                tag(TOPIC_TAG, topic));
-        instrumentation.captureCount(FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes(),
-                tag(TOPIC_TAG, topic));
-        instrumentation.captureDuration(FILE_UPLOAD_TIME_MILLISECONDS, totalTime,
-                tag(TOPIC_TAG, topic));
+        instrumentation.incrementCounter(FILE_UPLOAD_TOTAL, SUCCESS_TAG);
+        instrumentation.captureCount(FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes());
+        instrumentation.captureCount(FILE_UPLOAD_RECORDS_TOTAL, fileMeta.getRecordCount());
+        instrumentation.captureDuration(FILE_UPLOAD_TIME_MILLISECONDS, totalTime);
     }
 
     private void captureUploadFailedMetric(Throwable e) {
@@ -65,11 +58,6 @@ public class ObjectStorageWriterFutureHandler {
         } else {
             errorType = "";
         }
-        FilePartitionPath filePartitionPath = fileMeta.getFilePartitionPath();
-        String topic = filePartitionPath.getTopic();
-        instrumentation.incrementCounter(FILE_UPLOAD_TOTAL,
-                FAILURE_TAG,
-                tag(OBJECT_STORE_ERROR_TYPE_TAG, errorType),
-                tag(TOPIC_TAG, topic));
+        instrumentation.incrementCounter(FILE_UPLOAD_TOTAL, FAILURE_TAG, tag(OBJECT_STORE_ERROR_TYPE_TAG, errorType));
     }
 }

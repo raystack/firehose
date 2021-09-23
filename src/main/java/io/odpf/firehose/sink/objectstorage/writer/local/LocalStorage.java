@@ -1,9 +1,9 @@
 package io.odpf.firehose.sink.objectstorage.writer.local;
 
 import com.google.protobuf.Descriptors;
+import io.odpf.firehose.config.ObjectStorageSinkConfig;
 import io.odpf.firehose.exception.ConfigurationException;
 import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.sink.objectstorage.Constants;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,19 +18,15 @@ import java.util.UUID;
 @AllArgsConstructor
 public class LocalStorage {
 
-    private final Constants.WriterType writerType;
-    private final int pageSize;
-    private final int blockSize;
+    @Getter
+    private final ObjectStorageSinkConfig sinkConfig;
     private final Descriptors.Descriptor messageDescriptor;
     private final List<Descriptors.FieldDescriptor> metadataFieldDescriptor;
-    private final Path basePath;
-    @Getter
     private final List<WriterPolicy> policies;
-    @Getter
-    private final FilePartitionPathFactory filePartitionPathFactory;
     private final Instrumentation instrumentation;
 
     public LocalFileWriter createLocalFileWriter(Path partitionPath) {
+        Path basePath = Paths.get(sinkConfig.getLocalDirectory());
         String fileName = UUID.randomUUID().toString();
         Path dir = basePath.resolve(partitionPath);
         Path fullPath = dir.resolve(Paths.get(fileName));
@@ -39,11 +35,17 @@ public class LocalStorage {
     }
 
     private LocalParquetFileWriter createWriter(Path fullPath) {
-        switch (writerType) {
+        switch (sinkConfig.getFileWriterType()) {
             case PARQUET:
                 try {
                     instrumentation.logInfo("Creating Local File " + fullPath);
-                    return new LocalParquetFileWriter(System.currentTimeMillis(), fullPath.toString(), pageSize, blockSize, messageDescriptor, metadataFieldDescriptor);
+                    return new LocalParquetFileWriter(
+                            System.currentTimeMillis(),
+                            fullPath.toString(),
+                            sinkConfig.getWriterPageSize(),
+                            sinkConfig.getWriterBlockSize(),
+                            messageDescriptor,
+                            metadataFieldDescriptor);
                 } catch (IOException e) {
                     throw new LocalFileWriterFailedException(e);
                 }
