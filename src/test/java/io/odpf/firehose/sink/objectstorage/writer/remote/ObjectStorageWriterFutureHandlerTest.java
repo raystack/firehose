@@ -33,7 +33,7 @@ public class ObjectStorageWriterFutureHandlerTest {
         Mockito.when(fileMeta.getFullPath()).thenReturn("/tmp/test");
         Mockito.when(fileMeta.getFileSizeBytes()).thenReturn(1024L);
         Assert.assertTrue(handler.isFinished());
-        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("Flushed to Object storage /tmp/test");
+        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("Flushed to Object storage {}", "/tmp/test");
         Mockito.verify(instrumentation, Mockito.times(1)).incrementCounter(ObjectStorageMetrics.FILE_UPLOAD_TOTAL, Metrics.SUCCESS_TAG);
         Mockito.verify(instrumentation, Mockito.times(1)).captureCount(ObjectStorageMetrics.FILE_UPLOAD_BYTES, 1024L);
         Mockito.verify(instrumentation, Mockito.times(1)).captureDuration(ObjectStorageMetrics.FILE_UPLOAD_TIME_MILLISECONDS, 1000L);
