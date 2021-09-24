@@ -11,7 +11,6 @@ import io.odpf.firehose.config.GCSConfig;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.objectstorage.ObjectStorageException;
 import io.odpf.firehose.objectstorage.gcs.error.GCSErrorType;
-import io.odpf.firehose.sink.objectstorage.writer.remote.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.bp.Duration;
@@ -54,7 +53,7 @@ public class GCSObjectStorage implements ObjectStorage {
             content = Files.readAllBytes(Paths.get(localPath));
         } catch (IOException e) {
             LOGGER.error("Failed to read local file " + localPath);
-            throw new ObjectStorageException(Constants.FILE_IO_ERROR, "File Read failed", e);
+            throw new ObjectStorageException("file_io_error", "File Read failed", e);
         }
         store(objectName, content);
     }

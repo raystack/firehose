@@ -4,10 +4,6 @@ import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.Parser;
 import com.gojek.de.stencil.parser.ProtoParser;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.TransportOptions;
-import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryOptions;
 import io.odpf.firehose.config.BigQuerySinkConfig;
 import io.odpf.firehose.config.enums.SinkType;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -22,7 +18,6 @@ import io.odpf.firehose.sink.bigquery.handler.BigQueryRowWithoutInsertId;
 import io.odpf.firehose.sink.bigquery.proto.ProtoUpdateListener;
 import org.aeonbits.owner.ConfigFactory;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Map;
 
@@ -57,17 +52,5 @@ public class BigQuerySinkFactory implements SinkFactory {
         } catch (IOException e) {
             throw new IllegalArgumentException("Exception occurred while creating sink", e);
         }
-    }
-
-    private BigQuery getBigQueryInstance(BigQuerySinkConfig sinkConfig) throws IOException {
-        final TransportOptions transportOptions = BigQueryOptions.getDefaultHttpTransportOptions().toBuilder()
-                .setConnectTimeout(Integer.parseInt(sinkConfig.getBqClientConnectTimeoutMS()))
-                .setReadTimeout(Integer.parseInt(sinkConfig.getBqClientReadTimeoutMS()))
-                .build();
-        return BigQueryOptions.newBuilder()
-                .setTransportOptions(transportOptions)
-                .setCredentials(GoogleCredentials.fromStream(new FileInputStream(sinkConfig.getBigQueryCredentialPath())))
-                .setProjectId(sinkConfig.getGCloudProjectID())
-                .build().getService();
     }
 }
