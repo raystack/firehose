@@ -4,11 +4,11 @@ Following variables need to be set to enable JSON/JEXL filters.
 
 ## `FILTER_ENGINE`
 
-Defines whether to use JSON Schema-based filters or JEXL-based filters
+Defines whether to use `JSON` Schema-based filters or `JEXL`-based filters or `NO_OP` \(i.e. no filtering\)
 
 * Example value: `JSON`
 * Type: `optional`
-* Default value`: JEXL`
+* Default value`: NO_OP`
 
 ## `FILTER_ESB_MESSAGE_TYPE`
 
@@ -17,7 +17,14 @@ Defines the format type of the input ESB messages, i.e. JSON/Protobuf.
 * Example value: `JSON`
 * Type: `optional`
 
-## `FILTER_JEXL_DATA_SOURCE`
+## `FILTER_SCHEMA_PROTO_CLASS`
+
+The fully qualified name of the proto schema so that the key/message in Kafka could be parsed.
+
+* Example value: `com.gojek.esb.driverlocation.DriverLocationLogKey`
+* Type: `optional`
+
+## `FILTER_DATA_SOURCE`
 
 `key`/`message`/`none`depending on where to apply filter
 
@@ -31,28 +38,6 @@ JEXL filter expression
 
 * Example value: `driverLocationLogKey.getVehicleType()=="BIKE"`
 * Type: `optional`
-
-## `FILTER_JEXL_SCHEMA_PROTO_CLASS`
-
-The fully qualified name of the proto schema so that the key/message in Kafka could be parsed.
-
-* Example value: `com.gojek.esb.driverlocation.DriverLocationLogKey`
-* Type: `optional`
-
-## `FILTER_JSON_DATA_SOURCE`
-
-`key`/`message`/`none`depending on where to apply filter
-
-* Example value: `key`
-* Type: `optional`
-* Default value`: none`
-
-## `FILTER_JSON_SCHEMA_PROTO_CLASS`
-
-The fully qualified name of the Proto schema so that the key/message in Kafka could be parsed.
-
-* Example value: `com.example.driverlocation.DriverLocationLogKey`
-* Type: `required if FILTER_ESB_MESSAGE_TYPE=PROTOBUF`
 
 ## `FILTER_JSON_SCHEMA`
 
