@@ -1,8 +1,6 @@
 package io.odpf.firehose.sink.common;
 
 
-import com.newrelic.api.agent.NewRelic;
-import com.newrelic.api.agent.Trace;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.NeedToRetry;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -46,7 +44,6 @@ public abstract class AbstractHttpSink extends AbstractSink {
     }
 
     @Override
-    @Trace(dispatcher = true)
     public List<Message> execute() throws Exception {
         HttpResponse response = null;
         for (HttpEntityEnclosingRequestBase httpRequest : httpRequests) {
@@ -67,9 +64,6 @@ public abstract class AbstractHttpSink extends AbstractSink {
                     contentStringList = contentStringList == null ? readContent(httpRequest) : contentStringList;
                     captureMessageDropCount(response, contentStringList);
                 }
-            } catch (IOException e) {
-                NewRelic.noticeError(e);
-                throw e;
             } finally {
                 consumeResponse(response);
                 captureHttpStatusCount(httpRequest, response);

@@ -5,7 +5,6 @@ package io.odpf.firehose.sink.grpc.client;
 import io.odpf.firehose.config.GrpcSinkConfig;
 import io.odpf.firehose.metrics.Instrumentation;
 import com.google.protobuf.DynamicMessage;
-import com.newrelic.api.agent.Trace;
 
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
@@ -45,7 +44,6 @@ public class GrpcClient {
         this.managedChannel = managedChannel;
     }
 
-    @Trace(dispatcher = true)
     public DynamicMessage execute(byte[] logMessage, Headers headers) {
 
         MethodDescriptor.Marshaller<byte[]> marshaller = getMarshaller();

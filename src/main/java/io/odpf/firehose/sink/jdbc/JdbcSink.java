@@ -4,7 +4,6 @@ package io.odpf.firehose.sink.jdbc;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
-import com.newrelic.api.agent.Trace;
 import com.gojek.de.stencil.client.StencilClient;
 
 import java.io.IOException;
@@ -71,7 +70,6 @@ public class JdbcSink extends AbstractSink {
     }
 
     @Override
-    @Trace(dispatcher = true)
     protected List<Message> execute() throws Exception {
         try {
             int[] updateCounts = statement.executeBatch();
