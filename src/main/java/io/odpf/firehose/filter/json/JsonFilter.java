@@ -103,6 +103,11 @@ public class JsonFilter implements Filter {
         }
     }
 
+    /**
+     * Gets filter rule.
+     *
+     * @return the filter rule
+     */
     @Override
     public String getFilterRule() {
         return filterConfig.getFilterJsonSchema();
