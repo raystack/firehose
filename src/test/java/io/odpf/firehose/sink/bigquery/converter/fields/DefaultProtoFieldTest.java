@@ -16,7 +16,7 @@ public class DefaultProtoFieldTest {
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber(orderNumber).build();
         DynamicMessage dynamicMessage = DynamicMessage.parseFrom(testMessage.getDescriptorForType(), testMessage.toByteArray());
         Descriptors.FieldDescriptor fieldDescriptor = dynamicMessage.getDescriptorForType().findFieldByName("order_number");
-        DefaultProtoField defaultProtoField = new DefaultProtoField(fieldDescriptor, dynamicMessage.getField(fieldDescriptor));
+        DefaultProtoField defaultProtoField = new DefaultProtoField(dynamicMessage.getField(fieldDescriptor));
         Object value = defaultProtoField.getValue();
 
         assertEquals(orderNumber, value);
@@ -24,7 +24,7 @@ public class DefaultProtoFieldTest {
 
     @Test
     public void shouldNotMatchAnyType() {
-        DefaultProtoField defaultProtoField = new DefaultProtoField(null, null);
+        DefaultProtoField defaultProtoField = new DefaultProtoField(null);
         boolean isMatch = defaultProtoField.matches();
         assertFalse(isMatch);
     }

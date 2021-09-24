@@ -27,7 +27,7 @@ public class ProtoFieldFactory {
                 .stream()
                 .filter(ProtoField::matches)
                 .findFirst();
-        return first.orElseGet(() -> new DefaultProtoField(descriptor, fieldValue));
+        return first.orElseGet(() -> new DefaultProtoField(fieldValue));
     }
 
 }
