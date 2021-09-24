@@ -45,7 +45,7 @@ public class HeaderBuilder {
                         : message.getLogMessage());
 
         Map<String, String> parameterizedHeaders = paramMap.entrySet().stream()
-                .collect(Collectors.toMap(e -> convertToCustomHeaders(e.getKey()), e -> e.getValue().toString()));
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString()));
         baseHeaders.putAll(parameterizedHeaders);
         return baseHeaders;
     }
