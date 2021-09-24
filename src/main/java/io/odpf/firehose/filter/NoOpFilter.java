@@ -30,6 +30,6 @@ public class NoOpFilter implements Filter {
      */
     @Override
     public String getFilterRule() {
-        return null;
+        return "";
     }
 }
