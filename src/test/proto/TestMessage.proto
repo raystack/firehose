@@ -8,6 +8,7 @@ option java_outer_classname = "TestMessageProto";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
 
 message TestKey {
     string order_number = 1;
@@ -43,4 +44,29 @@ message TestDurationMessage {
     string order_details = 3;
     google.protobuf.Duration duration = 4;
     google.protobuf.Timestamp event_timestamp = 5;
+}
+
+message TestBytesMessage{
+    string order_number = 1;
+    bytes content = 2;
+}
+
+message TestStructMessage{
+    string order_number = 1;
+    google.protobuf.Struct custom_fields = 2;
+    repeated google.protobuf.Struct list_custom_fields = 3;
+}
+
+message TestStatus{
+    enum Enum{
+        CREATED = 0;
+        IN_PROGRESS = 1;
+        COMPLETED = 2;
+    }
+}
+
+message TestEnumMessage{
+    string order_number = 1;
+    TestStatus.Enum last_status = 2;
+    repeated TestStatus.Enum status_history = 3;
 }

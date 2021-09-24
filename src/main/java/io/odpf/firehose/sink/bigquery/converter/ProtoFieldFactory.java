@@ -7,7 +7,7 @@ import io.odpf.firehose.sink.bigquery.converter.fields.EnumProtoField;
 import io.odpf.firehose.sink.bigquery.converter.fields.NestedProtoField;
 import io.odpf.firehose.sink.bigquery.converter.fields.ProtoField;
 import io.odpf.firehose.sink.bigquery.converter.fields.StructProtoField;
-import io.odpf.firehose.sink.bigquery.converter.fields.TimeStampProtoField;
+import io.odpf.firehose.sink.bigquery.converter.fields.TimestampProtoField;
 
 import java.util.Arrays;
 import java.util.List;
@@ -17,7 +17,7 @@ public class ProtoFieldFactory {
 
     public static ProtoField getField(Descriptors.FieldDescriptor descriptor, Object fieldValue) {
         List<ProtoField> protoFields = Arrays.asList(
-                new TimeStampProtoField(descriptor, fieldValue),
+                new TimestampProtoField(descriptor, fieldValue),
                 new EnumProtoField(descriptor, fieldValue),
                 new ByteProtoField(descriptor, fieldValue),
                 new StructProtoField(descriptor, fieldValue),
