@@ -66,9 +66,56 @@ public class JsonFilterTest {
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         jsonFilter = new JsonFilter(filterConfig, instrumentation);
         List<Message> filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
-        assertEquals(filteredMessages.size(), 1);
-        assertEquals(filteredMessages.get(0), message1);
+        assertEquals(1, filteredMessages.size());
+        assertEquals(message1, filteredMessages.get(0));
     }
+
+    @Test
+    public void shouldFilterEsbMessagesForJsonMessageType() throws FilterException {
+        Message message1 = new Message(testKeyJson1.getBytes(), testMessageJson1.getBytes(), "topic1", 0, 100);
+        Message message2 = new Message(testKeyJson2.getBytes(), testMessageJson2.getBytes(), "topic1", 0, 101);
+        Map<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "JSON");
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
+        filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
+        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        List<Message> filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
+        assertEquals(1, filteredMessages.size());
+        assertEquals(message1, filteredMessages.get(0));
+    }
+
+    @Test
+    public void shouldNotFilterProtobufMessagesWhenEmptyJSONSchema() throws FilterException {
+        Message message1 = new Message(testKeyProto1.toByteArray(), testMessageProto1.toByteArray(), "topic1", 0, 100);
+        Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 101);
+        Map<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "");
+        filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
+        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        List<Message> inputMessages = Arrays.asList(message1, message2);
+        List<Message> filteredMessages = jsonFilter.filter(inputMessages);
+        assertEquals(inputMessages, filteredMessages);
+    }
+
+    @Test
+    public void shouldNotFilterJsonMessagesWhenEmptyJSONSchema() throws FilterException {
+        Message message1 = new Message(testKeyJson1.getBytes(), testMessageJson1.getBytes(), "topic1", 0, 100);
+        Message message2 = new Message(testKeyJson2.getBytes(), testMessageJson2.getBytes(), "topic1", 0, 101);
+        Map<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "JSON");
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "");
+        filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
+        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        List<Message> inputMessages = Arrays.asList(message1, message2);
+        List<Message> filteredMessages = jsonFilter.filter(inputMessages);
+        assertEquals(inputMessages, filteredMessages);
+    }
+
 
     @Test
     public void shouldNotFilterEsbMessagesForEmptyBooleanValuesForProtobufMessageType() throws FilterException {
@@ -83,23 +130,9 @@ public class JsonFilterTest {
         FilterConfig bookingConsumerConfig = ConfigFactory.create(FilterConfig.class, bookingFilterConfigs);
         JsonFilter bookingFilter = new JsonFilter(bookingConsumerConfig, instrumentation);
         List<Message> filteredMessages = bookingFilter.filter(Collections.singletonList(message));
-        assertEquals(filteredMessages.get(0), message);
+        assertEquals(message, filteredMessages.get(0));
     }
 
-    @Test
-    public void shouldFilterEsbMessagesForJsonMessageType() throws FilterException {
-        Message message1 = new Message(testKeyJson1.getBytes(), testMessageJson1.getBytes(), "topic1", 0, 100);
-        Message message2 = new Message(testKeyJson2.getBytes(), testMessageJson2.getBytes(), "topic1", 0, 101);
-        Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "JSON");
-        filterConfigs.put("FILTER_DATA_SOURCE", "message");
-        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
-        filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        jsonFilter = new JsonFilter(filterConfig, instrumentation);
-        List<Message> filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
-        assertEquals(filteredMessages.size(), 1);
-        assertEquals(filteredMessages.get(0), message1);
-    }
 
     @Test
     public void shouldThrowExceptionWhenJsonMessageInvalid() throws FilterException {

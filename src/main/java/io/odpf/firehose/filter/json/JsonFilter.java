@@ -90,7 +90,7 @@ public class JsonFilter implements Filter {
                     Object protoPojo = MethodUtils.invokeStaticMethod(Class.forName(filterConfig.getFilterSchemaProtoClass()), "parseFrom", data);
                     return jsonPrinter.print((GeneratedMessageV3) protoPojo);
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new FilterException("Failed to parse protobuf message", e);
+                    throw new FilterException("Failed to parse Protobuf message", e);
                 } catch (InvalidProtocolBufferException e) {
                     throw new FilterException("Protobuf message is invalid", e);
                 } catch (NoSuchMethodException | ClassNotFoundException e) {
