@@ -161,7 +161,7 @@ public class JsonFilterTest {
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         jsonFilter = new JsonFilter(filterConfig, instrumentation);
         thrown.expect(FilterException.class);
-        thrown.expectMessage("Failed to parse protobuf message");
+        thrown.expectMessage("Failed to parse Protobuf message");
         jsonFilter.filter(Arrays.asList(message1, message2));
     }
 
