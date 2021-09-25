@@ -79,7 +79,7 @@ public class JsonFilter implements Filter {
             });
             return validationErrors.isEmpty();
         } catch (JsonProcessingException e) {
-            throw new FilterException("Failed to parse JSON message ", e);
+            throw new FilterException("Failed to parse JSON message", e);
         }
     }
 
@@ -92,9 +92,9 @@ public class JsonFilter implements Filter {
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     throw new FilterException("Failed to parse protobuf message", e);
                 } catch (InvalidProtocolBufferException e) {
-                    throw new FilterException("Protobuf message is invalid ", e);
+                    throw new FilterException("Protobuf message is invalid", e);
                 } catch (NoSuchMethodException | ClassNotFoundException e) {
-                    throw new FilterException("Proto schema class is invalid ", e);
+                    throw new FilterException("Proto schema class is invalid", e);
                 }
             case JSON:
                 return new String(data, Charset.defaultCharset());

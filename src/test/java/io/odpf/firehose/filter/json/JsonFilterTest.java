@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class JsonFilterTest {
 
@@ -97,5 +99,81 @@ public class JsonFilterTest {
         List<Message> filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
         assertEquals(filteredMessages.size(), 1);
         assertEquals(filteredMessages.get(0), message1);
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenJsonMessageInvalid() throws FilterException {
+        Message message1 = new Message(new byte[]{1, 2}, testMessageJson1.getBytes(), "topic1", 0, 100);
+        Message message2 = new Message(testKeyJson2.getBytes(), testMessageJson2.getBytes(), "topic1", 0, 101);
+        Map<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "JSON");
+        filterConfigs.put("FILTER_DATA_SOURCE", "key");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
+        filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
+        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        thrown.expect(FilterException.class);
+        thrown.expectMessage("Failed to parse JSON message");
+        jsonFilter.filter(Arrays.asList(message1, message2));
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenProtobufMessageInvalid() throws FilterException {
+        Message message1 = new Message(new byte[]{1, 2}, testMessageProto1.toByteArray(), "topic1", 0, 100);
+        Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 101);
+        Map<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_DATA_SOURCE", "key");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
+        filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
+        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        thrown.expect(FilterException.class);
+        thrown.expectMessage("Failed to parse protobuf message");
+        jsonFilter.filter(Arrays.asList(message1, message2));
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenProtoSchemaClassInvalid() throws FilterException {
+        Message message1 = new Message(testKeyProto1.toByteArray(), testMessageProto1.toByteArray(), "topic1", 0, 100);
+        Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 101);
+        Map<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_DATA_SOURCE", "key");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
+        filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", "ss");
+        filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
+        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        thrown.expect(FilterException.class);
+        thrown.expectMessage("Proto schema class is invalid");
+        jsonFilter.filter(Arrays.asList(message1, message2));
+    }
+
+    @Test
+    public void shouldLogCauseToFilterOutMessageForProtobufMessageFormat() throws FilterException {
+        Message message1 = new Message(testKeyProto1.toByteArray(), testMessageProto1.toByteArray(), "topic1", 0, 100);
+        Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 101);
+        Map<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
+        filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
+        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        jsonFilter.filter(Arrays.asList(message1, message2));
+        verify(instrumentation, times(1)).logDebug("Message filtered out due to: {}", "$.order_number: must be a constant value 123");
+    }
+
+    @Test
+    public void shouldLogCauseToFilterOutMessageForJsonMessageFormat() throws FilterException {
+        Message message1 = new Message(testKeyJson1.getBytes(), testMessageJson1.getBytes(), "topic1", 0, 100);
+        Message message2 = new Message(testKeyJson2.getBytes(), testMessageJson2.getBytes(), "topic1", 0, 101);
+        Map<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "JSON");
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
+        filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
+        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        jsonFilter.filter(Arrays.asList(message1, message2));
+        verify(instrumentation, times(1)).logDebug("Message filtered out due to: {}", "$.order_number: must be a constant value 123");
     }
 }
