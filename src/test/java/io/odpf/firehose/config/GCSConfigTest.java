@@ -19,7 +19,6 @@ public class GCSConfigTest {
             put("GCS_TYPE", "SINK_OBJECT_STORAGE");
         }};
         GCSConfig gcsConfig = ConfigFactory.create(GCSConfig.class, properties);
-        Assert.assertEquals("/tmp/test", gcsConfig.getGCSLocalDirectory());
         Assert.assertEquals("GCloud-ID", gcsConfig.getGCloudProjectID());
         Assert.assertEquals("testing", gcsConfig.getGCSBucketName());
         Assert.assertEquals("/tmp/path/to/cred", gcsConfig.getGCSCredentialPath());
@@ -35,7 +34,6 @@ public class GCSConfigTest {
             put("GCS_TYPE", "DLQ_OBJECT_STORAGE");
         }};
         GCSConfig gcsConfig = ConfigFactory.create(GCSConfig.class, properties);
-        Assert.assertEquals("/tmp/test", gcsConfig.getGCSLocalDirectory());
         Assert.assertEquals("GCloud-ID", gcsConfig.getGCloudProjectID());
         Assert.assertEquals("testing", gcsConfig.getGCSBucketName());
         Assert.assertEquals("/tmp/path/to/cred", gcsConfig.getGCSCredentialPath());
