@@ -46,10 +46,6 @@ public class WriterOrchestratorTest {
     private final String timeStampFieldName = TestProtoMessage.CREATED_TIME_FIELD_NAME;
     private final String datePrefix = "dt=";
     private final String hourPrefix = "hr=";
-    private final Instant defaultTimestamp = Instant.parse("2020-01-01T10:00:00.000Z");
-    private final int defaultOrderNumber = 100;
-    private final long defaultOffset = 1L;
-    private final int defaultPartition = 1;
     private final String defaultTopic = "booking-log";
     @Mock
     private ObjectStorageSinkConfig sinkConfig;
@@ -71,12 +67,12 @@ public class WriterOrchestratorTest {
         Record record = Mockito.mock(Record.class);
         Mockito.when(record.getTimestamp(timeStampFieldName)).thenReturn(Instant.ofEpochMilli(1L));
         Mockito.when(record.getTopic("")).thenReturn(defaultTopic);
-        Mockito.when(localFileWriter1.getFullPath()).thenReturn("test");
+        Mockito.when(localFileWriter1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp/", "/tmp/test", 0, 0, 0));
         Mockito.when(localStorage.createLocalFileWriter(TimePartitionedPathUtils.getTimePartitionedPath(record, sinkConfig))).thenReturn(localFileWriter1);
         Mockito.when(localFileWriter1.write(record)).thenReturn(true);
         try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(sinkConfig, localStorage, objectStorage, statsDReporter)) {
             String path = writerOrchestrator.write(record);
-            Assert.assertEquals("test", path);
+            Assert.assertEquals("/tmp/test", path);
         }
     }
 
@@ -87,14 +83,14 @@ public class WriterOrchestratorTest {
         Mockito.when(record1.getTopic("")).thenReturn(defaultTopic);
         Mockito.when(localStorage.createLocalFileWriter(TimePartitionedPathUtils.getTimePartitionedPath(record1, sinkConfig))).thenReturn(localFileWriter1);
         Mockito.when(localFileWriter1.write(record1)).thenReturn(true);
-        Mockito.when(localFileWriter1.getFullPath()).thenReturn("test1");
+        Mockito.when(localFileWriter1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp/", "/tmp/test1", 0, 0, 0));
 
         Record record2 = Mockito.mock(Record.class);
         Mockito.when(record2.getTimestamp(timeStampFieldName)).thenReturn(Instant.ofEpochMilli(7200000L));
         Mockito.when(record2.getTopic("")).thenReturn(defaultTopic);
         Mockito.when(localStorage.createLocalFileWriter(TimePartitionedPathUtils.getTimePartitionedPath(record2, sinkConfig))).thenReturn(localFileWriter2);
         Mockito.when(localFileWriter2.write(record2)).thenReturn(true);
-        Mockito.when(localFileWriter2.getFullPath()).thenReturn("test2");
+        Mockito.when(localFileWriter2.getMetadata()).thenReturn(new LocalFileMetadata("/tmp/", "/tmp/test2", 0, 0, 0));
 
         try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(sinkConfig, localStorage, objectStorage, statsDReporter)) {
             Set<String> paths = new HashSet<>();
@@ -109,7 +105,7 @@ public class WriterOrchestratorTest {
         Record record = Mockito.mock(Record.class);
         Mockito.when(record.getTimestamp(timeStampFieldName)).thenReturn(Instant.ofEpochMilli(3600000L));
         Mockito.when(record.getTopic("")).thenReturn(defaultTopic);
-        Mockito.when(localFileWriter1.getFullPath()).thenReturn("test1");
+        Mockito.when(localFileWriter1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp/", "/tmp/test1", 0, 0, 0));
         Mockito.when(localStorage.createLocalFileWriter(TimePartitionedPathUtils.getTimePartitionedPath(record, sinkConfig))).thenReturn(localFileWriter1);
         try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(sinkConfig, localStorage, objectStorage, statsDReporter)) {
             Mockito.doThrow(new IOException("")).when(localFileWriter1).write(record);
@@ -123,10 +119,25 @@ public class WriterOrchestratorTest {
         Record record = Mockito.mock(Record.class);
         Mockito.when(record.getTimestamp(timeStampFieldName)).thenReturn(Instant.ofEpochMilli(3600000L));
         Mockito.when(record.getTopic("")).thenReturn(defaultTopic);
-        Mockito.when(localFileWriter1.getFullPath()).thenReturn("test1");
+        Mockito.when(localFileWriter1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp/", "/tmp/test1", 0, 0, 0));
         Mockito.when(localStorage.createLocalFileWriter(TimePartitionedPathUtils.getTimePartitionedPath(record, sinkConfig))).thenThrow(new LocalFileWriterFailedException(new IOException("Some error")));
         try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(sinkConfig, localStorage, objectStorage, statsDReporter)) {
             writerOrchestrator.write(record);
+        }
+    }
+
+    @Test
+    public void shouldGetEmptyFlushedPath() throws Exception {
+        Record record = Mockito.mock(Record.class);
+        Mockito.when(record.getTimestamp(timeStampFieldName)).thenReturn(Instant.ofEpochMilli(1L));
+        Mockito.when(record.getTopic("")).thenReturn(defaultTopic);
+        Mockito.when(localFileWriter1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp/", "/tmp/test", 0, 0, 0));
+        Mockito.when(localStorage.createLocalFileWriter(TimePartitionedPathUtils.getTimePartitionedPath(record, sinkConfig))).thenReturn(localFileWriter1);
+        Mockito.when(localFileWriter1.write(record)).thenReturn(true);
+        try (WriterOrchestrator writerOrchestrator = new WriterOrchestrator(sinkConfig, localStorage, objectStorage, statsDReporter)) {
+            String path = writerOrchestrator.write(record);
+            Assert.assertEquals("/tmp/test", path);
+            Assert.assertEquals(new HashSet<>(), writerOrchestrator.getFlushedPaths());
         }
     }
 }

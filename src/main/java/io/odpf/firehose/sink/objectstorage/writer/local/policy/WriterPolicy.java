@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.objectstorage.writer.local.policy;
 
-import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriter;
+import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileMetadata;
 
 public interface WriterPolicy {
-    boolean shouldRotate(LocalFileWriter writer);
+    boolean shouldRotate(LocalFileMetadata metadata);
 }

@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.objectstorage.writer.local.policy;
 
-import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriter;
+import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileMetadata;
 
 public class TimeBasedRotatingPolicy implements WriterPolicy {
 
@@ -14,7 +14,7 @@ public class TimeBasedRotatingPolicy implements WriterPolicy {
     }
 
     @Override
-    public boolean shouldRotate(LocalFileWriter writer) {
-        return System.currentTimeMillis() - writer.getCreatedTimestampMillis() >= maxRotatingDurationMillis;
+    public boolean shouldRotate(LocalFileMetadata metadata) {
+        return System.currentTimeMillis() - metadata.getCreatedTimestampMillis() >= maxRotatingDurationMillis;
     }
 }

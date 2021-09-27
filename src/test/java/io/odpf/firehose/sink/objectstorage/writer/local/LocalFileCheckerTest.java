@@ -1,8 +1,6 @@
 package io.odpf.firehose.sink.objectstorage.writer.local;
 
-import io.odpf.firehose.config.ObjectStorageSinkConfig;
 import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.sink.objectstorage.Constants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,11 +40,9 @@ public class LocalFileCheckerTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
-    private final BlockingQueue<FileMeta> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
+    private final BlockingQueue<LocalFileMetadata> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
     private final Map<Path, LocalFileWriter> writerMap = new ConcurrentHashMap<>();
     private LocalFileChecker worker;
-    @Mock
-    private ObjectStorageSinkConfig sinkConfig;
 
     private final long fileSize = 1024L;
     private final long recordCount = 100L;
@@ -56,14 +52,6 @@ public class LocalFileCheckerTest {
         initMocks(this);
         toBeFlushedToRemotePaths.clear();
         writerMap.clear();
-        when(localStorage.getFileSize(anyString())).thenReturn(fileSize);
-        when(writer1.getRecordCount()).thenReturn(recordCount);
-        when(writer2.getRecordCount()).thenReturn(recordCount);
-        when(localStorage.getSinkConfig()).thenReturn(sinkConfig);
-        when(sinkConfig.getTimePartitioningTimeZone()).thenReturn("UTC");
-        when(sinkConfig.getPartitioningType()).thenReturn(Constants.FilePartitionType.HOUR);
-        when(sinkConfig.getTimePartitioningDatePrefix()).thenReturn("dt=");
-        when(sinkConfig.getTimePartitioningHourPrefix()).thenReturn("hr=");
         worker = new LocalFileChecker(toBeFlushedToRemotePaths, writerMap, localStorage, instrumentation);
     }
 
@@ -74,8 +62,8 @@ public class LocalFileCheckerTest {
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
         when(localStorage.shouldRotate(writer2)).thenReturn(true);
 
-        when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name-1");
-        when(writer2.getFullPath()).thenReturn("/tmp/b/random-file-name-2");
+        when(writer1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
+        when(writer2.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-2", 1L, recordCount, fileSize));
 
         worker.run();
         verify(writer1, times(1)).close();
@@ -95,18 +83,13 @@ public class LocalFileCheckerTest {
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
         when(localStorage.shouldRotate(writer2)).thenReturn(true);
 
-        when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name");
-        when(writer2.getFullPath()).thenReturn("/tmp/a/random-file-name-2");
-
-        when(localStorage.getFileSize("/tmp/a/random-file-name")).thenReturn(fileSize1);
-        when(localStorage.getFileSize("/tmp/a/random-file-name-2")).thenReturn(fileSize2);
+        when(writer1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize1));
+        when(writer2.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-2", 1L, recordCount, fileSize2));
 
         worker.run();
         Assert.assertEquals(2, toBeFlushedToRemotePaths.size());
-        verify(writer1, times(1)).getRecordCount();
-        verify(writer2, times(1)).getRecordCount();
-        Assert.assertTrue(toBeFlushedToRemotePaths.contains(new FileMeta("/tmp/a/random-file-name", recordCount, fileSize1)));
-        Assert.assertTrue(toBeFlushedToRemotePaths.contains(new FileMeta("/tmp/a/random-file-name-2", recordCount, fileSize2)));
+        Assert.assertTrue(toBeFlushedToRemotePaths.contains(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize1)));
+        Assert.assertTrue(toBeFlushedToRemotePaths.contains(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-2", 1L, recordCount, fileSize2)));
         Assert.assertEquals(0, writerMap.size());
     }
 
@@ -140,15 +123,13 @@ public class LocalFileCheckerTest {
         writerMap.put(Paths.get("/tmp/a"), writer1);
         writerMap.put(Paths.get("/tmp/b"), writer2);
         doNothing().when(writer1).close();
+        when(writer1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
+        when(writer2.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-2", 1L, recordCount, fileSize));
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
-
         when(localStorage.shouldRotate(writer2)).thenReturn(false);
-
-        when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name");
-        when(writer2.getFullPath()).thenReturn("/tmp/a/random-file-name-2");
         worker.run();
         Assert.assertEquals(1, toBeFlushedToRemotePaths.size());
-        Assert.assertTrue(toBeFlushedToRemotePaths.contains(new FileMeta("/tmp/a/random-file-name", recordCount, fileSize)));
+        Assert.assertTrue(toBeFlushedToRemotePaths.contains(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize)));
         Assert.assertEquals(1, writerMap.size());
         Assert.assertEquals(writer2, writerMap.get(Paths.get("/tmp/b")));
     }
@@ -158,7 +139,7 @@ public class LocalFileCheckerTest {
         writerMap.put(Paths.get("/tmp/a"), writer1);
         doNothing().when(writer1).close();
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
-        when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name");
+        when(writer1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
         worker.run();
         verify(instrumentation).incrementCounter(LOCAL_FILE_CLOSE_TOTAL, SUCCESS_TAG);
     }
@@ -168,7 +149,7 @@ public class LocalFileCheckerTest {
         writerMap.put(Paths.get("/tmp/a"), writer1);
         doNothing().when(writer1).close();
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
-        when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name");
+        when(writer1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
         worker.run();
 
         verify(instrumentation, times(1)).captureDurationSince(eq(LOCAL_FILE_CLOSING_TIME_MILLISECONDS), any(Instant.class));
@@ -179,7 +160,7 @@ public class LocalFileCheckerTest {
         writerMap.put(Paths.get("/tmp/a"), writer1);
         doNothing().when(writer1).close();
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
-        when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name");
+        when(writer1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
         worker.run();
 
         verify(instrumentation, times(1)).captureCount(LOCAL_FILE_SIZE_BYTES, fileSize);
@@ -208,9 +189,9 @@ public class LocalFileCheckerTest {
         when(localStorage.shouldRotate(writer1)).thenReturn(false).thenReturn(true);
         when(localStorage.shouldRotate(writer2)).thenReturn(false).thenReturn(true);
 
-        when(writer1.getFullPath()).thenReturn("/tmp/a/random-file-name-1");
-        when(writer2.getFullPath()).thenReturn("/tmp/b/random-file-name-2");
 
+        when(writer1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
+        when(writer2.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-2", 1L, recordCount, fileSize));
         worker.run();
         worker.run();
         worker.run();

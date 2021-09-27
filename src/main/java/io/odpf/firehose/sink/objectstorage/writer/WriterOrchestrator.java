@@ -5,7 +5,7 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.sink.objectstorage.message.Record;
-import io.odpf.firehose.sink.objectstorage.writer.local.FileMeta;
+import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileMetadata;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileChecker;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriter;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
@@ -53,7 +53,7 @@ public class WriterOrchestrator implements Closeable {
     public WriterOrchestrator(ObjectStorageSinkConfig sinkConfig, LocalStorage localStorage, ObjectStorage objectStorage, StatsDReporter statsDReporter) {
         this.localStorage = localStorage;
         this.sinkConfig = sinkConfig;
-        BlockingQueue<FileMeta> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
+        BlockingQueue<LocalFileMetadata> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
         ScheduledFuture<?> localWriterFuture = localFileCheckerScheduler.scheduleAtFixedRate(
                 new LocalFileChecker(
                         toBeFlushedToRemotePaths,
@@ -76,9 +76,8 @@ public class WriterOrchestrator implements Closeable {
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
                 TimeUnit.SECONDS);
 
-        writerOrchestratorStatus = new WriterOrchestratorStatus(false, localWriterFuture, objectStorageWriterFuture, null);
-        writerOrchestratorStatus.startCheckerForLocalFileWriterCompletion();
-        writerOrchestratorStatus.startCheckerForObjectStorageWriterCompletion();
+        writerOrchestratorStatus = new WriterOrchestratorStatus(localWriterFuture, objectStorageWriterFuture);
+        writerOrchestratorStatus.startCheckers();
     }
 
     /**
@@ -126,7 +125,7 @@ public class WriterOrchestrator implements Closeable {
         if (!writer.write(record)) {
             return write(record, timePartitionedPath);
         }
-        return writer.getFullPath();
+        return writer.getMetadata().getFullPath();
     }
 
     @Override
@@ -139,7 +138,7 @@ public class WriterOrchestrator implements Closeable {
             writer.close();
         }
         for (LocalFileWriter p : timePartitionWriterMap.values()) {
-            localStorage.deleteLocalFile(p.getFullPath());
+            localStorage.deleteLocalFile(p.getMetadata().getFullPath());
         }
     }
 }

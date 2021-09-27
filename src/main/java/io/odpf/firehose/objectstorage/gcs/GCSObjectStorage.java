@@ -70,12 +70,12 @@ public class GCSObjectStorage implements ObjectStorage {
     }
 
     @Override
-    public void store(String localPath) throws ObjectStorageException {
+    public void store(String objectName, String filePath) throws ObjectStorageException {
         try {
-            byte[] content = Files.readAllBytes(Paths.get(localPath));
-            store(localPath, content);
+            byte[] content = Files.readAllBytes(Paths.get(filePath));
+            store(objectName, content);
         } catch (IOException e) {
-            LOGGER.error("Failed to read local file " + localPath);
+            LOGGER.error("Failed to read local file " + filePath);
             throw new ObjectStorageException("file_io_error", "File Read failed", e);
         }
     }

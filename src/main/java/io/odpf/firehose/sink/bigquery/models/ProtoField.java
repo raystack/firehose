@@ -14,14 +14,12 @@ public class ProtoField {
     private DescriptorProtos.FieldDescriptorProto.Label label;
     private List<ProtoField> fields;
     private int index;
-    private DescriptorProtos.FieldDescriptorProto fieldProto;
 
     public ProtoField() {
         this.fields = new ArrayList<>();
     }
 
     public ProtoField(DescriptorProtos.FieldDescriptorProto f) {
-        this.fieldProto = f;
         this.name = f.getName();
         this.type = f.getType();
         this.label = f.getLabel();
@@ -40,14 +38,6 @@ public class ProtoField {
     @VisibleForTesting
     public ProtoField(List<ProtoField> subFields) {
         this.fields = subFields;
-    }
-
-    @VisibleForTesting
-    public ProtoField(String name, DescriptorProtos.FieldDescriptorProto.Type type, DescriptorProtos.FieldDescriptorProto.Label label, List<ProtoField> fields) {
-        this.name = name;
-        this.type = type;
-        this.label = label;
-        this.fields = fields;
     }
 
     @VisibleForTesting

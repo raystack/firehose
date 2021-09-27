@@ -1,38 +1,40 @@
 package io.odpf.firehose.sink.objectstorage.writer.local.policy;
 
-import io.odpf.firehose.sink.objectstorage.writer.local.LocalParquetFileWriter;
+import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileMetadata;
+import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SizeBasedRotatingPolicyTest {
 
-    @Mock
-    private LocalParquetFileWriter fileWriter;
-    private SizeBasedRotatingPolicy sizeBasedRotatingPolicy = new SizeBasedRotatingPolicy(256);
+    private final SizeBasedRotatingPolicy sizeBasedRotatingPolicy = new SizeBasedRotatingPolicy(256);
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void shouldNeedRotateWhenWriterDataSizeGreaterThanEqualToMaxFileSize() {
         long dataSize = 258L;
-        when(fileWriter.currentSize()).thenReturn(dataSize);
-
-        boolean shouldRotate = sizeBasedRotatingPolicy.shouldRotate(fileWriter);
-
-        assertTrue(shouldRotate);
+        LocalFileMetadata metadata = new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, 100L, dataSize);
+        boolean shouldRotate = sizeBasedRotatingPolicy.shouldRotate(metadata);
+        Assert.assertTrue(shouldRotate);
     }
 
     @Test
     public void shouldNotNeedRotateWhenSizeBelowTheLimit() {
         long dataSize = 100L;
-        when(fileWriter.currentSize()).thenReturn(dataSize);
+        LocalFileMetadata metadata = new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, 100L, dataSize);
+        boolean shouldRotate = sizeBasedRotatingPolicy.shouldRotate(metadata);
+        Assert.assertFalse(shouldRotate);
+    }
 
-        boolean shouldRotate = sizeBasedRotatingPolicy.shouldRotate(fileWriter);
-
-        assertFalse(shouldRotate);
+    @Test
+    public void shouldThrowExceptionIfInvalid() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("The max size should be a positive integer");
+        new SizeBasedRotatingPolicy(-100);
     }
 }

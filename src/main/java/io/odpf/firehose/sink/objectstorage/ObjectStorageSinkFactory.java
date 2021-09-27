@@ -31,14 +31,10 @@ public class ObjectStorageSinkFactory implements SinkFactory {
     @Override
     public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         ObjectStorageSinkConfig sinkConfig = ConfigFactory.create(ObjectStorageSinkConfig.class, configuration);
-
         LocalStorage localStorage = getLocalFileWriterWrapper(sinkConfig, stencilClient, statsDReporter);
-
         ObjectStorage sinkObjectStorage = createSinkObjectStorage(sinkConfig, new HashMap<>(configuration));
-
         WriterOrchestrator writerOrchestrator = new WriterOrchestrator(sinkConfig, localStorage, sinkObjectStorage, statsDReporter);
         MessageDeSerializer messageDeSerializer = new MessageDeSerializer(sinkConfig, stencilClient);
-
         return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer);
     }
 
@@ -53,11 +49,9 @@ public class ObjectStorageSinkFactory implements SinkFactory {
     private LocalStorage getLocalFileWriterWrapper(ObjectStorageSinkConfig sinkConfig, StencilClient stencilClient, StatsDReporter statsDReporter) {
         Descriptors.Descriptor outputMessageDescriptor = stencilClient.get(sinkConfig.getInputSchemaProtoClass());
         Descriptors.Descriptor metadataMessageDescriptor = getMetadataMessageDescriptor(sinkConfig);
-
         List<WriterPolicy> writerPolicies = new ArrayList<>();
         writerPolicies.add(new TimeBasedRotatingPolicy(sinkConfig.getFileRotationDurationMS()));
         writerPolicies.add(new SizeBasedRotatingPolicy(sinkConfig.getFileRotationMaxSizeBytes()));
-
         return new LocalStorage(
                 sinkConfig,
                 outputMessageDescriptor,

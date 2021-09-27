@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.objectstorage.writer.remote;
 
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.objectstorage.ObjectStorageException;
-import io.odpf.firehose.sink.objectstorage.writer.local.FileMeta;
+import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileMetadata;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -17,12 +17,12 @@ import static io.odpf.firehose.metrics.ObjectStorageMetrics.*;
 @Data
 public class ObjectStorageWriterFutureHandler {
     private Future<Long> future;
-    private FileMeta fileMeta;
+    private LocalFileMetadata localFileMetadata;
     private Instrumentation instrumentation;
     private static final String EMPTY = "";
 
     public String getFullPath() {
-        return fileMeta.getFullPath();
+        return localFileMetadata.getFullPath();
     }
 
     public boolean isFinished() {
@@ -43,10 +43,10 @@ public class ObjectStorageWriterFutureHandler {
     }
 
     private void captureFileUploadSuccessMetric(long totalTime) {
-        instrumentation.logInfo("Flushed to Object storage {}", fileMeta.getFullPath());
+        instrumentation.logInfo("Flushed to Object storage {}", localFileMetadata.getFullPath());
         instrumentation.incrementCounter(FILE_UPLOAD_TOTAL, SUCCESS_TAG);
-        instrumentation.captureCount(FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes());
-        instrumentation.captureCount(FILE_UPLOAD_RECORDS_TOTAL, fileMeta.getRecordCount());
+        instrumentation.captureCount(FILE_UPLOAD_BYTES, localFileMetadata.getSize());
+        instrumentation.captureCount(FILE_UPLOAD_RECORDS_TOTAL, localFileMetadata.getRecordCount());
         instrumentation.captureDuration(FILE_UPLOAD_TIME_MILLISECONDS, totalTime);
     }
 

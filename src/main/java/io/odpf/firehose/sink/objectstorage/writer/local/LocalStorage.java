@@ -6,7 +6,6 @@ import io.odpf.firehose.exception.ConfigurationException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,7 +17,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class LocalStorage {
 
-    @Getter
     private final ObjectStorageSinkConfig sinkConfig;
     private final Descriptors.Descriptor messageDescriptor;
     private final List<Descriptors.FieldDescriptor> metadataFieldDescriptor;
@@ -30,16 +28,17 @@ public class LocalStorage {
         String fileName = UUID.randomUUID().toString();
         Path dir = basePath.resolve(partitionPath);
         Path fullPath = dir.resolve(Paths.get(fileName));
-        return createWriter(fullPath);
+        return createWriter(basePath, fullPath);
     }
 
-    private LocalParquetFileWriter createWriter(Path fullPath) {
+    private LocalParquetFileWriter createWriter(Path basePath, Path fullPath) {
         switch (sinkConfig.getFileWriterType()) {
             case PARQUET:
                 try {
                     instrumentation.logInfo("Creating Local File " + fullPath);
                     return new LocalParquetFileWriter(
                             System.currentTimeMillis(),
+                            basePath.toString(),
                             fullPath.toString(),
                             sinkConfig.getWriterPageSize(),
                             sinkConfig.getWriterBlockSize(),
@@ -62,11 +61,7 @@ public class LocalStorage {
         }
     }
 
-    public long getFileSize(String path) throws IOException {
-        return Files.size(Paths.get(path));
-    }
-
     public Boolean shouldRotate(LocalFileWriter writer) {
-        return policies.stream().anyMatch(writerPolicy -> writerPolicy.shouldRotate(writer));
+        return policies.stream().anyMatch(writerPolicy -> writerPolicy.shouldRotate(writer.getMetadata()));
     }
 }

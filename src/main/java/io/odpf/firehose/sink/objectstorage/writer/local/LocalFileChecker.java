@@ -14,13 +14,13 @@ import static io.odpf.firehose.metrics.Metrics.SUCCESS_TAG;
 import static io.odpf.firehose.metrics.ObjectStorageMetrics.*;
 
 public class LocalFileChecker implements Runnable {
-    private final Queue<FileMeta> toBeFlushedToRemotePaths;
+    private final Queue<LocalFileMetadata> toBeFlushedToRemotePaths;
     private final Map<Path, LocalFileWriter> timePartitionWriterMap;
     private final LocalStorage localStorage;
     private final Instrumentation instrumentation;
 
 
-    public LocalFileChecker(Queue<FileMeta> toBeFlushedToRemotePaths,
+    public LocalFileChecker(Queue<LocalFileMetadata> toBeFlushedToRemotePaths,
                             Map<Path, LocalFileWriter> timePartitionWriterMap,
                             LocalStorage localStorage,
                             Instrumentation instrumentation) {
@@ -38,15 +38,13 @@ public class LocalFileChecker implements Runnable {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         timePartitionWriterMap.entrySet().removeAll(toBeRotated.entrySet());
         toBeRotated.forEach((path, writer) -> {
-            String filePath = writer.getFullPath();
             try {
+                LocalFileMetadata metadata = writer.getMetadata();
                 Instant startTime = Instant.now();
                 writer.close();
-                instrumentation.logInfo("Closing Local File {} ", filePath);
-                long fileSize = localStorage.getFileSize(filePath);
-                FileMeta fileMeta = new FileMeta(filePath, writer.getRecordCount(), fileSize);
-                toBeFlushedToRemotePaths.add(fileMeta);
-                captureFileClosedSuccessMetric(startTime, fileMeta);
+                instrumentation.logInfo("Closing Local File {} ", metadata.getFullPath());
+                toBeFlushedToRemotePaths.add(metadata);
+                captureFileClosedSuccessMetric(startTime, metadata);
             } catch (IOException e) {
                 e.printStackTrace();
                 captureFileCloseFailedMetric();
@@ -56,11 +54,11 @@ public class LocalFileChecker implements Runnable {
         instrumentation.captureValue(LOCAL_FILE_OPEN_TOTAL, timePartitionWriterMap.size());
     }
 
-    private void captureFileClosedSuccessMetric(Instant startTime, FileMeta fileMeta) {
+    private void captureFileClosedSuccessMetric(Instant startTime, LocalFileMetadata localFileMetadata) {
         instrumentation.incrementCounter(LOCAL_FILE_CLOSE_TOTAL, SUCCESS_TAG);
         instrumentation.captureDurationSince(LOCAL_FILE_CLOSING_TIME_MILLISECONDS, startTime);
-        instrumentation.captureCount(LOCAL_FILE_SIZE_BYTES, fileMeta.getFileSizeBytes());
-        instrumentation.captureCount(LOCAL_FILE_RECORDS_TOTAL, fileMeta.getRecordCount());
+        instrumentation.captureCount(LOCAL_FILE_SIZE_BYTES, localFileMetadata.getSize());
+        instrumentation.captureCount(LOCAL_FILE_RECORDS_TOTAL, localFileMetadata.getRecordCount());
     }
 
     private void captureFileCloseFailedMetric() {

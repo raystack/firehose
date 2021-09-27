@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.objectstorage.writer.remote;
 
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.objectstorage.ObjectStorage;
-import io.odpf.firehose.sink.objectstorage.writer.local.FileMeta;
+import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileMetadata;
 import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ObjectStorageChecker implements Runnable {
 
-    private final BlockingQueue<FileMeta> toBeFlushedToRemotePaths;
+    private final BlockingQueue<LocalFileMetadata> toBeFlushedToRemotePaths;
     private final BlockingQueue<String> flushedToRemotePaths;
     private final Set<ObjectStorageWriterFutureHandler> remoteUploadFutures;
     private final ExecutorService remoteUploadScheduler;
@@ -25,7 +25,7 @@ public class ObjectStorageChecker implements Runnable {
 
     @Override
     public void run() {
-        List<FileMeta> tobeFlushed = new ArrayList<>();
+        List<LocalFileMetadata> tobeFlushed = new ArrayList<>();
         toBeFlushedToRemotePaths.drainTo(tobeFlushed);
         remoteUploadFutures.addAll(tobeFlushed.stream().map(this::submitTask).collect(Collectors.toList()));
         Set<ObjectStorageWriterFutureHandler> flushed = remoteUploadFutures.stream().filter(ObjectStorageWriterFutureHandler::isFinished).collect(Collectors.toSet());
@@ -33,10 +33,10 @@ public class ObjectStorageChecker implements Runnable {
         flushedToRemotePaths.addAll(flushed.stream().map(ObjectStorageWriterFutureHandler::getFullPath).collect(Collectors.toSet()));
     }
 
-    private ObjectStorageWriterFutureHandler submitTask(FileMeta fileMeta) {
-        ObjectStorageWorker worker = new ObjectStorageWorker(objectStorage, fileMeta.getFullPath());
+    private ObjectStorageWriterFutureHandler submitTask(LocalFileMetadata localFileMetadata) {
+        ObjectStorageWorker worker = new ObjectStorageWorker(objectStorage, localFileMetadata);
         Future<Long> f = remoteUploadScheduler.submit(worker);
-        return new ObjectStorageWriterFutureHandler(f, fileMeta, instrumentation);
+        return new ObjectStorageWriterFutureHandler(f, localFileMetadata, instrumentation);
     }
 }
 

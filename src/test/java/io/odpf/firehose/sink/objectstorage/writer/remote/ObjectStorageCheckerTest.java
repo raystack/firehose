@@ -3,10 +3,8 @@ package io.odpf.firehose.sink.objectstorage.writer.remote;
 import io.odpf.firehose.config.ObjectStorageSinkConfig;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.objectstorage.ObjectStorage;
-import io.odpf.firehose.objectstorage.ObjectStorageException;
-import io.odpf.firehose.objectstorage.gcs.error.GCSErrorType;
 import io.odpf.firehose.sink.objectstorage.Constants;
-import io.odpf.firehose.sink.objectstorage.writer.local.FileMeta;
+import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileMetadata;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,7 +30,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class ObjectStorageCheckerTest {
 
-    private final BlockingQueue<FileMeta> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
+    private final BlockingQueue<LocalFileMetadata> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
     private final BlockingQueue<String> flushedToRemotePaths = new LinkedBlockingQueue<>();
     private final ExecutorService remoteUploadScheduler = Mockito.mock(ExecutorService.class);
     private final Set<ObjectStorageWriterFutureHandler> remoteUploadFutures = new HashSet<>();
@@ -46,13 +44,15 @@ public class ObjectStorageCheckerTest {
     private ObjectStorageSinkConfig sinkConfig = Mockito.mock(ObjectStorageSinkConfig.class);
     @Mock
     private Instrumentation instrumentation;
-    private FileMeta fileMeta;
+    private LocalFileMetadata localFileMetadata;
+    private String objectName;
 
     @Before
     public void setup() {
         when(sinkConfig.getTimePartitioningTimeZone()).thenReturn("UTC");
         when(sinkConfig.getPartitioningType()).thenReturn(Constants.FilePartitionType.HOUR);
-        fileMeta = new FileMeta("/tmp/dt=2021-01-01/hr=10/random-filename", 10L, 128L);
+        localFileMetadata = new LocalFileMetadata("/tmp", "/tmp/dt=2021-01-01/hr=10/random-filename", 10L, 10L, 128L);
+        objectName = "dt=2021-01-01/hr=10/random-filename";
         worker = new ObjectStorageChecker(
                 toBeFlushedToRemotePaths,
                 flushedToRemotePaths,
@@ -67,7 +67,7 @@ public class ObjectStorageCheckerTest {
 
     @Test
     public void shouldNotAddToFlushedIfUploadIsStillRunning() {
-        toBeFlushedToRemotePaths.add(fileMeta);
+        toBeFlushedToRemotePaths.add(localFileMetadata);
         Future f = Mockito.mock(Future.class);
         when(f.isDone()).thenReturn(false);
         when(remoteUploadScheduler.submit(any(Callable.class))).thenReturn(f);
@@ -77,12 +77,12 @@ public class ObjectStorageCheckerTest {
         Assert.assertEquals(1, remoteUploadFutures.size());
         ArrayList<ObjectStorageWriterFutureHandler> workerFutures = new ArrayList<>(remoteUploadFutures);
         assertEquals(f, workerFutures.get(0).getFuture());
-        assertEquals(fileMeta, workerFutures.get(0).getFileMeta());
+        assertEquals(localFileMetadata, workerFutures.get(0).getLocalFileMetadata());
     }
 
     @Test
     public void shouldAddToFlushedIfUploadIsFinished() throws ExecutionException, InterruptedException {
-        toBeFlushedToRemotePaths.add(fileMeta);
+        toBeFlushedToRemotePaths.add(localFileMetadata);
         Future f = Mockito.mock(Future.class);
         when(f.isDone()).thenReturn(false);
         when(remoteUploadScheduler.submit(any(Callable.class))).thenReturn(f);
@@ -93,7 +93,7 @@ public class ObjectStorageCheckerTest {
 
         ArrayList<ObjectStorageWriterFutureHandler> workerFutures = new ArrayList<>(remoteUploadFutures);
         assertEquals(f, workerFutures.get(0).getFuture());
-        assertEquals(fileMeta, workerFutures.get(0).getFileMeta());
+        assertEquals(localFileMetadata, workerFutures.get(0).getLocalFileMetadata());
 
         when(f.isDone()).thenReturn(true);
         when(f.get()).thenReturn(19L);
@@ -102,50 +102,12 @@ public class ObjectStorageCheckerTest {
         Assert.assertEquals(0, remoteUploadFutures.size());
         Assert.assertEquals(1, flushedToRemotePaths.size());
         Assert.assertNotNull(flushedToRemotePaths.peek());
-        Assert.assertEquals(fileMeta.getFullPath(), flushedToRemotePaths.peek());
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void shouldThrowExceptionWhenObjectStorageThrowIOException() throws ObjectStorageException, IOException {
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        worker = new ObjectStorageChecker(
-                toBeFlushedToRemotePaths,
-                flushedToRemotePaths,
-                remoteUploadFutures,
-                executorService,
-                objectStorage,
-                instrumentation);
-        toBeFlushedToRemotePaths.add(fileMeta);
-
-        doThrow(new RuntimeException(new IOException())).when(objectStorage).store(fileMeta.getFullPath());
-
-        while (true) {
-            worker.run();
-        }
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void shouldThrowExceptionWhenObjectStorageThrowObjectStorageException() throws ObjectStorageException, IOException {
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        worker = new ObjectStorageChecker(
-                toBeFlushedToRemotePaths,
-                flushedToRemotePaths,
-                remoteUploadFutures,
-                executorService,
-                objectStorage,
-                instrumentation);
-        toBeFlushedToRemotePaths.add(fileMeta);
-
-        doThrow(new RuntimeException(new ObjectStorageException(null, null, null))).when(objectStorage).store(fileMeta.getFullPath());
-
-        while (true) {
-            worker.run();
-        }
+        Assert.assertEquals(localFileMetadata.getFullPath(), flushedToRemotePaths.peek());
     }
 
     @Test
     public void shouldRecordMetricOfFileUploadedCount() throws ExecutionException, InterruptedException {
-        toBeFlushedToRemotePaths.add(fileMeta);
+        toBeFlushedToRemotePaths.add(localFileMetadata);
         Future f = Mockito.mock(Future.class);
         when(f.isDone()).thenReturn(true);
         when(f.get()).thenReturn(10L);
@@ -157,20 +119,19 @@ public class ObjectStorageCheckerTest {
 
     @Test
     public void shouldRecordMetricOfFileUploadBytes() throws ExecutionException, InterruptedException {
-        toBeFlushedToRemotePaths.add(fileMeta);
+        toBeFlushedToRemotePaths.add(localFileMetadata);
         Future f = Mockito.mock(Future.class);
         when(f.isDone()).thenReturn(true);
         when(f.get()).thenReturn(10L);
         when(remoteUploadScheduler.submit(any(Callable.class))).thenReturn(f);
         worker.run();
-
-        verify(instrumentation).captureCount(FILE_UPLOAD_BYTES, fileMeta.getFileSizeBytes());
+        verify(instrumentation).captureCount(FILE_UPLOAD_BYTES, localFileMetadata.getSize());
     }
 
     @Test
     public void shouldRecordMetricOfUploadDuration() throws ExecutionException, InterruptedException {
         long totalTime = 10;
-        toBeFlushedToRemotePaths.add(fileMeta);
+        toBeFlushedToRemotePaths.add(localFileMetadata);
         Future f = Mockito.mock(Future.class);
         when(f.isDone()).thenReturn(true);
         when(remoteUploadScheduler.submit(any(Callable.class))).thenReturn(f);
@@ -182,7 +143,7 @@ public class ObjectStorageCheckerTest {
 
     @Test
     public void shouldRecordMetricOfUploadFailedCountWhenUploadFutureThrowsInterruptedException() {
-        toBeFlushedToRemotePaths.add(fileMeta);
+        toBeFlushedToRemotePaths.add(localFileMetadata);
         Future f = Mockito.mock(Future.class);
         when(f.isDone()).thenReturn(true);
         try {
@@ -200,56 +161,13 @@ public class ObjectStorageCheckerTest {
                 tag(OBJECT_STORE_ERROR_TYPE_TAG, ""));
     }
 
-    @Test
-    public void shouldRecordMetricsWhenUploadFutureThrowsObjectStorageExceptionCausedByGCSException() throws ObjectStorageException {
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        worker = new ObjectStorageChecker(
-                toBeFlushedToRemotePaths,
-                flushedToRemotePaths,
-                remoteUploadFutures,
-                executorService,
-                objectStorage,
-                instrumentation);
-        toBeFlushedToRemotePaths.add(fileMeta);
-
-        ObjectStorageException objectStorageException = new ObjectStorageException(GCSErrorType.FORBIDDEN.name(), "Test", new RuntimeException());
-        doThrow(objectStorageException).when(objectStorage).store(fileMeta.getFullPath());
-
-        while (true) {
-            try {
-                worker.run();
-            } catch (RuntimeException ignored) {
-                break;
-            }
-        }
-
-        verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL,
-                FAILURE_TAG,
-                tag(OBJECT_STORE_ERROR_TYPE_TAG, GCSErrorType.FORBIDDEN.name()));
-    }
-
-    @Test
-    public void shouldRecordMetricOfRecordProcessingFailedWhenUploadFailedCausedByIOException() throws ObjectStorageException {
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        worker = new ObjectStorageChecker(
-                toBeFlushedToRemotePaths,
-                flushedToRemotePaths,
-                remoteUploadFutures,
-                executorService,
-                objectStorage,
-                instrumentation);
-        toBeFlushedToRemotePaths.add(fileMeta);
-
-        doThrow(new ObjectStorageException("file_io_error", "File Read error", new IOException(new Exception()))).when(objectStorage).store(fileMeta.getFullPath());
-
-        while (true) {
-            try {
-                worker.run();
-            } catch (RuntimeException ignored) {
-                break;
-            }
-        }
-
-        verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL, FAILURE_TAG, tag(OBJECT_STORE_ERROR_TYPE_TAG, "file_io_error"));
+    @Test(expected = ObjectStorageFailedException.class)
+    public void shouldThrowFailedException() throws ExecutionException, InterruptedException {
+        toBeFlushedToRemotePaths.add(localFileMetadata);
+        Future f = Mockito.mock(Future.class);
+        when(f.isDone()).thenReturn(true);
+        when(f.get()).thenThrow(new ExecutionException(new IOException()));
+        when(remoteUploadScheduler.submit(any(Callable.class))).thenReturn(f);
+        worker.run();
     }
 }

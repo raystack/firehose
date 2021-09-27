@@ -2,8 +2,10 @@ package io.odpf.firehose.sink.objectstorage.writer.remote;
 
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.objectstorage.ObjectStorageException;
+import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileMetadata;
 import lombok.AllArgsConstructor;
 
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.Callable;
@@ -15,12 +17,13 @@ import java.util.concurrent.Callable;
 public class ObjectStorageWorker implements Callable<Long> {
 
     private final ObjectStorage objectStorage;
-    private final String path;
+    private final LocalFileMetadata metadata;
 
     @Override
     public Long call() throws ObjectStorageException {
         Instant start = Instant.now();
-        objectStorage.store(path);
+        String objectName = Paths.get(metadata.getBasePath()).relativize(Paths.get(metadata.getFullPath())).toString();
+        objectStorage.store(objectName, metadata.getFullPath());
         return Duration.between(start, Instant.now()).toMillis();
     }
 }

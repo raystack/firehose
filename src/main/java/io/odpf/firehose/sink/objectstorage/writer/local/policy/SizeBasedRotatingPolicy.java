@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.objectstorage.writer.local.policy;
 
-import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriter;
+import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileMetadata;
 
 public class SizeBasedRotatingPolicy implements WriterPolicy {
 
@@ -14,7 +14,7 @@ public class SizeBasedRotatingPolicy implements WriterPolicy {
     }
 
     @Override
-    public boolean shouldRotate(LocalFileWriter writer) {
-        return writer.currentSize() >= maxSize;
+    public boolean shouldRotate(LocalFileMetadata metadata) {
+        return metadata.getSize() >= maxSize;
     }
 }

@@ -86,7 +86,7 @@ public class ObjectStorageDlqWriterTest {
         Message message3 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 3, null, 0, timestamp2);
         Message message4 = new Message("123".getBytes(), "abc".getBytes(), "booking", 1, 4, null, 0, timestamp2);
 
-        doThrow(new ObjectStorageException("", "", new IOException())).when(objectStorage).store(anyString(), any());
+        doThrow(new ObjectStorageException("", "", new IOException())).when(objectStorage).store(anyString(), any(byte[].class));
 
         List<Message> messages = Arrays.asList(message1, message2, message3, message4);
         objectStorageDLQWriter.write(messages);
