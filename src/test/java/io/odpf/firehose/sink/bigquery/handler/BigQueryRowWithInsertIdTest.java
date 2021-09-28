@@ -22,6 +22,6 @@ public class BigQueryRowWithInsertIdTest {
         InsertAllRequest.RowToInsert rowToInsert = withInsertId.of(record);
         String id = rowToInsert.getId();
 
-        assertEquals("default_1_1",id);
+        assertEquals("default_1_1", id);
     }
 }
