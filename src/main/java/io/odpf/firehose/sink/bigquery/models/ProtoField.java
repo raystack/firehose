@@ -1,6 +1,5 @@
 package io.odpf.firehose.sink.bigquery.models;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.DescriptorProtos;
 
 import java.util.ArrayList;
