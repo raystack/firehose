@@ -1,8 +1,6 @@
 package io.odpf.firehose.sink;
 
 import io.odpf.firehose.consumer.Message;
-import io.odpf.firehose.error.ErrorInfo;
-import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.ConfigurationException;
 import io.odpf.firehose.exception.SinkException;
@@ -67,9 +65,7 @@ public abstract class AbstractSink implements Closeable, Sink {
         if (failedMessages.size() > 0) {
             instrumentation.logError("Failed to Push {} messages to sink ", failedMessages.size());
             failedMessages.forEach(m -> {
-                if (m.getErrorInfo() == null) {
-                    m.setErrorInfo(new ErrorInfo(null, ErrorType.DEFAULT_ERROR));
-                }
+                m.setDefaultErrorIfNotPresent();
                 instrumentation.captureMessageMetrics(SINK_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, m.getErrorInfo().getErrorType(), 1);
                 instrumentation.captureErrorMetrics(m.getErrorInfo().getErrorType());
                 instrumentation.logError("Failed to Push message. Error: {},Topic: {}, Partition: {},Offset: {}",

@@ -3,9 +3,7 @@ package io.odpf.firehose.sinkdecorator;
 import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorHandler;
-import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorScope;
-import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.Metrics;
@@ -63,9 +61,7 @@ public class SinkWithDlq extends SinkDecorator {
             return messages;
         }
         Map<Boolean, List<Message>> splitLists = errorHandler.split(messages, ErrorScope.DLQ);
-
         List<Message> returnedMessages = doDLQ(splitLists.get(Boolean.TRUE));
-
         if (!returnedMessages.isEmpty() && dlqConfig.getDlqRetryFailAfterMaxAttemptEnable()) {
             throw new IOException("exhausted maximum number of allowed retry attempts to write messages to DLQ");
         }
@@ -80,9 +76,7 @@ public class SinkWithDlq extends SinkDecorator {
     private List<Message> doDLQ(List<Message> messages) throws IOException {
         List<Message> retryQueueMessages = new LinkedList<>(messages);
         retryQueueMessages.forEach(m -> {
-            if (m.getErrorInfo() == null) {
-                m.setErrorInfo(new ErrorInfo(null, ErrorType.DEFAULT_ERROR));
-            }
+            m.setDefaultErrorIfNotPresent();
             instrumentation.captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, m.getErrorInfo().getErrorType(), 1);
         });
         int attemptCount = 1;

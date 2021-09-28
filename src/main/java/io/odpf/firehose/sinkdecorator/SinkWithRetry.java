@@ -4,9 +4,7 @@ import com.google.protobuf.DynamicMessage;
 import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorHandler;
-import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorScope;
-import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.Metrics;
@@ -72,15 +70,13 @@ public class SinkWithRetry extends SinkDecorator {
         List<Message> retryMessages = new LinkedList<>(messages);
         instrumentation.logInfo("Maximum retry attempts: {}", appConfig.getRetryMaxAttempts());
         retryMessages.forEach(m -> {
-            if (m.getErrorInfo() == null) {
-                m.setErrorInfo(new ErrorInfo(null, ErrorType.DEFAULT_ERROR));
-            }
+            m.setDefaultErrorIfNotPresent();
             instrumentation.captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, m.getErrorInfo().getErrorType(), 1);
         });
 
         int attemptCount = 1;
         while ((attemptCount <= appConfig.getRetryMaxAttempts() && !retryMessages.isEmpty())
-               || (appConfig.getRetryMaxAttempts() == Integer.MAX_VALUE && !retryMessages.isEmpty())) {
+                || (appConfig.getRetryMaxAttempts() == Integer.MAX_VALUE && !retryMessages.isEmpty())) {
             instrumentation.incrementCounter(RETRY_ATTEMPTS_TOTAL);
             instrumentation.logInfo("Retrying messages attempt count: {}, Number of messages: {}", attemptCount, messages.size());
 
