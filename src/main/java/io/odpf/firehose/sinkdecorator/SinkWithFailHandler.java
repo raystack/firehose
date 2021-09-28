@@ -32,10 +32,10 @@ public class SinkWithFailHandler extends SinkDecorator {
     @Override
     public List<Message> pushMessage(List<Message> inputMessages) throws IOException, DeserializerException {
         List<Message> messages = super.pushMessage(inputMessages);
-        Optional<Message> m = messages.stream().filter(x -> errorHandler.filter(x, ErrorScope.FAIL)).findFirst();
-        if (m.isPresent()) {
-            throw new SinkException("Failing Firehose for error " + m.get().getErrorInfo().getErrorType(),
-                    m.get().getErrorInfo().getException());
+        Optional<Message> messageOptional = messages.stream().filter(x -> errorHandler.filter(x, ErrorScope.FAIL)).findFirst();
+        if (messageOptional.isPresent()) {
+            throw new SinkException("Failing Firehose for error " + messageOptional.get().getErrorInfo().getErrorType(),
+                    messageOptional.get().getErrorInfo().getException());
         }
         return messages;
     }

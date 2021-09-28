@@ -4,15 +4,18 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.models.DescriptorAndTypeName;
+import com.gojek.de.stencil.parser.ProtoParser;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import io.odpf.firehose.TestKeyBQ;
 import io.odpf.firehose.config.BigQuerySinkConfig;
+import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryClient;
 import io.odpf.firehose.sink.bigquery.models.MetadataUtil;
 import io.odpf.firehose.sink.bigquery.models.ProtoField;
+import io.odpf.firehose.sink.bigquery.models.Records;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,7 +26,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 import static org.mockito.Mockito.doNothing;
@@ -74,8 +79,16 @@ public class ProtoUpdateListenerTest {
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
 
+        ProtoParser protoParser = new ProtoParser(stencilClient, config.getInputSchemaProtoClass());
+        protoUpdateListener.setStencilParser(protoParser);
         protoUpdateListener.onProtoUpdate("", descriptorsMap);
-
+        TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
+        Instant now = Instant.now();
+        Message testMessage = new Message("".getBytes(), testKeyBQ.toByteArray(), "topic", 1, 1);
+        Records convert = protoUpdateListener.getMessageRecordConverterCache().getMessageRecordConverter().convert(Collections.singletonList(testMessage), now);
+        Assert.assertEquals(1, convert.getValidRecords().size());
+        Assert.assertEquals("order", convert.getValidRecords().get(0).getColumns().get("order_number"));
+        Assert.assertEquals("test", convert.getValidRecords().get(0).getColumns().get("order_url"));
     }
 
 
@@ -164,7 +177,16 @@ public class ProtoUpdateListenerTest {
             addAll(MetadataUtil.getMetadataFields()); // metadata fields are not namespaced
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
+        ProtoParser protoParser = new ProtoParser(stencilClient, config.getInputSchemaProtoClass());
+        protoUpdateListener.setStencilParser(protoParser);
         protoUpdateListener.onProtoUpdate("", descriptorsMap);
+        TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
+        Instant now = Instant.now();
+        Message testMessage = new Message("".getBytes(), testKeyBQ.toByteArray(), "topic", 1, 1);
+        Records convert = protoUpdateListener.getMessageRecordConverterCache().getMessageRecordConverter().convert(Collections.singletonList(testMessage), now);
+        Assert.assertEquals(1, convert.getValidRecords().size());
+        Assert.assertEquals("order", convert.getValidRecords().get(0).getColumns().get("order_number"));
+        Assert.assertEquals("test", convert.getValidRecords().get(0).getColumns().get("order_url"));
         verify(bigQueryClient, times(1)).upsertTable(bqSchemaFields); // assert that metadata fields were not namespaced
     }
 
@@ -193,7 +215,16 @@ public class ProtoUpdateListenerTest {
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
 
+        ProtoParser protoParser = new ProtoParser(stencilClient, config.getInputSchemaProtoClass());
+        protoUpdateListener.setStencilParser(protoParser);
         protoUpdateListener.onProtoUpdate("", descriptorsMap);
+        TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
+        Instant now = Instant.now();
+        Message testMessage = new Message("".getBytes(), testKeyBQ.toByteArray(), "topic", 1, 1);
+        Records convert = protoUpdateListener.getMessageRecordConverterCache().getMessageRecordConverter().convert(Collections.singletonList(testMessage), now);
+        Assert.assertEquals(1, convert.getValidRecords().size());
+        Assert.assertEquals("order", convert.getValidRecords().get(0).getColumns().get("order_number"));
+        Assert.assertEquals("test", convert.getValidRecords().get(0).getColumns().get("order_url"));
 
         verify(bigQueryClient, times(1)).upsertTable(bqSchemaFields);
         System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "");

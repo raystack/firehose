@@ -38,6 +38,7 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
     private final MessageRecordConverterCache messageRecordConverterCache;
     @Setter
     private Parser stencilParser;
+    private static final Gson GSON = new Gson();
 
     public ProtoUpdateListener(BigQuerySinkConfig config, BigQueryClient bqClient, MessageRecordConverterCache messageRecordConverterCache) {
         super(config.getInputSchemaProtoClass());
@@ -106,7 +107,7 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
     private void setProtoParser(String protoMapping) {
         Type type = new TypeToken<Map<String, Object>>() {
         }.getType();
-        Map<String, Object> m = new Gson().fromJson(protoMapping, type);
+        Map<String, Object> m = GSON.fromJson(protoMapping, type);
         Properties columnMapping = mapToProperties(m);
         messageRecordConverterCache.setMessageRecordConverter(
                 new MessageRecordConverter(new RowMapper(columnMapping),

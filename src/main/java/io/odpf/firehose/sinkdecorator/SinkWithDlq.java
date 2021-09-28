@@ -73,6 +73,13 @@ public class SinkWithDlq extends SinkDecorator {
         return returnedMessages;
     }
 
+    private void backOff(List<Message> messageList, int attemptCount) {
+        if (messageList.isEmpty()) {
+            return;
+        }
+        backOffProvider.backOff(attemptCount);
+    }
+
     private List<Message> doDLQ(List<Message> messages) throws IOException {
         List<Message> retryQueueMessages = new LinkedList<>(messages);
         retryQueueMessages.forEach(m -> {
@@ -86,7 +93,8 @@ public class SinkWithDlq extends SinkDecorator {
             retryQueueMessages.forEach(message -> Optional.ofNullable(message.getErrorInfo())
                     .flatMap(errorInfo -> Optional.ofNullable(errorInfo.getException()))
                     .ifPresent(e -> instrumentation.captureDLQErrors(message, e)));
-            backOffProvider.backOff(++attemptCount);
+            backOff(retryQueueMessages, attemptCount);
+            attemptCount++;
         }
         if (!retryQueueMessages.isEmpty()) {
             instrumentation.logInfo("failed to be processed by DLQ messages: {}", retryQueueMessages.size());
