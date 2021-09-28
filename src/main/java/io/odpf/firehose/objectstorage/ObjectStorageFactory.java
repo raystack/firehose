@@ -14,7 +14,6 @@ public class ObjectStorageFactory {
             try {
                 GCSConfig gcsConfig = ConfigFactory.create(GCSConfig.class, config);
                 GCSObjectStorage gcsObjectStorage = new GCSObjectStorage(gcsConfig);
-                gcsObjectStorage.checkAndSetRetentionPolicy();
                 return gcsObjectStorage;
             } catch (IOException e) {
                 throw new IllegalArgumentException("Exception while creating GCS Storage", e);

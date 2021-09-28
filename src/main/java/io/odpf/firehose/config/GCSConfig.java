@@ -67,11 +67,6 @@ public interface GCSConfig extends Config {
     @Key("${GCS_TYPE}_GCS_RETRY_RPC_MAX_TIMEOUT_MS")
     @DefaultValue("5000")
     Long getGCSRetryRPCMaxTimeoutMS();
-
-    @Key("${GCS_TYPE}_GCS_BUCKET_RETENTION_PERIOD_SECONDS")
-    @DefaultValue("-1")
-    Long getGCSBucketRetentionPeriodSeconds();
-
 }
 
 

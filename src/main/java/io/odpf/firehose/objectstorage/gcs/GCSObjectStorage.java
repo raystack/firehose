@@ -5,7 +5,6 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Bucket;
-import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
@@ -46,9 +45,10 @@ public class GCSObjectStorage implements ObjectStorage {
                 .setCredentials(credentials)
                 .setRetrySettings(retrySettings)
                 .build().getService();
+        logRetentionPolicy();
     }
 
-    public void checkAndSetRetentionPolicy() {
+    private void logRetentionPolicy() {
         String bucketName = gcsConfig.getGCSBucketName();
         Bucket bucket = storage.get(bucketName, Storage.BucketGetOption.fields(Storage.BucketField.RETENTION_POLICY));
         LOGGER.info("Retention Policy for " + bucketName);
@@ -59,14 +59,6 @@ public class GCSObjectStorage implements ObjectStorage {
         if (bucket.getRetentionEffectiveTime() != null) {
             LOGGER.info("Effective Time: " + new Date(bucket.getRetentionEffectiveTime()));
         }
-        long newRetentionPolicy = gcsConfig.getGCSBucketRetentionPeriodSeconds();
-        if (newRetentionPolicy <= 0) {
-            LOGGER.info("Not updating retention policy for the bucket " + bucketName);
-            return;
-        }
-        BucketInfo bucketInfo = BucketInfo.newBuilder(bucketName).setRetentionPeriod(newRetentionPolicy).build();
-        storage.update(bucketInfo);
-        LOGGER.info("Updating bucket " + bucketName + " retention policy to " + newRetentionPolicy);
     }
 
     @Override
