@@ -19,6 +19,15 @@ public class ProtoField {
         this.fields = new ArrayList<>();
     }
 
+    public ProtoField(String name, String typeName, DescriptorProtos.FieldDescriptorProto.Type type, DescriptorProtos.FieldDescriptorProto.Label label, List<ProtoField> fields, int index) {
+        this.name = name;
+        this.typeName = typeName;
+        this.type = type;
+        this.label = label;
+        this.fields = fields;
+        this.index = index;
+    }
+
     public ProtoField(DescriptorProtos.FieldDescriptorProto f) {
         this.name = f.getName();
         this.type = f.getType();
@@ -26,50 +35,6 @@ public class ProtoField {
         this.index = f.getNumber();
         this.fields = new ArrayList<>();
         this.typeName = f.getTypeName();
-    }
-
-    @VisibleForTesting
-    public ProtoField(String name, DescriptorProtos.FieldDescriptorProto.Type type, DescriptorProtos.FieldDescriptorProto.Label label) {
-        this.name = name;
-        this.type = type;
-        this.label = label;
-    }
-
-    @VisibleForTesting
-    public ProtoField(List<ProtoField> subFields) {
-        this.fields = subFields;
-    }
-
-    @VisibleForTesting
-    public ProtoField(String name, String typeName, DescriptorProtos.FieldDescriptorProto.Type type, DescriptorProtos.FieldDescriptorProto.Label label) {
-        this.name = name;
-        this.typeName = typeName;
-        this.type = type;
-        this.label = label;
-    }
-
-    @VisibleForTesting
-    public ProtoField(String name, String typeName, DescriptorProtos.FieldDescriptorProto.Type type, DescriptorProtos.FieldDescriptorProto.Label label, List<ProtoField> fields) {
-        this.name = name;
-        this.typeName = typeName;
-        this.type = type;
-        this.label = label;
-        this.fields = fields;
-    }
-
-    @VisibleForTesting
-    public ProtoField(String name, int index) {
-        this.name = name;
-        this.index = index;
-    }
-
-    @VisibleForTesting
-    public ProtoField(String name, String typeName, DescriptorProtos.FieldDescriptorProto.Type type, int index, List<ProtoField> fields) {
-        this.name = name;
-        this.typeName = typeName;
-        this.type = type;
-        this.fields = fields;
-        this.index = index;
     }
 
     public boolean isNested() {

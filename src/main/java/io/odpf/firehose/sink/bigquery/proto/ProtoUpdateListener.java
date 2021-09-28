@@ -14,7 +14,7 @@ import io.odpf.firehose.sink.bigquery.converter.RowMapper;
 import io.odpf.firehose.sink.bigquery.exception.BQSchemaMappingException;
 import io.odpf.firehose.sink.bigquery.exception.BQTableUpdateFailure;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryClient;
-import io.odpf.firehose.sink.bigquery.models.BQField;
+import io.odpf.firehose.sink.bigquery.models.MetadataUtil;
 import io.odpf.firehose.sink.bigquery.models.ProtoField;
 import lombok.Getter;
 import lombok.Setter;
@@ -90,9 +90,9 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
         List<Field> bqMetadataFields = new ArrayList<>();
         String namespaceName = config.getBqMetadataNamespace();
         if (namespaceName.isEmpty()) {
-            bqMetadataFields.addAll(BQField.getMetadataFields());
+            bqMetadataFields.addAll(MetadataUtil.getMetadataFields());
         } else {
-            bqMetadataFields.add(BQField.getNamespacedMetadataField(namespaceName));
+            bqMetadataFields.add(MetadataUtil.getNamespacedMetadataField(namespaceName));
         }
 
         List<String> duplicateFields = getDuplicateFields(bqSchemaFields, bqMetadataFields).stream().map(Field::getName).collect(Collectors.toList());
