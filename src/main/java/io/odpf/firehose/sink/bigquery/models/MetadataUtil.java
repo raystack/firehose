@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MetadataUtil {
-    public static final List<Field> getMetadataFields() {
+    public static List<Field> getMetadataFields() {
         return new ArrayList<Field>() {{
             add(Field.newBuilder(Constants.OFFSET_COLUMN_NAME, LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
             add(Field.newBuilder(Constants.TOPIC_COLUMN_NAME, LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
