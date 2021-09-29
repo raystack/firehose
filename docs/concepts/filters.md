@@ -10,9 +10,9 @@ However, understand that you are ignoring some data/messages and if that ignored
 
 Firehose uses the Apache Commons JEXL library for parsing the filter expressions. Refer to the [Using Filters](../guides/filters/) section for details on how to configure filters.
 
-## JEXL \(Java EXpressions Language\)
+## JEXL - based Filtering
 
-JEXL is an Apache Commons library intended to facilitate the implementation of dynamic and scripting features in applications and frameworks written in Java. Its goal is to expose scripting features usable by technical operatives or consultants working with enterprise platforms.
+JEXL \(Java EXpressions Language\) is an Apache Commons library intended to facilitate the implementation of dynamic and scripting features in applications and frameworks written in Java. Its goal is to expose scripting features usable by technical operatives or consultants working with enterprise platforms.
 
 The API and the expression language exploit Java-beans naming patterns through introspection to expose property getters and setters. It also considers public class fields as properties and allows to invoke any accessible method.
 
@@ -24,7 +24,7 @@ To evaluate expressions using JEXL, you need three things:
 
 Read more about Apache Commons JEXL project [here](https://commons.apache.org/proper/commons-jexl/index.html).
 
-## How Filters Work
+### How JEXL-based Filters Work
 
 The filtering occurs in the following steps -
 
@@ -32,6 +32,21 @@ The filtering occurs in the following steps -
 * `MessageFilter` iterates over the input List of events. For each event, the Protobuf Class as specified by the environment variable `FILTER_JEXL_SCHEMA_PROTO_CLASS` , converts the key/message of the event from raw byte array to a POJO \(Plain Old Java Object\), which contains getters for accessing various fields of the event data.
 * A`JEXLContext` is created to link the key/message proto reference in the JEXL expression with the POJO object generated earlier.  JEXL engine converts `FILTER_JEXL_EXPRESSION`  string into `JEXLExpression` object and replaces all occurrences of references in the string by the generated POJO object.  `JEXLException` is thrown if the filter expression is invalid. 
 * The `JEXLExpression` is then evaluated for each of these parsed events. The messages for which the `JEXLExpression` evaluates to `true`, are added to the output List of messages and returned by the Filter. The rest of the messages are discarded by the Filter
+
+## JSON - based Filtering
+
+**JSON Schema** is a vocabulary that allows you to **annotate** and **validate** JSON documents.. JSON Schema is a JSON media type for defining the structure of JSON data. JSON Schema provides a contract for what JSON data is required for a given application and how to interact with it. JSON Schema is intended to define validation, documentation, hyperlink navigation, and interaction control of JSON data.
+
+
+
+### How JSON-based Filters Work
+
+* If \(message schema == Protobuf\)
+  *  Convert protobuf byte\[\] to JSONObject using MessageToJson
+* If \(message schema == JSON\)
+  * Deserialize JSON byte\[\] to JSONObject
+* Perform JSON validation using JSON Schema validator
+* If passed, then add to ArrayList of filtered messages
 
 ## Why Use Filters
 

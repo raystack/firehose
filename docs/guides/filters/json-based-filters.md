@@ -47,42 +47,6 @@ The following is an example for validating street light colors:
 
 
 
-
-
-
-/* ---- EXAMPLE #2 ---- */
-
-// You can use enum even without a type, to accept values of different types. Let’s extend the example to use null to indicate “off”, and also add 42, just for fun.
-{
-  "enum": ["red", "amber", "green", null, 42]
-}
-
-/* valid */
-"red"
-null
-42
-
-/* invalid */
-0
-
-
-
-
-
-
-/* ---- EXAMPLE #3 ---- */
-
-// However, in most cases, the elements in the enum array should also be valid against the enclosing schema:
-{
-  "type": "string",
-  "enum": ["red", "amber", "green", null]
-}
-
-/* valid */
-"red"
-
-/* invalid */
-null
 ```
 
 ### Numeric **Range** 
@@ -92,40 +56,6 @@ null
 * Example:
 
 ```text
-/* ---- EXAMPLE #1 ---- */
-{
-  "type": "number",
-  "minimum": 0,
-  "exclusiveMaximum": 100
-}
-
-
-/* valid */
-
-// minimum is inclusive, so 0 is valid:
-0
-10
-99
-
-
-
-/* invalid */
-
-// Less than minimum:
--1
-
-// exclusiveMaximum is exclusive, so 100 is not valid:
-100
-
-// Greater than maximum:
-101
-
-
-
-
-
-
-/* ---- EXAMPLE #2 ---- */
 {
   "type": "number",
   "minimum": 0,
@@ -178,7 +108,55 @@ null
 
 
 
-### Combining schemas
+### Conditional operators
+
+* The if, then and else keywords allow the application of a sub-schema based on the outcome of another schema, much like the if/then/else constructs you’ve probably seen in traditional programming languages. If if is valid, then must also be valid \(and else is ignored.\) If if is invalid, else must also be valid \(and then is ignored\).
+* For example, let’s say you wanted to write a schema to handle addresses in the United States and Canada. These countries have different postal code formats, and we want to select which format to validate against based on the country. If the address is in the United States, the postal\_code field is a “zipcode”: five numeric digits followed by an optional four digit suffix. If the address is in Canada, the postal\_code field is a six digit alphanumeric string where letters and numbers alternate.
+
+```text
+{
+  "type": "object",
+  "properties": {
+    "street_address": {
+      "type": "string"
+    },
+    "country": {
+      "enum": ["United States of America", "Canada"]
+    }
+  },
+  "if": {
+    "properties": { "country": { "const": "United States of America" } }
+  },
+  "then": {
+    "properties": { "postal_code": { "pattern": "[0-9]{5}(-[0-9]{4})?" } }
+  },
+  "else": {
+    "properties": { "postal_code": { "pattern": "[A-Z][0-9][A-Z] [0-9][A-Z][0-9]" } }
+  }
+}
+
+/* valid */
+{
+  "street_address": "1600 Pennsylvania Avenue NW",
+  "country": "United States of America",
+  "postal_code": "20500"
+}
+
+{
+  "street_address": "24 Sussex Drive",
+  "country": "Canada",
+  "postal_code": "K1M 1M4"
+}
+
+/* invalid */
+{
+  "street_address": "24 Sussex Drive",
+  "country": "Canada",
+  "postal_code": "10000"
+}
+```
+
+### Logical operators
 
 JSON Schema includes a few keywords for combining schemas together. Note that this doesn’t necessarily mean combining schemas from multiple files or JSON trees, though these facilities help to enable that and are described in Structuring a complex schema. Combining schemas may be as simple as allowing a value to be validated against multiple criteria at the same time.
 
@@ -226,113 +204,6 @@ The keywords used to combine schemas are:
 "too long"
 
 
-
-
-
-
-/* ---- EXAMPLE #2 ---- */
-{
-  "allOf": [
-    { "type": "string" },
-    { "type": "number" }
-  ]
-}
-```
-
-### allOf 
-
-* To validate against allOf, the given data must be valid against all of the given subschemas.
-
-```text
-{
-
-/* invalid */
-"No way"
--1
-
-
-
-
-
-
-
-
-
-
-
-/* ---- EXAMPLE #3 ---- */
-// It is important to note that the schemas listed in an allOf, anyOf or oneOf array know nothing of one another. While it might be surprising, allOf can not be used to “extend” a schema to add more details to it in the sense of object-oriented inheritance. For example, say you had a schema for an address in a definitions section, and want to extend it to include an address type:
-{
-  "definitions": {
-    "address": {
-      "type": "object",
-      "properties": {
-        "street_address": { "type": "string" },
-        "city":           { "type": "string" },
-        "state":          { "type": "string" }
-      },
-      "required": ["street_address", "city", "state"]
-    }
-  },
-
-  "allOf": [
-    { "$ref": "#/definitions/address" },
-    { "properties": {
-        "type": { "enum": [ "residential", "business" ] }
-      }
-    }
-  ]
-}
-
-/* valid */
-{
-   "street_address": "1600 Pennsylvania Avenue NW",
-   "city": "Washington",
-   "state": "DC",
-   "type": "business"
-}
-
-
-
-
-
-
-
-
-
-/* ---- EXAMPLE #4 ---- */
-// This works, but what if we wanted to restrict the schema so no additional properties are allowed? One might try adding the highlighted line below:
-{
-  "definitions": {
-    "address": {
-      "type": "object",
-      "properties": {
-        "street_address": { "type": "string" },
-        "city":           { "type": "string" },
-        "state":          { "type": "string" }
-      },
-      "required": ["street_address", "city", "state"]
-    }
-  },
-
-  "allOf": [
-    { "$ref": "#/definitions/address" },
-    { "properties": {
-        "type": { "enum": [ "residential", "business" ] }
-      }
-    }
-  ],
-
-  "additionalProperties": false
-}
-
-/* invalid */
-{
-   "street_address": "1600 Pennsylvania Avenue NW",
-   "city": "Washington",
-   "state": "DC",
-   "type": "business"
-}
 ```
 
 ### 
@@ -408,51 +279,5 @@ The keywords used to combine schemas are:
 "I am a string"
 ```
 
-## Applying subschemas conditionally 
-
-* The if, then and else keywords allow the application of a subschema based on the outcome of another schema, much like the if/then/else constructs you’ve probably seen in traditional programming languages. If if is valid, then must also be valid \(and else is ignored.\) If if is invalid, else must also be valid \(and then is ignored\).
-* For example, let’s say you wanted to write a schema to handle addresses in the United States and Canada. These countries have different postal code formats, and we want to select which format to validate against based on the country. If the address is in the United States, the postal\_code field is a “zipcode”: five numeric digits followed by an optional four digit suffix. If the address is in Canada, the postal\_code field is a six digit alphanumeric string where letters and numbers alternate.
-
-```text
-{
-  "type": "object",
-  "properties": {
-    "street_address": {
-      "type": "string"
-    },
-    "country": {
-      "enum": ["United States of America", "Canada"]
-    }
-  },
-  "if": {
-    "properties": { "country": { "const": "United States of America" } }
-  },
-  "then": {
-    "properties": { "postal_code": { "pattern": "[0-9]{5}(-[0-9]{4})?" } }
-  },
-  "else": {
-    "properties": { "postal_code": { "pattern": "[A-Z][0-9][A-Z] [0-9][A-Z][0-9]" } }
-  }
-}
-
-/* valid */
-{
-  "street_address": "1600 Pennsylvania Avenue NW",
-  "country": "United States of America",
-  "postal_code": "20500"
-}
-
-{
-  "street_address": "24 Sussex Drive",
-  "country": "Canada",
-  "postal_code": "K1M 1M4"
-}
-
-/* invalid */
-{
-  "street_address": "24 Sussex Drive",
-  "country": "Canada",
-  "postal_code": "10000"
-}
-```
+### 
 
