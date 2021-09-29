@@ -2,7 +2,7 @@
 
 ### Constant values
 
-* The const keyword is used to restrict a value to a single value. For example, to if you only support shipping to the United States for export reasons:
+The const keyword is used to restrict a value to a single value. For example, to if you only support shipping to the United States for export reasons:
 
 ```text
 {
@@ -29,7 +29,7 @@ It should be noted that const is merely syntactic sugar for an enum with a singl
 
 ### Enumerated values 
 
-* The enum keyword is used to restrict a value to a fixed set of values. It must be an array with at least one element, where each element is unique.
+The enum keyword is used to restrict a value to a fixed set of values. It must be an array with at least one element, where each element is unique.
 
 The following is an example for validating street light colors:
 
@@ -51,9 +51,15 @@ The following is an example for validating street light colors:
 
 ### Numeric **Range** 
 
-* Ranges of numbers are specified using a combination of the minimum and maximum keywords, \(or exclusiveMinimum and exclusiveMaximum for expressing exclusive range\).
-* If x is the value being validated, the following must hold true:  x ≥ minimum  x &gt; exclusiveMinimum  x ≤ maximum  x &lt; exclusiveMaximum
-* Example:
+Ranges of numbers are specified using a combination of the minimum and maximum keywords, \(or exclusiveMinimum and exclusiveMaximum for expressing exclusive range\).
+
+If x is the value being validated, the following must hold true:  
+ x ≥ minimum  
+ x &gt; exclusiveMinimum  
+ x ≤ maximum  
+ x &lt; exclusiveMaximum
+
+Example:
 
 ```text
 {
@@ -84,12 +90,11 @@ The following is an example for validating street light colors:
 101
 ```
 
-
-
 ### Regex Match
 
-* The pattern keyword is used to restrict a string to a particular regular expression. The regular expression syntax is the one defined in JavaScript \(ECMA 262 specifically\). See Regular Expressions for more information.
-* Example:
+The pattern keyword is used to restrict a string to a particular regular expression. The regular expression syntax is the one defined in JavaScript \(ECMA 262 specifically\). See Regular Expressions for more information.
+
+Example:
 
 ```text
 {
@@ -110,8 +115,9 @@ The following is an example for validating street light colors:
 
 ### Conditional operators
 
-* The if, then and else keywords allow the application of a sub-schema based on the outcome of another schema, much like the if/then/else constructs you’ve probably seen in traditional programming languages. If if is valid, then must also be valid \(and else is ignored.\) If if is invalid, else must also be valid \(and then is ignored\).
-* For example, let’s say you wanted to write a schema to handle addresses in the United States and Canada. These countries have different postal code formats, and we want to select which format to validate against based on the country. If the address is in the United States, the postal\_code field is a “zipcode”: five numeric digits followed by an optional four digit suffix. If the address is in Canada, the postal\_code field is a six digit alphanumeric string where letters and numbers alternate.
+The if, then and else keywords allow the application of a sub-schema based on the outcome of another schema, much like the if/then/else constructs you’ve probably seen in traditional programming languages. If if is valid, then must also be valid \(and else is ignored.\) If if is invalid, else must also be valid \(and then is ignored\).
+
+For example, let’s say you wanted to write a schema to handle addresses in the United States and Canada. These countries have different postal code formats, and we want to select which format to validate against based on the country. If the address is in the United States, the postal\_code field is a “zipcode”: five numeric digits followed by an optional four digit suffix. If the address is in Canada, the postal\_code field is a six digit alphanumeric string where letters and numbers alternate.
 
 ```text
 {
@@ -158,36 +164,15 @@ The following is an example for validating street light colors:
 
 ### Logical operators
 
-JSON Schema includes a few keywords for combining schemas together. Note that this doesn’t necessarily mean combining schemas from multiple files or JSON trees, though these facilities help to enable that and are described in Structuring a complex schema. Combining schemas may be as simple as allowing a value to be validated against multiple criteria at the same time.
-
-For example, in the following schema, the anyOf keyword is used to say that the given value may be valid against any of the given subschemas. The first subschema requires a string with maximum length 5. The second subschema requires a number with a minimum value of 0. As long as a value validates against either of these schemas, it is considered valid against the entire combined schema.
-
-```text
-{
-  "anyOf": [
-    { "type": "string", "maxLength": 5 },
-    { "type": "number", "minimum": 0 }
-  ]
-}
-
-/* valid */
-"short"
-12
-
-/* invalid */
-"too long"
--5
-```
-
 The keywords used to combine schemas are:
 
 * allOf: Must be valid against all of the subschemas
-* anyOf: Must be valid against any of the subschemas
 * oneOf: Must be valid against exactly one of the subschemas
+* anyOf: Must be valid against any of the subschemas
 
 ### allOf 
 
-* To validate against allOf, the given data must be valid against all of the given subschemas.
+* To validate against allOf, the given data must be valid against all of the given sub-schemas.
 
 ```text
 {
@@ -206,33 +191,30 @@ The keywords used to combine schemas are:
 
 ```
 
-### 
-
 ### anyOf 
 
-* To validate against anyOf, the given data must be valid against any \(one or more\) of the given subschemas.
+* To validate against anyOf, the given data must be valid against any \(one or more\) of the given sub-schemas.
 
 ```text
 {
   "anyOf": [
-    { "type": "string" },
-    { "type": "number" }
+    { "type": "string", "maxLength": 5 },
+    { "type": "number", "minimum": 0 }
   ]
 }
 
 /* valid */
-"Yes"
-42
+"short"
+12
 
 /* invalid */
-{ "Not a": "string or number" }
+"too long"
+-5
 ```
-
-### 
 
 ### oneOf 
 
-* To validate against oneOf, the given data must be valid against exactly one of the given subschemas.
+* To validate against oneOf, the given data must be valid against exactly one of the given sub-schemas.
 
 ```text
 {
@@ -247,7 +229,6 @@ The keywords used to combine schemas are:
 9
 
 
-
 /* invalid */
 
 // Not a multiple of either 5 or 3.
@@ -259,25 +240,18 @@ The keywords used to combine schemas are:
 
 ### not 
 
-* This doesn’t strictly combine schemas, but it belongs in this chapter along with other things that help to modify the effect of schemas in some way. The not keyword declares that a instance validates if it doesn’t validate against the given subschema.   For example, the following schema validates against anything that is not a string:
+This doesn’t strictly combine schemas, but it belongs in this chapter along with other things that help to modify the effect of schemas in some way. The not keyword declares that a instance validates if it doesn’t validate against the given sub-schema.  
+  
+ For example, the following schema validates against anything that is not a string:
 
 ```text
 { "not": { "type": "string" } }
+
 /* valid */
 10
 9
 
-
-
 /* invalid */
-
-// Not a multiple of either 5 or 3.
-42
-{ "key": "value" }
-
-// Multiple of both 5 and 3 is rejected.
-"I am a string"
+"uyu"
 ```
-
-### 
 
