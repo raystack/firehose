@@ -181,7 +181,7 @@ When Firehose is restarted, the Kafka Consumer automatically starts pulling mess
 
 ## How to configure the filter for a proto field based on some data?
 
-The environment variables `FILTER_JEXL_DATA_SOURCE` , `FILTER_JEXL_EXPRESSION` and `FILTER_JEXL_SCHEMA_PROTO_CLASS` need to be set for filters to work. The required filters need to be written in JEXL expression format. Refer [Using Filters](../guides/filters.md) section for more details.
+The environment variables `FILTER_JEXL_DATA_SOURCE` , `FILTER_JEXL_EXPRESSION` and `FILTER_JEXL_SCHEMA_PROTO_CLASS` need to be set for filters to work. The required filters need to be written in JEXL expression format. Refer [Using Filters](../guides/filters/) section for more details.
 
 ## Can I perform basic arithmetic operations in filters?
 

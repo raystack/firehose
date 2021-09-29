@@ -8,7 +8,9 @@
 
 * [Overview](guides/overview.md)
 * [Creating Firehose](guides/create_firehose.md)
-* [Using Filters](guides/filters.md)
+* [Using Filters](guides/filters/README.md)
+  * [JSON-based Filters](guides/filters/json-based-filters.md)
+  * [JEXL-based Filters](guides/filters/jexl-based-filters.md)
 * [Deployment](guides/deployment.md)
 * [Troubleshooting](guides/manage.md)
 

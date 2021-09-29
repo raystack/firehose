@@ -1,4 +1,4 @@
-# Using Filters
+# JEXL-based Filters
 
 ## Filter Variables
 

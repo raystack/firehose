@@ -8,7 +8,7 @@ Instead, use this Filter feature provided in Firehose which allows you to apply 
 
 However, understand that you are ignoring some data/messages and if that ignored value is important for your sink, you might lose/skip data that is essential. So it is best to verify that your filter condition is not skipping essential data, for example, payment transactions.
 
-Firehose uses the Apache Commons JEXL library for parsing the filter expressions. Refer to the [Using Filters](../guides/filters.md) section for details on how to configure filters.
+Firehose uses the Apache Commons JEXL library for parsing the filter expressions. Refer to the [Using Filters](../guides/filters/) section for details on how to configure filters.
 
 ## JEXL \(Java EXpressions Language\)
 
