@@ -84,7 +84,7 @@ public class JsonFilter implements Filter {
     }
 
     private String deserialize(byte[] data) throws FilterException {
-        switch (filterConfig.getFilterMessageFormat()) {
+        switch (filterConfig.getFilterJsonMessageFormat()) {
             case PROTOBUF:
                 try {
                     Object protoPojo = MethodUtils.invokeStaticMethod(Class.forName(filterConfig.getFilterSchemaProtoClass()), "parseFrom", data);

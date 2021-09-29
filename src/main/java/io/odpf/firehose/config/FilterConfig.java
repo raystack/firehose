@@ -18,9 +18,9 @@ public interface FilterConfig extends Config {
     @Key("FILTER_SCHEMA_PROTO_CLASS")
     String getFilterSchemaProtoClass();
 
-    @Key("FILTER_ESB_MESSAGE_FORMAT")
+    @Key("FILTER_JSON_ESB_MESSAGE_FORMAT")
     @ConverterClass(FilterMessageFormatTypeConverter.class)
-    FilterMessageFormatType getFilterMessageFormat();
+    FilterMessageFormatType getFilterJsonMessageFormat();
 
     @Key("FILTER_DATA_SOURCE")
     @ConverterClass(FilterDataSourceTypeConverter.class)

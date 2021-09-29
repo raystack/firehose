@@ -21,8 +21,8 @@ public class JsonFilterUtil {
     public static void logConfigs(FilterConfig filterConfig, Instrumentation instrumentation) {
         instrumentation.logInfo("\n\tFilter data source type: {}", filterConfig.getFilterDataSource());
         instrumentation.logInfo("\n\tFilter JSON Schema: {}", filterConfig.getFilterJsonSchema());
-        instrumentation.logInfo("\n\tFilter message type: {}", filterConfig.getFilterMessageFormat());
-        if (filterConfig.getFilterMessageFormat() == PROTOBUF) {
+        instrumentation.logInfo("\n\tFilter message type: {}", filterConfig.getFilterJsonMessageFormat());
+        if (filterConfig.getFilterJsonMessageFormat() == PROTOBUF) {
             instrumentation.logInfo("\n\tMessage Proto class: {}", filterConfig.getFilterSchemaProtoClass());
         }
     }
@@ -38,10 +38,10 @@ public class JsonFilterUtil {
             if (filterConfig.getFilterJsonSchema() == null) {
                 throw new IllegalArgumentException("Filter JSON Schema is invalid");
             }
-            if (filterConfig.getFilterMessageFormat() == null) {
+            if (filterConfig.getFilterJsonMessageFormat() == null) {
                 throw new IllegalArgumentException("Filter ESB message type cannot be null");
             }
-            if (filterConfig.getFilterMessageFormat() == PROTOBUF && filterConfig.getFilterSchemaProtoClass() == null) {
+            if (filterConfig.getFilterJsonMessageFormat() == PROTOBUF && filterConfig.getFilterSchemaProtoClass() == null) {
                 throw new IllegalArgumentException("Proto Schema class cannot be null");
             }
         } finally {
