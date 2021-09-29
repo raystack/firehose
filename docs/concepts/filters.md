@@ -28,25 +28,32 @@ Read more about Apache Commons JEXL project [here](https://commons.apache.org/pr
 
 The filtering occurs in the following steps -
 
-* Firehose Consumer creates a Filter object and initializes it with the values of -`FILTER_JEXL_DATA_SOURCE` i.e. key/message,`FILTER_JEXL_EXPRESSION` and `FILTER_JEXL_SCHEMA_PROTO_CLASS`as configured in the environment variables. 
-* `MessageFilter` iterates over the input List of events. For each event, the Protobuf Class as specified by the environment variable `FILTER_JEXL_SCHEMA_PROTO_CLASS` , converts the key/message of the event from raw byte array to a POJO \(Plain Old Java Object\), which contains getters for accessing various fields of the event data.
+* Firehose Consumer creates a Filter object and initializes it with the values of -`FILTER_DATA_SOURCE` i.e. key/message,`FILTER_JEXL_EXPRESSION` and `FILTER_SCHEMA_PROTO_CLASS`as configured in the environment variables. 
+* `JexlFilter` iterates over the input List of events. For each event, the Protobuf Class as specified by the environment variable `FILTER_JEXL_SCHEMA_PROTO_CLASS` , converts the key/message of the event from raw byte array to a POJO \(Plain Old Java Object\), which contains getters for accessing various fields of the event data.
 * A`JEXLContext` is created to link the key/message proto reference in the JEXL expression with the POJO object generated earlier.  JEXL engine converts `FILTER_JEXL_EXPRESSION`  string into `JEXLExpression` object and replaces all occurrences of references in the string by the generated POJO object.  `JEXLException` is thrown if the filter expression is invalid. 
 * The `JEXLExpression` is then evaluated for each of these parsed events. The messages for which the `JEXLExpression` evaluates to `true`, are added to the output List of messages and returned by the Filter. The rest of the messages are discarded by the Filter
 
 ## JSON - based Filtering
 
-**JSON Schema** is a vocabulary that allows you to **annotate** and **validate** JSON documents.. JSON Schema is a JSON media type for defining the structure of JSON data. JSON Schema provides a contract for what JSON data is required for a given application and how to interact with it. JSON Schema is intended to define validation, documentation, hyperlink navigation, and interaction control of JSON data.
+**JSON-based** filtering uses a JSON Schema string to apply filter rules and validate if the JSON message passes all filter checks. **JSON Schema** is a vocabulary that allows you to **annotate** and **validate** JSON documents. JSON Schema is a JSON media type for defining the structure of JSON data. It provides a contract for what JSON data is required for a given application and how to interact with it. 
 
+To filter messages using JSON-based filters, you need two things:
 
+* A JSON Schema string, containing the filter rules
+* A JSON Schema Validator, to validate the message against the JSON Schema
+
+You can read more about JSON Schema [here](https://json-schema.org/). For more details on JSON Schema syntax and specifications, refer [this](https://json-schema.org/specification.html) article. The JSON Schema Validator library used in Firehose is [networknt/json-schema-validator](https://github.com/networknt/json-schema-validator) . 
 
 ### How JSON-based Filters Work
 
-* If \(message schema == Protobuf\)
-  *  Convert protobuf byte\[\] to JSONObject using MessageToJson
-* If \(message schema == JSON\)
-  * Deserialize JSON byte\[\] to JSONObject
-* Perform JSON validation using JSON Schema validator
-* If passed, then add to ArrayList of filtered messages
+The filtering occurs in the following steps -
+
+* JSON filter configurations are validated and logged to instrumentation by JsonFilterUtil. In case any configuration is invalid, then IllegalArgumentException is thrown and Firehose is terminated.
+* If `FILTER_JSON_ESB_MESSAGE_FORMAT=PROTOBUF`, then the serialized key/message protobuf byte array is deserialized to POJO object by the Proto schema class. It is then converted to a JSON string so that it can be parsed by the JSON Schema Validator.
+* If`FILTER_JSON_ESB_MESSAGE_FORMAT=JSON`, then the serialized JSON byte array is deserialized to a JSON message string.
+* The JSON Schema validator performs a validation on the JSON message against the filter rules specified in the JSON Schema string provided in the environment variable`FILTER_JSON_SCHEMA.`
+* If there are any validation errors, then that key/message is filtered out and the validation errors are logged to the instrumentation in debug mode.
+* If all validation checks pass, then the key/message is added to the ArrayList of filtered messages and returned by the JsonFilter. The rest of the messages are discarded.
 
 ## Why Use Filters
 

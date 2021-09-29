@@ -1,5 +1,9 @@
 # JSON-based Filters
 
+To enable JSON-based filtering, you need to set the Firehose environment variable `FILTER_ENGINE=JSON` and provide the required JSON Schema filter rule to the variable`FILTER_JSON_SCHEMA .`
+
+## JSON Schema Syntax
+
 ### Constant values
 
 The const keyword is used to restrict a value to a single value. For example, to if you only support shipping to the United States for export reasons:
@@ -168,9 +172,9 @@ The keywords used to combine schemas are:
 * oneOf: Must be valid against exactly one of the subschemas
 * anyOf: Must be valid against any of the subschemas
 
-### allOf 
+#### allOf 
 
-* To validate against allOf, the given data must be valid against all of the given sub-schemas.
+To enable JEXL-based filtering, you need to set the Firehose environment variable `FILTER_ENGINE=JEXL` and provide the required JEXL filter expression to the variable`FILTER_JEXL_EXPRESSION .`To validate against allOf, the given data must be valid against all of the given sub-schemas.
 
 ```text
 {
@@ -189,9 +193,9 @@ The keywords used to combine schemas are:
 
 ```
 
-### anyOf 
+#### anyOf 
 
-* To validate against anyOf, the given data must be valid against any \(one or more\) of the given sub-schemas.
+To validate against anyOf, the given data must be valid against any \(one or more\) of the given sub-schemas.
 
 ```text
 {
@@ -210,9 +214,9 @@ The keywords used to combine schemas are:
 -5
 ```
 
-### oneOf 
+#### oneOf 
 
-* To validate against oneOf, the given data must be valid against exactly one of the given sub-schemas.
+To validate against oneOf, the given data must be valid against exactly one of the given sub-schemas.
 
 ```text
 {
@@ -236,7 +240,7 @@ The keywords used to combine schemas are:
 15
 ```
 
-### not 
+#### not 
 
 This doesn’t strictly combine schemas, but it belongs in this chapter along with other things that help to modify the effect of schemas in some way. The not keyword declares that a instance validates if it doesn’t validate against the given sub-schema.  
   

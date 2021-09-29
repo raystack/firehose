@@ -1,31 +1,15 @@
 # JEXL-based Filters
 
-## Filter Variables
+To enable JEXL-based filtering, you need to set the Firehose environment variable `FILTER_ENGINE=JEXL` and provide the required JEXL filter expression to the variable`FILTER_JEXL_EXPRESSION .`
 
-The following shell variables need to be set in the environment or in `env/local.properties` file in order to apply filters to incoming messages in Firehose
-
-| **Variable Name** | **Description** |
-| :--- | :--- |
-| `FILTER_JEXL_DATA_SOURCE` | `key`/`message`/`none`depending on where to apply filter |
-| `FILTER_JEXL_EXPRESSION` | JEXL filter expression |
-| `FILTER_JEXL_SCHEMA_PROTO_CLASS` | The fully qualified name of the proto schema so that the key/message in Kafka could be parsed. |
-
-Example:
-
-`FILTER_JEXL_DATA_SOURCE=key`
-
-`FILTER_JEXL_EXPRESSION=driverLocationLogKey.getVehicleType()=="BIKE"`
-
-`FILTER_JEXL_SCHEMA_PROTO_CLASS=com.gojek.esb.driverlocation.DriverLocationLogKey`
-
-## Filter Expressions
+## JEXL Filter Expression
 
 Filter expressions are JEXL expressions used to filter messages just after reading from Kafka and before sending to Sink.
 
 ### Rules to write expressions:
 
 * All the expressions are like a piece of Java code. Follow rules for every data type, as like writing a Java code. Parenthesis `()`can be used to combine multiple arithmetic or logical expressions into a single JEXL expression, which evaluates to a boolean value ie. `true` or `false`
-* Start with the object reference of the schema proto class of the key/message on which you wish to apply the filter. Make sure to change the first letter of the proto class to lower case.                                                                                                                                                               eg - `sampleLogMessage`  \(if `FILTER_JEXL_SCHEMA_PROTO_CLASS=com.xyz.SampleLogMessage` \)
+* Start with the object reference of the schema proto class of the key/message on which you wish to apply the filter. Make sure to change the first letter of the proto class to lower case.                                                                                                                                                               eg - `sampleLogMessage`  \(if `FILTER_SCHEMA_PROTO_CLASS=com.xyz.SampleLogMessage` \)
 * Access a particular field by calling the getter method on the proto object. The name of the getter method will be the field name, changed to camel-case, with all underscore \( `_`\) characters removed, and prefixed by the string `get`                                                                                                                                    eg - if the field name is `vehicle_type` , then the getter method name would be `getVehicleType()`
 * Access nested fields using linked invocations of the getter methods, `.`  and repeatedly call the getter method for the every level of nested field.                                                                                                                            eg - `sampleLogKey.getEventTimestamp().getSeconds()`    
 * You can combine multiple fields of the key/message protobuf in a single JEXL expression and perform any arithmetic or logical operations between them.                                                                                                                                    e.g - `sampleKey.getTime().getSeconds() * 1000 + sampleKey.getTime().getMillis() > 22809`
