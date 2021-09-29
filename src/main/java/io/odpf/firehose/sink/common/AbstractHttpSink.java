@@ -93,19 +93,21 @@ public abstract class AbstractHttpSink extends AbstractSink {
     }
 
     private boolean shouldLogRequest(HttpResponse response) {
-        return response == null || getRequestLogStatusCodeRanges().containsKey(response.getStatusLine().getStatusCode());
+        String statusCode = statusCode(response);
+        return statusCode.equals("null") || getRequestLogStatusCodeRanges().containsKey(Integer.parseInt(statusCode));
     }
 
     private boolean shouldLogResponse(HttpResponse response) {
-        return getInstrumentation().isDebugEnabled() && response != null;
+        return getInstrumentation().isDebugEnabled() && response != null && response.getEntity() != null;
     }
 
     private boolean shouldRetry(HttpResponse response) {
-        return response == null || getRetryStatusCodeRanges().containsKey(response.getStatusLine().getStatusCode());
+        String statusCode = statusCode(response);
+        return statusCode.equals("null") || Integer.parseInt(statusCode) == 0 || getRetryStatusCodeRanges().containsKey(Integer.parseInt(statusCode));
     }
 
     protected String statusCode(HttpResponse response) {
-        if (response != null) {
+        if (response != null && response.getStatusLine() != null) {
             return Integer.toString(response.getStatusLine().getStatusCode());
         } else {
             return "null";
@@ -114,10 +116,8 @@ public abstract class AbstractHttpSink extends AbstractSink {
 
     private void captureHttpStatusCount(HttpEntityEnclosingRequestBase httpRequestMethod, HttpResponse response) {
         String urlTag = "url=" + httpRequestMethod.getURI().getPath();
-        String httpCodeTag = "status_code=";
-        if (response != null) {
-            httpCodeTag = "status_code=" + response.getStatusLine().getStatusCode();
-        }
+        String statusCode = statusCode(response);
+        String httpCodeTag = statusCode.equals("null") ? "status_code=" : "status_code=" + statusCode;
         getInstrumentation().captureCountWithTags(SINK_HTTP_RESPONSE_CODE_TOTAL, 1, httpCodeTag, urlTag);
     }
 
