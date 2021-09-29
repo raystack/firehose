@@ -10,9 +10,9 @@ Defines whether to use `JSON` Schema-based filters or `JEXL`-based filters or `N
 * Type: `optional`
 * Default value`: NO_OP`
 
-## `FILTER_ESB_MESSAGE_TYPE`
+## `FILTER_JSON_ESB_MESSAGE_TYPE`
 
-Defines the format type of the input ESB messages, i.e. JSON/Protobuf.
+Defines the format type of the input ESB messages, i.e. JSON/Protobuf. This field is required only for JSON filters.
 
 * Example value: `JSON`
 * Type: `optional`
