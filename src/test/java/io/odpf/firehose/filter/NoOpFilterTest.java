@@ -61,7 +61,7 @@ public class NoOpFilterTest {
     }
 
     @Test
-    public void shouldReturnNullFilterRule() {
+    public void shouldReturnEmptyStringFilterRule() {
         NoOpFilter noOpFilter = new NoOpFilter(instrumentation);
         assertEquals("", noOpFilter.getFilterRule());
     }
