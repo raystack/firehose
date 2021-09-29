@@ -34,18 +34,17 @@ public class JsonFilterUtil {
      * @param instrumentation the instrumentation
      */
     public static void validateConfigs(FilterConfig filterConfig, Instrumentation instrumentation) {
-        try {
-            if (filterConfig.getFilterJsonSchema() == null) {
-                throw new IllegalArgumentException("Filter JSON Schema is invalid");
-            }
-            if (filterConfig.getFilterJsonMessageFormat() == null) {
-                throw new IllegalArgumentException("Filter ESB message type cannot be null");
-            }
-            if (filterConfig.getFilterJsonMessageFormat() == PROTOBUF && filterConfig.getFilterSchemaProtoClass() == null) {
-                throw new IllegalArgumentException("Proto Schema class cannot be null");
-            }
-        } finally {
+        if (filterConfig.getFilterJsonSchema() == null) {
             instrumentation.logError("Failed to create filter due to invalid config");
+            throw new IllegalArgumentException("Filter JSON Schema is invalid");
+        }
+        if (filterConfig.getFilterJsonMessageFormat() == null) {
+            instrumentation.logError("Failed to create filter due to invalid config");
+            throw new IllegalArgumentException("Filter ESB message type cannot be null");
+        }
+        if (filterConfig.getFilterJsonMessageFormat() == PROTOBUF && filterConfig.getFilterSchemaProtoClass() == null) {
+            instrumentation.logError("Failed to create filter due to invalid config");
+            throw new IllegalArgumentException("Proto Schema class cannot be null");
         }
     }
 }

@@ -92,6 +92,5 @@ public class JsonFilterUtilTest {
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         JsonFilterUtil.validateConfigs(filterConfig, instrumentation);
-        verify(instrumentation, times(1)).logError("Failed to create filter due to invalid config");
     }
 }
