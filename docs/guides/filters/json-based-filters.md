@@ -125,10 +125,6 @@ null
 
 
 
-
-
-
-
 /* ---- EXAMPLE #2 ---- */
 {
   "type": "number",
