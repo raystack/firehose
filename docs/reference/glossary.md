@@ -30,9 +30,9 @@
 
 [Filter](../concepts/architecture.md#components)
 
-[Filter configs](../guides/filters.md#filter-variables)
+[Filter configs](../guides/filters/#filter-variables)
 
-[Filter expression syntax](../guides/filters.md#filter-expressions)
+[Filter expression syntax](../guides/filters/#filter-expressions)
 
 [Firehose integration](../concepts/architecture.md#firehose-integration)
 
@@ -66,9 +66,9 @@
 
 [JDBC sink configs](configuration/#jdbc-sink)
 
-[JEXL filters](../guides/filters.md#filter-expressions)
+[JEXL filters](../guides/filters/#filter-expressions)
 
-[JEXL expression syntax](../guides/filters.md#syntax)
+[JEXL expression syntax](../guides/filters/#syntax)
 
 ## K
 
