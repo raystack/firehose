@@ -15,6 +15,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.HashMap;
 import java.util.Map;
 
+import static io.odpf.firehose.config.enums.FilterMessageFormatType.PROTOBUF;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -34,7 +35,7 @@ public class JsonFilterUtilTest {
     }
 
     @Test
-    public void shouldLogFilterConfigsIfFilterDataSourceIsNotNone() {
+    public void shouldLogFilterConfigsForValidConfiguration() {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
@@ -45,6 +46,22 @@ public class JsonFilterUtilTest {
         verify(instrumentation, times(1)).logInfo("\n\tFilter data source type: {}", FilterDataSourceType.MESSAGE);
         verify(instrumentation, times(1)).logInfo("\n\tMessage Proto class: {}", TestMessage.class.getName());
         verify(instrumentation, times(1)).logInfo("\n\tFilter JSON Schema: {}", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
+        verify(instrumentation, times(1)).logInfo("\n\tFilter ESB message format: {}", PROTOBUF);
+
+    }
+
+
+    @Test
+    public void shouldLogFilterConfigsForInvalidConfiguration() {
+        Map<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
+        filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
+        JsonFilterUtil.logConfigs(filterConfig, instrumentation);
+        verify(instrumentation, times(1)).logInfo("\n\tFilter data source type: {}", FilterDataSourceType.MESSAGE);
+        verify(instrumentation, times(1)).logInfo("\n\tFilter JSON Schema: {}", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
+        verify(instrumentation, times(1)).logInfo("\n\tFilter ESB message format: {}", (Object) null);
     }
 
     @Test

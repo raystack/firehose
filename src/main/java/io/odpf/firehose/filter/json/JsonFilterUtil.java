@@ -21,7 +21,7 @@ public class JsonFilterUtil {
     public static void logConfigs(FilterConfig filterConfig, Instrumentation instrumentation) {
         instrumentation.logInfo("\n\tFilter data source type: {}", filterConfig.getFilterDataSource());
         instrumentation.logInfo("\n\tFilter JSON Schema: {}", filterConfig.getFilterJsonSchema());
-        instrumentation.logInfo("\n\tFilter message type: {}", filterConfig.getFilterJsonMessageFormat());
+        instrumentation.logInfo("\n\tFilter ESB message format: {}", filterConfig.getFilterJsonMessageFormat());
         if (filterConfig.getFilterJsonMessageFormat() == PROTOBUF) {
             instrumentation.logInfo("\n\tMessage Proto class: {}", filterConfig.getFilterSchemaProtoClass());
         }
