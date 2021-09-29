@@ -1,6 +1,6 @@
 # JSON-based Filters
 
-**Range \(https://json-schema.org/understanding-json-schema/reference/numeric.html\#id7\)**
+### Numeric **Range** 
 
 * Ranges of numbers are specified using a combination of the minimum and maximum keywords, \(or exclusiveMinimum and exclusiveMaximum for expressing exclusive range\).
 * If x is the value being validated, the following must hold true:  x ≥ minimum  x &gt; exclusiveMinimum  x ≤ maximum  x &lt; exclusiveMaximum
@@ -34,10 +34,6 @@
 
 // Greater than maximum:
 101
-
-
-
-
 
 
 
@@ -152,13 +148,6 @@ null
 
 
 
-
-
-
-
-
-
-
 /* ---- EXAMPLE #3 ---- */
 
 // However, in most cases, the elements in the enum array should also be valid against the enclosing schema:
@@ -202,10 +191,6 @@ It should be noted that const is merely syntactic sugar for an enum with a singl
 { "const": "United States of America" }
 { "enum": [ "United States of America" ] }
 ```
-
-
-
-## 
 
 ## Combining schemas \([https://json-schema.org/understanding-json-schema/reference/combining.html\#combining-schemas](https://json-schema.org/understanding-json-schema/reference/combining.html#combining-schemas)\)
 
@@ -443,8 +428,6 @@ The keywords used to combine schemas are:
 "I am a string"
 ```
 
-## 
-
 ## Applying subschemas conditionally \([https://json-schema.org/understanding-json-schema/reference/conditionals.html\#applying-subschemas-conditionally](https://json-schema.org/understanding-json-schema/reference/conditionals.html#applying-subschemas-conditionally)\)
 
 * The if, then and else keywords allow the application of a subschema based on the outcome of another schema, much like the if/then/else constructs you’ve probably seen in traditional programming languages. If if is valid, then must also be valid \(and else is ignored.\) If if is invalid, else must also be valid \(and then is ignored\).
@@ -561,8 +544,4 @@ The keywords used to combine schemas are:
   "postal_code": "10000"
 }
 ```
-
-## 
-
-
 
