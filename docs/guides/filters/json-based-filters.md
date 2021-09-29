@@ -111,8 +111,6 @@ Example:
 "(800)FLOWERS"
 ```
 
-
-
 ### Conditional operators
 
 The if, then and else keywords allow the application of a sub-schema based on the outcome of another schema, much like the if/then/else constructs you’ve probably seen in traditional programming languages. If if is valid, then must also be valid \(and else is ignored.\) If if is invalid, else must also be valid \(and then is ignored\).
