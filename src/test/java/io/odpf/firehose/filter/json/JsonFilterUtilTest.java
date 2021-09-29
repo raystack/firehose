@@ -47,9 +47,7 @@ public class JsonFilterUtilTest {
         verify(instrumentation, times(1)).logInfo("\n\tMessage Proto class: {}", TestMessage.class.getName());
         verify(instrumentation, times(1)).logInfo("\n\tFilter JSON Schema: {}", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         verify(instrumentation, times(1)).logInfo("\n\tFilter ESB message format: {}", PROTOBUF);
-
     }
-
 
     @Test
     public void shouldLogFilterConfigsForInvalidConfiguration() {
