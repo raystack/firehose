@@ -7,7 +7,7 @@ public class Constants {
         PARQUET,
     }
 
-    public enum PartitioningType {
+    public enum FilePartitionType {
         NONE,
         DAY,
         HOUR

@@ -1,19 +1,21 @@
 package io.odpf.firehose.sink.objectstorage.writer;
 
+import io.odpf.firehose.config.ObjectStorageSinkConfig;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.objectstorage.ObjectStorage;
 import io.odpf.firehose.sink.objectstorage.message.Record;
-import io.odpf.firehose.sink.objectstorage.writer.local.FileMeta;
+import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileMetadata;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileChecker;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalFileWriter;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
-import io.odpf.firehose.sink.objectstorage.writer.local.Partition;
+import io.odpf.firehose.sink.objectstorage.writer.local.path.TimePartitionedPathUtils;
 import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageChecker;
-import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterWorkerFuture;
+import io.odpf.firehose.sink.objectstorage.writer.remote.ObjectStorageWriterFutureHandler;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -39,17 +41,19 @@ import java.util.concurrent.TimeUnit;
 public class WriterOrchestrator implements Closeable {
     private static final int FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS = 10;
     private static final int FILE_CHECKER_THREAD_FREQUENCY_SECONDS = 5;
-    private final Map<String, LocalFileWriter> timePartitionWriterMap = new ConcurrentHashMap<>();
+    private final Map<Path, LocalFileWriter> timePartitionWriterMap = new ConcurrentHashMap<>();
     private final ScheduledExecutorService localFileCheckerScheduler = Executors.newScheduledThreadPool(1);
     private final ScheduledExecutorService objectStorageCheckerScheduler = Executors.newScheduledThreadPool(1);
     private final ExecutorService remoteUploadScheduler = Executors.newFixedThreadPool(10);
     private final BlockingQueue<String> flushedToRemotePaths = new LinkedBlockingQueue<>();
     private final LocalStorage localStorage;
     private final WriterOrchestratorStatus writerOrchestratorStatus;
+    private final ObjectStorageSinkConfig sinkConfig;
 
-    public WriterOrchestrator(LocalStorage localStorage, ObjectStorage objectStorage, StatsDReporter statsDReporter) {
+    public WriterOrchestrator(ObjectStorageSinkConfig sinkConfig, LocalStorage localStorage, ObjectStorage objectStorage, StatsDReporter statsDReporter) {
         this.localStorage = localStorage;
-        BlockingQueue<FileMeta> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
+        this.sinkConfig = sinkConfig;
+        BlockingQueue<LocalFileMetadata> toBeFlushedToRemotePaths = new LinkedBlockingQueue<>();
         ScheduledFuture<?> localWriterFuture = localFileCheckerScheduler.scheduleAtFixedRate(
                 new LocalFileChecker(
                         toBeFlushedToRemotePaths,
@@ -59,7 +63,7 @@ public class WriterOrchestrator implements Closeable {
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
                 TimeUnit.SECONDS);
 
-        Set<ObjectStorageWriterWorkerFuture> remoteUploadFutures = new HashSet<>();
+        Set<ObjectStorageWriterFutureHandler> remoteUploadFutures = new HashSet<>();
         ScheduledFuture<?> objectStorageWriterFuture = objectStorageCheckerScheduler.scheduleWithFixedDelay(
                 new ObjectStorageChecker(
                         toBeFlushedToRemotePaths,
@@ -72,9 +76,8 @@ public class WriterOrchestrator implements Closeable {
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
                 TimeUnit.SECONDS);
 
-        writerOrchestratorStatus = new WriterOrchestratorStatus(false, localWriterFuture, objectStorageWriterFuture, null);
-        writerOrchestratorStatus.startCheckerForLocalFileWriterCompletion();
-        writerOrchestratorStatus.startCheckerForObjectStorageWriterCompletion();
+        writerOrchestratorStatus = new WriterOrchestratorStatus(localWriterFuture, objectStorageWriterFuture);
+        writerOrchestratorStatus.startCheckers();
     }
 
     /**
@@ -103,26 +106,26 @@ public class WriterOrchestrator implements Closeable {
      */
     public String write(Record record) throws Exception {
         checkStatus();
-        Partition partition = localStorage.getPartitionFactory().getPartition(record);
-        return write(record, partition);
+        Path timePartitionedPath = TimePartitionedPathUtils.getTimePartitionedPath(record, sinkConfig);
+        return write(record, timePartitionedPath);
     }
 
     /**
      * Tries to fetch writer from the map, if the writer is closed, try recursive method call.
      *
-     * @param record    record to write
-     * @param partition partition for the file path
+     * @param record              record to write
+     * @param timePartitionedPath partition for the file path
      * @return full path of file.
      * @throws IOException if local storage fails.
      */
-    private String write(Record record, Partition partition) throws IOException {
+    private String write(Record record, Path timePartitionedPath) throws IOException {
         LocalFileWriter writer = timePartitionWriterMap.computeIfAbsent(
-                partition.toString(),
-                x -> localStorage.createLocalFileWriter(partition.getPath()));
+                timePartitionedPath,
+                x -> localStorage.createLocalFileWriter(timePartitionedPath));
         if (!writer.write(record)) {
-            return write(record, partition);
+            return write(record, timePartitionedPath);
         }
-        return writer.getFullPath();
+        return writer.getMetadata().getFullPath();
     }
 
     @Override
@@ -131,13 +134,11 @@ public class WriterOrchestrator implements Closeable {
         objectStorageCheckerScheduler.shutdown();
         remoteUploadScheduler.shutdown();
         writerOrchestratorStatus.setClosed(true);
-        synchronized (timePartitionWriterMap) {
-            for (LocalFileWriter writer : timePartitionWriterMap.values()) {
-                writer.close();
-            }
-            for (String p : timePartitionWriterMap.keySet()) {
-                localStorage.deleteLocalFile(p);
-            }
+        for (LocalFileWriter writer : timePartitionWriterMap.values()) {
+            writer.close();
+        }
+        for (LocalFileWriter p : timePartitionWriterMap.values()) {
+            localStorage.deleteLocalFile(p.getMetadata().getFullPath());
         }
     }
 }

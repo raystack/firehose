@@ -7,10 +7,6 @@ import org.aeonbits.owner.Config;
  */
 public interface GCSConfig extends Config {
 
-    @Key("${GCS_TYPE}_LOCAL_DIRECTORY")
-    @DefaultValue("")
-    String getGCSLocalDirectory();
-
     @Key("${GCS_TYPE}_GCS_GOOGLE_CLOUD_PROJECT_ID")
     String getGCloudProjectID();
 

@@ -51,11 +51,11 @@ public class Metrics {
 
     // RETRY MEASUREMENT
     public static final String RETRY_MESSAGES_TOTAL = APPLICATION_PREFIX + RETRY_PREFIX + "messages_total";
-    public static final String RETRY_TOTAL = APPLICATION_PREFIX + RETRY_PREFIX + "total";
+    public static final String RETRY_ATTEMPTS_TOTAL = APPLICATION_PREFIX + RETRY_PREFIX + "attempts_total";
     public static final String RETRY_SLEEP_TIME_MILLISECONDS = APPLICATION_PREFIX + RETRY_PREFIX + "backoff_sleep_milliseconds";
 
     // DLQ MEASUREMENTS
-    public static final String DLQ_RETRY_TOTAL = APPLICATION_PREFIX + DLQ_PREFIX + "retry_total";
+    public static final String DLQ_RETRY_ATTEMPTS_TOTAL = APPLICATION_PREFIX + DLQ_PREFIX + RETRY_PREFIX + "attempts_total";
     public static final String DLQ_MESSAGES_TOTAL = APPLICATION_PREFIX + DLQ_PREFIX + "messages_total";
 
     // GLOBAL MEASUREMENTS

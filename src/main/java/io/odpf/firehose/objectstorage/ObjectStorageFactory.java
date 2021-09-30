@@ -13,7 +13,8 @@ public class ObjectStorageFactory {
         if (storageType == ObjectStorageType.GCS) {
             try {
                 GCSConfig gcsConfig = ConfigFactory.create(GCSConfig.class, config);
-                return new GCSObjectStorage(gcsConfig);
+                GCSObjectStorage gcsObjectStorage = new GCSObjectStorage(gcsConfig);
+                return gcsObjectStorage;
             } catch (IOException e) {
                 throw new IllegalArgumentException("Exception while creating GCS Storage", e);
             }

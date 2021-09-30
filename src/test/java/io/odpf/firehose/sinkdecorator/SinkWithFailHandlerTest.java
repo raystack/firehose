@@ -5,6 +5,7 @@ import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorHandler;
+import io.odpf.firehose.exception.SinkException;
 import io.odpf.firehose.sink.Sink;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Assert;
@@ -28,7 +29,7 @@ public class SinkWithFailHandlerTest {
     private Sink sink;
 
 
-    @Test(expected = IOException.class)
+    @Test(expected = SinkException.class)
     public void shouldThrowIOExceptionWhenMessageContainsConfiguredError() throws IOException {
         ErrorHandler errorHandler = new ErrorHandler(ConfigFactory.create(ErrorConfig.class, new HashMap<String, String>() {{
             put("ERROR_TYPES_FOR_FAILING", ErrorType.DESERIALIZATION_ERROR.name());

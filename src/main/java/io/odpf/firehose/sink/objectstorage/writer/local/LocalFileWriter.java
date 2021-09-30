@@ -6,8 +6,6 @@ import java.io.Closeable;
 import java.io.IOException;
 
 public interface LocalFileWriter extends Closeable {
-    long currentSize();
-
     /**
      * @param record to write
      * @return true if write succeeds, false if the writer is closed.
@@ -15,9 +13,5 @@ public interface LocalFileWriter extends Closeable {
      */
     boolean write(Record record) throws IOException;
 
-    long getCreatedTimestampMillis();
-
-    String getFullPath();
-
-    Long getRecordCount();
+    LocalFileMetadata getMetadata();
 }

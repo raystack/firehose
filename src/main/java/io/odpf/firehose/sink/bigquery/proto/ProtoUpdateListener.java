@@ -11,8 +11,10 @@ import io.odpf.firehose.config.BigQuerySinkConfig;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverter;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.firehose.sink.bigquery.converter.RowMapper;
+import io.odpf.firehose.sink.bigquery.exception.BQSchemaMappingException;
+import io.odpf.firehose.sink.bigquery.exception.BQTableUpdateFailure;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryClient;
-import io.odpf.firehose.sink.bigquery.models.BQField;
+import io.odpf.firehose.sink.bigquery.models.MetadataUtil;
 import io.odpf.firehose.sink.bigquery.models.ProtoField;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,6 +38,7 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
     private final MessageRecordConverterCache messageRecordConverterCache;
     @Setter
     private Parser stencilParser;
+    private static final Gson GSON = new Gson();
 
     public ProtoUpdateListener(BigQuerySinkConfig config, BigQueryClient bqClient, MessageRecordConverterCache messageRecordConverterCache) {
         super(config.getInputSchemaProtoClass());
@@ -58,7 +61,7 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
         } catch (BigQueryException | IOException e) {
             String errMsg = "Error while updating bigquery table on callback:" + e.getMessage();
             log.error(errMsg);
-            throw new RuntimeException(errMsg, e);
+            throw new BQTableUpdateFailure(errMsg, e);
         }
     }
 
@@ -88,14 +91,14 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
         List<Field> bqMetadataFields = new ArrayList<>();
         String namespaceName = config.getBqMetadataNamespace();
         if (namespaceName.isEmpty()) {
-            bqMetadataFields.addAll(BQField.getMetadataFields());
+            bqMetadataFields.addAll(MetadataUtil.getMetadataFields());
         } else {
-            bqMetadataFields.add(BQField.getNamespacedMetadataField(namespaceName));
+            bqMetadataFields.add(MetadataUtil.getNamespacedMetadataField(namespaceName));
         }
 
         List<String> duplicateFields = getDuplicateFields(bqSchemaFields, bqMetadataFields).stream().map(Field::getName).collect(Collectors.toList());
         if (duplicateFields.size() > 0) {
-            throw new RuntimeException(String.format("Metadata field(s) is already present in the schema. "
+            throw new BQSchemaMappingException(String.format("Metadata field(s) is already present in the schema. "
                     + "fields: %s", duplicateFields));
         }
         bqSchemaFields.addAll(bqMetadataFields);
@@ -104,7 +107,7 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
     private void setProtoParser(String protoMapping) {
         Type type = new TypeToken<Map<String, Object>>() {
         }.getType();
-        Map<String, Object> m = new Gson().fromJson(protoMapping, type);
+        Map<String, Object> m = GSON.fromJson(protoMapping, type);
         Properties columnMapping = mapToProperties(m);
         messageRecordConverterCache.setMessageRecordConverter(
                 new MessageRecordConverter(new RowMapper(columnMapping),

@@ -2,6 +2,8 @@ package io.odpf.firehose.consumer;
 
 
 import io.odpf.firehose.error.ErrorInfo;
+import io.odpf.firehose.error.ErrorType;
+import io.odpf.firehose.exception.DefaultException;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -27,6 +29,12 @@ public class Message {
     private long consumeTimestamp;
     @Setter
     private ErrorInfo errorInfo;
+
+    public void setDefaultErrorIfNotPresent() {
+        if (errorInfo == null) {
+            errorInfo = new ErrorInfo(new DefaultException("DEFAULT"), ErrorType.DEFAULT_ERROR);
+        }
+    }
 
     /**
      * Instantiates a new Message.

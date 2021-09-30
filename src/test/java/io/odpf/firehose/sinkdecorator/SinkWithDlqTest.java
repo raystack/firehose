@@ -24,7 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static io.odpf.firehose.metrics.Metrics.DLQ_MESSAGES_TOTAL;
-import static io.odpf.firehose.metrics.Metrics.DLQ_RETRY_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.DLQ_RETRY_ATTEMPTS_TOTAL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -79,7 +79,7 @@ public class SinkWithDlqTest {
         assertEquals(0, pushResult.size());
         verify(instrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, ErrorType.DESERIALIZATION_ERROR, 1);
         verify(instrumentation, times(1)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 2);
-        verify(instrumentation, times(1)).incrementCounter(DLQ_RETRY_TOTAL);
+        verify(instrumentation, times(1)).incrementCounter(DLQ_RETRY_ATTEMPTS_TOTAL);
         verify(instrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.DLQ, 2);
     }
 
@@ -132,7 +132,7 @@ public class SinkWithDlqTest {
 
         verify(instrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, ErrorType.DESERIALIZATION_ERROR, 1);
         verify(instrumentation, times(1)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 2);
-        verify(instrumentation, times(2)).incrementCounter(DLQ_RETRY_TOTAL);
+        verify(instrumentation, times(2)).incrementCounter(DLQ_RETRY_ATTEMPTS_TOTAL);
         verify(instrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.DLQ, 2);
     }
 
@@ -263,7 +263,7 @@ public class SinkWithDlqTest {
         verify(instrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, ErrorType.DESERIALIZATION_ERROR, 1);
         verify(instrumentation, times(1)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 0);
         verify(instrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, ErrorType.DESERIALIZATION_ERROR, 1);
-        verify(instrumentation, times(10)).incrementCounter(DLQ_RETRY_TOTAL);
+        verify(instrumentation, times(10)).incrementCounter(DLQ_RETRY_ATTEMPTS_TOTAL);
         verify(instrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.DLQ, 0);
     }
 }

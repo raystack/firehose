@@ -4,9 +4,7 @@ import com.google.protobuf.DynamicMessage;
 import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorHandler;
-import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorScope;
-import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.Metrics;
@@ -20,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import static io.odpf.firehose.metrics.Metrics.RETRY_MESSAGES_TOTAL;
-import static io.odpf.firehose.metrics.Metrics.RETRY_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.RETRY_ATTEMPTS_TOTAL;
 
 /**
  * Pushes messages with configured retry.
@@ -52,45 +50,53 @@ public class SinkWithRetry extends SinkDecorator {
      */
     @Override
     public List<Message> pushMessage(List<Message> inputMessages) throws IOException, DeserializerException {
-        List<Message> messages = super.pushMessage(inputMessages);
-        if (messages.isEmpty()) {
-            return messages;
+        List<Message> failedMessages = super.pushMessage(inputMessages);
+        if (failedMessages.isEmpty()) {
+            return failedMessages;
         }
-
-        Map<Boolean, List<Message>> splitLists = errorHandler.split(messages, ErrorScope.RETRY);
-
-        List<Message> returnedMessages = doRetry(splitLists.get(Boolean.TRUE));
-        if (!returnedMessages.isEmpty() && appConfig.getRetryFailAfterMaxAttemptsEnable()) {
+        Map<Boolean, List<Message>> splitLists = errorHandler.split(failedMessages, ErrorScope.RETRY);
+        List<Message> messagesAfterRetry = doRetry(splitLists.get(Boolean.TRUE));
+        if (!messagesAfterRetry.isEmpty() && appConfig.getRetryFailAfterMaxAttemptsEnable()) {
             throw new IOException("exceeded maximum Sink retry attempts");
         }
+        messagesAfterRetry.addAll(splitLists.get(Boolean.FALSE));
+        return messagesAfterRetry;
+    }
 
-        returnedMessages.addAll(splitLists.get(Boolean.FALSE));
-        return returnedMessages;
+    private void logDebug(List<Message> messageList) throws IOException {
+        if (instrumentation.isDebugEnabled()) {
+            List<DynamicMessage> serializedBody = new ArrayList<>();
+            for (Message message : messageList) {
+                serializedBody.add(parser.parse(message));
+            }
+            instrumentation.logDebug("Retry failed messages: \n{}", serializedBody.toString());
+        }
+    }
+
+    private void backOff(List<Message> messageList, int attemptCount) {
+        if (messageList.isEmpty()) {
+            return;
+        }
+        backOffProvider.backOff(attemptCount);
     }
 
     private List<Message> doRetry(List<Message> messages) throws IOException {
         List<Message> retryMessages = new LinkedList<>(messages);
         instrumentation.logInfo("Maximum retry attempts: {}", appConfig.getRetryMaxAttempts());
         retryMessages.forEach(m -> {
-            if (m.getErrorInfo() == null) {
-                m.setErrorInfo(new ErrorInfo(null, ErrorType.DEFAULT_ERROR));
-            }
+            m.setDefaultErrorIfNotPresent();
             instrumentation.captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, m.getErrorInfo().getErrorType(), 1);
         });
 
         int attemptCount = 1;
         while ((attemptCount <= appConfig.getRetryMaxAttempts() && !retryMessages.isEmpty())
-               || (appConfig.getRetryMaxAttempts() == Integer.MAX_VALUE && !retryMessages.isEmpty())) {
-            instrumentation.incrementCounter(RETRY_TOTAL);
+                || (appConfig.getRetryMaxAttempts() == Integer.MAX_VALUE && !retryMessages.isEmpty())) {
+            instrumentation.incrementCounter(RETRY_ATTEMPTS_TOTAL);
             instrumentation.logInfo("Retrying messages attempt count: {}, Number of messages: {}", attemptCount, messages.size());
-
-            List<DynamicMessage> serializedBody = new ArrayList<>();
-            for (Message message : retryMessages) {
-                serializedBody.add(parser.parse(message));
-            }
-            instrumentation.logDebug("Retry failed messages: \n{}", serializedBody.toString());
+            logDebug(retryMessages);
             retryMessages = super.pushMessage(retryMessages);
-            backOffProvider.backOff(++attemptCount);
+            backOff(retryMessages, attemptCount);
+            attemptCount++;
         }
         instrumentation.captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, messages.size() - retryMessages.size());
         retryMessages.forEach(m -> instrumentation.captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, m.getErrorInfo().getErrorType(), 1));

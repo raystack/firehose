@@ -6,7 +6,7 @@ package io.odpf.firehose.serializer;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.consumer.TestAggregatedSupplyMessage;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.exception.EglcConfigurationException;
+import io.odpf.firehose.exception.ConfigurationException;
 import io.odpf.firehose.metrics.Instrumentation;
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
@@ -104,7 +104,7 @@ public class MessageToTemplatizedJsonTest {
 
     @Test
     public void shouldFailForNonJsonTemplate() {
-        expectedException.expect(EglcConfigurationException.class);
+        expectedException.expect(ConfigurationException.class);
         expectedException.expectMessage("must be a valid JSON.");
 
         String template = "{\"test:\"$.routes[0]\", \"$.order_number\" : \"xxx\"}";
@@ -114,7 +114,7 @@ public class MessageToTemplatizedJsonTest {
 
     @Test
     public void shouldDoRegexMatchingToReplaceThingsFromProtobuf() {
-        expectedException.expect(EglcConfigurationException.class);
+        expectedException.expect(ConfigurationException.class);
         expectedException.expectMessage("must be a valid JSON.");
 
         String template = "{\"test:\"$.routes[0]\", \"$.order_number\" : \"xxx\"}";

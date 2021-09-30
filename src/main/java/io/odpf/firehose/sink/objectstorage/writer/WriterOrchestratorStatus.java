@@ -1,21 +1,26 @@
 package io.odpf.firehose.sink.objectstorage.writer;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 
-@AllArgsConstructor
 @Data
 public class WriterOrchestratorStatus {
     private boolean isClosed;
     private ScheduledFuture<?> localFileWriterFuture;
     private ScheduledFuture<?> objectStorageWriterFuture;
     private Throwable throwable;
+    private Thread localFileWriterCompletionChecker;
+    private Thread objectStorageWriterCompletionChecker;
 
-    public void startCheckerForLocalFileWriterCompletion() {
-        new Thread(() -> {
+    public WriterOrchestratorStatus(ScheduledFuture<?> localFileWriterFuture, ScheduledFuture<?> objectStorageWriterFuture) {
+        this.localFileWriterFuture = localFileWriterFuture;
+        this.objectStorageWriterFuture = objectStorageWriterFuture;
+    }
+
+    public void startCheckers() {
+        localFileWriterCompletionChecker = new Thread(() -> {
             try {
                 getLocalFileWriterFuture().get();
             } catch (InterruptedException e) {
@@ -25,11 +30,8 @@ public class WriterOrchestratorStatus {
             } finally {
                 setClosed(true);
             }
-        }).start();
-    }
-
-    public void startCheckerForObjectStorageWriterCompletion() {
-        new Thread(() -> {
+        });
+        objectStorageWriterCompletionChecker = new Thread(() -> {
             try {
                 getObjectStorageWriterFuture().get();
             } catch (InterruptedException e) {
@@ -39,6 +41,8 @@ public class WriterOrchestratorStatus {
             } finally {
                 setClosed(true);
             }
-        }).start();
+        });
+        localFileWriterCompletionChecker.start();
+        objectStorageWriterCompletionChecker.start();
     }
 }

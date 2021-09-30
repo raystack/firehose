@@ -3,9 +3,7 @@ package io.odpf.firehose.sinkdecorator;
 import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.error.ErrorHandler;
-import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorScope;
-import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.Metrics;
@@ -20,7 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static io.odpf.firehose.metrics.Metrics.DLQ_MESSAGES_TOTAL;
-import static io.odpf.firehose.metrics.Metrics.DLQ_RETRY_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.DLQ_RETRY_ATTEMPTS_TOTAL;
 
 /**
  * This Sink pushes failed messages to kafka after retries are exhausted.
@@ -63,9 +61,7 @@ public class SinkWithDlq extends SinkDecorator {
             return messages;
         }
         Map<Boolean, List<Message>> splitLists = errorHandler.split(messages, ErrorScope.DLQ);
-
         List<Message> returnedMessages = doDLQ(splitLists.get(Boolean.TRUE));
-
         if (!returnedMessages.isEmpty() && dlqConfig.getDlqRetryFailAfterMaxAttemptEnable()) {
             throw new IOException("exhausted maximum number of allowed retry attempts to write messages to DLQ");
         }
@@ -77,22 +73,28 @@ public class SinkWithDlq extends SinkDecorator {
         return returnedMessages;
     }
 
+    private void backOff(List<Message> messageList, int attemptCount) {
+        if (messageList.isEmpty()) {
+            return;
+        }
+        backOffProvider.backOff(attemptCount);
+    }
+
     private List<Message> doDLQ(List<Message> messages) throws IOException {
         List<Message> retryQueueMessages = new LinkedList<>(messages);
         retryQueueMessages.forEach(m -> {
-            if (m.getErrorInfo() == null) {
-                m.setErrorInfo(new ErrorInfo(null, ErrorType.DEFAULT_ERROR));
-            }
+            m.setDefaultErrorIfNotPresent();
             instrumentation.captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, m.getErrorInfo().getErrorType(), 1);
         });
         int attemptCount = 1;
         while (attemptCount <= this.dlqConfig.getDlqRetryMaxAttempts() && !retryQueueMessages.isEmpty()) {
-            instrumentation.incrementCounter(DLQ_RETRY_TOTAL);
+            instrumentation.incrementCounter(DLQ_RETRY_ATTEMPTS_TOTAL);
             retryQueueMessages = writer.write(retryQueueMessages);
             retryQueueMessages.forEach(message -> Optional.ofNullable(message.getErrorInfo())
                     .flatMap(errorInfo -> Optional.ofNullable(errorInfo.getException()))
                     .ifPresent(e -> instrumentation.captureDLQErrors(message, e)));
-            backOffProvider.backOff(++attemptCount);
+            backOff(retryQueueMessages, attemptCount);
+            attemptCount++;
         }
         if (!retryQueueMessages.isEmpty()) {
             instrumentation.logInfo("failed to be processed by DLQ messages: {}", retryQueueMessages.size());

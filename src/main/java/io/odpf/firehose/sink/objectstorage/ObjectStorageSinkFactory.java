@@ -11,20 +11,16 @@ import io.odpf.firehose.objectstorage.ObjectStorageType;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.objectstorage.message.MessageDeSerializer;
-import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProto;
-import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoFile;
-import io.odpf.firehose.sink.objectstorage.proto.NestedKafkaMetadataProto;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoMessage;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoMessageUtils;
+import io.odpf.firehose.sink.objectstorage.proto.NestedKafkaMetadataProtoMessage;
 import io.odpf.firehose.sink.objectstorage.writer.WriterOrchestrator;
 import io.odpf.firehose.sink.objectstorage.writer.local.LocalStorage;
-import io.odpf.firehose.sink.objectstorage.writer.local.PartitionConfig;
-import io.odpf.firehose.sink.objectstorage.writer.local.PartitionFactory;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.SizeBasedRotatingPolicy;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.TimeBasedRotatingPolicy;
 import io.odpf.firehose.sink.objectstorage.writer.local.policy.WriterPolicy;
 import org.aeonbits.owner.ConfigFactory;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,54 +31,32 @@ public class ObjectStorageSinkFactory implements SinkFactory {
     @Override
     public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         ObjectStorageSinkConfig sinkConfig = ConfigFactory.create(ObjectStorageSinkConfig.class, configuration);
-
         LocalStorage localStorage = getLocalFileWriterWrapper(sinkConfig, stencilClient, statsDReporter);
-
         ObjectStorage sinkObjectStorage = createSinkObjectStorage(sinkConfig, new HashMap<>(configuration));
-
-        WriterOrchestrator writerOrchestrator = new WriterOrchestrator(localStorage, sinkObjectStorage, statsDReporter);
+        WriterOrchestrator writerOrchestrator = new WriterOrchestrator(sinkConfig, localStorage, sinkObjectStorage, statsDReporter);
         MessageDeSerializer messageDeSerializer = new MessageDeSerializer(sinkConfig, stencilClient);
-
         return new ObjectStorageSink(new Instrumentation(statsDReporter, ObjectStorageSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer);
     }
 
     private Descriptors.Descriptor getMetadataMessageDescriptor(ObjectStorageSinkConfig sinkConfig) {
-        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoFile.createFileDescriptor(sinkConfig.getKafkaMetadataColumnName());
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(sinkConfig.getKafkaMetadataColumnName());
         return sinkConfig.getKafkaMetadataColumnName().isEmpty()
-                ? fileDescriptor.findMessageTypeByName(KafkaMetadataProto.getTypeName())
-                : fileDescriptor.findMessageTypeByName(NestedKafkaMetadataProto.getTypeName());
+                ? fileDescriptor.findMessageTypeByName(KafkaMetadataProtoMessage.getTypeName())
+                : fileDescriptor.findMessageTypeByName(NestedKafkaMetadataProtoMessage.getTypeName());
 
     }
 
     private LocalStorage getLocalFileWriterWrapper(ObjectStorageSinkConfig sinkConfig, StencilClient stencilClient, StatsDReporter statsDReporter) {
         Descriptors.Descriptor outputMessageDescriptor = stencilClient.get(sinkConfig.getInputSchemaProtoClass());
         Descriptors.Descriptor metadataMessageDescriptor = getMetadataMessageDescriptor(sinkConfig);
-
-        PartitionFactory partitionFactory = new PartitionFactory(
-                sinkConfig.getKafkaMetadataColumnName(),
-                sinkConfig.getTimePartitioningFieldName(),
-                new PartitionConfig(
-                        sinkConfig.getTimePartitioningTimeZone(),
-                        sinkConfig.getPartitioningType(),
-                        sinkConfig.getTimePartitioningDatePrefix(),
-                        sinkConfig.getTimePartitioningHourPrefix()));
-
-
         List<WriterPolicy> writerPolicies = new ArrayList<>();
         writerPolicies.add(new TimeBasedRotatingPolicy(sinkConfig.getFileRotationDurationMS()));
         writerPolicies.add(new SizeBasedRotatingPolicy(sinkConfig.getFileRotationMaxSizeBytes()));
-
-        Path localBasePath = Paths.get(sinkConfig.getLocalDirectory());
-
         return new LocalStorage(
-                sinkConfig.getFileWriterType(),
-                sinkConfig.getWriterPageSize(),
-                sinkConfig.getWriterBlockSize(),
+                sinkConfig,
                 outputMessageDescriptor,
                 metadataMessageDescriptor.getFields(),
-                localBasePath,
                 writerPolicies,
-                partitionFactory,
                 new Instrumentation(statsDReporter, LocalStorage.class));
     }
 

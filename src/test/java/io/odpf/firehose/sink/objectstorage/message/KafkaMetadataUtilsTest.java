@@ -4,12 +4,11 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Timestamp;
 import io.odpf.firehose.consumer.Message;
-import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProto;
-import io.odpf.firehose.sink.objectstorage.proto.NestedKafkaMetadataProto;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoMessage;
+import io.odpf.firehose.sink.objectstorage.proto.KafkaMetadataProtoMessageUtils;
 import org.junit.Test;
 
 import java.time.Instant;
-import java.util.List;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.Is.is;
@@ -31,19 +30,19 @@ public class KafkaMetadataUtilsTest {
         String kafkaMetadataColumnName = "";
 
         Message message = new Message(logKey, logMessage, topic, partition, offset, null, timestamp.toEpochMilli(), consumeTimestamp.toEpochMilli());
-        KafkaMetadataUtils kafkaMetadataUtils = new KafkaMetadataUtils(kafkaMetadataColumnName);
-        DynamicMessage kafkaMetadata = kafkaMetadataUtils.createKafkaMetadata(message);
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(kafkaMetadataColumnName);
+        DynamicMessage kafkaMetadata = KafkaMetadataUtils.createKafkaMetadata(fileDescriptor, message, kafkaMetadataColumnName);
 
-        Descriptors.Descriptor descriptor = kafkaMetadataUtils.getMetadataDescriptor();
+        Descriptors.Descriptor descriptor = kafkaMetadata.getDescriptorForType();
 
-        assertEquals(topic, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProto.MESSAGE_TOPIC_FIELD_NAME)));
-        assertEquals(partition, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProto.MESSAGE_PARTITION_FIELD_NAME)));
-        assertEquals(offset, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProto.MESSAGE_OFFSET_FIELD_NAME)));
+        assertEquals(topic, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_TOPIC_FIELD_NAME)));
+        assertEquals(partition, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_PARTITION_FIELD_NAME)));
+        assertEquals(offset, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_OFFSET_FIELD_NAME)));
         assertEquals(Timestamp.newBuilder()
                         .setSeconds(timestamp.getEpochSecond())
                         .setNanos(timestamp.getNano()).build(),
-                kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProto.MESSAGE_TIMESTAMP_FIELD_NAME)));
-        assertThat(kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProto.LOAD_TIME_FIELD_NAME)), is(instanceOf(Timestamp.class)));
+                kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_TIMESTAMP_FIELD_NAME)));
+        assertThat(kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.LOAD_TIME_FIELD_NAME)), is(instanceOf(Timestamp.class)));
     }
 
     @Test
@@ -51,60 +50,22 @@ public class KafkaMetadataUtilsTest {
         String kafkaMetadataColumnName = "metadata_field_name";
 
         Message message = new Message(logKey, logMessage, topic, partition, offset, null, timestamp.toEpochMilli(), consumeTimestamp.toEpochMilli());
-        KafkaMetadataUtils kafkaMetadataUtils = new KafkaMetadataUtils(kafkaMetadataColumnName);
-        DynamicMessage nestedKafkaMetadata = kafkaMetadataUtils.createKafkaMetadata(message);
-        Descriptors.Descriptor nestedMetadataDescriptor = kafkaMetadataUtils.getMetadataDescriptor();
+
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(kafkaMetadataColumnName);
+        DynamicMessage nestedKafkaMetadata = KafkaMetadataUtils.createKafkaMetadata(fileDescriptor, message, kafkaMetadataColumnName);
+        Descriptors.Descriptor nestedMetadataDescriptor = nestedKafkaMetadata.getDescriptorForType();
 
         DynamicMessage kafkaMetadata = (DynamicMessage) nestedKafkaMetadata.getField(nestedMetadataDescriptor.findFieldByName(kafkaMetadataColumnName));
         Descriptors.Descriptor descriptor = kafkaMetadata.getDescriptorForType();
 
-        assertEquals(topic, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProto.MESSAGE_TOPIC_FIELD_NAME)));
-        assertEquals(partition, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProto.MESSAGE_PARTITION_FIELD_NAME)));
-        assertEquals(offset, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProto.MESSAGE_OFFSET_FIELD_NAME)));
+        assertEquals(topic, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_TOPIC_FIELD_NAME)));
+        assertEquals(partition, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_PARTITION_FIELD_NAME)));
+        assertEquals(offset, kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_OFFSET_FIELD_NAME)));
         assertEquals(Timestamp.newBuilder()
                         .setSeconds(timestamp.getEpochSecond())
                         .setNanos(timestamp.getNano()).build(),
-                kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProto.MESSAGE_TIMESTAMP_FIELD_NAME)));
-        assertThat(kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProto.LOAD_TIME_FIELD_NAME)), is(instanceOf(Timestamp.class)));
+                kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.MESSAGE_TIMESTAMP_FIELD_NAME)));
+        assertThat(kafkaMetadata.getField(descriptor.findFieldByName(KafkaMetadataProtoMessage.LOAD_TIME_FIELD_NAME)), is(instanceOf(Timestamp.class)));
     }
 
-    @Test
-    public void shouldReturnMetadataFieldDescriptor() {
-        String kafkaMetadataColumnName = "";
-
-        KafkaMetadataUtils kafkaMetadataUtils = new KafkaMetadataUtils(kafkaMetadataColumnName);
-        List<Descriptors.FieldDescriptor> fieldDescriptor = kafkaMetadataUtils.getFieldDescriptor();
-
-        assertEquals(kafkaMetadataUtils.getMetadataDescriptor().getFields(), fieldDescriptor);
-    }
-
-    @Test
-    public void shouldReturnMetadataFieldDescriptorWhenMetadataIsNested() {
-        String kafkaMetadataColumnName = "metadata_column_name";
-
-        KafkaMetadataUtils kafkaMetadataUtils = new KafkaMetadataUtils(kafkaMetadataColumnName);
-        List<Descriptors.FieldDescriptor> fieldDescriptor = kafkaMetadataUtils.getFieldDescriptor();
-
-        assertEquals(kafkaMetadataUtils.getMetadataDescriptor().getFields(), fieldDescriptor);
-    }
-
-    @Test
-    public void shouldReturnMetadataDescriptor() {
-        String kafkaMetadataColumnName = "";
-
-        KafkaMetadataUtils kafkaMetadataUtils = new KafkaMetadataUtils(kafkaMetadataColumnName);
-        Descriptors.Descriptor descriptor = kafkaMetadataUtils.getMetadataDescriptor();
-
-        assertEquals(KafkaMetadataProto.getTypeName(), descriptor.getName());
-    }
-
-    @Test
-    public void shouldReturnMetadataDescriptorWhenMetadataIsNested() {
-        String kafkaMetadataColumnName = "metadata_column_name";
-
-        KafkaMetadataUtils kafkaMetadataUtils = new KafkaMetadataUtils(kafkaMetadataColumnName);
-        Descriptors.Descriptor descriptor = kafkaMetadataUtils.getMetadataDescriptor();
-
-        assertEquals(NestedKafkaMetadataProto.getTypeName(), descriptor.getName());
-    }
 }

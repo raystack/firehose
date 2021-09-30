@@ -14,7 +14,7 @@ import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.sink.bigquery.MessageUtils;
 import io.odpf.firehose.sink.bigquery.OffsetInfo;
 import io.odpf.firehose.sink.bigquery.models.Records;
-import io.odpf.firehose.sink.exception.UnknownFieldsException;
+import io.odpf.firehose.exception.UnknownFieldsException;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;

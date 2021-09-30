@@ -16,7 +16,12 @@ public class ByteProtoField implements ProtoField {
     @Override
     public Object getValue() {
         ByteString byteString = (ByteString) fieldValue;
-        return new String(Base64.getEncoder().encode(byteString.toStringUtf8().getBytes()));
+        byte[] bytes = byteString.toStringUtf8().getBytes();
+        return base64Encode(bytes);
+    }
+
+    private String base64Encode(byte[] bytes) {
+        return new String(Base64.getEncoder().encode(bytes));
     }
 
     @Override

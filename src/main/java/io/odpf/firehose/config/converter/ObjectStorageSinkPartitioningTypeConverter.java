@@ -5,9 +5,9 @@ import org.aeonbits.owner.Converter;
 
 import java.lang.reflect.Method;
 
-public class ObjectStorageSinkPartitioningTypeConverter implements Converter<Constants.PartitioningType> {
+public class ObjectStorageSinkPartitioningTypeConverter implements Converter<Constants.FilePartitionType> {
     @Override
-    public Constants.PartitioningType convert(Method method, String input) {
-        return Constants.PartitioningType.valueOf(input.toUpperCase());
+    public Constants.FilePartitionType convert(Method method, String input) {
+        return Constants.FilePartitionType.valueOf(input.toUpperCase());
     }
 }

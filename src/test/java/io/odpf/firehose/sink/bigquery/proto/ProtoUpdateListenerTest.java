@@ -4,15 +4,18 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.models.DescriptorAndTypeName;
+import com.gojek.de.stencil.parser.ProtoParser;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import io.odpf.firehose.TestKeyBQ;
 import io.odpf.firehose.config.BigQuerySinkConfig;
+import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryClient;
-import io.odpf.firehose.sink.bigquery.models.BQField;
+import io.odpf.firehose.sink.bigquery.models.MetadataUtil;
 import io.odpf.firehose.sink.bigquery.models.ProtoField;
+import io.odpf.firehose.sink.bigquery.models.Records;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,7 +26,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 import static org.mockito.Mockito.doNothing;
@@ -56,8 +61,8 @@ public class ProtoUpdateListenerTest {
         ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper);
 
         ProtoField returnedProtoField = new ProtoField();
-        returnedProtoField.addField(new ProtoField("order_number", 1));
-        returnedProtoField.addField(new ProtoField("order_url", 2));
+        returnedProtoField.addField(ProtoUtil.createProtoField("order_number", 1));
+        returnedProtoField.addField(ProtoUtil.createProtoField("order_url", 2));
 
         HashMap<String, DescriptorAndTypeName> descriptorsMap = new HashMap<String, DescriptorAndTypeName>() {{
             put(String.format("%s", TestKeyBQ.class.getName()), new DescriptorAndTypeName(TestKeyBQ.getDescriptor(), String.format(".%s.%s", TestKeyBQ.getDescriptor().getFile().getPackage(), TestKeyBQ.getDescriptor().getName())));
@@ -70,12 +75,20 @@ public class ProtoUpdateListenerTest {
         ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
             add(Field.newBuilder("order_number", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
             add(Field.newBuilder("order_url", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
-            addAll(BQField.getMetadataFields());
+            addAll(MetadataUtil.getMetadataFields());
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
 
+        ProtoParser protoParser = new ProtoParser(stencilClient, config.getInputSchemaProtoClass());
+        protoUpdateListener.setStencilParser(protoParser);
         protoUpdateListener.onProtoUpdate("", descriptorsMap);
-
+        TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
+        Instant now = Instant.now();
+        Message testMessage = new Message("".getBytes(), testKeyBQ.toByteArray(), "topic", 1, 1);
+        Records convert = protoUpdateListener.getMessageRecordConverterCache().getMessageRecordConverter().convert(Collections.singletonList(testMessage), now);
+        Assert.assertEquals(1, convert.getValidRecords().size());
+        Assert.assertEquals("order", convert.getValidRecords().get(0).getColumns().get("order_number"));
+        Assert.assertEquals("test", convert.getValidRecords().get(0).getColumns().get("order_url"));
     }
 
 
@@ -97,8 +110,8 @@ public class ProtoUpdateListenerTest {
     public void shouldThrowExceptionIfConverterFails() throws IOException {
         ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper);
         ProtoField returnedProtoField = new ProtoField();
-        returnedProtoField.addField(new ProtoField("order_number", 1));
-        returnedProtoField.addField(new ProtoField("order_url", 2));
+        returnedProtoField.addField(ProtoUtil.createProtoField("order_number", 1));
+        returnedProtoField.addField(ProtoUtil.createProtoField("order_url", 2));
 
         HashMap<String, DescriptorAndTypeName> descriptorsMap = new HashMap<String, DescriptorAndTypeName>() {{
             put(String.format("%s.%s", TestKeyBQ.class.getPackage(), TestKeyBQ.class.getName()), new DescriptorAndTypeName(TestKeyBQ.getDescriptor(), String.format(".%s.%s", TestKeyBQ.getDescriptor().getFile().getPackage(), TestKeyBQ.getDescriptor().getName())));
@@ -110,7 +123,7 @@ public class ProtoUpdateListenerTest {
         ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
             add(Field.newBuilder("order_number", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
             add(Field.newBuilder("order_url", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
-            addAll(BQField.getMetadataFields());
+            addAll(MetadataUtil.getMetadataFields());
         }};
         doThrow(new BigQueryException(10, "bigquery mapping has failed")).when(bigQueryClient).upsertTable(bqSchemaFields);
 
@@ -122,8 +135,8 @@ public class ProtoUpdateListenerTest {
         ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper);
 
         ProtoField returnedProtoField = new ProtoField();
-        returnedProtoField.addField(new ProtoField("order_number", 1));
-        returnedProtoField.addField(new ProtoField("order_url", 2));
+        returnedProtoField.addField(ProtoUtil.createProtoField("order_number", 1));
+        returnedProtoField.addField(ProtoUtil.createProtoField("order_url", 2));
 
         HashMap<String, DescriptorAndTypeName> descriptorsMap = new HashMap<String, DescriptorAndTypeName>() {{
             put(String.format("%s.%s", TestKeyBQ.class.getPackage(), TestKeyBQ.class.getName()), new DescriptorAndTypeName(TestKeyBQ.getDescriptor(), String.format(".%s.%s", TestKeyBQ.getDescriptor().getFile().getPackage(), TestKeyBQ.getDescriptor().getName())));
@@ -135,7 +148,7 @@ public class ProtoUpdateListenerTest {
         ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
             add(Field.newBuilder("order_number", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
             add(Field.newBuilder("order_url", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
-            addAll(BQField.getMetadataFields());
+            addAll(MetadataUtil.getMetadataFields());
         }};
         doThrow(new RuntimeException("cannot change dataset location")).when(bigQueryClient).upsertTable(bqSchemaFields);
 
@@ -147,8 +160,8 @@ public class ProtoUpdateListenerTest {
         ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper);
 
         ProtoField returnedProtoField = new ProtoField();
-        returnedProtoField.addField(new ProtoField("order_number", 1));
-        returnedProtoField.addField(new ProtoField("order_url", 2));
+        returnedProtoField.addField(ProtoUtil.createProtoField("order_number", 1));
+        returnedProtoField.addField(ProtoUtil.createProtoField("order_url", 2));
 
         HashMap<String, DescriptorAndTypeName> descriptorsMap = new HashMap<String, DescriptorAndTypeName>() {{
             put(String.format("%s", TestKeyBQ.class.getName()), new DescriptorAndTypeName(TestKeyBQ.getDescriptor(), String.format(".%s.%s", TestKeyBQ.getDescriptor().getFile().getPackage(), TestKeyBQ.getDescriptor().getName())));
@@ -161,10 +174,19 @@ public class ProtoUpdateListenerTest {
         ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
             add(Field.newBuilder("order_number", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
             add(Field.newBuilder("order_url", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
-            addAll(BQField.getMetadataFields()); // metadata fields are not namespaced
+            addAll(MetadataUtil.getMetadataFields()); // metadata fields are not namespaced
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
+        ProtoParser protoParser = new ProtoParser(stencilClient, config.getInputSchemaProtoClass());
+        protoUpdateListener.setStencilParser(protoParser);
         protoUpdateListener.onProtoUpdate("", descriptorsMap);
+        TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
+        Instant now = Instant.now();
+        Message testMessage = new Message("".getBytes(), testKeyBQ.toByteArray(), "topic", 1, 1);
+        Records convert = protoUpdateListener.getMessageRecordConverterCache().getMessageRecordConverter().convert(Collections.singletonList(testMessage), now);
+        Assert.assertEquals(1, convert.getValidRecords().size());
+        Assert.assertEquals("order", convert.getValidRecords().get(0).getColumns().get("order_number"));
+        Assert.assertEquals("test", convert.getValidRecords().get(0).getColumns().get("order_url"));
         verify(bigQueryClient, times(1)).upsertTable(bqSchemaFields); // assert that metadata fields were not namespaced
     }
 
@@ -175,8 +197,8 @@ public class ProtoUpdateListenerTest {
         ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper);
 
         ProtoField returnedProtoField = new ProtoField();
-        returnedProtoField.addField(new ProtoField("order_number", 1));
-        returnedProtoField.addField(new ProtoField("order_url", 2));
+        returnedProtoField.addField(ProtoUtil.createProtoField("order_number", 1));
+        returnedProtoField.addField(ProtoUtil.createProtoField("order_url", 2));
 
         HashMap<String, DescriptorAndTypeName> descriptorsMap = new HashMap<String, DescriptorAndTypeName>() {{
             put(String.format("%s", TestKeyBQ.class.getName()), new DescriptorAndTypeName(TestKeyBQ.getDescriptor(), String.format(".%s.%s", TestKeyBQ.getDescriptor().getFile().getPackage(), TestKeyBQ.getDescriptor().getName())));
@@ -189,11 +211,20 @@ public class ProtoUpdateListenerTest {
         ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
             add(Field.newBuilder("order_number", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
             add(Field.newBuilder("order_url", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
-            add(BQField.getNamespacedMetadataField(config.getBqMetadataNamespace())); // metadata fields are namespaced
+            add(MetadataUtil.getNamespacedMetadataField(config.getBqMetadataNamespace())); // metadata fields are namespaced
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
 
+        ProtoParser protoParser = new ProtoParser(stencilClient, config.getInputSchemaProtoClass());
+        protoUpdateListener.setStencilParser(protoParser);
         protoUpdateListener.onProtoUpdate("", descriptorsMap);
+        TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
+        Instant now = Instant.now();
+        Message testMessage = new Message("".getBytes(), testKeyBQ.toByteArray(), "topic", 1, 1);
+        Records convert = protoUpdateListener.getMessageRecordConverterCache().getMessageRecordConverter().convert(Collections.singletonList(testMessage), now);
+        Assert.assertEquals(1, convert.getValidRecords().size());
+        Assert.assertEquals("order", convert.getValidRecords().get(0).getColumns().get("order_number"));
+        Assert.assertEquals("test", convert.getValidRecords().get(0).getColumns().get("order_url"));
 
         verify(bigQueryClient, times(1)).upsertTable(bqSchemaFields);
         System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "");
@@ -206,8 +237,8 @@ public class ProtoUpdateListenerTest {
         ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper);
 
         ProtoField returnedProtoField = new ProtoField();
-        returnedProtoField.addField(new ProtoField("order_number", 1));
-        returnedProtoField.addField(new ProtoField("order_url", 2));
+        returnedProtoField.addField(ProtoUtil.createProtoField("order_number", 1));
+        returnedProtoField.addField(ProtoUtil.createProtoField("order_url", 2));
 
         HashMap<String, DescriptorAndTypeName> descriptorsMap = new HashMap<String, DescriptorAndTypeName>() {{
             put(String.format("%s", TestKeyBQ.class.getName()), new DescriptorAndTypeName(TestKeyBQ.getDescriptor(), String.format(".%s.%s", TestKeyBQ.getDescriptor().getFile().getPackage(), TestKeyBQ.getDescriptor().getName())));
@@ -219,7 +250,7 @@ public class ProtoUpdateListenerTest {
         ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
             add(Field.newBuilder("order_number", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
             add(Field.newBuilder("order_url", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
-            add(BQField.getNamespacedMetadataField(config.getBqMetadataNamespace()));
+            add(MetadataUtil.getNamespacedMetadataField(config.getBqMetadataNamespace()));
         }};
 
         Exception exception = Assertions.assertThrows(RuntimeException.class, () -> {

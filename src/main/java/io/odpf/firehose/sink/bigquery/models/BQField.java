@@ -4,12 +4,15 @@ import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.protobuf.DescriptorProtos;
+import io.odpf.firehose.sink.bigquery.exception.BQSchemaMappingException;
+import lombok.EqualsAndHashCode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@EqualsAndHashCode
 public class BQField {
     private static final Map<DescriptorProtos.FieldDescriptorProto.Label, Field.Mode> FIELD_LABEL_TO_BQ_MODE_MAP = new HashMap<DescriptorProtos.FieldDescriptorProto.Label, Field.Mode>() {{
         put(DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL, Field.Mode.NULLABLE);
@@ -46,6 +49,13 @@ public class BQField {
     private final LegacySQLTypeName type;
     private List<Field> subFields;
 
+    public BQField(String name, Field.Mode mode, LegacySQLTypeName type, List<Field> subFields) {
+        this.name = name;
+        this.mode = mode;
+        this.type = type;
+        this.subFields = subFields;
+    }
+
     public BQField(ProtoField protoField) {
         this.name = protoField.getName();
         this.mode = FIELD_LABEL_TO_BQ_MODE_MAP.get(protoField.getLabel());
@@ -53,30 +63,18 @@ public class BQField {
         this.subFields = new ArrayList<>();
     }
 
-    public static final List<Field> getMetadataFields() {
-        return new ArrayList<Field>() {{
-            add(Field.newBuilder(Constants.OFFSET_COLUMN_NAME, LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
-            add(Field.newBuilder(Constants.TOPIC_COLUMN_NAME, LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
-            add(Field.newBuilder(Constants.LOAD_TIME_COLUMN_NAME, LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build());
-            add(Field.newBuilder(Constants.TIMESTAMP_COLUMN_NAME, LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build());
-            add(Field.newBuilder(Constants.PARTITION_COLUMN_NAME, LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
-        }};
-    }
-
-    public static Field getNamespacedMetadataField(String namespace) {
-        return Field
-                .newBuilder(namespace, LegacySQLTypeName.RECORD, FieldList.of(getMetadataFields()))
-                .setMode(Field.Mode.NULLABLE)
-                .build();
-    }
-
+    /**
+     * Map fully qualified type name or protobuf type to bigquery types.
+     * Fully qualified name will be used as mapping key before protobuf type being used
+     * @param protoField
+     * @return
+     */
     private LegacySQLTypeName getType(ProtoField protoField) {
         LegacySQLTypeName typeFromFieldName = FIELD_NAME_TO_BQ_TYPE_MAP.get(protoField.getTypeName()) != null
                 ? FIELD_NAME_TO_BQ_TYPE_MAP.get(protoField.getTypeName())
                 : FIELD_TYPE_TO_BQ_TYPE_MAP.get(protoField.getType());
         if (typeFromFieldName == null) {
-            //statsClient.increment(String.format("proto.bq.typemapping.notfound.errors,field=%s,type=%s,typeName=%s", protoField.getName(), protoField.getType(), protoField.getTypeName()));
-            throw new RuntimeException(String.format("No type mapping found for field: %s, fieldType: %s, typeName: %s", protoField.getName(), protoField.getType(), protoField.getTypeName()));
+            throw new BQSchemaMappingException(String.format("No type mapping found for field: %s, fieldType: %s, typeName: %s", protoField.getName(), protoField.getType(), protoField.getTypeName()));
         }
         return typeFromFieldName;
     }
@@ -99,4 +97,6 @@ public class BQField {
     public LegacySQLTypeName getType() {
         return type;
     }
+
+
 }

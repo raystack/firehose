@@ -4,6 +4,7 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import io.odpf.firehose.sink.bigquery.converter.fields.NestedProtoField;
 import io.odpf.firehose.sink.bigquery.converter.fields.ProtoField;
+import io.odpf.firehose.sink.bigquery.exception.ConfigurationException;
 import io.odpf.firehose.sink.bigquery.models.Constants;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,7 @@ public class RowMapper {
 
     public Map<String, Object> map(DynamicMessage message) {
         if (mapping == null) {
-            throw new RuntimeException("BQ_PROTO_COLUMN_MAPPING is not configured");
+            throw new ConfigurationException("BQ_PROTO_COLUMN_MAPPING is not configured");
         }
         return getMappings(message, mapping);
     }

@@ -20,8 +20,8 @@ public interface ObjectStorageSinkConfig extends AppConfig {
     @DefaultValue("")
     String getKafkaMetadataColumnName();
 
-    @Key("SINK_OBJECT_STORAGE_WRITE_KAFKA_METADATA")
-    boolean getWriteKafkaMetadata();
+    @Key("SINK_OBJECT_STORAGE_WRITE_KAFKA_METADATA_ENABLE")
+    boolean getWriteKafkaMetadataEnable();
 
     @Key("SINK_OBJECT_STORAGE_WRITER_BLOCK_SIZE")
     @DefaultValue("134217728")
@@ -53,7 +53,7 @@ public interface ObjectStorageSinkConfig extends AppConfig {
     @Key("SINK_OBJECT_STORAGE_TIME_PARTITIONING_TYPE")
     @DefaultValue("day")
     @ConverterClass(ObjectStorageSinkPartitioningTypeConverter.class)
-    Constants.PartitioningType getPartitioningType();
+    Constants.FilePartitionType getPartitioningType();
 
     @Key("SINK_OBJECT_STORAGE_TIME_PARTITIONING_HOUR_PREFIX")
     @DefaultValue("hr=")
