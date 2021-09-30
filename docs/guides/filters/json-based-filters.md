@@ -92,14 +92,8 @@ Example:
 
 
 /* invalid */
-
-// Less than minimum:
 {"age":-1}
-
-// exclusiveMaximum is true, so 100 is not included:
 {"age":100}
-
-// Greater than maximum:
 {"age":101}
 ```
 
