@@ -132,8 +132,6 @@ Example:
 
 The **if, then and else** keywords allow the application of a sub-schema based on the outcome of another schema, much like the if/then/else constructs you’ve probably seen in traditional programming languages. If if is valid, then must also be valid \(and else is ignored.\) If if is invalid, else must also be valid \(and then is ignored\).
 
-For example, let’s say you wanted to write a schema to handle addresses in the United States and Canada. These countries have different postal code formats, and we want to select which format to validate against based on the country. If the address is in the United States, the postal\_code field is a “zipcode”: five numeric digits followed by an optional four digit suffix. If the address is in Canada, the postal\_code field is a six digit alphanumeric string where letters and numbers alternate.
-
 ```text
 {
   "if": {
@@ -253,8 +251,6 @@ To validate against oneOf, the given data must be valid against exactly one of t
 #### not
 
 The not keyword declares that a instance validates if it doesn’t validate against the given sub-schema.
-
-For example, the following schema validates against anything that is not a string:
 
 ```text
 {
