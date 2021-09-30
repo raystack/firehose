@@ -181,7 +181,7 @@ To validate against allOf, the given data must be valid against all of the given
 {
    "properties":{
       "age":{
-         "oneOf":[
+         "allOf":[
             { "multipleOf":5 },
             { "multipleOf":3 }
          ]
@@ -207,7 +207,7 @@ To validate against anyOf, the given data must be valid against any \(one or mor
 {
    "properties":{
       "age":{
-         "oneOf":[
+         "anyOf":[
             { "multipleOf":5 },
             { "multipleOf":3 }
          ]
