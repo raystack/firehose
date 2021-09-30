@@ -1,8 +1,10 @@
 # JSON-based Filters
 
-To enable JSON-based filtering, you need to set the Firehose environment variable `FILTER_ENGINE=JSON` and provide the required JSON Schema filter rule to the variable`FILTER_JSON_SCHEMA`. JSON-based filters can be applied to both JSON and Protobuf messages.
+To enable JSON-based filtering, you need to set the Firehose environment variable as`FILTER_ENGINE=JSON` and provide the required JSON Schema filter rule to the variable`FILTER_JSON_SCHEMA`. JSON-based filters can be applied to both JSON and Protobuf messages. 
 
-## JSON Schema Syntax
+This article enlists only a few common features of JSON Schema. For more details on other features, refer the [JSON Schema specifications](https://json-schema.org/specification.html). 
+
+## JSON Schema Features
 
 ### Constant values
 
@@ -41,7 +43,6 @@ The following is an example for validating street light colors:
 {
    "properties":{
       "color":{
-         "type":"string",
          "enum":[
             "red",
             "amber",
@@ -74,7 +75,6 @@ Example:
 {
    "properties":{
       "age":{
-         "type":"number",
          "minimum":0,
          "maximum":100,
          "exclusiveMaximum":true
@@ -113,7 +113,6 @@ Example:
 {
    "properties":{
       "pincode":{
-         "type":"string",
          "pattern":"^(\\([0-9]{3}\\))?[0-9]{3}-[0-9]{4}$"
       }
    }
@@ -180,17 +179,24 @@ To validate against allOf, the given data must be valid against all of the given
 
 ```text
 {
-  "allOf": [
-    { "type": "string" },
-    { "maxLength": 5 }
-  ]
+   "properties":{
+      "age":{
+         "oneOf":[
+            { "multipleOf":5 },
+            { "multipleOf":3 }
+         ]
+      }
+   }
 }
 
 /* valid */
-"short"
+{"age:15}
+{"age:30}
+
 
 /* invalid */
-"too long"
+{"age:5}
+{"age:9}
 ```
 
 #### anyOf
@@ -199,19 +205,24 @@ To validate against anyOf, the given data must be valid against any \(one or mor
 
 ```text
 {
-  "anyOf": [
-    { "type": "string", "maxLength": 5 },
-    { "type": "number", "minimum": 0 }
-  ]
+   "properties":{
+      "age":{
+         "oneOf":[
+            { "multipleOf":5 },
+            { "multipleOf":3 }
+         ]
+      }
+   }
 }
 
 /* valid */
-"short"
-12
+{"age:10}
+{"age:15}
+
 
 /* invalid */
-"too long"
--5
+{"age:2}
+{"age:7}
 ```
 
 #### oneOf
@@ -223,12 +234,8 @@ To validate against oneOf, the given data must be valid against exactly one of t
    "properties":{
       "age":{
          "oneOf":[
-            {
-               "multipleOf":5
-            },
-            {
-               "multipleOf":3
-            }
+            { "multipleOf":5 },
+            { "multipleOf":3 }
          ]
       }
    }
@@ -240,11 +247,7 @@ To validate against oneOf, the given data must be valid against exactly one of t
 
 
 /* invalid */
-
-// Not a multiple of either 5 or 3.
 {"age:2}
-
-// Multiple of both 5 and 3 is rejected.
 {"age:15}
 ```
 
