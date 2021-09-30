@@ -176,7 +176,7 @@ The keywords used to combine schemas are:
 
 #### allOf
 
-To enable JEXL-based filtering, you need to set the Firehose environment variable `FILTER_ENGINE=JEXL` and provide the required JEXL filter expression to the variable`FILTER_JEXL_EXPRESSION .`To validate against allOf, the given data must be valid against all of the given sub-schemas.
+To validate against allOf, the given data must be valid against all of the given sub-schemas.
 
 ```text
 {
