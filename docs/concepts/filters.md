@@ -14,7 +14,7 @@ Firehose uses the Apache Commons JEXL library for parsing the filter expressions
 
 JEXL \(Java EXpressions Language\) is an Apache Commons library intended to facilitate the implementation of dynamic and scripting features in applications and frameworks written in Java. Its goal is to expose scripting features usable by technical operatives or consultants working with enterprise platforms.
 
-The API and the expression language exploit Java-beans naming patterns through introspection to expose property getters and setters. It also considers public class fields as properties and allows to invoke any accessible method.
+The API and the expression language exploit Java-beans naming patterns through introspection to expose property getters and setters. It also considers public class fields as properties and allows to invoke any accessible method. JEXL-based filters can be applied to only Protobuf messages, and not on JSON messages.
 
 To evaluate expressions using JEXL, you need three things:
 
@@ -35,14 +35,14 @@ The filtering occurs in the following steps -
 
 ## JSON - based Filtering
 
-**JSON-based** filtering uses a JSON Schema string to apply filter rules and validate if the JSON message passes all filter checks. **JSON Schema** is a vocabulary that allows you to **annotate** and **validate** JSON documents. JSON Schema is a JSON media type for defining the structure of JSON data. It provides a contract for what JSON data is required for a given application and how to interact with it. 
+**JSON-based** filtering uses a JSON Schema string to apply filter rules and validate if the JSON message passes all filter checks. **JSON Schema** is a vocabulary that allows you to **annotate** and **validate** JSON documents. JSON Schema is a JSON media type for defining the structure of JSON data. It provides a contract for what JSON data is required for a given application and how to interact with it.
 
 To filter messages using JSON-based filters, you need two things:
 
 * A JSON Schema string, containing the filter rules
 * A JSON Schema Validator, to validate the message against the JSON Schema
 
-You can read more about JSON Schema [here](https://json-schema.org/). For more details on JSON Schema syntax and specifications, refer [this](https://json-schema.org/specification.html) article. The JSON Schema Validator library used in Firehose is [networknt/json-schema-validator](https://github.com/networknt/json-schema-validator) . 
+You can read more about JSON Schema [here](https://json-schema.org/). For more details on JSON Schema syntax and specifications, refer [this](https://json-schema.org/specification.html) article. The JSON Schema Validator library used in Firehose is [networknt/json-schema-validator](https://github.com/networknt/json-schema-validator) . JSON-based filters can be applied to both JSON and Protobuf messages.
 
 ### How JSON-based Filters Work
 
