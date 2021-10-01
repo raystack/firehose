@@ -1,8 +1,8 @@
 package io.odpf.firehose.config;
 
 import io.odpf.firehose.config.converter.DlqWriterTypeConverter;
-import io.odpf.firehose.config.converter.ObjectStorageTypeConverter;
-import io.odpf.firehose.objectstorage.ObjectStorageType;
+import io.odpf.firehose.config.converter.BlobStorageTypeConverter;
+import io.odpf.firehose.blobstorage.BlobStorageType;
 import io.odpf.firehose.sinkdecorator.dlq.DLQWriterType;
 
 public interface DlqConfig extends AppConfig {
@@ -47,10 +47,10 @@ public interface DlqConfig extends AppConfig {
     @DefaultValue("LOG")
     DLQWriterType getDlqWriterType();
 
-    @Key("DLQ_OBJECT_STORAGE_TYPE")
+    @Key("DLQ_WRITER_BLOB_STORAGE_TYPE")
     @DefaultValue("GCS")
-    @ConverterClass(ObjectStorageTypeConverter.class)
-    ObjectStorageType getObjectStorageType();
+    @ConverterClass(BlobStorageTypeConverter.class)
+    BlobStorageType getBlobStorageType();
 
     @Key("DLQ_RETRY_MAX_ATTEMPTS")
     @DefaultValue("2147483647")

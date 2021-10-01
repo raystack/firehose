@@ -15,6 +15,7 @@ Service-level Indicators \(SLIs\) are the measurements used to calculate the per
 * [Retry](metrics.md#retry)
 * [HTTP Sink](metrics.md#http-sink)
 * [Filter](metrics.md#filter)
+* [Blob Sink](metrics.md#blob-sink)
 
 ## Type Details
 
@@ -331,3 +332,39 @@ Since Firehose supports filtration based on some data, these metrics give some i
 
 * Sum of all the messages filtered because of the filter condition per pod.
 
+## Blob Sink
+
+### `Local File Open Total`
+A gauge, total number of local file that is currently being opened.
+
+### `Local File Closed Total`
+
+Total number of local file that being closed and ready to be uploaded, excluding local file that being closed prematurely due to consumer restart.
+
+### `Local File Closing Time`
+
+Duration of local file closing time.
+
+### `Local File Records Total`
+
+Total number of records that written to all files that have been closed and ready to be uploaded.
+
+### `Local File Size Bytes`
+
+Size of file in bytes.
+
+### `File Uploaded Total`
+
+Total number file that successfully being uploaded.
+
+### `File Upload Time`
+
+Duration of file upload.
+
+### `File Upload Size Bytes`
+
+Total Size of the uploaded file in bytes.
+
+### `File Upload Records Total`
+
+Total number records inside files that successfully being uploaded to blob storage.

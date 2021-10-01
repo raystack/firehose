@@ -31,7 +31,7 @@ import io.odpf.firehose.sink.jdbc.JdbcSinkFactory;
 import io.odpf.firehose.sink.log.KeyOrMessageParser;
 import io.odpf.firehose.sink.log.LogSinkFactory;
 import io.odpf.firehose.sink.mongodb.MongoSinkFactory;
-import io.odpf.firehose.sink.objectstorage.ObjectStorageSinkFactory;
+import io.odpf.firehose.sink.blob.BlobSinkFactory;
 import io.odpf.firehose.sink.prometheus.PromSinkFactory;
 import io.odpf.firehose.sink.redis.RedisSinkFactory;
 import io.odpf.firehose.sinkdecorator.BackOff;
@@ -168,8 +168,8 @@ public class FirehoseConsumerFactory {
                 return new GrpcSinkFactory().create(config, statsDReporter, stencilClient);
             case PROMETHEUS:
                 return new PromSinkFactory().create(config, statsDReporter, stencilClient);
-            case OBJECTSTORAGE:
-                return new ObjectStorageSinkFactory().create(config, statsDReporter, stencilClient);
+            case BLOB:
+                return new BlobSinkFactory().create(config, statsDReporter, stencilClient);
             case BIGQUERY:
                 return new BigQuerySinkFactory().create(config, statsDReporter, stencilClient);
             case MONGODB:
