@@ -1,6 +1,5 @@
 package io.odpf.firehose.consumer;
 
-import com.newrelic.api.agent.Trace;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
