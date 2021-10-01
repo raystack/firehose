@@ -6,9 +6,11 @@ This article enlists only a few common features of JSON Schema. For more details
 
 ## JSON Schema Features
 
-### Constant values
+### Checking equality
 
-The const keyword is used to restrict a value to a single value. For example, to if you only support shipping to the United States for export reasons:
+The `const` keyword is used to restrict a value to a single value. 
+
+#### String
 
 ```text
 {
@@ -26,16 +28,84 @@ The const keyword is used to restrict a value to a single value. For example, to
 { "country": "Canada" }
 ```
 
-It should be noted that const is merely syntactic sugar for an enum with a single element, therefore the following are equivalent:
+#### Integer
 
 ```text
-{ "const": "United States of America" }
-{ "enum": [ "United States of America" ] }
+{
+  "properties": {
+    "age": {
+      "const": 23
+    }
+  }
+}
+
+/* valid */
+{ "age": 23 }
+
+/* invalid */
+{ "age": "23" }
+{ "age": 29 }
+```
+
+#### Float
+
+```text
+{
+  "properties": {
+    "price": {
+      "const": 932.4556
+    }
+  }
+}
+
+/* valid */
+{ "price": 932.4556 }
+
+/* invalid */
+{ "price": "932.4556" }
+{ "price": 932.455 }
+```
+
+#### Boolean
+
+```text
+{
+  "properties": {
+    "auth_enabled": {
+      "const": true
+    }
+  }
+}
+
+/* valid */
+{ "auth_enabled": true }
+
+/* invalid */
+{ "auth_enabled": "true" }
+{ "auth_enabled": false }
+```
+
+#### Array
+
+```text
+{
+  "properties": {
+    "roll_nos": {
+      "const": [5,23,7]
+    }
+  }
+}
+
+/* valid */
+{ "roll_nos": [5,23,7] }
+
+/* invalid */
+{ "roll_nos": [23,2,7] }
 ```
 
 ### Enumerated values
 
-The enum keyword is used to restrict a value to a fixed set of values. It must be an array with at least one element, where each element is unique.
+The `enum` keyword is used to restrict a value to a fixed set of values. It must be an array with at least one element, where each element is unique.
 
 The following is an example for validating street light colors:
 
@@ -43,11 +113,7 @@ The following is an example for validating street light colors:
 {
    "properties":{
       "color":{
-         "enum":[
-            "red",
-            "amber",
-            "green"
-         ]
+         "enum":[ "red","amber", "green" ]
       }
    }
 }
@@ -61,13 +127,13 @@ The following is an example for validating street light colors:
 
 ### Numeric **Range**
 
-Ranges of numbers are specified using a combination of the minimum and maximum keywords, \(or exclusiveMinimum and exclusiveMaximum for expressing exclusive range\).
+Ranges of numbers are specified using a combination of the `minimum` and `maximum` keywords, \(or `exclusiveMinimum` and `exclusiveMaximum` for expressing exclusive range\).
 
 If x is the value being validated, the following must hold true:  
-x ≥ minimum  
-x &gt; exclusiveMinimum  
-x ≤ maximum  
-x &lt; exclusiveMaximum
+x ≥ `minimum`  
+x &gt; `exclusiveMinimum`  
+x ≤ `maximum`  
+x &lt; `exclusiveMaximum`
 
 Example:
 
@@ -76,30 +142,26 @@ Example:
    "properties":{
       "age":{
          "minimum":0,
-         "maximum":100,
-         "exclusiveMaximum":true
+         "maximum":100
       }
    }
 }
 
 
 /* valid */
-
-//exclusiveMinimum was not specified, so 0 is included:
 {"age":0}
-{"age":10}
+{"age":100}
 {"age":99}
 
 
 /* invalid */
 {"age":-1}
-{"age":100}
 {"age":101}
 ```
 
 ### Regex Match
 
-The pattern keyword is used to restrict a string to a particular regular expression. The regular expression syntax is the one defined in JavaScript \(ECMA 262 specifically\). See Regular Expressions for more information.
+The `pattern` keyword is used to restrict a string to a particular regular expression. The regular expression syntax is the one defined in JavaScript \(ECMA 262 specifically\). See Regular Expressions for more information.
 
 Example:
 
@@ -123,7 +185,7 @@ Example:
 
 ### Conditional operators
 
-The **if, then and else** keywords allow the application of a sub-schema based on the outcome of another schema, much like the if/then/else constructs you’ve probably seen in traditional programming languages. If if is valid, then must also be valid \(and else is ignored.\) If if is invalid, else must also be valid \(and then is ignored\).
+The **`if`, `then` and `else`** keywords allow the application of a sub-schema based on the outcome of another schema, much like the if/then/else constructs you’ve probably seen in traditional programming languages. If if is valid, then must also be valid \(and else is ignored.\) If if is invalid, else must also be valid \(and then is ignored\).
 
 ```text
 {
@@ -163,13 +225,13 @@ The **if, then and else** keywords allow the application of a sub-schema based o
 
 The keywords used to combine schemas are:
 
-* allOf: Must be valid against all of the subschemas
-* oneOf: Must be valid against exactly one of the subschemas
-* anyOf: Must be valid against any of the subschemas
+* `allOf`: Must be valid against all of the sub-schemas
+* `oneOf`: Must be valid against exactly one of the sub-schemas
+* `anyOf`: Must be valid against any of the sub-schemas
 
 #### allOf
 
-To validate against allOf, the given data must be valid against all of the given sub-schemas.
+To validate against `allOf`, the given data must be valid against all of the given sub-schemas.
 
 ```text
 {
@@ -195,7 +257,7 @@ To validate against allOf, the given data must be valid against all of the given
 
 #### anyOf
 
-To validate against anyOf, the given data must be valid against any \(one or more\) of the given sub-schemas.
+To validate against `anyOf`, the given data must be valid against any \(one or more\) of the given sub-schemas.
 
 ```text
 {
@@ -221,7 +283,7 @@ To validate against anyOf, the given data must be valid against any \(one or mor
 
 #### oneOf
 
-To validate against oneOf, the given data must be valid against exactly one of the given sub-schemas.
+To validate against `oneOf`, the given data must be valid against exactly one of the given sub-schemas.
 
 ```text
 {
@@ -247,7 +309,7 @@ To validate against oneOf, the given data must be valid against exactly one of t
 
 #### not
 
-The not keyword declares that a instance validates if it doesn’t validate against the given sub-schema.
+The `not` keyword declares that a instance validates if it doesn’t validate against the given sub-schema.
 
 ```text
 {
@@ -266,5 +328,28 @@ The not keyword declares that a instance validates if it doesn’t validate agai
 
 /* invalid */
 {"fruit":"apple"}
+```
+
+### Nested fields
+
+You can apply all the above validation features to any level of nested fields in the JSON/ Protobuf message. Consider the below example - 
+
+```text
+{
+   "properties":{
+      "driver_location":{
+         "properties":{
+            "latitude":{
+               "minimum":-90.453,
+               "maximum":90.2167
+            },
+            "longitude":{
+               "minimum":-180.776,
+               "maximum":180.321
+            }
+         }
+      }
+   }
+}
 ```
 
