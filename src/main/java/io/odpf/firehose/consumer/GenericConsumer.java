@@ -5,6 +5,7 @@ import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
+
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -74,7 +75,6 @@ public class GenericConsumer {
         return filteredMessage;
     }
 
-    @Trace(dispatcher = true)
     public void commit() {
         offsets.commit(records);
     }
