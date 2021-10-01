@@ -35,6 +35,7 @@
   * [JDBC Sink](reference/configuration/jdbc-sink.md)
   * [Prometheus Sink](reference/configuration/prometheus-sink.md)
   * [Redis Sink](reference/configuration/redis-sink.md)
+  * [Object Storage Sink](reference/configuration/objectstorage-sink.md)
 * [Metrics](reference/metrics.md)
 * [FAQs](reference/core-faqs.md)
 * [Glossary](reference/glossary.md)

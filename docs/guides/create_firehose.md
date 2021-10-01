@@ -123,3 +123,9 @@ _**Note:**_ [_**DATABASE**_](../reference/configuration/#-sink_influx_db_name) _
 * You don’t need to modify them necessarily, It is recommended to use them with the default values. More details [here](../reference/configuration/#-standard).
 
 
+## Create an Object Storage Sink
+
+* it requires the following [variables](../reference/configuration.md#objectstorage-sink) to be set.
+* Only support google cloud storage for now.
+* Only support writing protobuf message to apache parquet file format for now.
+* The protobuf message need to have a `google.protobuf.Timestamp` field as partitioning timestamp, `event_timestamp` field is usually being used.
