@@ -1,8 +1,8 @@
 # JSON-based Filters
 
-To enable JSON-based filtering, you need to set the Firehose environment variable as`FILTER_ENGINE=JSON` and provide the required JSON Schema filter rule to the variable`FILTER_JSON_SCHEMA`. JSON-based filters can be applied to both JSON and Protobuf messages. 
+To enable JSON-based filtering, you will need to set the Firehose environment variable as`FILTER_ENGINE=JSON` and provide the required JSON Schema filter string to the variable`FILTER_JSON_SCHEMA`. JSON-based filters can be applied to both JSON as well as Protobuf messages. 
 
-This article enlists only a few common features of JSON Schema. For more details on other features, refer the [JSON Schema specifications](https://json-schema.org/specification.html). 
+This article enlists only a few common features of JSON Schema. For more details on other features, refer the [JSON Schema specifications](https://json-schema.org/specification.html). For more examples on JSON Schema, refer [this article](https://json-schema.org/learn/miscellaneous-examples.html).
 
 ## JSON Schema Features
 
