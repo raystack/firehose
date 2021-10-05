@@ -9,6 +9,7 @@ import io.odpf.firehose.sink.objectstorage.Constants;
 public interface ObjectStorageSinkConfig extends AppConfig {
 
     @Key("SINK_OBJECT_STORAGE_LOCAL_DIRECTORY")
+    @DefaultValue("/tmp/firehose")
     String getLocalDirectory();
 
     @Key("SINK_OBJECT_STORAGE_LOCAL_FILE_WRITER_TYPE")
@@ -21,6 +22,7 @@ public interface ObjectStorageSinkConfig extends AppConfig {
     String getKafkaMetadataColumnName();
 
     @Key("SINK_OBJECT_STORAGE_WRITE_KAFKA_METADATA_ENABLE")
+    @DefaultValue("false")
     boolean getWriteKafkaMetadataEnable();
 
     @Key("SINK_OBJECT_STORAGE_WRITER_BLOCK_SIZE")
@@ -51,7 +53,7 @@ public interface ObjectStorageSinkConfig extends AppConfig {
     String getTimePartitioningDatePrefix();
 
     @Key("SINK_OBJECT_STORAGE_TIME_PARTITIONING_TYPE")
-    @DefaultValue("day")
+    @DefaultValue("hour")
     @ConverterClass(ObjectStorageSinkPartitioningTypeConverter.class)
     Constants.FilePartitionType getPartitioningType();
 

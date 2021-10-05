@@ -28,7 +28,7 @@ public interface BigQuerySinkConfig extends AppConfig {
     @Key("SINK_BIGQUERY_CREDENTIAL_PATH")
     String getBigQueryCredentialPath();
 
-    @Key("SINK_BIGQUERY_ENABLE_TABLE_PARTITIONING")
+    @Key("SINK_BIGQUERY_ENABLE_TABLE_PARTITIONING_ENABLE")
     @DefaultValue("false")
     Boolean isTablePartitioningEnabled();
 
@@ -36,22 +36,22 @@ public interface BigQuerySinkConfig extends AppConfig {
     String getTablePartitionKey();
 
     @DefaultValue("true")
-    @Key("SINK_BIGQUERY_ENABLE_ROW_INSERT_ID")
+    @Key("SINK_BIGQUERY_ENABLE_ROW_INSERT_ID_ENABLE")
     Boolean isRowInsertIdEnabled();
 
     @DefaultValue("-1")
     @Key("SINK_BIGQUERY_CLIENT_READ_TIMEOUT_MS")
-    String getBqClientReadTimeoutMS();
+    int getBqClientReadTimeoutMS();
 
     @DefaultValue("-1")
     @Key("SINK_BIGQUERY_CLIENT_CONNECT_TIMEOUT_MS")
-    String getBqClientConnectTimeoutMS();
+    int getBqClientConnectTimeoutMS();
 
     @DefaultValue("-1")
     @Key("SINK_BIGQUERY_TABLE_PARTITION_EXPIRY_MS")
     Long getBigQueryTablePartitionExpiryMS();
 
-    @DefaultValue("US")
+    @DefaultValue("asia-southeast1")
     @Key("SINK_BIGQUERY_DATASET_LOCATION")
     String getBigQueryDatasetLocation();
 

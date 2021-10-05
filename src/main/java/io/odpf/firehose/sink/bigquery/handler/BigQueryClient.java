@@ -49,8 +49,8 @@ public class BigQueryClient {
 
     private static BigQuery getBigQueryInstance(BigQuerySinkConfig sinkConfig) throws IOException {
         TransportOptions transportOptions = BigQueryOptions.getDefaultHttpTransportOptions().toBuilder()
-                .setConnectTimeout(Integer.parseInt(sinkConfig.getBqClientConnectTimeoutMS()))
-                .setReadTimeout(Integer.parseInt(sinkConfig.getBqClientReadTimeoutMS()))
+                .setConnectTimeout(sinkConfig.getBqClientConnectTimeoutMS())
+                .setReadTimeout(sinkConfig.getBqClientReadTimeoutMS())
                 .build();
         return BigQueryOptions.newBuilder()
                 .setTransportOptions(transportOptions)
