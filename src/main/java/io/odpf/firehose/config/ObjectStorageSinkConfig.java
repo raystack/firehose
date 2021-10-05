@@ -9,6 +9,7 @@ import io.odpf.firehose.sink.objectstorage.Constants;
 public interface ObjectStorageSinkConfig extends AppConfig {
 
     @Key("SINK_OBJECT_STORAGE_LOCAL_DIRECTORY")
+    @DefaultValue("/tmp/firehose")
     String getLocalDirectory();
 
     @Key("SINK_OBJECT_STORAGE_LOCAL_FILE_WRITER_TYPE")
@@ -51,7 +52,7 @@ public interface ObjectStorageSinkConfig extends AppConfig {
     String getTimePartitioningDatePrefix();
 
     @Key("SINK_OBJECT_STORAGE_TIME_PARTITIONING_TYPE")
-    @DefaultValue("day")
+    @DefaultValue("hour")
     @ConverterClass(ObjectStorageSinkPartitioningTypeConverter.class)
     Constants.FilePartitionType getPartitioningType();
 
