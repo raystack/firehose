@@ -209,16 +209,4 @@ public class JsonFilterTest {
         jsonFilter.filter(Arrays.asList(message1, message2));
         verify(instrumentation, times(1)).logDebug("Message filtered out due to: {}", "$.order_number: must be a constant value 123");
     }
-
-    @Test
-    public void shouldReturnJSONSchemaFilterRule() {
-        Map<String, String> filterConfigs = new HashMap<>();
-        String jsonSchema = "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}";
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "JSON");
-        filterConfigs.put("FILTER_DATA_SOURCE", "message");
-        filterConfigs.put("FILTER_JSON_SCHEMA", jsonSchema);
-        filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        jsonFilter = new JsonFilter(filterConfig, instrumentation);
-        assertEquals(jsonSchema, jsonFilter.getFilterRule());
-    }
 }

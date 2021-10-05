@@ -59,10 +59,4 @@ public class NoOpFilterTest {
         List<Message> filteredMessages = noOpFilter.filter(Arrays.asList(message1, message2));
         assertEquals(inputMessages, filteredMessages);
     }
-
-    @Test
-    public void shouldReturnEmptyStringFilterRule() {
-        NoOpFilter noOpFilter = new NoOpFilter(instrumentation);
-        assertEquals("", noOpFilter.getFilterRule());
-    }
 }

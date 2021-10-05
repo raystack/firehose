@@ -8,7 +8,21 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
-import static io.odpf.firehose.metrics.Metrics.*;
+import static io.odpf.firehose.metrics.Metrics.DLQ_MESSAGES_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.DQL_RETRY_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.ERROR_EVENT;
+import static io.odpf.firehose.metrics.Metrics.ERROR_MESSAGE_CLASS_TAG;
+import static io.odpf.firehose.metrics.Metrics.FAILURE_TAG;
+import static io.odpf.firehose.metrics.Metrics.FATAL_ERROR;
+import static io.odpf.firehose.metrics.Metrics.NON_FATAL_ERROR;
+import static io.odpf.firehose.metrics.Metrics.PIPELINE_END_LATENCY_MILLISECONDS;
+import static io.odpf.firehose.metrics.Metrics.PIPELINE_EXECUTION_LIFETIME_MILLISECONDS;
+import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.SINK_PUSH_BATCH_SIZE_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.SINK_RESPONSE_TIME_MILLISECONDS;
+import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_MESSAGES_FILTER_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_PULL_BATCH_SIZE_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.SUCCESS_TAG;
 
 /**
  * Instrumentation.
@@ -93,10 +107,9 @@ public class Instrumentation {
      * Captures filtered message count.
      *
      * @param filteredMessageCount the filtered message count
-     * @param filterExpression     the filter expression
      */
-    public void captureFilteredMessageCount(int filteredMessageCount, String filterExpression) {
-        statsDReporter.captureCount(SOURCE_KAFKA_MESSAGES_FILTER_TOTAL, filteredMessageCount, "expr=" + filterExpression);
+    public void captureFilteredMessageCount(int filteredMessageCount) {
+        statsDReporter.captureCount(SOURCE_KAFKA_MESSAGES_FILTER_TOTAL, filteredMessageCount);
     }
 
     // =================== ERROR ===================

@@ -77,9 +77,8 @@ public class InstrumentationTest {
 
     @Test
     public void shouldCaptureFilteredMessageCount() {
-        String filterExpression = testMessage;
-        instrumentation.captureFilteredMessageCount(1, filterExpression);
-        verify(statsDReporter, times(1)).captureCount(Metrics.SOURCE_KAFKA_MESSAGES_FILTER_TOTAL, 1, "expr=" + filterExpression);
+        instrumentation.captureFilteredMessageCount(1);
+        verify(statsDReporter, times(1)).captureCount(Metrics.SOURCE_KAFKA_MESSAGES_FILTER_TOTAL, 1);
     }
 
     @Test

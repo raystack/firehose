@@ -26,7 +26,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -112,18 +111,13 @@ public class GenericConsumerTest {
         ConsumerRecord<byte[], byte[]> record1 = new ConsumerRecord<>("topic1", 1, 0, key.toByteArray(), message.toByteArray());
         ConsumerRecord<byte[], byte[]> record2 = new ConsumerRecord<>("topic2", 1, 0, key.toByteArray(), message.toByteArray());
         when(consumerRecords.iterator()).thenReturn(Arrays.asList(record1, record2).iterator());
-        when(filter.getFilterRule()).thenReturn("test");
-
         Message expectedMsg1 = new Message(key.toByteArray(), message.toByteArray(), "topic1", 0, 100);
-
         when(filter.filter(any())).thenReturn(Arrays.asList(expectedMsg1));
-
         List<Message> messages = genericConsumer.readMessages();
-
         assertNotNull(messages);
         assertThat(messages.size(), is(1));
         assertEquals(expectedMsg1, messages.get(0));
-        verify(instrumentation, times(1)).captureFilteredMessageCount(1, "test");
+        verify(instrumentation, times(1)).captureFilteredMessageCount(1);
     }
 
     @Test
@@ -171,12 +165,5 @@ public class GenericConsumerTest {
         } catch (Exception kafkaConsumerException) {
             fail("Failed to supress exception on close");
         }
-    }
-
-    @Test
-    public void shouldCaptureNonFatalError() {
-        doThrow(new RuntimeException()).when(kafkaConsumer).close();
-        genericConsumer.close();
-        verify(instrumentation, times(1)).captureNonFatalError(any(), eq("Exception while closing consumer"));
     }
 }

@@ -22,14 +22,4 @@ public class NoOpFilter implements Filter {
     public List<Message> filter(List<Message> messages) throws FilterException {
         return messages;
     }
-
-    /**
-     * Gets filter rule.
-     *
-     * @return the filter rule
-     */
-    @Override
-    public String getFilterRule() {
-        return "";
-    }
 }

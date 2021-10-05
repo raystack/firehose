@@ -114,14 +114,4 @@ public class JexlFilter implements Filter {
 
         return objectAccessor.substring(0, 1).toLowerCase() + objectAccessor.substring(1);
     }
-
-    /**
-     * Gets filter rule.
-     *
-     * @return the filter rule
-     */
-    @Override
-    public String getFilterRule() {
-        return filterConfig.getFilterJexlExpression();
-    }
 }

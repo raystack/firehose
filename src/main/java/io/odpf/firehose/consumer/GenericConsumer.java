@@ -4,7 +4,6 @@ import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
-
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -69,7 +68,7 @@ public class GenericConsumer {
         List<Message> filteredMessage = filter.filter(messages);
         Integer filteredMessageCount = messages.size() - filteredMessage.size();
         if (filteredMessageCount > 0) {
-            instrumentation.captureFilteredMessageCount(filteredMessageCount, filter.getFilterRule());
+            instrumentation.captureFilteredMessageCount(filteredMessageCount);
         }
         return filteredMessage;
     }

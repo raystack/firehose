@@ -102,14 +102,4 @@ public class JsonFilter implements Filter {
                 throw new FilterException("Invalid message format type");
         }
     }
-
-    /**
-     * Gets filter rule.
-     *
-     * @return the filter rule
-     */
-    @Override
-    public String getFilterRule() {
-        return filterConfig.getFilterJsonSchema();
-    }
 }
