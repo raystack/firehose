@@ -35,6 +35,7 @@ public class JsonFilter implements Filter {
     private final Instrumentation instrumentation;
     private final JsonSchema schema;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final JsonFormat.Printer jsonPrinter;
 
     /**
      * Instantiates a new Json filter.
@@ -48,6 +49,7 @@ public class JsonFilter implements Filter {
         this.filterConfig = filterConfig;
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
         schema = schemaFactory.getSchema(filterConfig.getFilterJsonSchema());
+        jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
     }
 
     /**
@@ -91,7 +93,7 @@ public class JsonFilter implements Filter {
             case PROTOBUF:
                 try {
                     DynamicMessage message = parser.parse(data);
-                    return JsonFormat.printer().preservingProtoFieldNames().print(message);
+                    return jsonPrinter.print(message);
 
                 } catch (Exception e) {
                     throw new FilterException("Failed to parse Protobuf message", e);
