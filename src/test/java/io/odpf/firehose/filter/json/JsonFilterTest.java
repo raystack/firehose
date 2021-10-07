@@ -75,7 +75,6 @@ public class JsonFilterTest {
     public void shouldFilterMessagesWithNestedFieldsForProtobufMessageType() throws FilterException {
         TestBookingLogMessage testBookingLogMessage1 = TestBookingLogMessage
                 .newBuilder()
-                .setOrderNumber("112")
                 .setEventTimestamp(Timestamp
                         .newBuilder()
                         .setSeconds(220000000)
@@ -84,7 +83,6 @@ public class JsonFilterTest {
                 .build();
         TestBookingLogMessage testBookingLogMessage2 = TestBookingLogMessage
                 .newBuilder()
-                .setOrderNumber("92")
                 .setEventTimestamp(Timestamp
                         .newBuilder()
                         .setSeconds(22)
@@ -93,11 +91,11 @@ public class JsonFilterTest {
                 .build();
 
         Message message1 = new Message(testKeyProto1.toByteArray(), testBookingLogMessage1.toByteArray(), "topic1", 0, 100);
-        Message message2 = new Message(testKeyProto2.toByteArray(), testBookingLogMessage2.toByteArray(), "topic1", 0, 100);
+        Message message2 = new Message(testKeyProto2.toByteArray(), testBookingLogMessage2.toByteArray(), "topic1", 0, 101);
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
-        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"allOf\":[{\"properties\":{\"order_number\":{\"not\":{\"const\":\"11\"}}}},{\"properties\":{\"event_timestamp\":{\"properties\":{\"seconds\":{\"minimum\":80000}}}}}]}");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"event_timestamp\":{\"properties\":{\"seconds\":{\"minimum\":80000}}}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         jsonFilter = new JsonFilter(filterConfig, instrumentation);
