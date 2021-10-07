@@ -4,8 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.GeneratedMessageV3;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.util.JsonFormat;
+import com.googlecode.protobuf.format.JsonFormat;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
@@ -34,7 +33,7 @@ public class JsonFilter implements Filter {
     private final FilterConfig filterConfig;
     private final Instrumentation instrumentation;
     private final JsonSchema schema;
-    private final JsonFormat.Printer jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
+    private final JsonFormat jsonPrinter = new JsonFormat();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -88,11 +87,9 @@ public class JsonFilter implements Filter {
             case PROTOBUF:
                 try {
                     Object protoPojo = MethodUtils.invokeStaticMethod(Class.forName(filterConfig.getFilterSchemaProtoClass()), "parseFrom", data);
-                    return jsonPrinter.print((GeneratedMessageV3) protoPojo);
+                    return jsonPrinter.printToString((GeneratedMessageV3) protoPojo);
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     throw new FilterException("Failed to parse Protobuf message", e);
-                } catch (InvalidProtocolBufferException e) {
-                    throw new FilterException("Protobuf message is invalid", e);
                 } catch (NoSuchMethodException | ClassNotFoundException e) {
                     throw new FilterException("Proto schema class is invalid", e);
                 }

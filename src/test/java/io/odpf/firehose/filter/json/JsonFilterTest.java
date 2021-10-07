@@ -1,5 +1,6 @@
 package io.odpf.firehose.filter.json;
 
+import com.google.protobuf.Timestamp;
 import io.odpf.firehose.config.FilterConfig;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.consumer.TestBookingLogKey;
@@ -63,6 +64,41 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
+        filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
+        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        List<Message> filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
+        assertEquals(1, filteredMessages.size());
+        assertEquals(message1, filteredMessages.get(0));
+    }
+
+    @Test
+    public void shouldFilterMessagesWithNestedFieldsForProtobufMessageType() throws FilterException {
+        TestBookingLogMessage testMessageProto1 = TestBookingLogMessage
+                .newBuilder()
+                .setOrderNumber("92")
+                .setEventTimestamp(Timestamp
+                        .newBuilder()
+                        .setSeconds(220000000)
+                        .setNanos(88)
+                        .build())
+                .build();
+        TestBookingLogMessage testMessageProto2 = TestBookingLogMessage
+                .newBuilder()
+                .setOrderNumber("92")
+                .setEventTimestamp(Timestamp
+                        .newBuilder()
+                        .setSeconds(22)
+                        .setNanos(88)
+                        .build())
+                .build();
+
+        Message message1 = new Message(testKeyProto1.toByteArray(), testMessageProto1.toByteArray(), "topic1", 0, 100);
+        Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 100);
+        Map<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"allOf\":[{\"properties\":{\"order_number\":{\"not\":{\"const\":\"11\"}}}},{\"properties\":{\"event_timestamp\":{\"properties\":{\"seconds\":{\"minimum\":80000}}}}}]}");
+        filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         jsonFilter = new JsonFilter(filterConfig, instrumentation);
         List<Message> filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
@@ -209,4 +245,6 @@ public class JsonFilterTest {
         jsonFilter.filter(Arrays.asList(message1, message2));
         verify(instrumentation, times(1)).logDebug("Message filtered out due to: {}", "$.order_number: must be a constant value 123");
     }
+
+
 }
