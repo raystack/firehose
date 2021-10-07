@@ -91,7 +91,7 @@ public class FirehoseConsumerFactory {
                 Instrumentation jsonFilterUtilInstrumentation = new Instrumentation(statsDReporter, JsonFilterUtil.class);
                 JsonFilterUtil.logConfigs(filterConfig, jsonFilterUtilInstrumentation);
                 JsonFilterUtil.validateConfigs(filterConfig, jsonFilterUtilInstrumentation);
-                return new JsonFilter(filterConfig, new Instrumentation(statsDReporter, JsonFilter.class));
+                return new JsonFilter(stencilClient, filterConfig, new Instrumentation(statsDReporter, JsonFilter.class));
             case JEXL:
                 return new JexlFilter(filterConfig, new Instrumentation(statsDReporter, JexlFilter.class));
             case NO_OP:

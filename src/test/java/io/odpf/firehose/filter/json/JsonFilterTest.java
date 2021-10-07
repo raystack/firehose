@@ -1,11 +1,12 @@
 package io.odpf.firehose.filter.json;
 
-import com.google.protobuf.Timestamp;
+import com.gojek.de.stencil.client.StencilClient;
 import io.odpf.firehose.config.FilterConfig;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.consumer.TestBookingLogKey;
 import io.odpf.firehose.consumer.TestBookingLogMessage;
 import io.odpf.firehose.consumer.TestKey;
+import io.odpf.firehose.consumer.TestLocation;
 import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -26,6 +27,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class JsonFilterTest {
 
@@ -41,6 +43,8 @@ public class JsonFilterTest {
 
     @Mock
     private Instrumentation instrumentation;
+    @Mock
+    private StencilClient stencilClient;
 
     @Before
     public void setup() {
@@ -65,7 +69,9 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        when(stencilClient.get(TestMessage.class.getName())).thenReturn(TestMessage.getDescriptor());
+
+        jsonFilter = new JsonFilter(stencilClient, filterConfig, instrumentation);
         List<Message> filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
         assertEquals(1, filteredMessages.size());
         assertEquals(message1, filteredMessages.get(0));
@@ -75,19 +81,11 @@ public class JsonFilterTest {
     public void shouldFilterMessagesWithNestedFieldsForProtobufMessageType() throws FilterException {
         TestBookingLogMessage testBookingLogMessage1 = TestBookingLogMessage
                 .newBuilder()
-                .setEventTimestamp(Timestamp
-                        .newBuilder()
-                        .setSeconds(220000000)
-                        .setNanos(88)
-                        .build())
+                .setDriverPickupLocation(TestLocation.newBuilder().setLatitude(22.4).build())
                 .build();
         TestBookingLogMessage testBookingLogMessage2 = TestBookingLogMessage
                 .newBuilder()
-                .setEventTimestamp(Timestamp
-                        .newBuilder()
-                        .setSeconds(22)
-                        .setNanos(88)
-                        .build())
+                .setDriverPickupLocation(TestLocation.newBuilder().setLatitude(2222222.4).build())
                 .build();
 
         Message message1 = new Message(testKeyProto1.toByteArray(), testBookingLogMessage1.toByteArray(), "topic1", 0, 100);
@@ -95,13 +93,15 @@ public class JsonFilterTest {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
-        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"event_timestamp\":{\"properties\":{\"seconds\":{\"minimum\":80000}}}}}");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"driver_pickup_location\":{\"properties\":{\"latitude\":{\"minimum\":88}}}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        when(stencilClient.get(TestBookingLogMessage.class.getName())).thenReturn(TestBookingLogMessage.getDescriptor());
+
+        jsonFilter = new JsonFilter(stencilClient, filterConfig, instrumentation);
         List<Message> filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
         assertEquals(1, filteredMessages.size());
-        assertEquals(message1, filteredMessages.get(0));
+        assertEquals(message2, filteredMessages.get(0));
     }
 
     @Test
@@ -113,7 +113,8 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        when(stencilClient.get(TestMessage.class.getName())).thenReturn(TestMessage.getDescriptor());
+        jsonFilter = new JsonFilter(stencilClient, filterConfig, instrumentation);
         List<Message> filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
         assertEquals(1, filteredMessages.size());
         assertEquals(message1, filteredMessages.get(0));
@@ -129,7 +130,8 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_JSON_SCHEMA", "");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        when(stencilClient.get(TestMessage.class.getName())).thenReturn(TestMessage.getDescriptor());
+        jsonFilter = new JsonFilter(stencilClient, filterConfig, instrumentation);
         List<Message> inputMessages = Arrays.asList(message1, message2);
         List<Message> filteredMessages = jsonFilter.filter(inputMessages);
         assertEquals(inputMessages, filteredMessages);
@@ -144,7 +146,8 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "");
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        when(stencilClient.get(TestMessage.class.getName())).thenReturn(TestMessage.getDescriptor());
+        jsonFilter = new JsonFilter(stencilClient, filterConfig, instrumentation);
         List<Message> inputMessages = Arrays.asList(message1, message2);
         List<Message> filteredMessages = jsonFilter.filter(inputMessages);
         assertEquals(inputMessages, filteredMessages);
@@ -156,13 +159,14 @@ public class JsonFilterTest {
         TestBookingLogMessage bookingLogMessage = TestBookingLogMessage.newBuilder().setCustomerId("customerId").build();
         TestBookingLogKey bookingLogKey = TestBookingLogKey.newBuilder().build();
         Message message = new Message(bookingLogKey.toByteArray(), bookingLogMessage.toByteArray(), "topic1", 0, 100);
-        HashMap<String, String> bookingFilterConfigs = new HashMap<>();
-        bookingFilterConfigs.put("FILTER_DATA_SOURCE", "message");
-        bookingFilterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"customer_dynamic_surge_enabled\":{\"const\":\"true\"}}}");
-        bookingFilterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
-        bookingFilterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
-        FilterConfig bookingConsumerConfig = ConfigFactory.create(FilterConfig.class, bookingFilterConfigs);
-        JsonFilter bookingFilter = new JsonFilter(bookingConsumerConfig, instrumentation);
+        HashMap<String, String> filterConfigs = new HashMap<>();
+        filterConfigs.put("FILTER_DATA_SOURCE", "message");
+        filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"customer_dynamic_surge_enabled\":{\"const\":\"true\"}}}");
+        filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
+        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        FilterConfig bookingConsumerConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
+        when(stencilClient.get(TestBookingLogMessage.class.getName())).thenReturn(TestMessage.getDescriptor());
+        JsonFilter bookingFilter = new JsonFilter(stencilClient, bookingConsumerConfig, instrumentation);
         List<Message> filteredMessages = bookingFilter.filter(Collections.singletonList(message));
         assertEquals(message, filteredMessages.get(0));
     }
@@ -177,7 +181,8 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_DATA_SOURCE", "key");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        when(stencilClient.get(TestMessage.class.getName())).thenReturn(TestMessage.getDescriptor());
+        jsonFilter = new JsonFilter(stencilClient, filterConfig, instrumentation);
         thrown.expect(FilterException.class);
         thrown.expectMessage("Failed to parse JSON message");
         jsonFilter.filter(Arrays.asList(message1, message2));
@@ -193,7 +198,8 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        when(stencilClient.get(TestKey.class.getName())).thenReturn(TestKey.getDescriptor());
+        jsonFilter = new JsonFilter(stencilClient, filterConfig, instrumentation);
         thrown.expect(FilterException.class);
         thrown.expectMessage("Failed to parse Protobuf message");
         jsonFilter.filter(Arrays.asList(message1, message2));
@@ -209,9 +215,10 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", "ss");
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        when(stencilClient.get(TestKey.class.getName())).thenReturn(TestKey.getDescriptor());
+        jsonFilter = new JsonFilter(stencilClient, filterConfig, instrumentation);
         thrown.expect(FilterException.class);
-        thrown.expectMessage("Proto schema class is invalid");
+        thrown.expectMessage("Failed to parse Protobuf message");
         jsonFilter.filter(Arrays.asList(message1, message2));
     }
 
@@ -225,7 +232,8 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        when(stencilClient.get(TestMessage.class.getName())).thenReturn(TestMessage.getDescriptor());
+        jsonFilter = new JsonFilter(stencilClient, filterConfig, instrumentation);
         jsonFilter.filter(Arrays.asList(message1, message2));
         verify(instrumentation, times(1)).logDebug("Message filtered out due to: {}", "$.order_number: must be a constant value 123");
     }
@@ -239,7 +247,8 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        jsonFilter = new JsonFilter(filterConfig, instrumentation);
+        when(stencilClient.get(TestMessage.class.getName())).thenReturn(TestMessage.getDescriptor());
+        jsonFilter = new JsonFilter(stencilClient, filterConfig, instrumentation);
         jsonFilter.filter(Arrays.asList(message1, message2));
         verify(instrumentation, times(1)).logDebug("Message filtered out due to: {}", "$.order_number: must be a constant value 123");
     }

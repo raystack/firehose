@@ -3,8 +3,10 @@ package io.odpf.firehose.filter.json;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.protobuf.GeneratedMessageV3;
-import com.googlecode.protobuf.format.JsonFormat;
+import com.gojek.de.stencil.client.StencilClient;
+import com.gojek.de.stencil.parser.ProtoParser;
+import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.util.JsonFormat;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
@@ -14,9 +16,7 @@ import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
-import org.apache.commons.lang3.reflect.MethodUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +30,10 @@ import static io.odpf.firehose.config.enums.FilterDataSourceType.KEY;
  */
 public class JsonFilter implements Filter {
 
+    private final ProtoParser parser;
     private final FilterConfig filterConfig;
     private final Instrumentation instrumentation;
     private final JsonSchema schema;
-    private final JsonFormat jsonPrinter = new JsonFormat();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -42,7 +42,8 @@ public class JsonFilter implements Filter {
      * @param filterConfig    the consumer config
      * @param instrumentation the instrumentation
      */
-    public JsonFilter(FilterConfig filterConfig, Instrumentation instrumentation) {
+    public JsonFilter(StencilClient stencilClient, FilterConfig filterConfig, Instrumentation instrumentation) {
+        parser = new ProtoParser(stencilClient, filterConfig.getFilterSchemaProtoClass());
         this.instrumentation = instrumentation;
         this.filterConfig = filterConfig;
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
@@ -89,12 +90,11 @@ public class JsonFilter implements Filter {
         switch (filterConfig.getFilterJsonMessageFormat()) {
             case PROTOBUF:
                 try {
-                    Object protoPojo = MethodUtils.invokeStaticMethod(Class.forName(filterConfig.getFilterSchemaProtoClass()), "parseFrom", data);
-                    return jsonPrinter.printToString((GeneratedMessageV3) protoPojo);
-                } catch (IllegalAccessException | InvocationTargetException e) {
+                    DynamicMessage message = parser.parse(data);
+                    return JsonFormat.printer().preservingProtoFieldNames().print(message);
+
+                } catch (Exception e) {
                     throw new FilterException("Failed to parse Protobuf message", e);
-                } catch (NoSuchMethodException | ClassNotFoundException e) {
-                    throw new FilterException("Proto schema class is invalid", e);
                 }
             case JSON:
                 return new String(data, Charset.defaultCharset());
