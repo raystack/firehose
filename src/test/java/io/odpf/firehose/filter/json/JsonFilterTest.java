@@ -73,7 +73,7 @@ public class JsonFilterTest {
 
     @Test
     public void shouldFilterMessagesWithNestedFieldsForProtobufMessageType() throws FilterException {
-        TestBookingLogMessage testMessageProto1 = TestBookingLogMessage
+        TestBookingLogMessage testBookingLogMessage1 = TestBookingLogMessage
                 .newBuilder()
                 .setOrderNumber("112")
                 .setEventTimestamp(Timestamp
@@ -82,7 +82,7 @@ public class JsonFilterTest {
                         .setNanos(88)
                         .build())
                 .build();
-        TestBookingLogMessage testMessageProto2 = TestBookingLogMessage
+        TestBookingLogMessage testBookingLogMessage2 = TestBookingLogMessage
                 .newBuilder()
                 .setOrderNumber("92")
                 .setEventTimestamp(Timestamp
@@ -92,8 +92,8 @@ public class JsonFilterTest {
                         .build())
                 .build();
 
-        Message message1 = new Message(testKeyProto1.toByteArray(), testMessageProto1.toByteArray(), "topic1", 0, 100);
-        Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 100);
+        Message message1 = new Message(testKeyProto1.toByteArray(), testBookingLogMessage1.toByteArray(), "topic1", 0, 100);
+        Message message2 = new Message(testKeyProto2.toByteArray(), testBookingLogMessage2.toByteArray(), "topic1", 0, 100);
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
