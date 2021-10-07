@@ -64,9 +64,6 @@ dependencies {
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2'
     implementation group: 'org.aeonbits.owner', name: 'owner', version: '1.0.9'
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '2.6.0'
-    implementation group: 'org.json', name: 'json', version: '20210307'
-    implementation group: 'com.googlecode.protobuf-java-format', name: 'protobuf-java-format', version: '1.4'
-
     implementation group: 'com.google.guava', name: 'guava', version: '23.5-jre'
     implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'
     implementation group: 'com.samskivert', name: 'jmustache', version: '1.13'
