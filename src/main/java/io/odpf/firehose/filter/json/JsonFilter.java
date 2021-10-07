@@ -72,6 +72,9 @@ public class JsonFilter implements Filter {
     private boolean evaluate(String jsonMessage) throws FilterException {
         try {
             JsonNode message = objectMapper.readTree(jsonMessage);
+            if (instrumentation.isDebugEnabled()) {
+                instrumentation.logDebug("Json Message {}", message.toPrettyString());
+            }
             Set<ValidationMessage> validationErrors = schema.validate(message);
             validationErrors.forEach(error -> {
                 instrumentation.logDebug("Message filtered out due to: {}", error.getMessage());

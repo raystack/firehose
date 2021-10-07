@@ -75,7 +75,7 @@ public class JsonFilterTest {
     public void shouldFilterMessagesWithNestedFieldsForProtobufMessageType() throws FilterException {
         TestBookingLogMessage testMessageProto1 = TestBookingLogMessage
                 .newBuilder()
-                .setOrderNumber("92")
+                .setOrderNumber("112")
                 .setEventTimestamp(Timestamp
                         .newBuilder()
                         .setSeconds(220000000)
