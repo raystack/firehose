@@ -5,7 +5,7 @@ import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.consumer.Message;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.gojek.de.stencil.parser.ProtoParser;
+import io.odpf.stencil.parser.ProtoParser;
 import lombok.AllArgsConstructor;
 
 import java.io.IOException;

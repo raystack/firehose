@@ -9,7 +9,7 @@ import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.redis.client.RedisClient;
 import io.odpf.firehose.sink.redis.client.RedisClientFactory;
-import com.gojek.de.stencil.client.StencilClient;
+import io.odpf.stencil.client.StencilClient;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.util.Map;

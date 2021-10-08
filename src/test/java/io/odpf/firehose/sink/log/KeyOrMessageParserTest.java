@@ -5,7 +5,7 @@ import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.consumer.TestMessage;
 import com.google.protobuf.DynamicMessage;
-import com.gojek.de.stencil.parser.ProtoParser;
+import io.odpf.stencil.parser.ProtoParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

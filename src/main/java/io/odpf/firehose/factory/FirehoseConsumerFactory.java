@@ -1,8 +1,8 @@
 package io.odpf.firehose.factory;
 
-import com.gojek.de.stencil.StencilClientFactory;
-import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.de.stencil.parser.ProtoParser;
+import io.odpf.stencil.StencilClientFactory;
+import io.odpf.stencil.client.StencilClient;
+import io.odpf.stencil.parser.ProtoParser;
 import io.jaegertracing.Configuration;
 import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.config.DlqConfig;
@@ -28,8 +28,8 @@ import io.odpf.firehose.sink.redis.RedisSinkFactory;
 import io.odpf.firehose.sinkdecorator.BackOff;
 import io.odpf.firehose.sinkdecorator.BackOffProvider;
 import io.odpf.firehose.sinkdecorator.ExponentialBackOffProvider;
-import io.odpf.firehose.sinkdecorator.SinkWithRetry;
 import io.odpf.firehose.sinkdecorator.SinkWithDlq;
+import io.odpf.firehose.sinkdecorator.SinkWithRetry;
 import io.odpf.firehose.tracer.SinkTracer;
 import io.odpf.firehose.util.Clock;
 import io.opentracing.Tracer;
@@ -75,7 +75,7 @@ public class FirehoseConsumerFactory {
 
         String stencilUrl = this.kafkaConsumerConfig.getSchemaRegistryStencilUrls();
         stencilClient = this.kafkaConsumerConfig.isSchemaRegistryStencilEnable()
-                ? StencilClientFactory.getClient(stencilUrl, config, this.statsDReporter.getClient())
+                ? StencilClientFactory.getClient(stencilUrl, FactoryUtil.getStencilConfig(kafkaConsumerConfig), this.statsDReporter.getClient())
                 : StencilClientFactory.getClient();
         parser = new KeyOrMessageParser(new ProtoParser(stencilClient, kafkaConsumerConfig.getInputSchemaProtoClass()), kafkaConsumerConfig);
     }

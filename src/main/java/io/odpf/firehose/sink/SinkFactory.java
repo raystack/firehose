@@ -2,7 +2,7 @@ package io.odpf.firehose.sink;
 
 
 import io.odpf.firehose.metrics.StatsDReporter;
-import com.gojek.de.stencil.client.StencilClient;
+import io.odpf.stencil.client.StencilClient;
 
 import java.util.Map;
 
