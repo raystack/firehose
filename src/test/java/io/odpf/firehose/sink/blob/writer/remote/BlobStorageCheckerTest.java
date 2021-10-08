@@ -49,8 +49,8 @@ public class BlobStorageCheckerTest {
 
     @Before
     public void setup() {
-        when(sinkConfig.getTimePartitioningTimeZone()).thenReturn("UTC");
-        when(sinkConfig.getPartitioningType()).thenReturn(Constants.FilePartitionType.HOUR);
+        when(sinkConfig.getFilePartitionProtoTimestampTimezone()).thenReturn("UTC");
+        when(sinkConfig.getFilePartitionTimeGranularityType()).thenReturn(Constants.FilePartitionType.HOUR);
         localFileMetadata = new LocalFileMetadata("/tmp", "/tmp/dt=2021-01-01/hr=10/random-filename", 10L, 10L, 128L);
         objectName = "dt=2021-01-01/hr=10/random-filename";
         worker = new BlobStorageChecker(

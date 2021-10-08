@@ -54,12 +54,12 @@ public class WriterOrchestratorTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         this.sinkConfig = Mockito.mock(BlobSinkConfig.class);
-        Mockito.when(sinkConfig.getTimePartitioningTimeZone()).thenReturn(zone);
+        Mockito.when(sinkConfig.getFilePartitionProtoTimestampTimezone()).thenReturn(zone);
         Mockito.when(sinkConfig.getKafkaMetadataColumnName()).thenReturn("");
-        Mockito.when(sinkConfig.getTimePartitioningFieldName()).thenReturn(timeStampFieldName);
-        Mockito.when(sinkConfig.getPartitioningType()).thenReturn(Constants.FilePartitionType.HOUR);
-        Mockito.when(sinkConfig.getTimePartitioningDatePrefix()).thenReturn(datePrefix);
-        Mockito.when(sinkConfig.getTimePartitioningHourPrefix()).thenReturn(hourPrefix);
+        Mockito.when(sinkConfig.getFilePartitionProtoTimestampFieldName()).thenReturn(timeStampFieldName);
+        Mockito.when(sinkConfig.getFilePartitionTimeGranularityType()).thenReturn(Constants.FilePartitionType.HOUR);
+        Mockito.when(sinkConfig.getFilePartitionTimeDatePrefix()).thenReturn(datePrefix);
+        Mockito.when(sinkConfig.getFilePartitionTimeHourPrefix()).thenReturn(hourPrefix);
     }
 
     @Test

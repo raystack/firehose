@@ -50,8 +50,8 @@ public class BlobSinkFactory implements SinkFactory {
         Descriptors.Descriptor outputMessageDescriptor = stencilClient.get(sinkConfig.getInputSchemaProtoClass());
         Descriptors.Descriptor metadataMessageDescriptor = getMetadataMessageDescriptor(sinkConfig);
         List<WriterPolicy> writerPolicies = new ArrayList<>();
-        writerPolicies.add(new TimeBasedRotatingPolicy(sinkConfig.getFileRotationDurationMS()));
-        writerPolicies.add(new SizeBasedRotatingPolicy(sinkConfig.getFileRotationMaxSizeBytes()));
+        writerPolicies.add(new TimeBasedRotatingPolicy(sinkConfig.getLocalFileRotationDurationMS()));
+        writerPolicies.add(new SizeBasedRotatingPolicy(sinkConfig.getLocalFileRotationMaxSizeBytes()));
         return new LocalStorage(
                 sinkConfig,
                 outputMessageDescriptor,

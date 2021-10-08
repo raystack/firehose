@@ -47,7 +47,7 @@ public interface DlqConfig extends AppConfig {
     @DefaultValue("LOG")
     DLQWriterType getDlqWriterType();
 
-    @Key("DLQ_WRITER_BLOB_STORAGE_TYPE")
+    @Key("DLQ_BLOB_STORAGE_TYPE")
     @DefaultValue("GCS")
     @ConverterClass(BlobStorageTypeConverter.class)
     BlobStorageType getBlobStorageType();
@@ -62,6 +62,5 @@ public interface DlqConfig extends AppConfig {
 
     @Key("DLQ_SINK_ENABLE")
     boolean getDlqSinkEnable();
-
 
 }

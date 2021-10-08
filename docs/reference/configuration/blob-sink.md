@@ -16,9 +16,9 @@ Defines the name of the writer of a file format. Currently, only `PARQUET` file 
 * Example value: `PARQUET`
 * Type: `required`
 
-## `SINK_BLOB_WRITE_KAFKA_METADATA_ENABLE`
+## `SINK_BLOB_ENABLE_KAFKA_METADATA_ENABLE`
 
-Define configuration to enable or disable adding kafka metadata to the written records.
+Define configuration to enable or disable adding kafka metadata field to the written records.
 
 * Example value: `true`
 * Type: `required`
@@ -39,21 +39,21 @@ When metadata column name is configured, all metadata column/field will be added
 * Example value: `kafka_metadata`
 * Type: `optional`
 
-## `SINK_BLOB_WRITER_PARQUET_BLOCK_SIZE`
+## `SINK_BLOB_LOCAL_FILE_WRITER_PARQUET_BLOCK_SIZE`
 
 Defines the storage parquet writer block size, this config only applies on parquet writer. This configuration is only needed to be set manually when user need to control the block size for optimal file read.
 
 * Example value: `134217728`
 * Type: `optional`
 
-## `SINK_BLOB_WRITER_PARQUET_PAGE_SIZE`
+## `SINK_BLOB_LOCAL_FILE_WRITER_PARQUET_PAGE_SIZE`
 
 Define the storage parquet writer page size, this config only applies on parquet writer. This configuration is only needed to be set manually when user need to control the block size for optimal file read.
 
 * Example value: `1048576`
 * Type: `optional`
 
-## `SINK_BLOB_FILE_ROTATION_DURATION_MS`
+## `SINK_BLOB_LOCAL_FILE_ROTATION_DURATION_MS`
 
 Define the maximum duration of record to be added to a single parquet file in milliseconds, after the elapsed time exceeded the configured duration, current file will be closed, a new file will be created and incoming records will be written to the new file. 
 
@@ -61,7 +61,7 @@ Define the maximum duration of record to be added to a single parquet file in mi
 * Type: `optional`
 * Default value: `3600000`
 
-## `SINK_BLOB_FILE_ROTATION_MAX_SIZE_BYTES`
+## `SINK_BLOB_LOCAL_FILE_ROTATION_MAX_SIZE_BYTES`
 
 Defines the maximum size of record to be written on a single parquet file in bytes, new record will be written to new a file.
 
@@ -69,14 +69,14 @@ Defines the maximum size of record to be written on a single parquet file in byt
 * Type: `required`
 * Default value: `268435456`
 
-## `SINK_BLOB_TIME_PARTITIONING_FIELD_NAME`
+## `SINK_BLOB_FILE_PARTITION_PROTO_TIMESTAMP_FIELD_NAME`
 
 Defines the field used as file partitioning.
 
 * Example value: `event_timestamp`
 * Type: `required`
 
-## `SINK_BLOB_TIME_PARTITIONING_TYPE`
+## `SINK_BLOB_FILE_PARTITION_TIME_GRANULARITY_TYPE`
 
 Defines time partitioning file type. Currently, the supported partitioning type are `hour`, `day`. This also affect the partitioning path of the files.
 
@@ -84,7 +84,7 @@ Defines time partitioning file type. Currently, the supported partitioning type 
 * Type: `required`
 * Default value: `hour`
 
-## `SINK_BLOB_TIME_PARTITIONING_TIME_ZONE`
+## `SINK_BLOB_FILE_PARTITION_PROTO_TIMESTAMP_TIMEZONE`
 
 Defines time partitioning time zone. The date time partitioning uses local date and time value that calculated using the configured timezone.
 
@@ -92,7 +92,7 @@ Defines time partitioning time zone. The date time partitioning uses local date 
 * Type: `optional`
 * Default value: `UTC`
 
-## `SINK_BLOB_TIME_PARTITIONING_HOUR_PREFIX`
+## `SINK_BLOB_FILE_PARTITION_TIME_HOUR_PREFIX`
 
 Defines time partitioning path format for hour segment for example `${date_segment}/hr=10/${filename}`.
 
@@ -100,7 +100,7 @@ Defines time partitioning path format for hour segment for example `${date_segme
 * Type: `optional`
 * Default value: `hr=`
 
-## `SINK_BLOB_TIME_PARTITIONING_DATE_PREFIX`
+## `SINK_BLOB_FILE_PARTITION_TIME_DATE_PREFIX`
 
 Defines time partitioning path format for date segment for example `dt=2021-01-01/${hour_segment}/${filename}`.
 

@@ -32,7 +32,7 @@ public class LocalStorage {
     }
 
     private LocalParquetFileWriter createWriter(Path basePath, Path fullPath) {
-        switch (sinkConfig.getFileWriterType()) {
+        switch (sinkConfig.getLocalFileWriterType()) {
             case PARQUET:
                 try {
                     instrumentation.logInfo("Creating Local File " + fullPath);
@@ -40,8 +40,8 @@ public class LocalStorage {
                             System.currentTimeMillis(),
                             basePath.toString(),
                             fullPath.toString(),
-                            sinkConfig.getWriterParquetPageSize(),
-                            sinkConfig.getWriterParquetBlockSize(),
+                            sinkConfig.getLocalFileWriterParquetPageSize(),
+                            sinkConfig.getLocalFileWriterParquetBlockSize(),
                             messageDescriptor,
                             metadataFieldDescriptor);
                 } catch (IOException e) {

@@ -5,7 +5,7 @@ import org.aeonbits.owner.Converter;
 
 import java.lang.reflect.Method;
 
-public class BlobSinkPartitioningTypeConverter implements Converter<Constants.FilePartitionType> {
+public class BlobSinkFilePartitionTypeConverter implements Converter<Constants.FilePartitionType> {
     @Override
     public Constants.FilePartitionType convert(Method method, String input) {
         return Constants.FilePartitionType.valueOf(input.toUpperCase());

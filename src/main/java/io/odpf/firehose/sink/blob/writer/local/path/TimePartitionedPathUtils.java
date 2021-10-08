@@ -25,20 +25,20 @@ public class TimePartitionedPathUtils {
 
     public static Path getTimePartitionedPath(Record record, BlobSinkConfig sinkConfig) {
         String topic = record.getTopic(sinkConfig.getKafkaMetadataColumnName());
-        Instant timestamp = record.getTimestamp(sinkConfig.getTimePartitioningFieldName());
-        if (sinkConfig.getPartitioningType() == Constants.FilePartitionType.NONE) {
+        Instant timestamp = record.getTimestamp(sinkConfig.getFilePartitionProtoTimestampFieldName());
+        if (sinkConfig.getFilePartitionTimeGranularityType() == Constants.FilePartitionType.NONE) {
             return Paths.get(topic);
         }
-        LocalDate localDate = LocalDateTime.ofInstant(timestamp, ZoneId.of(sinkConfig.getTimePartitioningTimeZone())).toLocalDate();
+        LocalDate localDate = LocalDateTime.ofInstant(timestamp, ZoneId.of(sinkConfig.getFilePartitionProtoTimestampTimezone())).toLocalDate();
         String datePart = DATE_FORMATTER.format(localDate);
-        LocalTime localTime = LocalDateTime.ofInstant(timestamp, ZoneId.of(sinkConfig.getTimePartitioningTimeZone())).toLocalTime();
+        LocalTime localTime = LocalDateTime.ofInstant(timestamp, ZoneId.of(sinkConfig.getFilePartitionProtoTimestampTimezone())).toLocalTime();
         String hourPart = HOUR_FORMATTER.format(localTime);
 
-        String dateSegment = String.format("%s%s", sinkConfig.getTimePartitioningDatePrefix(), datePart);
-        String hourSegment = String.format("%s%s", sinkConfig.getTimePartitioningHourPrefix(), hourPart);
+        String dateSegment = String.format("%s%s", sinkConfig.getFilePartitionTimeDatePrefix(), datePart);
+        String hourSegment = String.format("%s%s", sinkConfig.getFilePartitionTimeHourPrefix(), hourPart);
 
         String dateTimePartition;
-        switch (sinkConfig.getPartitioningType()) {
+        switch (sinkConfig.getFilePartitionTimeGranularityType()) {
             case NONE:
                 return Paths.get(topic);
             case DAY:
