@@ -76,7 +76,7 @@ public class JsonFilter implements Filter {
         try {
             JsonNode message = objectMapper.readTree(jsonMessage);
             if (instrumentation.isDebugEnabled()) {
-                instrumentation.logDebug("Json Message {}", message.toPrettyString());
+                instrumentation.logDebug("Json Message: \n {}", message.toPrettyString());
             }
             Set<ValidationMessage> validationErrors = schema.validate(message);
             validationErrors.forEach(error -> {
