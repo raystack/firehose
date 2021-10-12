@@ -16,9 +16,9 @@ Defines the name of the writer of a file format. Currently, only `PARQUET` file 
 * Example value: `PARQUET`
 * Type: `required`
 
-## `SINK_BLOB_ENABLE_KAFKA_METADATA_ENABLE`
+## `SINK_BLOB_OUTPUT_INCLUDE_KAFKA_METADATA_ENABLE`
 
-Define configuration to enable or disable adding kafka metadata field to the written records.
+Define configuration to enable or disable adding kafka metadata field to the output. Depends on the stucture of the output, in parquet format some metadata columns will be added.
 
 * Example value: `true`
 * Type: `required`
@@ -31,7 +31,7 @@ Defines directory temporary files will be created before uploaded to remote dest
 * Type: `optional`
 * Default value: `/tmp/firehose`
 
-## `SINK_BLOB_KAFKA_METADATA_COLUMN_NAME`
+## `SINK_BLOB_OUTPUT_KAFKA_METADATA_COLUMN_NAME`
 
 Defines the kafka metadata column name. This config determines the schema changes column or field that will be added on the parquet format. When the metadata column name is not configured all metadata column or field will be added on top level. 
 When metadata column name is configured, all metadata column/field will be added as child field under the configured column name.

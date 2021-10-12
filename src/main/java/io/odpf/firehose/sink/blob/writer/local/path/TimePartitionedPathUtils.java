@@ -24,7 +24,7 @@ public class TimePartitionedPathUtils {
     public static final DateTimeFormatter HOUR_FORMATTER = DateTimeFormatter.ofPattern("HH");
 
     public static Path getTimePartitionedPath(Record record, BlobSinkConfig sinkConfig) {
-        String topic = record.getTopic(sinkConfig.getKafkaMetadataColumnName());
+        String topic = record.getTopic(sinkConfig.getOutputKafkaMetadataColumnName());
         Instant timestamp = record.getTimestamp(sinkConfig.getFilePartitionProtoTimestampFieldName());
         if (sinkConfig.getFilePartitionTimeGranularityType() == Constants.FilePartitionType.NONE) {
             return Paths.get(topic);

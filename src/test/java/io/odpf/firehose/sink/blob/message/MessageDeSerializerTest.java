@@ -44,8 +44,8 @@ public class MessageDeSerializerTest {
 
         Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor("");
         deSerializer = new MessageDeSerializer(fileDescriptor, protoParser, sinkConfig);
-        when(sinkConfig.getIncludeKafkaMetadataEnable()).thenReturn(true);
-        when(sinkConfig.getKafkaMetadataColumnName()).thenReturn("");
+        when(sinkConfig.getOutputIncludeKafkaMetadataEnable()).thenReturn(true);
+        when(sinkConfig.getOutputKafkaMetadataColumnName()).thenReturn("");
     }
 
     @Test
@@ -65,7 +65,7 @@ public class MessageDeSerializerTest {
 
     @Test
     public void shouldCreateRecordWithoutMetadata() throws InvalidProtocolBufferException {
-        when(sinkConfig.getIncludeKafkaMetadataEnable()).thenReturn(false);
+        when(sinkConfig.getOutputIncludeKafkaMetadataEnable()).thenReturn(false);
 
         DynamicMessage dynamicMessage = DynamicMessage.newBuilder(StringValue.of("abc")).build();
 

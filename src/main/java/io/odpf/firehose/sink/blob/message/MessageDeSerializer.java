@@ -25,7 +25,7 @@ public class MessageDeSerializer {
     public MessageDeSerializer(BlobSinkConfig sinkConfig, StencilClient stencilClient) {
         this.sinkConfig = sinkConfig;
         this.protoParser = new ProtoParser(stencilClient, sinkConfig.getInputSchemaProtoClass());
-        this.kafkaMetadataFileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(sinkConfig.getKafkaMetadataColumnName());
+        this.kafkaMetadataFileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(sinkConfig.getOutputKafkaMetadataColumnName());
     }
 
     public Record deSerialize(Message message) throws DeserializerException {
@@ -40,8 +40,8 @@ public class MessageDeSerializer {
             }
 
             DynamicMessage kafkaMetadata = null;
-            if (sinkConfig.getIncludeKafkaMetadataEnable()) {
-                kafkaMetadata = KafkaMetadataUtils.createKafkaMetadata(kafkaMetadataFileDescriptor, message, sinkConfig.getKafkaMetadataColumnName());
+            if (sinkConfig.getOutputIncludeKafkaMetadataEnable()) {
+                kafkaMetadata = KafkaMetadataUtils.createKafkaMetadata(kafkaMetadataFileDescriptor, message, sinkConfig.getOutputKafkaMetadataColumnName());
             }
             return new Record(dynamicMessage, kafkaMetadata);
         } catch (InvalidProtocolBufferException e) {

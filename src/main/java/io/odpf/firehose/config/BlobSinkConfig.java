@@ -30,12 +30,12 @@ public interface BlobSinkConfig extends AppConfig {
     @DefaultValue("1048576")
     int getLocalFileWriterParquetPageSize();
 
-    @Key("SINK_BLOB_KAFKA_METADATA_COLUMN_NAME")
+    @Key("SINK_BLOB_OUTPUT_KAFKA_METADATA_COLUMN_NAME")
     @DefaultValue("")
-    String getKafkaMetadataColumnName();
+    String getOutputKafkaMetadataColumnName();
 
-    @Key("SINK_BLOB_INCLUDE_KAFKA_METADATA_ENABLE")
-    boolean getIncludeKafkaMetadataEnable();
+    @Key("SINK_BLOB_OUTPUT_INCLUDE_KAFKA_METADATA_ENABLE")
+    boolean getOutputIncludeKafkaMetadataEnable();
 
     @Key("SINK_BLOB_LOCAL_FILE_ROTATION_DURATION_MS")
     @DefaultValue("3600000")

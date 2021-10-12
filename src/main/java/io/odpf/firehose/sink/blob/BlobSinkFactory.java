@@ -39,8 +39,8 @@ public class BlobSinkFactory implements SinkFactory {
     }
 
     private Descriptors.Descriptor getMetadataMessageDescriptor(BlobSinkConfig sinkConfig) {
-        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(sinkConfig.getKafkaMetadataColumnName());
-        return sinkConfig.getKafkaMetadataColumnName().isEmpty()
+        Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(sinkConfig.getOutputKafkaMetadataColumnName());
+        return sinkConfig.getOutputKafkaMetadataColumnName().isEmpty()
                 ? fileDescriptor.findMessageTypeByName(KafkaMetadataProtoMessage.getTypeName())
                 : fileDescriptor.findMessageTypeByName(NestedKafkaMetadataProtoMessage.getTypeName());
 
