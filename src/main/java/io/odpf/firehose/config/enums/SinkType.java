@@ -10,7 +10,7 @@ public enum SinkType {
     REDIS,
     GRPC,
     PROMETHEUS,
-    OBJECTSTORAGE,
+    BLOB,
     BIGQUERY,
     MONGODB
 }

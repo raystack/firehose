@@ -11,7 +11,7 @@ public class Metrics {
     //SINK PREFIXES
     public static final String SINK_PREFIX = "sink_";
     public static final String HTTP_SINK_PREFIX = "http_";
-    public static final String OBJECTSTORAGE_SINK_PREFIX = "objectstorage_";
+    public static final String BLOB_SINK_PREFIX = "blob_";
 
     public static final String MONGO_SINK_PREFIX = "mongo_";
 

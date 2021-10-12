@@ -3,7 +3,7 @@ package io.odpf.firehose.config;
 import org.aeonbits.owner.Config;
 
 /**
- * GCS_TYPE needs to be set as SINK_OBJECT_STORAGE or DLQ_OBJECT_STORAGE.
+ * GCS_TYPE needs to be set as SINK_BLOB or DLQ_BLOB_STORAGE.
  */
 public interface GCSConfig extends Config {
 

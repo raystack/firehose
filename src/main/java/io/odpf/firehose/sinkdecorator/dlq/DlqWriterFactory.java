@@ -4,11 +4,11 @@ import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.factory.GenericKafkaFactory;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
-import io.odpf.firehose.objectstorage.ObjectStorage;
-import io.odpf.firehose.objectstorage.ObjectStorageFactory;
+import io.odpf.firehose.blobstorage.BlobStorage;
+import io.odpf.firehose.blobstorage.BlobStorageFactory;
 import io.odpf.firehose.sinkdecorator.dlq.kafka.KafkaDlqWriter;
 import io.odpf.firehose.sinkdecorator.dlq.log.LogDlqWriter;
-import io.odpf.firehose.sinkdecorator.dlq.objectstorage.ObjectStorageDlqWriter;
+import io.odpf.firehose.sinkdecorator.dlq.blobstorage.BlobStorageDlqWriter;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.kafka.TracingKafkaProducer;
 import org.aeonbits.owner.ConfigFactory;
@@ -30,9 +30,9 @@ public class DlqWriterFactory {
                 return new KafkaDlqWriter(tracingProducer, dlqConfig.getDlqKafkaTopic(), new Instrumentation(client, KafkaDlqWriter.class));
 
             case OBJECTSTORAGE:
-                configuration.put("GCS_TYPE", "DLQ_OBJECT_STORAGE");
-                ObjectStorage objectStorage = ObjectStorageFactory.createObjectStorage(dlqConfig.getObjectStorageType(), configuration);
-                return new ObjectStorageDlqWriter(objectStorage);
+                configuration.put("GCS_TYPE", "DLQ_BLOB_STORAGE");
+                BlobStorage blobStorage = BlobStorageFactory.createObjectStorage(dlqConfig.getBlobStorageType(), configuration);
+                return new BlobStorageDlqWriter(blobStorage);
 
             case LOG:
                 return new LogDlqWriter(new Instrumentation(client, LogDlqWriter.class));
