@@ -3,10 +3,10 @@ package io.odpf.firehose.consumer;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.filter.FilterException;
+import io.odpf.firehose.filter.NoOpFilter;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.tracer.SinkTracer;
-import io.odpf.firehose.util.Clock;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,11 +36,7 @@ public class FirehoseConsumerTest {
     private Instrumentation instrumentation;
 
     @Mock
-    private Clock clock;
-
-    @Mock
     private SinkTracer tracer;
-
 
     private FirehoseConsumer firehoseConsumer;
     private List<Message> messages;
@@ -54,10 +49,10 @@ public class FirehoseConsumerTest {
 
         KafkaConsumerConfig kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, System.getenv());
         ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), genericConsumer, kafkaConsumerConfig, instrumentation);
-        firehoseConsumer = new FirehoseConsumer(sink, clock, tracer, consumerAndOffsetManager, instrumentation);
+        FirehoseFilter firehoseFilter = new FirehoseFilter(new NoOpFilter(instrumentation), instrumentation);
+        firehoseConsumer = new FirehoseConsumer(sink, tracer, consumerAndOffsetManager, firehoseFilter, instrumentation);
 
         when(genericConsumer.readMessages()).thenReturn(messages);
-        when(clock.now()).thenReturn(Instant.now());
     }
 
     @Test
@@ -79,16 +74,7 @@ public class FirehoseConsumerTest {
     @Test
     public void shouldSendNoOfMessagesReceivedCount() throws IOException, DeserializerException, FilterException {
         firehoseConsumer.process();
-        verify(instrumentation).logInfo("Execution successful for {} records", 2);
-    }
-
-    @Test
-    public void shouldSendPartitionProcessingTime() throws IOException, DeserializerException, FilterException {
-        Instant beforeCall = Instant.now();
-        Instant afterCall = beforeCall.plusSeconds(1);
-        when(clock.now()).thenReturn(beforeCall).thenReturn(afterCall);
-        firehoseConsumer.process();
-        verify(instrumentation).captureDurationSince("firehose_source_kafka_partitions_process_milliseconds", beforeCall);
+        verify(instrumentation).logInfo("Processed {} records in consumer", 2);
     }
 
     @Test
@@ -116,7 +102,8 @@ public class FirehoseConsumerTest {
     public void shouldNotCloseConsumerIfConsumerIsNull() throws IOException {
         KafkaConsumerConfig kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, System.getenv());
         ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), null, kafkaConsumerConfig, instrumentation);
-        firehoseConsumer = new FirehoseConsumer(sink, clock, tracer, consumerAndOffsetManager, instrumentation);
+        FirehoseFilter firehoseFilter = new FirehoseFilter(new NoOpFilter(instrumentation), instrumentation);
+        firehoseConsumer = new FirehoseConsumer(sink, tracer, consumerAndOffsetManager, firehoseFilter, instrumentation);
         firehoseConsumer.close();
 
         verify(instrumentation, times(0)).logInfo("closing consumer");

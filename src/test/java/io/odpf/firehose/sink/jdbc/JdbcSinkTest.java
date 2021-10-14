@@ -196,7 +196,7 @@ public class JdbcSinkTest {
         dbSinkStub.pushMessage(messages);
 
         verify(statement, times(1)).addBatch("select * from table");
-        verify(instrumentation, times(1)).logDebug("Preparing {} messages", 1);
+        verify(instrumentation, times(1)).logInfo("Preparing {} messages", 1);
         verify(instrumentation, times(1)).logDebug("DB response: {}", Arrays.toString(updateCounts));
     }
 

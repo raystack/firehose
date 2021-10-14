@@ -14,6 +14,7 @@ import io.odpf.firehose.config.enums.KafkaConsumerMode;
 import io.odpf.firehose.consumer.ConsumerAndOffsetManager;
 import io.odpf.firehose.consumer.FirehoseAsyncConsumer;
 import io.odpf.firehose.consumer.FirehoseConsumer;
+import io.odpf.firehose.consumer.FirehoseFilter;
 import io.odpf.firehose.consumer.GenericConsumer;
 import io.odpf.firehose.consumer.KafkaConsumer;
 import io.odpf.firehose.consumer.SinkPool;
@@ -49,7 +50,6 @@ import io.odpf.firehose.sinkdecorator.SinkWithRetry;
 import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
 import io.odpf.firehose.sinkdecorator.dlq.DlqWriterFactory;
 import io.odpf.firehose.tracer.SinkTracer;
-import io.odpf.firehose.util.Clock;
 import io.opentracing.Tracer;
 import io.opentracing.noop.NoopTracerFactory;
 import org.aeonbits.owner.ConfigFactory;
@@ -68,7 +68,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class FirehoseConsumerFactory {
 
     private final KafkaConsumerConfig kafkaConsumerConfig;
-    private final Clock clockInstance;
     private final Map<String, String> config = System.getenv();
     private final StatsDReporter statsDReporter;
     private final StencilClient stencilClient;
@@ -93,8 +92,6 @@ public class FirehoseConsumerFactory {
                 this.kafkaConsumerConfig.isSourceKafkaCommitOnlyCurrentPartitionsEnable());
         instrumentation.logDebug(additionalConsumerConfig);
 
-        clockInstance = new Clock();
-
         String stencilUrl = this.kafkaConsumerConfig.getSchemaRegistryStencilUrls();
         stencilClient = this.kafkaConsumerConfig.isSchemaRegistryStencilEnable()
                 ? StencilClientFactory.getClient(stencilUrl, config, this.statsDReporter.getClient())
@@ -102,21 +99,26 @@ public class FirehoseConsumerFactory {
         parser = new KeyOrMessageParser(new ProtoParser(stencilClient, kafkaConsumerConfig.getInputSchemaProtoClass()), kafkaConsumerConfig);
     }
 
-    private Filter buildFilter(FilterConfig filterConfig) {
+    private FirehoseFilter buildFilter(FilterConfig filterConfig) {
         instrumentation.logInfo("Filter Engine: {}", filterConfig.getFilterEngine());
+        Filter filter;
         switch (filterConfig.getFilterEngine()) {
             case JSON:
                 Instrumentation jsonFilterUtilInstrumentation = new Instrumentation(statsDReporter, JsonFilterUtil.class);
                 JsonFilterUtil.logConfigs(filterConfig, jsonFilterUtilInstrumentation);
                 JsonFilterUtil.validateConfigs(filterConfig, jsonFilterUtilInstrumentation);
-                return new JsonFilter(stencilClient, filterConfig, new Instrumentation(statsDReporter, JsonFilter.class));
+                filter = new JsonFilter(stencilClient, filterConfig, new Instrumentation(statsDReporter, JsonFilter.class));
+                break;
             case JEXL:
-                return new JexlFilter(filterConfig, new Instrumentation(statsDReporter, JexlFilter.class));
+                filter = new JexlFilter(filterConfig, new Instrumentation(statsDReporter, JexlFilter.class));
+                break;
             case NO_OP:
-                return new NoOpFilter(new Instrumentation(statsDReporter, NoOpFilter.class));
+                filter = new NoOpFilter(new Instrumentation(statsDReporter, NoOpFilter.class));
+                break;
             default:
                 throw new IllegalArgumentException("Invalid filter engine type");
         }
+        return new FirehoseFilter(filter, new Instrumentation(statsDReporter, FirehoseFilter.class));
     }
 
     /**
@@ -126,14 +128,14 @@ public class FirehoseConsumerFactory {
      */
     public KafkaConsumer buildConsumer() {
         FilterConfig filterConfig = ConfigFactory.create(FilterConfig.class, config);
-        Filter filter = buildFilter(filterConfig);
+        FirehoseFilter firehoseFilter = buildFilter(filterConfig);
         GenericKafkaFactory genericKafkaFactory = new GenericKafkaFactory();
         Tracer tracer = NoopTracerFactory.create();
         if (kafkaConsumerConfig.isTraceJaegarEnable()) {
             tracer = Configuration.fromEnv("Firehose" + ": " + kafkaConsumerConfig.getSourceKafkaConsumerGroupId()).getTracer();
         }
         GenericConsumer genericConsumer = genericKafkaFactory.createConsumer(kafkaConsumerConfig, config,
-                statsDReporter, filter, tracer);
+                statsDReporter, tracer);
         SinkTracer firehoseTracer = new SinkTracer(tracer, kafkaConsumerConfig.getSinkType().name() + " SINK",
                 kafkaConsumerConfig.isTraceJaegarEnable());
         if (kafkaConsumerConfig.getSourceKafkaConsumerMode().equals(KafkaConsumerMode.SYNC)) {
@@ -141,9 +143,9 @@ public class FirehoseConsumerFactory {
             ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
             return new FirehoseConsumer(
                     sink,
-                    clockInstance,
                     firehoseTracer,
                     consumerAndOffsetManager,
+                    firehoseFilter,
                     new Instrumentation(statsDReporter, FirehoseConsumer.class));
         } else {
             SinkPoolConfig sinkPoolConfig = ConfigFactory.create(SinkPoolConfig.class, config);
@@ -159,9 +161,9 @@ public class FirehoseConsumerFactory {
                     sinkPoolConfig.getSinkPoolQueuePollTimeoutMS());
             return new FirehoseAsyncConsumer(
                     sinkPool,
-                    clockInstance,
                     firehoseTracer,
                     consumerAndOffsetManager,
+                    firehoseFilter,
                     new Instrumentation(statsDReporter, FirehoseAsyncConsumer.class));
         }
     }

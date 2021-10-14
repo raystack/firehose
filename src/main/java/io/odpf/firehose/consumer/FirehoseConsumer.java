@@ -2,10 +2,10 @@ package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.filter.FilterException;
+import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.tracer.SinkTracer;
-import io.odpf.firehose.util.Clock;
 import io.opentracing.Span;
 import lombok.AllArgsConstructor;
 
@@ -22,23 +22,25 @@ import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_PARTITIONS_PROCESS_T
 public class FirehoseConsumer implements KafkaConsumer {
 
     private final Sink sink;
-    private final Clock clock;
     private final SinkTracer tracer;
     private final ConsumerAndOffsetManager consumerAndOffsetManager;
+    private final FirehoseFilter firehoseFilter;
     private final Instrumentation instrumentation;
 
     @Override
     public void process() throws IOException, DeserializerException, FilterException {
-        Instant beforeCall = clock.now();
+        Instant beforeCall = Instant.now();
         try {
             List<Message> messages = consumerAndOffsetManager.readMessagesFromKafka();
             List<Span> spans = tracer.startTrace(messages);
-            if (!messages.isEmpty()) {
-                sink.pushMessage(messages);
-                consumerAndOffsetManager.addOffsetsAndSetCommittable(messages);
+            FilteredMessages filteredMessages = firehoseFilter.applyFilter(messages);
+            consumerAndOffsetManager.addOffsetsAndSetCommittable(filteredMessages.getInvalidMessages());
+            if (filteredMessages.sizeOfValidMessages() > 0) {
+                sink.pushMessage(filteredMessages.getValidMessages());
+                consumerAndOffsetManager.addOffsetsAndSetCommittable(filteredMessages.getValidMessages());
             }
             consumerAndOffsetManager.commit();
-            instrumentation.logInfo("Execution successful for {} records", messages.size());
+            instrumentation.logInfo("Processed {} records in consumer", messages.size());
             tracer.finishTrace(spans);
         } finally {
             instrumentation.captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS, beforeCall);

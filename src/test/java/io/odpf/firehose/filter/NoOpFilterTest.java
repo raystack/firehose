@@ -10,7 +10,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.times;
@@ -40,10 +39,12 @@ public class NoOpFilterTest {
         TestMessage testMessageProto2 = TestMessage.newBuilder().setOrderNumber("92").setOrderUrl("pqr").setOrderDetails("details").build();
         Message message1 = new Message(testKeyProto1.toByteArray(), testMessageProto1.toByteArray(), "topic1", 0, 100);
         Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 101);
-        List<Message> inputMessages = Arrays.asList(message1, message2);
         NoOpFilter noOpFilter = new NoOpFilter(instrumentation);
-        List<Message> filteredMessages = noOpFilter.filter(Arrays.asList(message1, message2));
-        assertEquals(inputMessages, filteredMessages);
+        FilteredMessages expectedMessages = new FilteredMessages();
+        expectedMessages.addToValidMessages(message1);
+        expectedMessages.addToValidMessages(message2);
+        FilteredMessages filteredMessages = noOpFilter.filter(Arrays.asList(message1, message2));
+        assertEquals(expectedMessages, filteredMessages);
     }
 
     @Test
@@ -54,9 +55,11 @@ public class NoOpFilterTest {
         String testMessageJson2 = "{\"order_number\":\"92\",\"order_url\":\"pqr\",\"order_details\":\"details\"}";
         Message message1 = new Message(testKeyJson1.getBytes(), testMessageJson1.getBytes(), "topic1", 0, 100);
         Message message2 = new Message(testKeyJson2.getBytes(), testMessageJson2.getBytes(), "topic1", 0, 101);
-        List<Message> inputMessages = Arrays.asList(message1, message2);
+        FilteredMessages expectedMessages = new FilteredMessages();
+        expectedMessages.addToValidMessages(message1);
+        expectedMessages.addToValidMessages(message2);
         NoOpFilter noOpFilter = new NoOpFilter(instrumentation);
-        List<Message> filteredMessages = noOpFilter.filter(Arrays.asList(message1, message2));
-        assertEquals(inputMessages, filteredMessages);
+        FilteredMessages filteredMessages = noOpFilter.filter(Arrays.asList(message1, message2));
+        assertEquals(expectedMessages, filteredMessages);
     }
 }

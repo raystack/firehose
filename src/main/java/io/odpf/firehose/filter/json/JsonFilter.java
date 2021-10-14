@@ -15,10 +15,10 @@ import io.odpf.firehose.config.FilterConfig;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
+import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.metrics.Instrumentation;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -44,12 +44,12 @@ public class JsonFilter implements Filter {
      * @param instrumentation the instrumentation
      */
     public JsonFilter(StencilClient stencilClient, FilterConfig filterConfig, Instrumentation instrumentation) {
-        parser = new ProtoParser(stencilClient, filterConfig.getFilterSchemaProtoClass());
+        this.parser = new ProtoParser(stencilClient, filterConfig.getFilterSchemaProtoClass());
         this.instrumentation = instrumentation;
         this.filterConfig = filterConfig;
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-        schema = schemaFactory.getSchema(filterConfig.getFilterJsonSchema());
-        jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
+        this.schema = schemaFactory.getSchema(filterConfig.getFilterJsonSchema());
+        this.jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
     }
 
     /**
@@ -60,13 +60,15 @@ public class JsonFilter implements Filter {
      * @throws FilterException the filter exception
      */
     @Override
-    public List<Message> filter(List<Message> messages) throws FilterException {
-        List<Message> filteredMessages = new ArrayList<>();
+    public FilteredMessages filter(List<Message> messages) throws FilterException {
+        FilteredMessages filteredMessages = new FilteredMessages();
         for (Message message : messages) {
             byte[] data = (filterConfig.getFilterDataSource().equals(KEY)) ? message.getLogKey() : message.getLogMessage();
             String jsonMessage = deserialize(data);
             if (evaluate(jsonMessage)) {
-                filteredMessages.add(message);
+                filteredMessages.addToValidMessages(message);
+            } else {
+                filteredMessages.addToInvalidMessages(message);
             }
         }
         return filteredMessages;

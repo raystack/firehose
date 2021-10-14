@@ -1,8 +1,6 @@
 package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.filter.Filter;
-import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.Metrics;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -31,7 +29,6 @@ public class GenericConsumer implements AutoCloseable {
 
     private final Consumer kafkaConsumer;
     private final KafkaConsumerConfig consumerConfig;
-    private final Filter filter;
     private final Instrumentation instrumentation;
     private final Map<TopicPartition, OffsetAndMetadata> committedOffsets = new ConcurrentHashMap<>();
 
@@ -40,13 +37,11 @@ public class GenericConsumer implements AutoCloseable {
      *
      * @param kafkaConsumer   {@see KafkaConsumer}
      * @param config          Consumer configuration.
-     * @param filter          a Filter implementation to filter the messages. {@see Filter}, {@see io.odpf.firehose.filter.EsbMessageFilter}
      * @param instrumentation Contain logging and metrics collection
      */
-    public GenericConsumer(Consumer kafkaConsumer, KafkaConsumerConfig config, Filter filter, Instrumentation instrumentation) {
+    public GenericConsumer(Consumer kafkaConsumer, KafkaConsumerConfig config, Instrumentation instrumentation) {
         this.kafkaConsumer = kafkaConsumer;
         this.consumerConfig = config;
-        this.filter = filter;
         this.instrumentation = instrumentation;
     }
 
@@ -54,9 +49,8 @@ public class GenericConsumer implements AutoCloseable {
      * method to read next batch of messages from kafka.
      *
      * @return list of EsbMessage {@see EsbMessage}
-     * @throws FilterException in case of error when applying the filter condition.
      */
-    public List<Message> readMessages() throws FilterException {
+    public List<Message> readMessages() {
         ConsumerRecords<byte[], byte[]> records = kafkaConsumer.poll(Duration.ofMillis(consumerConfig.getSourceKafkaPollTimeoutMs()));
         instrumentation.logInfo("Pulled {} messages", records.count());
         instrumentation.capturePulledMessageHistogram(records.count());
@@ -67,17 +61,7 @@ public class GenericConsumer implements AutoCloseable {
             messages.add(new Message(record.key(), record.value(), record.topic(), record.partition(), record.offset(), record.headers(), record.timestamp(), System.currentTimeMillis()));
             instrumentation.logDebug("Pulled record: {}", record);
         }
-        return filter(messages);
-    }
-
-    private List<Message> filter(List<Message> messages) throws FilterException {
-        List<Message> filteredMessage = filter.filter(messages);
-        int filteredMessageCount = messages.size() - filteredMessage.size();
-        if (filteredMessageCount > 0) {
-            instrumentation.captureFilteredMessageCount(filteredMessageCount);
-            instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.FILTERED, filteredMessageCount);
-        }
-        return filteredMessage;
+        return messages;
     }
 
     public void close() {

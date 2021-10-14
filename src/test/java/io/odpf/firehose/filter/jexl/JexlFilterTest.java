@@ -9,6 +9,7 @@ import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
+import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
@@ -19,17 +20,13 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
 public class JexlFilterTest {
-
     private FilterConfig kafkaConsumerConfig;
-
     private Filter filter;
-
     private TestMessage testMessage;
     private TestKey key;
 
@@ -53,8 +50,10 @@ public class JexlFilterTest {
     public void shouldFilterEsbMessages() throws FilterException {
         Message message = new Message(key.toByteArray(), this.testMessage.toByteArray(), "topic1", 0, 100);
         filter = new JexlFilter(kafkaConsumerConfig, instrumentation);
-        List<Message> filteredMessages = filter.filter(Arrays.asList(message));
-        assertEquals(filteredMessages.get(0), message);
+        FilteredMessages filteredMessages = filter.filter(Arrays.asList(message));
+        FilteredMessages expectedMessages = new FilteredMessages();
+        expectedMessages.addToValidMessages(message);
+        assertEquals(expectedMessages, filteredMessages);
     }
 
     @Test
@@ -68,8 +67,10 @@ public class JexlFilterTest {
         bookingFilterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
         FilterConfig bookingConsumerConfig = ConfigFactory.create(FilterConfig.class, bookingFilterConfigs);
         JexlFilter bookingFilter = new JexlFilter(bookingConsumerConfig, instrumentation);
-        List<Message> filteredMessages = bookingFilter.filter(Arrays.asList(message));
-        assertEquals(filteredMessages.get(0), message);
+        FilteredMessages expectedMessages = new FilteredMessages();
+        expectedMessages.addToValidMessages(message);
+        FilteredMessages filteredMessages = bookingFilter.filter(Arrays.asList(message));
+        assertEquals(expectedMessages, filteredMessages);
     }
 
     @Test(expected = FilterException.class)

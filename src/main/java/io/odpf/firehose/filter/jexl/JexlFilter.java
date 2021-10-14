@@ -5,6 +5,7 @@ import io.odpf.firehose.config.enums.FilterDataSourceType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
+import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
@@ -14,7 +15,6 @@ import org.apache.commons.jexl2.MapContext;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,12 +27,9 @@ import java.util.List;
  */
 public class JexlFilter implements Filter {
 
-    private JexlEngine engine;
-    private Expression expression;
-    private FilterDataSourceType filterDataSourceType;
-    private String protoSchema;
-    private Instrumentation instrumentation;
-    private FilterConfig filterConfig;
+    private final Expression expression;
+    private final FilterDataSourceType filterDataSourceType;
+    private final String protoSchema;
 
     /**
      * Instantiates a new Message filter.
@@ -41,20 +38,15 @@ public class JexlFilter implements Filter {
      * @param instrumentation the instrumentation
      */
     public JexlFilter(FilterConfig filterConfig, Instrumentation instrumentation) {
-        this.engine = new JexlEngine();
-        this.engine.setSilent(false);
-        this.engine.setStrict(true);
-        this.filterConfig = filterConfig;
-        this.instrumentation = instrumentation;
+        JexlEngine engine = new JexlEngine();
+        engine.setSilent(false);
+        engine.setStrict(true);
         this.filterDataSourceType = filterConfig.getFilterDataSource();
         this.protoSchema = filterConfig.getFilterSchemaProtoClass();
-
-        this.instrumentation.logInfo("\n\tFilter type: {}", this.filterDataSourceType);
-        this.expression = this.engine.createExpression(filterConfig.getFilterJexlExpression());
-        this.instrumentation.logInfo("\n\tFilter schema: {}", this.protoSchema);
-        this.instrumentation.logInfo("\n\tFilter expression: {}", filterConfig.getFilterJexlExpression());
-
-
+        instrumentation.logInfo("\n\tFilter type: {}", this.filterDataSourceType);
+        this.expression = engine.createExpression(filterConfig.getFilterJexlExpression());
+        instrumentation.logInfo("\n\tFilter schema: {}", this.protoSchema);
+        instrumentation.logInfo("\n\tFilter expression: {}", filterConfig.getFilterJexlExpression());
     }
 
     /**
@@ -65,34 +57,32 @@ public class JexlFilter implements Filter {
      * @throws FilterException the filter exception
      */
     @Override
-    public List<Message> filter(List<Message> messages) throws FilterException {
-        List<Message> filteredMessages = new ArrayList<>();
-
+    public FilteredMessages filter(List<Message> messages) throws FilterException {
+        FilteredMessages filteredMessages = new FilteredMessages();
         for (Message message : messages) {
             try {
                 Object data = (filterDataSourceType.equals(FilterDataSourceType.KEY)) ? message.getLogKey() : message.getLogMessage();
                 Object obj = MethodUtils.invokeStaticMethod(Class.forName(protoSchema), "parseFrom", data);
                 if (evaluate(obj)) {
-                    filteredMessages.add(message);
+                    filteredMessages.addToValidMessages(message);
+                } else {
+                    filteredMessages.addToInvalidMessages(message);
                 }
             } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 throw new FilterException("Failed while filtering EsbMessages", e);
             }
         }
-
         return filteredMessages;
 
     }
 
     private boolean evaluate(Object data) throws FilterException {
         Object result;
-
         try {
             result = expression.evaluate(convertDataToContext(data));
         } catch (JexlException | IllegalAccessException e) {
             throw new FilterException("Failed while filtering " + e.getMessage());
         }
-
         if (result instanceof Boolean) {
             return (Boolean) result;
         } else {
@@ -102,16 +92,13 @@ public class JexlFilter implements Filter {
 
     private JexlContext convertDataToContext(Object t) throws IllegalAccessException {
         JexlContext context = new MapContext();
-
         context.set(getObjectAccessor(), t);
-
         return context;
     }
 
     private String getObjectAccessor() {
         String[] schemaNameSplit = protoSchema.split("\\.");
         String objectAccessor = schemaNameSplit[schemaNameSplit.length - 1];
-
         return objectAccessor.substring(0, 1).toLowerCase() + objectAccessor.substring(1);
     }
 }

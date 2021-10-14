@@ -1,9 +1,9 @@
 package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.filter.FilterException;
+import io.odpf.firehose.filter.NoOpFilter;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.tracer.SinkTracer;
-import io.odpf.firehose.util.Clock;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,11 +21,8 @@ public class FirehoseAsyncConsumerTest {
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
-
     @Mock
     private SinkPool sinkPool;
-    @Mock
-    private Clock clock;
     @Mock
     private SinkTracer tracer;
     @Mock
@@ -41,7 +38,8 @@ public class FirehoseAsyncConsumerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        this.asyncConsumer = new FirehoseAsyncConsumer(sinkPool, clock, tracer, consumerAndOffsetManager, instrumentation);
+        FirehoseFilter firehoseFilter = new FirehoseFilter(new NoOpFilter(instrumentation), instrumentation);
+        this.asyncConsumer = new FirehoseAsyncConsumer(sinkPool, tracer, consumerAndOffsetManager, firehoseFilter, instrumentation);
     }
 
     @Test

@@ -1,9 +1,10 @@
 package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.filter.FilterException;
+import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.tracer.SinkTracer;
-import io.odpf.firehose.util.Clock;
+import io.opentracing.Span;
 import lombok.AllArgsConstructor;
 
 import java.io.IOException;
@@ -16,22 +17,27 @@ import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_PARTITIONS_PROCESS_T
 @AllArgsConstructor
 public class FirehoseAsyncConsumer implements KafkaConsumer {
     private final SinkPool sinkPool;
-    private final Clock clock;
     private final SinkTracer tracer;
     private final ConsumerAndOffsetManager consumerAndOffsetManager;
+    private final FirehoseFilter firehoseFilter;
     private final Instrumentation instrumentation;
 
     @Override
     public void process() throws FilterException {
-        Instant beforeCall = clock.now();
+        Instant beforeCall = Instant.now();
         try {
             List<Message> messages = consumerAndOffsetManager.readMessagesFromKafka();
-            if (!messages.isEmpty()) {
-                Future<List<Message>> scheduledTask = scheduleTask(messages);
-                consumerAndOffsetManager.addOffsets(scheduledTask, messages);
+            List<Span> spans = tracer.startTrace(messages);
+            FilteredMessages filteredMessages = firehoseFilter.applyFilter(messages);
+            consumerAndOffsetManager.addOffsetsAndSetCommittable(filteredMessages.getInvalidMessages());
+            if (filteredMessages.sizeOfValidMessages() > 0) {
+                List<Message> validMessages = filteredMessages.getValidMessages();
+                Future<List<Message>> scheduledTask = scheduleTask(validMessages);
+                consumerAndOffsetManager.addOffsets(scheduledTask, validMessages);
             }
             sinkPool.fetchFinishedSinkTasks().forEach(consumerAndOffsetManager::setCommittable);
             consumerAndOffsetManager.commit();
+            tracer.finishTrace(spans);
         } finally {
             instrumentation.captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS, beforeCall);
         }

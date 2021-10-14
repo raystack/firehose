@@ -151,7 +151,7 @@ public class InfluxSinkTest {
         sink.pushMessage(messages);
         verify(instrumentation, times(1)).capturePreExecutionLatencies(messages);
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).logDebug("Preparing {} messages", messages.size());
+        verify(instrumentation, times(1)).logInfo("Preparing {} messages", messages.size());
         verify(client, times(1)).write(batchPointsArgumentCaptor.capture());
         List<BatchPoints> batchPointsList = batchPointsArgumentCaptor.getAllValues();
 
@@ -191,7 +191,7 @@ public class InfluxSinkTest {
         verify(client, times(1)).write(batchPointsArgumentCaptor.capture());
         List<BatchPoints> batchPointsList = batchPointsArgumentCaptor.getAllValues();
 
-        verify(instrumentation, times(1)).logDebug("Preparing {} messages", messages.size());
+        verify(instrumentation, times(1)).logInfo("Preparing {} messages", messages.size());
         verify(instrumentation, times(1)).logDebug("Data point: {}", batchPointsList.get(0).getPoints().get(0).toString());
         verify(instrumentation, times(1)).logDebug("Batch points: {}", batchPointsList.get(0).toString());
     }

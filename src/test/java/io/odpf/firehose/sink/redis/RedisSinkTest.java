@@ -65,10 +65,10 @@ public class RedisSinkTest {
 
         verify(instrumentation, times(1)).capturePreExecutionLatencies(messages);
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).logDebug("Preparing {} messages", messages.size());
+        verify(instrumentation, times(1)).logInfo("Preparing {} messages", messages.size());
         verify(instrumentation, times(1)).captureSinkExecutionTelemetry(any(), any());
         InOrder inOrder = inOrder(instrumentation);
-        inOrder.verify(instrumentation).logDebug("Preparing {} messages", messages.size());
+        inOrder.verify(instrumentation).logInfo("Preparing {} messages", messages.size());
         inOrder.verify(instrumentation).capturePreExecutionLatencies(messages);
         inOrder.verify(instrumentation).startExecution();
         inOrder.verify(instrumentation).captureSinkExecutionTelemetry(any(), any());
@@ -83,10 +83,10 @@ public class RedisSinkTest {
 
         verify(instrumentation, times(1)).capturePreExecutionLatencies(messages);
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).logDebug("Preparing {} messages", messages.size());
+        verify(instrumentation, times(1)).logInfo("Preparing {} messages", messages.size());
         verify(instrumentation, times(1)).captureSinkExecutionTelemetry(any(), any());
         InOrder inOrder = inOrder(instrumentation);
-        inOrder.verify(instrumentation).logDebug("Preparing {} messages", messages.size());
+        inOrder.verify(instrumentation).logInfo("Preparing {} messages", messages.size());
         inOrder.verify(instrumentation).capturePreExecutionLatencies(messages);
         inOrder.verify(instrumentation).startExecution();
         inOrder.verify(instrumentation).captureSinkExecutionTelemetry(any(), any());

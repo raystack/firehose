@@ -19,7 +19,9 @@ public class NoOpFilter implements Filter {
      * @throws FilterException the filter exception
      */
     @Override
-    public List<Message> filter(List<Message> messages) throws FilterException {
-        return messages;
+    public FilteredMessages filter(List<Message> messages) throws FilterException {
+        FilteredMessages filteredMessages = new FilteredMessages();
+        messages.forEach(filteredMessages::addToValidMessages);
+        return filteredMessages;
     }
 }

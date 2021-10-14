@@ -9,6 +9,7 @@ import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestLocation;
 import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.filter.FilterException;
+import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
@@ -70,11 +71,14 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         when(stencilClient.get(TestMessage.class.getName())).thenReturn(TestMessage.getDescriptor());
-
         jsonFilter = new JsonFilter(stencilClient, filterConfig, instrumentation);
-        List<Message> filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
-        assertEquals(1, filteredMessages.size());
-        assertEquals(message1, filteredMessages.get(0));
+        FilteredMessages filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
+        FilteredMessages expectedMessages = new FilteredMessages();
+        expectedMessages.addToValidMessages(message1);
+        expectedMessages.addToInvalidMessages(message2);
+        assertEquals(1, filteredMessages.sizeOfValidMessages());
+        assertEquals(1, filteredMessages.sizeOfInvalidMessages());
+        assertEquals(expectedMessages, filteredMessages);
     }
 
     @Test
@@ -97,11 +101,14 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         when(stencilClient.get(TestBookingLogMessage.class.getName())).thenReturn(TestBookingLogMessage.getDescriptor());
-
         jsonFilter = new JsonFilter(stencilClient, filterConfig, instrumentation);
-        List<Message> filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
-        assertEquals(1, filteredMessages.size());
-        assertEquals(message2, filteredMessages.get(0));
+        FilteredMessages filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
+        FilteredMessages expectedMessages = new FilteredMessages();
+        expectedMessages.addToValidMessages(message2);
+        expectedMessages.addToInvalidMessages(message1);
+        assertEquals(1, filteredMessages.sizeOfValidMessages());
+        assertEquals(1, filteredMessages.sizeOfInvalidMessages());
+        assertEquals(expectedMessages, filteredMessages);
     }
 
     @Test
@@ -115,9 +122,13 @@ public class JsonFilterTest {
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         when(stencilClient.get(TestMessage.class.getName())).thenReturn(TestMessage.getDescriptor());
         jsonFilter = new JsonFilter(stencilClient, filterConfig, instrumentation);
-        List<Message> filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
-        assertEquals(1, filteredMessages.size());
-        assertEquals(message1, filteredMessages.get(0));
+        FilteredMessages expectedMessages = new FilteredMessages();
+        expectedMessages.addToValidMessages(message1);
+        expectedMessages.addToInvalidMessages(message2);
+        FilteredMessages filteredMessages = jsonFilter.filter(Arrays.asList(message1, message2));
+        assertEquals(1, filteredMessages.sizeOfValidMessages());
+        assertEquals(1, filteredMessages.sizeOfInvalidMessages());
+        assertEquals(expectedMessages, filteredMessages);
     }
 
     @Test
@@ -132,9 +143,12 @@ public class JsonFilterTest {
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         when(stencilClient.get(TestMessage.class.getName())).thenReturn(TestMessage.getDescriptor());
         jsonFilter = new JsonFilter(stencilClient, filterConfig, instrumentation);
+        FilteredMessages expectedMessages = new FilteredMessages();
+        expectedMessages.addToValidMessages(message1);
+        expectedMessages.addToValidMessages(message2);
         List<Message> inputMessages = Arrays.asList(message1, message2);
-        List<Message> filteredMessages = jsonFilter.filter(inputMessages);
-        assertEquals(inputMessages, filteredMessages);
+        FilteredMessages filteredMessages = jsonFilter.filter(inputMessages);
+        assertEquals(expectedMessages, filteredMessages);
     }
 
     @Test
@@ -148,9 +162,12 @@ public class JsonFilterTest {
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         when(stencilClient.get(TestMessage.class.getName())).thenReturn(TestMessage.getDescriptor());
         jsonFilter = new JsonFilter(stencilClient, filterConfig, instrumentation);
+        FilteredMessages expectedMessages = new FilteredMessages();
+        expectedMessages.addToValidMessages(message1);
+        expectedMessages.addToValidMessages(message2);
         List<Message> inputMessages = Arrays.asList(message1, message2);
-        List<Message> filteredMessages = jsonFilter.filter(inputMessages);
-        assertEquals(inputMessages, filteredMessages);
+        FilteredMessages filteredMessages = jsonFilter.filter(inputMessages);
+        assertEquals(expectedMessages, filteredMessages);
     }
 
 
@@ -167,8 +184,10 @@ public class JsonFilterTest {
         FilterConfig bookingConsumerConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         when(stencilClient.get(TestBookingLogMessage.class.getName())).thenReturn(TestMessage.getDescriptor());
         JsonFilter bookingFilter = new JsonFilter(stencilClient, bookingConsumerConfig, instrumentation);
-        List<Message> filteredMessages = bookingFilter.filter(Collections.singletonList(message));
-        assertEquals(message, filteredMessages.get(0));
+        FilteredMessages expectedMessages = new FilteredMessages();
+        expectedMessages.addToValidMessages(message);
+        FilteredMessages filteredMessages = bookingFilter.filter(Collections.singletonList(message));
+        assertEquals(expectedMessages, filteredMessages);
     }
 
 
@@ -252,6 +271,4 @@ public class JsonFilterTest {
         jsonFilter.filter(Arrays.asList(message1, message2));
         verify(instrumentation, times(1)).logDebug("Message filtered out due to: {}", "$.order_number: must be a constant value 123");
     }
-
-
 }
