@@ -7,6 +7,8 @@ import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.apache.kafka.common.record.TimestampType;
@@ -14,6 +16,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.time.Duration;
@@ -31,6 +35,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.eq;
+
 @RunWith(MockitoJUnitRunner.class)
 public class GenericConsumerTest {
     @Mock
@@ -38,9 +48,6 @@ public class GenericConsumerTest {
 
     @Mock
     private ConsumerRecords consumerRecords;
-
-    @Mock
-    private Offsets offsets;
 
     @Mock
     private Filter filter;
@@ -59,9 +66,10 @@ public class GenericConsumerTest {
 
     @Before
     public void setUp() {
+        MockitoAnnotations.initMocks(this);
         message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
-        genericConsumer = new GenericConsumer(kafkaConsumer, consumerConfig, filter, offsets, instrumentation);
+        genericConsumer = new GenericConsumer(kafkaConsumer, consumerConfig, filter, instrumentation);
         when(consumerConfig.getSourceKafkaPollTimeoutMs()).thenReturn(500L);
         when(kafkaConsumer.poll(Duration.ofMillis(500L))).thenReturn(consumerRecords);
     }
@@ -124,7 +132,10 @@ public class GenericConsumerTest {
     public void shouldrecordStatsFromEsbLog() throws FilterException {
         ConsumerRecord<byte[], byte[]> record1 = new ConsumerRecord<>("topic1", 1, 0, key.toByteArray(), message.toByteArray());
         ConsumerRecord<byte[], byte[]> record2 = new ConsumerRecord<>("topic2", 1, 0, key.toByteArray(), message.toByteArray());
-        when(consumerRecords.iterator()).thenReturn(Arrays.asList(record1, record2).iterator());
+        Iterator iteratorMock = Mockito.mock(Iterator.class);
+        when(iteratorMock.hasNext()).thenReturn(true, true, false);
+        when(iteratorMock.next()).thenReturn(record1, record2);
+        when(consumerRecords.iterator()).thenReturn(iteratorMock);
 
         Message expectedMsg1 = new Message(key.toByteArray(), message.toByteArray(), "topic1", 0, 100);
         Message expectedMsg2 = new Message(key.toByteArray(), message.toByteArray(), "topic2", 0, 100);
@@ -141,10 +152,26 @@ public class GenericConsumerTest {
     }
 
     @Test
-    public void shouldCallCommitOnOffsets() {
+    public void shouldCallCommit() throws FilterException {
+        Iterator iteratorMock = Mockito.mock(Iterator.class);
+        when(iteratorMock.hasNext()).thenReturn(false);
+        when(consumerRecords.iterator()).thenReturn(iteratorMock);
+        genericConsumer.readMessages();
         genericConsumer.commit();
+        verify(kafkaConsumer, times(0)).commitAsync();
+        verify(kafkaConsumer, times(1)).commitSync();
+    }
 
-        verify(offsets, times(1)).commit(any());
+    @Test
+    public void shouldAsyncCommit() throws FilterException {
+        when(consumerConfig.isSourceKafkaAsyncCommitEnable()).thenReturn(true);
+        Iterator iteratorMock = Mockito.mock(Iterator.class);
+        when(iteratorMock.hasNext()).thenReturn(false);
+        when(consumerRecords.iterator()).thenReturn(iteratorMock);
+        genericConsumer.readMessages();
+        genericConsumer.commit();
+        verify(kafkaConsumer, times(1)).commitAsync(any());
+        verify(kafkaConsumer, times(0)).commitSync();
     }
 
     @Test
@@ -165,5 +192,60 @@ public class GenericConsumerTest {
         } catch (Exception kafkaConsumerException) {
             fail("Failed to supress exception on close");
         }
+    }
+
+    @Test
+    public void shouldCaptureNonFatalError() {
+        doThrow(new RuntimeException()).when(kafkaConsumer).close();
+        genericConsumer.close();
+        verify(instrumentation, times(1)).captureNonFatalError(any(), eq("Exception while closing consumer"));
+    }
+
+    @Test
+    public void shouldCallAsyncCommitWithOffsets() {
+        when(consumerConfig.isSourceKafkaAsyncCommitEnable()).thenReturn(true);
+        Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(1));
+        }};
+        genericConsumer.commit(offsets);
+        verify(kafkaConsumer, times(1)).commitAsync(eq(offsets), any());
+        verify(kafkaConsumer, times(0)).commitSync(offsets);
+    }
+
+    @Test
+    public void shouldCommitLatestOffsets() {
+        when(consumerConfig.isSourceKafkaAsyncCommitEnable()).thenReturn(false);
+        Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(1));
+        }};
+        genericConsumer.commit(offsets);
+        genericConsumer.commit(offsets);
+        verify(kafkaConsumer, times(1)).commitSync(offsets);
+
+        offsets = new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(2));
+        }};
+        genericConsumer.commit(offsets);
+        verify(kafkaConsumer, times(1)).commitSync(new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(2));
+        }});
+
+        offsets = new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(5));
+            put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(2));
+            put(new TopicPartition("topic1", 4), new OffsetAndMetadata(5));
+        }};
+        genericConsumer.commit(offsets);
+        verify(kafkaConsumer, times(1)).commitSync(new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(5));
+            put(new TopicPartition("topic1", 4), new OffsetAndMetadata(5));
+        }});
     }
 }

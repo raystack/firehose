@@ -113,7 +113,7 @@ _**Note:**_ [_**DATABASE**_](../reference/configuration/#-sink_influx_db_name) _
 
 ## Create an MongoDB Sink
 
-* it requires the following [variables](https://github.com/sumitaich1998/firehose/tree/ebdab0c700724e026d8aac80d3df061030661eb6/docs/reference/configuration.md#mongodb-sink) to be set.
+* it requires the following [variables](../reference/configuration.md#mongodb-sink) to be set.
 * In the MongoDB sink, each message is converted into a BSON Document and then inserted/updated/upserted into the specified Mongo Collection 
 * MongoDB sink supports reading messages in both JSON and Protobuf formats.
 
@@ -122,3 +122,10 @@ _**Note:**_ [_**DATABASE**_](../reference/configuration/#-sink_influx_db_name) _
 * These are the configurations that remain common across all the Sink Types.
 * You don’t need to modify them necessarily, It is recommended to use them with the default values. More details [here](../reference/configuration/#-standard).
 
+
+## Create a Blob Sink
+
+* it requires the following [variables](../reference/configuration.md#objectstorage-sink) to be set.
+* Only support google cloud storage for now.
+* Only support writing protobuf message to apache parquet file format for now.
+* The protobuf message need to have a `google.protobuf.Timestamp` field as partitioning timestamp, `event_timestamp` field is usually being used.

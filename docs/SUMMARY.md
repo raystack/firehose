@@ -38,6 +38,7 @@
   * [JDBC Sink](reference/configuration/jdbc-sink.md)
   * [Prometheus Sink](reference/configuration/prometheus-sink.md)
   * [Redis Sink](reference/configuration/redis-sink.md)
+  * [Blob Sink](reference/configuration/blob-sink.md)
 * [Metrics](reference/metrics.md)
 * [FAQs](reference/core-faqs.md)
 * [Glossary](reference/glossary.md)

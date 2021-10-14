@@ -5,7 +5,7 @@ import io.odpf.firehose.config.RedisSinkConfig;
 import io.odpf.firehose.config.enums.RedisSinkDeploymentType;
 import io.odpf.firehose.config.enums.RedisSinkDataType;
 import io.odpf.firehose.config.enums.RedisSinkTtlType;
-import io.odpf.firehose.exception.EglcConfigurationException;
+import io.odpf.firehose.exception.ConfigurationException;
 import io.odpf.firehose.metrics.StatsDReporter;
 import com.gojek.de.stencil.client.StencilClient;
 import org.junit.Assert;
@@ -88,7 +88,7 @@ public class RedisClientFactoryTest {
 
     @Test
     public void shouldThrowExceptionWhenUrlIsInvalidForCluster() {
-        expectedException.expect(EglcConfigurationException.class);
+        expectedException.expect(ConfigurationException.class);
         expectedException.expectMessage("Invalid url(s) for redis cluster: localhost:6379,localhost:6378,localhost");
 
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
@@ -103,7 +103,7 @@ public class RedisClientFactoryTest {
 
     @Test
     public void shouldThrowExceptionWhenUrlIsInvalidForStandalone() {
-        expectedException.expect(EglcConfigurationException.class);
+        expectedException.expect(ConfigurationException.class);
         expectedException.expectMessage("Invalid url for redis standalone: localhost");
 
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);

@@ -1,5 +1,8 @@
 package io.odpf.firehose.consumer;
 
+import io.odpf.firehose.error.ErrorType;
+import io.odpf.firehose.exception.DefaultException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,6 +46,7 @@ public class MessageTest {
 
         assertEquals("", message.getSerializedKey());
     }
+
     @Test
     public void encodesValueToBase64() {
         String actual = message.getSerializedMessage();
@@ -50,5 +54,14 @@ public class MessageTest {
         String expected = "CgMxMjMSA2FiYxoHZGV0YWlscw==";
 
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void shouldSetDefaultError() {
+        Assert.assertNull(message.getErrorInfo());
+        message.setDefaultErrorIfNotPresent();
+        Assert.assertNotNull(message.getErrorInfo());
+        Assert.assertEquals(new DefaultException("DEFAULT"), message.getErrorInfo().getException());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, message.getErrorInfo().getErrorType());
     }
 }

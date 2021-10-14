@@ -88,6 +88,12 @@
 
 [MongoDB sink configs](https://github.com/sumitaich1998/firehose/tree/ebdab0c700724e026d8aac80d3df061030661eb6/docs/reference/configuration.md#mongodb-sink)
 
+## O
+
+[Object Storage Sink](../guides/create_firehose.md#create-a-blob-sink)
+
+[Blob Sink Config](configuration/blob-sink.md)
+
 ## P
 
 [Prometheus sink configs](configuration/#prometheus-sink)

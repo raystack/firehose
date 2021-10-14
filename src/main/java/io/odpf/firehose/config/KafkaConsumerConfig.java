@@ -1,5 +1,8 @@
 package io.odpf.firehose.config;
 
+import io.odpf.firehose.config.converter.ConsumerModeConverter;
+import io.odpf.firehose.config.enums.KafkaConsumerMode;
+
 /**
  * The interface for configurations required to instantiate a consumer.
  */
@@ -41,4 +44,8 @@ public interface KafkaConsumerConfig extends AppConfig {
     @DefaultValue("9223372036854775807")
     Long getSourceKafkaPollTimeoutMs();
 
+    @Key("SOURCE_KAFKA_CONSUMER_MODE")
+    @ConverterClass(ConsumerModeConverter.class)
+    @DefaultValue("SYNC")
+    KafkaConsumerMode getSourceKafkaConsumerMode();
 }

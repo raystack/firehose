@@ -18,8 +18,8 @@ import java.util.Properties;
  */
 public class ProtoToFieldMapper {
 
-    private ProtoParser protoParser;
-    private Properties protoIndexToFieldMapping;
+    private final ProtoParser protoParser;
+    private final Properties protoIndexToFieldMapping;
 
     /**
      * Instantiates a new Proto to field mapper.

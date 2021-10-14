@@ -2,7 +2,7 @@ package io.odpf.firehose.proto;
 
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.exception.EglcConfigurationException;
+import io.odpf.firehose.exception.ConfigurationException;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessageV3;
 
@@ -38,12 +38,12 @@ public class ProtoMessage {
         try {
             builderClass = (Class<com.google.protobuf.Message>) Class.forName(protoClassName);
         } catch (ClassNotFoundException e) {
-            throw new EglcConfigurationException(CLASS_NAME_NOT_FOUND, e);
+            throw new ConfigurationException(CLASS_NAME_NOT_FOUND, e);
         }
         try {
             return builderClass.getMethod("parseFrom", byte[].class);
         } catch (NoSuchMethodException e) {
-            throw new EglcConfigurationException(INVALID_PROTOCOL_CLASS_MESSAGE, e);
+            throw new ConfigurationException(INVALID_PROTOCOL_CLASS_MESSAGE, e);
         }
     }
 }

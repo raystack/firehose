@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.redis.ttl;
 
 import io.odpf.firehose.config.RedisSinkConfig;
 import io.odpf.firehose.config.enums.RedisSinkTtlType;
-import io.odpf.firehose.exception.EglcConfigurationException;
+import io.odpf.firehose.exception.ConfigurationException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,7 +51,7 @@ public class RedisTtlFactoryTest {
 
     @Test
     public void shouldThrowExceptionInCaseOfInvalidConfiguration() {
-        expectedException.expect(EglcConfigurationException.class);
+        expectedException.expect(ConfigurationException.class);
         expectedException.expectMessage("Provide a positive TTL value");
 
         when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
