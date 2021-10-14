@@ -35,6 +35,7 @@ public interface BlobSinkConfig extends AppConfig {
     String getOutputKafkaMetadataColumnName();
 
     @Key("SINK_BLOB_OUTPUT_INCLUDE_KAFKA_METADATA_ENABLE")
+    @DefaultValue("false")
     boolean getOutputIncludeKafkaMetadataEnable();
 
     @Key("SINK_BLOB_LOCAL_FILE_ROTATION_DURATION_MS")

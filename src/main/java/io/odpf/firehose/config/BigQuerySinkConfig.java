@@ -28,33 +28,34 @@ public interface BigQuerySinkConfig extends AppConfig {
     @Key("SINK_BIGQUERY_CREDENTIAL_PATH")
     String getBigQueryCredentialPath();
 
-    @Key("SINK_BIGQUERY_ENABLE_TABLE_PARTITIONING_ENABLE")
+    @Key("SINK_BIGQUERY_TABLE_PARTITIONING_ENABLE")
+    @DefaultValue("false")
     Boolean isTablePartitioningEnabled();
 
     @Key("SINK_BIGQUERY_TABLE_PARTITION_KEY")
     String getTablePartitionKey();
 
+    @Key("SINK_BIGQUERY_ROW_INSERT_ID_ENABLE")
     @DefaultValue("true")
-    @Key("SINK_BIGQUERY_ENABLE_ROW_INSERT_ID_ENABLE")
     Boolean isRowInsertIdEnabled();
 
-    @DefaultValue("-1")
     @Key("SINK_BIGQUERY_CLIENT_READ_TIMEOUT_MS")
+    @DefaultValue("-1")
     int getBqClientReadTimeoutMS();
 
-    @DefaultValue("-1")
     @Key("SINK_BIGQUERY_CLIENT_CONNECT_TIMEOUT_MS")
+    @DefaultValue("-1")
     int getBqClientConnectTimeoutMS();
 
-    @DefaultValue("-1")
     @Key("SINK_BIGQUERY_TABLE_PARTITION_EXPIRY_MS")
+    @DefaultValue("-1")
     Long getBigQueryTablePartitionExpiryMS();
 
-    @DefaultValue("asia-southeast1")
     @Key("SINK_BIGQUERY_DATASET_LOCATION")
+    @DefaultValue("asia-southeast1")
     String getBigQueryDatasetLocation();
 
-    @Key("SINK_BIGQUERY_METADATA_NAMESPACE")
     @DefaultValue("")
+    @Key("SINK_BIGQUERY_METADATA_NAMESPACE")
     String getBqMetadataNamespace();
 }
