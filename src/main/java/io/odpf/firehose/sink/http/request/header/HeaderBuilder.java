@@ -3,7 +3,6 @@ package io.odpf.firehose.sink.http.request.header;
 import io.odpf.firehose.config.enums.HttpSinkParameterSourceType;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
-import com.google.common.base.CaseFormat;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -45,7 +44,7 @@ public class HeaderBuilder {
                         : message.getLogMessage());
 
         Map<String, String> parameterizedHeaders = paramMap.entrySet().stream()
-                .collect(Collectors.toMap(e -> convertToCustomHeaders(e.getKey()), e -> e.getValue().toString()));
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString()));
         baseHeaders.putAll(parameterizedHeaders);
         return baseHeaders;
     }
@@ -54,11 +53,5 @@ public class HeaderBuilder {
         this.protoToFieldMapper = protoToFieldmapper;
         this.httpSinkParameterSourceType = httpSinkParameterSource;
         return this;
-    }
-
-    private String convertToCustomHeaders(String parameter) {
-        String customHeader = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, parameter);
-        customHeader = "X-" + customHeader;
-        return customHeader;
     }
 }

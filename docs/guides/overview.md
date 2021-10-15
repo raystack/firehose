@@ -12,7 +12,7 @@ Firehose is designed to work with different sinks. Each deployment of Firehose c
 
 Use the Filter feature provided in Firehose which allows you to apply any filters on the fields present in the data set and helps you narrow it down to your use case-specific data.
 
-{% page-ref page="filters.md" %}
+{% page-ref page="filters/" %}
 
 ## Deploying Firehose
 

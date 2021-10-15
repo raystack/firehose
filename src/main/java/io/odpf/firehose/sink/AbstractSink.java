@@ -35,7 +35,7 @@ public abstract class AbstractSink implements Closeable, Sink {
     public List<Message> pushMessage(List<Message> messages) throws DeserializerException {
         List<Message> failedMessages = messages;
         try {
-            instrumentation.logDebug("Preparing {} messages", messages.size());
+            instrumentation.logInfo("Preparing {} messages", messages.size());
             instrumentation.captureMessageBatchSize(messages.size());
             instrumentation.captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, messages.size());
             prepare(messages);

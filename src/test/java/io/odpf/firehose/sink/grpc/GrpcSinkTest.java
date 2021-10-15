@@ -61,7 +61,7 @@ public class GrpcSinkTest {
         sink.pushMessage(Collections.singletonList(message));
         verify(grpcClient, times(1)).execute(any(byte[].class), eq(headers));
 
-        verify(instrumentation, times(1)).logDebug("Preparing {} messages", 1);
+        verify(instrumentation, times(1)).logInfo("Preparing {} messages", 1);
         verify(instrumentation, times(1)).logDebug("Response: {}", response);
         verify(instrumentation, times(0)).logWarn("Grpc Service returned error");
         verify(instrumentation, times(1)).logDebug("Failed messages count: {}", 0);
@@ -80,7 +80,7 @@ public class GrpcSinkTest {
         assertFalse(failedMessages.isEmpty());
         assertEquals(1, failedMessages.size());
 
-        verify(instrumentation, times(1)).logDebug("Preparing {} messages", 1);
+        verify(instrumentation, times(1)).logInfo("Preparing {} messages", 1);
         verify(instrumentation, times(1)).logDebug("Response: {}", response);
         verify(instrumentation, times(1)).logWarn("Grpc Service returned error");
         verify(instrumentation, times(1)).logDebug("Failed messages count: {}", 1);

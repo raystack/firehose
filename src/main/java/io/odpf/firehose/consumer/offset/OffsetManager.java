@@ -53,7 +53,7 @@ public class OffsetManager {
      *              Removes the batch from the global map for the cleanup.
      */
     public void setCommittable(Object batch) {
-        toBeCommittableBatchOffsets.get(batch).forEach(offsetNode -> offsetNode.setCommittable(true));
+        toBeCommittableBatchOffsets.getOrDefault(batch, new HashSet<>()).forEach(offsetNode -> offsetNode.setCommittable(true));
         toBeCommittableBatchOffsets.remove(batch);
     }
 

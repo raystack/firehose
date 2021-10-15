@@ -8,7 +8,9 @@
 
 * [Overview](guides/overview.md)
 * [Creating Firehose](guides/create_firehose.md)
-* [Using Filters](guides/filters.md)
+* [Using Filters](guides/filters/README.md)
+  * [JSON-based Filters](guides/filters/json-based-filters.md)
+  * [JEXL-based Filters](guides/filters/jexl-based-filters.md)
 * [Deployment](guides/deployment.md)
 * [Troubleshooting](guides/manage.md)
 
@@ -25,6 +27,7 @@
 * [Configuration](reference/configuration/README.md)
   * [Generic](reference/configuration/generic-1.md)
   * [Kafka Consumer](reference/configuration/kafka-consumer-1.md)
+  * [Filters](reference/configuration/filters.md)
   * [Stencil Client](reference/configuration/stencil-client.md)
   * [Retries](reference/configuration/retries.md)
   * [ElasticSearch Sink](reference/configuration/elasticsearch-sink.md)

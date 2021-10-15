@@ -9,7 +9,22 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
-import static io.odpf.firehose.metrics.Metrics.*;
+import static io.odpf.firehose.metrics.Metrics.ERROR_EVENT;
+import static io.odpf.firehose.metrics.Metrics.ERROR_MESSAGES_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.ERROR_MESSAGE_CLASS_TAG;
+import static io.odpf.firehose.metrics.Metrics.ERROR_TYPE_TAG;
+import static io.odpf.firehose.metrics.Metrics.FATAL_ERROR;
+import static io.odpf.firehose.metrics.Metrics.GLOBAL_MESSAGES_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.MESSAGE_SCOPE_TAG;
+import static io.odpf.firehose.metrics.Metrics.MESSAGE_TYPE_TAG;
+import static io.odpf.firehose.metrics.Metrics.MessageType;
+import static io.odpf.firehose.metrics.Metrics.NON_FATAL_ERROR;
+import static io.odpf.firehose.metrics.Metrics.PIPELINE_END_LATENCY_MILLISECONDS;
+import static io.odpf.firehose.metrics.Metrics.PIPELINE_EXECUTION_LIFETIME_MILLISECONDS;
+import static io.odpf.firehose.metrics.Metrics.SINK_PUSH_BATCH_SIZE_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.SINK_RESPONSE_TIME_MILLISECONDS;
+import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_MESSAGES_FILTER_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_PULL_BATCH_SIZE_TOTAL;
 
 /**
  * Instrumentation.
@@ -92,10 +107,9 @@ public class Instrumentation {
      * Captures filtered message count.
      *
      * @param filteredMessageCount the filtered message count
-     * @param filterExpression     the filter expression
      */
-    public void captureFilteredMessageCount(int filteredMessageCount, String filterExpression) {
-        statsDReporter.captureCount(SOURCE_KAFKA_MESSAGES_FILTER_TOTAL, filteredMessageCount, "expr=" + filterExpression);
+    public void captureFilteredMessageCount(int filteredMessageCount) {
+        statsDReporter.captureCount(SOURCE_KAFKA_MESSAGES_FILTER_TOTAL, filteredMessageCount);
     }
 
     // =================== ERROR ===================
@@ -176,7 +190,7 @@ public class Instrumentation {
         }
     }
 
-    public void captureGlobalMessageMetrics(MessageScope scope, int counter) {
+    public void captureGlobalMessageMetrics(Metrics.MessageScope scope, int counter) {
         statsDReporter.captureCount(GLOBAL_MESSAGES_TOTAL, counter, String.format(MESSAGE_SCOPE_TAG, scope.name()));
     }
 

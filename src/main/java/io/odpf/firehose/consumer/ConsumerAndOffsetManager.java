@@ -2,7 +2,6 @@ package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.consumer.offset.OffsetManager;
-import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.Sink;
 
@@ -63,7 +62,7 @@ public class ConsumerAndOffsetManager implements AutoCloseable {
         offsetManager.setCommittable(key);
     }
 
-    public List<Message> readMessagesFromKafka() throws FilterException {
+    public List<Message> readMessagesFromKafka() {
         return genericConsumer.readMessages();
     }
 

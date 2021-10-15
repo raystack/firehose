@@ -3,7 +3,6 @@ package io.odpf.firehose.factory;
 import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.consumer.GenericConsumer;
-import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.opentracing.Tracer;
@@ -25,11 +24,10 @@ public class GenericKafkaFactory {
      * @param config               {@see KafkaConsumerConfig}
      * @param extraKafkaParameters a map containing kafka configurations available as a key/value pair.
      * @param statsDReporter       {@see StatsDClient}
-     * @param filter               {@see Filter}, {@see io.odpf.firehose.filter.EsbMessageFilter}
      * @return {@see EsbGenericConsumer}
      */
     public GenericConsumer createConsumer(KafkaConsumerConfig config, Map<String, String> extraKafkaParameters,
-                                          StatsDReporter statsDReporter, Filter filter, Tracer tracer) {
+                                          StatsDReporter statsDReporter, Tracer tracer) {
 
         KafkaConsumer<byte[], byte[]> kafkaConsumer = new KafkaConsumer<>(FactoryUtil.getConfig(config, extraKafkaParameters));
         FactoryUtil.configureSubscription(config, kafkaConsumer, statsDReporter);
@@ -37,7 +35,6 @@ public class GenericKafkaFactory {
         return new GenericConsumer(
                 tracingKafkaConsumer,
                 config,
-                filter,
                 new Instrumentation(statsDReporter, GenericConsumer.class));
     }
 

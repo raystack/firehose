@@ -73,7 +73,7 @@ public class AbstractSinkTest {
         Mockito.verify(instrumentation, Mockito.times(1)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 4);
         Mockito.verify(instrumentation, Mockito.times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.SINK, 4);
         Mockito.verify(instrumentation, Mockito.times(1)).captureMessageBatchSize(4);
-        Mockito.verify(instrumentation, Mockito.times(1)).logDebug("Preparing {} messages", 4);
+        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("Preparing {} messages", 4);
         Mockito.verify(instrumentation, Mockito.times(1)).capturePreExecutionLatencies(new ArrayList<Message>() {{
             add(m1);
             add(m2);
@@ -111,7 +111,7 @@ public class AbstractSinkTest {
         Mockito.verify(instrumentation, Mockito.times(1)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, ErrorType.DESERIALIZATION_ERROR, 1);
         Mockito.verify(instrumentation, Mockito.times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.SINK, 2);
         Mockito.verify(instrumentation, Mockito.times(1)).captureMessageBatchSize(5);
-        Mockito.verify(instrumentation, Mockito.times(1)).logDebug("Preparing {} messages", 5);
+        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("Preparing {} messages", 5);
         Mockito.verify(instrumentation, Mockito.times(1)).capturePreExecutionLatencies(new ArrayList<Message>() {{
             add(m1);
             add(m2);
@@ -146,7 +146,7 @@ public class AbstractSinkTest {
         Mockito.verify(instrumentation, Mockito.times(1)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, 4);
         Mockito.verify(instrumentation, Mockito.times(4)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, ErrorType.DEFAULT_ERROR, 1);
         Mockito.verify(instrumentation, Mockito.times(1)).captureMessageBatchSize(4);
-        Mockito.verify(instrumentation, Mockito.times(1)).logDebug("Preparing {} messages", 4);
+        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("Preparing {} messages", 4);
         Mockito.verify(instrumentation, Mockito.times(1)).capturePreExecutionLatencies(new ArrayList<Message>() {{
             add(m1);
             add(m2);

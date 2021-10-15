@@ -1,8 +1,6 @@
 package io.odpf.firehose.sink.common;
 
 
-import com.newrelic.api.agent.NewRelic;
-import com.newrelic.api.agent.Trace;
 import io.odpf.firehose.consumer.Message;
 import io.odpf.firehose.exception.NeedToRetry;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -46,7 +44,6 @@ public abstract class AbstractHttpSink extends AbstractSink {
     }
 
     @Override
-    @Trace(dispatcher = true)
     public List<Message> execute() throws Exception {
         HttpResponse response = null;
         for (HttpEntityEnclosingRequestBase httpRequest : httpRequests) {
@@ -67,9 +64,6 @@ public abstract class AbstractHttpSink extends AbstractSink {
                     contentStringList = contentStringList == null ? readContent(httpRequest) : contentStringList;
                     captureMessageDropCount(response, contentStringList);
                 }
-            } catch (IOException e) {
-                NewRelic.noticeError(e);
-                throw e;
             } finally {
                 consumeResponse(response);
                 captureHttpStatusCount(httpRequest, response);
@@ -93,19 +87,21 @@ public abstract class AbstractHttpSink extends AbstractSink {
     }
 
     private boolean shouldLogRequest(HttpResponse response) {
-        return response == null || getRequestLogStatusCodeRanges().containsKey(response.getStatusLine().getStatusCode());
+        String statusCode = statusCode(response);
+        return statusCode.equals("null") || getRequestLogStatusCodeRanges().containsKey(Integer.parseInt(statusCode));
     }
 
     private boolean shouldLogResponse(HttpResponse response) {
-        return getInstrumentation().isDebugEnabled() && response != null;
+        return getInstrumentation().isDebugEnabled() && response != null && response.getEntity() != null;
     }
 
     private boolean shouldRetry(HttpResponse response) {
-        return response == null || getRetryStatusCodeRanges().containsKey(response.getStatusLine().getStatusCode());
+        String statusCode = statusCode(response);
+        return statusCode.equals("null") || Integer.parseInt(statusCode) == 0 || getRetryStatusCodeRanges().containsKey(Integer.parseInt(statusCode));
     }
 
     protected String statusCode(HttpResponse response) {
-        if (response != null) {
+        if (response != null && response.getStatusLine() != null) {
             return Integer.toString(response.getStatusLine().getStatusCode());
         } else {
             return "null";
@@ -114,10 +110,8 @@ public abstract class AbstractHttpSink extends AbstractSink {
 
     private void captureHttpStatusCount(HttpEntityEnclosingRequestBase httpRequestMethod, HttpResponse response) {
         String urlTag = "url=" + httpRequestMethod.getURI().getPath();
-        String httpCodeTag = "status_code=";
-        if (response != null) {
-            httpCodeTag = "status_code=" + response.getStatusLine().getStatusCode();
-        }
+        String statusCode = statusCode(response);
+        String httpCodeTag = statusCode.equals("null") ? "status_code=" : "status_code=" + statusCode;
         getInstrumentation().captureCount(SINK_HTTP_RESPONSE_CODE_TOTAL, 1, httpCodeTag, urlTag);
     }
 

@@ -91,7 +91,7 @@ public class HeaderBuilderTest {
     @Test
     public void shouldHaveExtraParameterizedHeaderIfParameterizedHeaderEnabled() {
         String headerConfig = "content-type:json";
-        Map<String, Object> mockParamMap = Collections.singletonMap("order_number", "RB_1234");
+        Map<String, Object> mockParamMap = Collections.singletonMap("orderNumber", "RB_1234");
         when(protoToFieldMapper.getFields(message.getLogMessage())).thenReturn(mockParamMap);
 
         HeaderBuilder headerBuilder = new HeaderBuilder(headerConfig)
@@ -99,13 +99,13 @@ public class HeaderBuilderTest {
 
         Map<String, String> header = headerBuilder.build(message);
 
-        assertEquals("RB_1234", header.get("X-OrderNumber"));
+        assertEquals("RB_1234", header.get("orderNumber"));
     }
 
     @Test
-    public void shouldKeepBasedHeadersUnchangedAndAddExtraHeaderChangingTheName() {
+    public void shouldKeepBaseHeadersAndAddExtraHeaderAsItIsProvideInTheConfig() {
         String headerConfig = "content-type:json";
-        Map<String, Object> mockParamMap = Collections.singletonMap("order_number", "RB_1234");
+        Map<String, Object> mockParamMap = Collections.singletonMap("X-OrderNumber", "RB_1234");
         when(protoToFieldMapper.getFields(message.getLogMessage())).thenReturn(mockParamMap);
 
         HeaderBuilder headerBuilder = new HeaderBuilder(headerConfig)

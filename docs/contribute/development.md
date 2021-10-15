@@ -35,7 +35,6 @@ The sink to which Firehose will stream Kafka's data to, must have its correspond
 
 Configuration parameter variables of each sink can be found in the [Configurations](../reference/configuration/) section.
 
-
 ### Schema Registry
 
 Firehose uses Stencil Server as its Schema Registry for hosting Protobuf descriptors. The environment variable `SCHEMA_REGISTRY_STENCIL_ENABLE` must be set to `true` . Stencil server URL must be specified in the variable `SCHEMA_REGISTRY_STENCIL_URLS` . The Proto Descriptor Set file of the Kafka messages must be uploaded to the Stencil server.

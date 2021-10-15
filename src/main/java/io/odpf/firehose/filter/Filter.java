@@ -16,5 +16,6 @@ public interface Filter {
      * @return filtered messages.
      * @throws FilterException the filter exception
      */
-    List<Message> filter(List<Message> messages) throws FilterException;
+    FilteredMessages filter(List<Message> messages) throws FilterException;
+
 }

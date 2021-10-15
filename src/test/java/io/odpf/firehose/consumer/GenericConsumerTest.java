@@ -1,8 +1,6 @@
 package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.filter.Filter;
-import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -22,22 +20,23 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
-import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.eq;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GenericConsumerTest {
@@ -46,9 +45,6 @@ public class GenericConsumerTest {
 
     @Mock
     private ConsumerRecords consumerRecords;
-
-    @Mock
-    private Filter filter;
 
     @Mock
     private Instrumentation instrumentation;
@@ -67,13 +63,13 @@ public class GenericConsumerTest {
         MockitoAnnotations.initMocks(this);
         message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
-        genericConsumer = new GenericConsumer(kafkaConsumer, consumerConfig, filter, instrumentation);
+        genericConsumer = new GenericConsumer(kafkaConsumer, consumerConfig, instrumentation);
         when(consumerConfig.getSourceKafkaPollTimeoutMs()).thenReturn(500L);
         when(kafkaConsumer.poll(Duration.ofMillis(500L))).thenReturn(consumerRecords);
     }
 
     @Test
-    public void getsMessagesFromEsbLog() throws FilterException {
+    public void getsMessagesFromEsbLog() {
         ConsumerRecord<byte[], byte[]> record1 = new ConsumerRecord<>("topic1", 1, 0, key.toByteArray(), message.toByteArray());
         ConsumerRecord<byte[], byte[]> record2 = new ConsumerRecord<>("topic2", 1, 0, key.toByteArray(), message.toByteArray());
         when(consumerRecords.iterator()).thenReturn(Arrays.asList(record1, record2).iterator());
@@ -81,19 +77,17 @@ public class GenericConsumerTest {
         Message expectedMsg1 = new Message(key.toByteArray(), message.toByteArray(), "topic1", 0, 100);
         Message expectedMsg2 = new Message(key.toByteArray(), message.toByteArray(), "topic2", 0, 100);
 
-        when(filter.filter(any())).thenReturn(Arrays.asList(expectedMsg1, expectedMsg2));
-
         when(consumerRecords.count()).thenReturn(2);
         List<Message> messages = genericConsumer.readMessages();
 
         assertNotNull(messages);
-        assertThat(messages.size(), is(2));
-        assertEquals(expectedMsg1, messages.get(0));
-        assertEquals(expectedMsg2, messages.get(1));
+        assertEquals(2, messages.size());
+        assertArrayEquals(expectedMsg1.getLogMessage(), messages.get(0).getLogMessage());
+        assertArrayEquals(expectedMsg2.getLogMessage(), messages.get(1).getLogMessage());
     }
 
     @Test
-    public void getsMessagesFromEsbLogWithHeadersIfKafkaHeadersAreSet() throws FilterException {
+    public void getsMessagesFromEsbLogWithHeadersIfKafkaHeadersAreSet() {
         Headers headers = new RecordHeaders();
         ConsumerRecord<byte[], byte[]> record1 = new ConsumerRecord<>("topic1", 1, 0, 0, TimestampType.CREATE_TIME, 0L, 0, 0, key.toByteArray(), message.toByteArray(), headers);
         ConsumerRecord<byte[], byte[]> record2 = new ConsumerRecord<>("topic2", 1, 0, 0, TimestampType.CREATE_TIME, 0L, 0, 0, key.toByteArray(), message.toByteArray(), headers);
@@ -102,51 +96,25 @@ public class GenericConsumerTest {
         Message expectedMsg1 = new Message(key.toByteArray(), message.toByteArray(), "topic1", 0, 100, headers, 1L, 1L);
         Message expectedMsg2 = new Message(key.toByteArray(), message.toByteArray(), "topic2", 0, 100, headers, 1L, 1L);
 
-        when(filter.filter(any())).thenReturn(Arrays.asList(expectedMsg1, expectedMsg2));
-
         List<Message> messages = genericConsumer.readMessages();
 
         assertNotNull(messages);
-        assertThat(messages.size(), is(2));
-        assertEquals(expectedMsg1, messages.get(0));
-        assertEquals(expectedMsg2, messages.get(1));
+        assertEquals(2, messages.size());
+        assertEquals(expectedMsg1.getTopic(), messages.get(0).getTopic());
+        assertEquals(expectedMsg2.getTopic(), messages.get(1).getTopic());
     }
 
     @Test
-    public void getsFilteredMessagesFromEsbLog() throws FilterException {
-        ConsumerRecord<byte[], byte[]> record1 = new ConsumerRecord<>("topic1", 1, 0, key.toByteArray(), message.toByteArray());
-        ConsumerRecord<byte[], byte[]> record2 = new ConsumerRecord<>("topic2", 1, 0, key.toByteArray(), message.toByteArray());
-        when(consumerRecords.iterator()).thenReturn(Arrays.asList(record1, record2).iterator());
-        when(consumerConfig.getFilterJexlExpression()).thenReturn("test");
-
-        Message expectedMsg1 = new Message(key.toByteArray(), message.toByteArray(), "topic1", 0, 100);
-
-        when(filter.filter(any())).thenReturn(Arrays.asList(expectedMsg1));
-
-        List<Message> messages = genericConsumer.readMessages();
-
-        assertNotNull(messages);
-        assertThat(messages.size(), is(1));
-        assertEquals(expectedMsg1, messages.get(0));
-        verify(instrumentation, times(1)).captureFilteredMessageCount(1, "test");
-    }
-
-    @Test
-    public void shouldrecordStatsFromEsbLog() throws FilterException {
+    public void shouldrecordStatsFromEsbLog() {
         ConsumerRecord<byte[], byte[]> record1 = new ConsumerRecord<>("topic1", 1, 0, key.toByteArray(), message.toByteArray());
         ConsumerRecord<byte[], byte[]> record2 = new ConsumerRecord<>("topic2", 1, 0, key.toByteArray(), message.toByteArray());
         Iterator iteratorMock = Mockito.mock(Iterator.class);
         when(iteratorMock.hasNext()).thenReturn(true, true, false);
         when(iteratorMock.next()).thenReturn(record1, record2);
         when(consumerRecords.iterator()).thenReturn(iteratorMock);
-
-        Message expectedMsg1 = new Message(key.toByteArray(), message.toByteArray(), "topic1", 0, 100);
-        Message expectedMsg2 = new Message(key.toByteArray(), message.toByteArray(), "topic2", 0, 100);
-
-        when(filter.filter(any())).thenReturn(Arrays.asList(expectedMsg1, expectedMsg2));
-
         when(consumerRecords.count()).thenReturn(2);
-        List<Message> messages = genericConsumer.readMessages();
+
+        genericConsumer.readMessages();
 
         verify(instrumentation, times(1)).logInfo("Pulled {} messages", 2);
         verify(instrumentation, times(1)).capturePulledMessageHistogram(2);
@@ -155,7 +123,7 @@ public class GenericConsumerTest {
     }
 
     @Test
-    public void shouldCallCommit() throws FilterException {
+    public void shouldCallCommit() {
         Iterator iteratorMock = Mockito.mock(Iterator.class);
         when(iteratorMock.hasNext()).thenReturn(false);
         when(consumerRecords.iterator()).thenReturn(iteratorMock);
@@ -166,7 +134,7 @@ public class GenericConsumerTest {
     }
 
     @Test
-    public void shouldAsyncCommit() throws FilterException {
+    public void shouldAsyncCommit() {
         when(consumerConfig.isSourceKafkaAsyncCommitEnable()).thenReturn(true);
         Iterator iteratorMock = Mockito.mock(Iterator.class);
         when(iteratorMock.hasNext()).thenReturn(false);

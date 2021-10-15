@@ -240,6 +240,7 @@ Defines the fully qualified name of the proto class which is to be used for para
 Defines the mapping of the proto fields to header/query fields in JSON format.
 
 * Example value: `{"1":"order_number","2":"event_timestamp","3":"driver_id"}`
+* Example value: `{"1":"event_timestamp","2":{"1":"customer_email"}}` Here field with index 2 is a complex data type 
 * Type: `optional`
 
 ### `SINK_HTTP_OAUTH2_ENABLE`
@@ -315,6 +316,7 @@ Defines the password to connect to DB.
 Defines the mapping of fields in DB and the corresponding proto index from where the value will be extracted. This is a JSON field.
 
 * Example value: `{"6":"customer_id","1":"service_type","5":"event_timestamp"}` Proto field value with index 1 will be stored in a column named service\_type in DB and so on
+* Example value: `{"1":"event_timestamp","2":{"1":"customer_email"}}` Here field with index 2 is a complex data type 
 * Type: `required`
 
 ### `SINK_JDBC_UNIQUE_KEYS`
@@ -459,6 +461,7 @@ The string that will act as the key for each Redis entry. This key can be config
 This is the field that decides what all data will be stored in the HashSet for each message.
 
 * Example value: `{"6":"customer_id",  "2":"order_num"}`
+* Example value: `{"1":"event_timestamp","2":{"1":"customer_email"}}` Here field with index 2 is a complex data type
 * Type: `required (For Hashset)`
 
 ### `SINK_REDIS_LIST_DATA_PROTO_INDEX`
