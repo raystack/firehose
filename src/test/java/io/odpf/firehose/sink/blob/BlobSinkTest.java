@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.blob;
 
 import com.google.protobuf.DynamicMessage;
 import io.odpf.firehose.TestMessageBQ;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.EmptyMessageException;

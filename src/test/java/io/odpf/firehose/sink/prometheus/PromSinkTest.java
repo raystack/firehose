@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.prometheus;
 
 import cortexpb.Cortex;
 import io.odpf.firehose.config.converter.RangeToHashMapConverter;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.NeedToRetry;
 import io.odpf.firehose.metrics.Instrumentation;

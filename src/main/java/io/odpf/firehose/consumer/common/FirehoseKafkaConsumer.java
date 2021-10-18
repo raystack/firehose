@@ -1,8 +1,9 @@
-package io.odpf.firehose.consumer;
+package io.odpf.firehose.consumer.common;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.Metrics;
+import io.odpf.firehose.type.Message;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -21,13 +22,11 @@ import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_MESSAGES_COMMIT_TOTA
 import static io.odpf.firehose.metrics.Metrics.SUCCESS_TAG;
 
 /**
- * A class responsible for consuming the messages in kafka.
- * It is capable of applying filters supplied while instantiating this consumer {@see io.odpf.firehose.factory.GenericKafkaFactory},
- * {@see Filter}.
+ * A class responsible for consuming and committing kafka records.
  */
-public class GenericConsumer implements AutoCloseable {
+public class FirehoseKafkaConsumer implements AutoCloseable {
 
-    private final Consumer kafkaConsumer;
+    private final Consumer<byte[], byte[]> kafkaConsumer;
     private final KafkaConsumerConfig consumerConfig;
     private final Instrumentation instrumentation;
     private final Map<TopicPartition, OffsetAndMetadata> committedOffsets = new ConcurrentHashMap<>();
@@ -39,7 +38,7 @@ public class GenericConsumer implements AutoCloseable {
      * @param config          Consumer configuration.
      * @param instrumentation Contain logging and metrics collection
      */
-    public GenericConsumer(Consumer kafkaConsumer, KafkaConsumerConfig config, Instrumentation instrumentation) {
+    public FirehoseKafkaConsumer(Consumer<byte[], byte[]> kafkaConsumer, KafkaConsumerConfig config, Instrumentation instrumentation) {
         this.kafkaConsumer = kafkaConsumer;
         this.consumerConfig = config;
         this.instrumentation = instrumentation;

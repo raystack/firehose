@@ -1,5 +1,8 @@
 package io.odpf.firehose.consumer;
 
+import io.odpf.firehose.type.Message;
+import io.odpf.firehose.sink.SinkPool;
+import io.odpf.firehose.exception.SinkTaskFailedException;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.filter.NoOpFilter;
@@ -95,7 +98,7 @@ public class FirehoseAsyncConsumerTest {
 
     @Test
     public void shouldThrowExceptionIfSinkTaskFails() throws Exception {
-        expectedException.expect(AsyncConsumerFailedException.class);
+        expectedException.expect(SinkTaskFailedException.class);
         List<Message> messages = new ArrayList<Message>() {{
             add(new Message(new byte[0], new byte[0], "topic1", 1, 10));
             add(new Message(new byte[0], new byte[0], "topic1", 1, 11));
@@ -103,7 +106,7 @@ public class FirehoseAsyncConsumerTest {
         }};
         Mockito.when(consumerAndOffsetManager.readMessagesFromKafka()).thenReturn(messages);
         Mockito.when(sinkPool.submitTask(messages)).thenReturn(future1);
-        Mockito.when(sinkPool.fetchFinishedSinkTasks()).thenThrow(new AsyncConsumerFailedException(new RuntimeException()));
+        Mockito.when(sinkPool.fetchFinishedSinkTasks()).thenThrow(new SinkTaskFailedException(new RuntimeException()));
         asyncConsumer.process();
     }
 

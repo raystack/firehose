@@ -1,6 +1,6 @@
 package io.odpf.firehose.tracer;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.opentracing.References;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;

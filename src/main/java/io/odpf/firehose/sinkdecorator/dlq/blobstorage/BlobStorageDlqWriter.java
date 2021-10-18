@@ -2,7 +2,7 @@ package io.odpf.firehose.sinkdecorator.dlq.blobstorage;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.blobstorage.BlobStorageException;
 import io.odpf.firehose.blobstorage.BlobStorage;
 import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;

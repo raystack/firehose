@@ -1,7 +1,7 @@
 package io.odpf.firehose.metrics;
 
 import com.timgroup.statsd.StatsDClient;
-import io.odpf.firehose.util.Clock;
+import io.odpf.firehose.utils.Clock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

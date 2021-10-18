@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.bigquery.handler;
 
 import com.google.cloud.bigquery.InsertAllRequest;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.sink.bigquery.models.Record;
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package io.odpf.firehose.consumer;
+package io.odpf.firehose.utils;
 
 import io.odpf.firehose.metrics.Instrumentation;
 import lombok.AllArgsConstructor;

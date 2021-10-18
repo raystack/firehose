@@ -1,5 +1,8 @@
 package io.odpf.firehose.consumer;
 
+import io.odpf.firehose.consumer.common.FirehoseConsumer;
+import io.odpf.firehose.type.Message;
+import io.odpf.firehose.sink.SinkPool;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -15,7 +18,7 @@ import java.util.concurrent.Future;
 import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS;
 
 @AllArgsConstructor
-public class FirehoseAsyncConsumer implements KafkaConsumer {
+public class FirehoseAsyncConsumer implements FirehoseConsumer {
     private final SinkPool sinkPool;
     private final SinkTracer tracer;
     private final ConsumerAndOffsetManager consumerAndOffsetManager;

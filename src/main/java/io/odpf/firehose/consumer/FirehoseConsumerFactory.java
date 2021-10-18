@@ -1,9 +1,11 @@
-package io.odpf.firehose.factory;
+package io.odpf.firehose.consumer;
 
 import com.gojek.de.stencil.StencilClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
 import com.gojek.de.stencil.parser.ProtoParser;
 import io.jaegertracing.Configuration;
+import io.odpf.firehose.consumer.common.FirehoseKafkaConsumer;
+import io.odpf.firehose.utils.KafkaUtils;
 import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.config.FilterConfig;
@@ -11,13 +13,8 @@ import io.odpf.firehose.config.ErrorConfig;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.config.SinkPoolConfig;
 import io.odpf.firehose.config.enums.KafkaConsumerMode;
-import io.odpf.firehose.consumer.ConsumerAndOffsetManager;
-import io.odpf.firehose.consumer.FirehoseAsyncConsumer;
-import io.odpf.firehose.consumer.FirehoseConsumer;
-import io.odpf.firehose.consumer.FirehoseFilter;
-import io.odpf.firehose.consumer.GenericConsumer;
-import io.odpf.firehose.consumer.KafkaConsumer;
-import io.odpf.firehose.consumer.SinkPool;
+import io.odpf.firehose.consumer.common.FirehoseConsumer;
+import io.odpf.firehose.sink.SinkPool;
 import io.odpf.firehose.exception.ConfigurationException;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.NoOpFilter;
@@ -126,27 +123,25 @@ public class FirehoseConsumerFactory {
      *
      * @return FirehoseConsumer firehose consumer
      */
-    public KafkaConsumer buildConsumer() {
+    public FirehoseConsumer buildConsumer() {
         FilterConfig filterConfig = ConfigFactory.create(FilterConfig.class, config);
         FirehoseFilter firehoseFilter = buildFilter(filterConfig);
-        GenericKafkaFactory genericKafkaFactory = new GenericKafkaFactory();
         Tracer tracer = NoopTracerFactory.create();
         if (kafkaConsumerConfig.isTraceJaegarEnable()) {
             tracer = Configuration.fromEnv("Firehose" + ": " + kafkaConsumerConfig.getSourceKafkaConsumerGroupId()).getTracer();
         }
-        GenericConsumer genericConsumer = genericKafkaFactory.createConsumer(kafkaConsumerConfig, config,
-                statsDReporter, tracer);
+        FirehoseKafkaConsumer firehoseKafkaConsumer = KafkaUtils.createConsumer(kafkaConsumerConfig, config, statsDReporter, tracer);
         SinkTracer firehoseTracer = new SinkTracer(tracer, kafkaConsumerConfig.getSinkType().name() + " SINK",
                 kafkaConsumerConfig.isTraceJaegarEnable());
         if (kafkaConsumerConfig.getSourceKafkaConsumerMode().equals(KafkaConsumerMode.SYNC)) {
             Sink sink = createSink(tracer);
-            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
-            return new FirehoseConsumer(
+            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), firehoseKafkaConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
+            return new FirehoseSyncConsumer(
                     sink,
                     firehoseTracer,
                     consumerAndOffsetManager,
                     firehoseFilter,
-                    new Instrumentation(statsDReporter, FirehoseConsumer.class));
+                    new Instrumentation(statsDReporter, FirehoseSyncConsumer.class));
         } else {
             SinkPoolConfig sinkPoolConfig = ConfigFactory.create(SinkPoolConfig.class, config);
             int nThreads = sinkPoolConfig.getSinkPoolNumThreads();
@@ -154,7 +149,7 @@ public class FirehoseConsumerFactory {
             for (int ii = 0; ii < nThreads; ii++) {
                 sinks.add(createSink(tracer));
             }
-            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, genericConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
+            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, firehoseKafkaConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
             SinkPool sinkPool = new SinkPool(
                     new LinkedBlockingQueue<>(sinks),
                     Executors.newCachedThreadPool(),

@@ -1,6 +1,6 @@
 package io.odpf.firehose.serializer;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;

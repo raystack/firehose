@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.http.request.uri;
 
 
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.consumer.TestBookingLogMessage;
 import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;

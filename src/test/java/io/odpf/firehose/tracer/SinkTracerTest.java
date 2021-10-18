@@ -1,6 +1,6 @@
 package io.odpf.firehose.tracer;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.opentracing.Span;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;

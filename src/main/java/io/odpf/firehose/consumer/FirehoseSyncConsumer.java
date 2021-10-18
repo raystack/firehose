@@ -1,5 +1,7 @@
 package io.odpf.firehose.consumer;
 
+import io.odpf.firehose.consumer.common.FirehoseConsumer;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
@@ -19,7 +21,7 @@ import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_PARTITIONS_PROCESS_T
  * Firehose consumer reads messages from Generic consumer and pushes messages to the configured sink.
  */
 @AllArgsConstructor
-public class FirehoseConsumer implements KafkaConsumer {
+public class FirehoseSyncConsumer implements FirehoseConsumer {
 
     private final Sink sink;
     private final SinkTracer tracer;

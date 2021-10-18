@@ -1,6 +1,6 @@
 package io.odpf.firehose.sinkdecorator.dlq;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.exception.DeserializerException;

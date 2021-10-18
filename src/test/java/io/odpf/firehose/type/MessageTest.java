@@ -1,5 +1,7 @@
-package io.odpf.firehose.consumer;
+package io.odpf.firehose.type;
 
+import io.odpf.firehose.consumer.TestKey;
+import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DefaultException;
 import org.junit.Assert;

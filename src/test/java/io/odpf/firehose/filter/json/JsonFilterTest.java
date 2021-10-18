@@ -2,7 +2,7 @@ package io.odpf.firehose.filter.json;
 
 import com.gojek.de.stencil.client.StencilClient;
 import io.odpf.firehose.config.FilterConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.consumer.TestBookingLogKey;
 import io.odpf.firehose.consumer.TestBookingLogMessage;
 import io.odpf.firehose.consumer.TestKey;

@@ -1,7 +1,7 @@
 package io.odpf.firehose.sinkdecorator;
 
 import io.odpf.firehose.config.DlqConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.error.ErrorHandler;
 import io.odpf.firehose.error.ErrorScope;
 import io.odpf.firehose.exception.DeserializerException;

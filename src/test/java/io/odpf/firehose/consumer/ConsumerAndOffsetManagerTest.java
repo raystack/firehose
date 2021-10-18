@@ -1,6 +1,8 @@
 package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
+import io.odpf.firehose.consumer.common.FirehoseKafkaConsumer;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.Sink;
@@ -31,7 +33,7 @@ public class ConsumerAndOffsetManagerTest {
             add(s2);
             add(s3);
         }};
-        GenericConsumer consumer = Mockito.mock(GenericConsumer.class);
+        FirehoseKafkaConsumer consumer = Mockito.mock(FirehoseKafkaConsumer.class);
         KafkaConsumerConfig config = ConfigFactory.create(KafkaConsumerConfig.class, new HashMap<>());
         Instrumentation instrumentation = Mockito.mock(Instrumentation.class);
         ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, consumer, config, instrumentation);
@@ -65,7 +67,7 @@ public class ConsumerAndOffsetManagerTest {
             add(createMessage("testing", 1, 3));
         }};
         Instrumentation instrumentation = Mockito.mock(Instrumentation.class);
-        GenericConsumer consumer = Mockito.mock(GenericConsumer.class);
+        FirehoseKafkaConsumer consumer = Mockito.mock(FirehoseKafkaConsumer.class);
         KafkaConsumerConfig config = ConfigFactory.create(KafkaConsumerConfig.class, new HashMap<>());
 
         Mockito.when(s1.canManageOffsets()).thenReturn(true);

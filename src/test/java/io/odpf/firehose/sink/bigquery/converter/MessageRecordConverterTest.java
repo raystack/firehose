@@ -8,7 +8,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.UnknownFieldSet;
 import io.odpf.firehose.TestMessageBQ;
 import io.odpf.firehose.config.BigQuerySinkConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.sink.bigquery.MessageUtils;

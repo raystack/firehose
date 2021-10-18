@@ -1,7 +1,7 @@
 package io.odpf.firehose.error;
 
 import io.odpf.firehose.config.ErrorConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Assert;
 import org.junit.Before;

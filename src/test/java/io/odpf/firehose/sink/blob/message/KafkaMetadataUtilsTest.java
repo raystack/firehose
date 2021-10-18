@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.blob.message;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Timestamp;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessage;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessageUtils;
 import org.junit.Test;

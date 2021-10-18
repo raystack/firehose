@@ -1,7 +1,7 @@
 package io.odpf.firehose.sinkdecorator.dlq;
 
 import io.odpf.firehose.config.DlqConfig;
-import io.odpf.firehose.factory.GenericKafkaFactory;
+import io.odpf.firehose.utils.KafkaUtils;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.blobstorage.BlobStorage;
@@ -23,8 +23,7 @@ public class DlqWriterFactory {
 
         switch (dlqConfig.getDlqWriterType()) {
             case KAFKA:
-                GenericKafkaFactory genericKafkaFactory = new GenericKafkaFactory();
-                KafkaProducer<byte[], byte[]> kafkaProducer = genericKafkaFactory.getKafkaProducer(dlqConfig);
+                KafkaProducer<byte[], byte[]> kafkaProducer = KafkaUtils.getKafkaProducer(dlqConfig);
                 TracingKafkaProducer<byte[], byte[]> tracingProducer = new TracingKafkaProducer<>(kafkaProducer, tracer);
 
                 return new KafkaDlqWriter(tracingProducer, dlqConfig.getDlqKafkaTopic(), new Instrumentation(client, KafkaDlqWriter.class));

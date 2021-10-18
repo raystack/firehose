@@ -1,4 +1,4 @@
-package io.odpf.firehose.consumer.offset;
+package io.odpf.firehose.consumer.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.jdbc;
 
 import io.odpf.firehose.config.JdbcSinkConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
 import org.gradle.internal.impldep.org.testng.Assert;
 import org.junit.Before;

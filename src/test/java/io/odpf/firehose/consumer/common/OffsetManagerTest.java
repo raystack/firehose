@@ -1,6 +1,6 @@
-package io.odpf.firehose.consumer.offset;
+package io.odpf.firehose.consumer.common;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.jdbc;
 
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import com.gojek.de.stencil.client.StencilClient;

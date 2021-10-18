@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.blob;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.sink.blob.message.KafkaMetadataUtils;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessageUtils;
 

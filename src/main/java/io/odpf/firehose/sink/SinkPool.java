@@ -1,6 +1,7 @@
-package io.odpf.firehose.consumer;
+package io.odpf.firehose.sink;
 
-import io.odpf.firehose.sink.Sink;
+import io.odpf.firehose.exception.SinkTaskFailedException;
+import io.odpf.firehose.type.Message;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -31,9 +32,9 @@ public class SinkPool implements AutoCloseable {
                     workerSinks.put(x.getSink());
                     return true;
                 } catch (InterruptedException e) {
-                    throw new AsyncConsumerFailedException(e);
+                    throw new SinkTaskFailedException(e);
                 } catch (ExecutionException e) {
-                    throw new AsyncConsumerFailedException(e.getCause());
+                    throw new SinkTaskFailedException(e.getCause());
                 }
             }
             return false;

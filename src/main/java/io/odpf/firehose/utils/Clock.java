@@ -1,4 +1,4 @@
-package io.odpf.firehose.util;
+package io.odpf.firehose.utils;
 
 import java.time.Instant;
 

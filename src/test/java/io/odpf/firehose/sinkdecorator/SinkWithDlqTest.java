@@ -4,7 +4,7 @@ import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.config.ErrorConfig;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.error.ErrorHandler;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.Metrics;

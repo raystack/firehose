@@ -1,4 +1,4 @@
-package io.odpf.firehose.consumer;
+package io.odpf.firehose.type;
 
 
 import io.odpf.firehose.error.ErrorInfo;

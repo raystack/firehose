@@ -1,10 +1,12 @@
-package io.odpf.firehose.consumer;
+package io.odpf.firehose.consumer.common;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
+import io.odpf.firehose.consumer.TestKey;
+import io.odpf.firehose.consumer.TestMessage;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.Headers;
@@ -39,31 +41,25 @@ import java.util.Map;
 import static org.mockito.ArgumentMatchers.eq;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GenericConsumerTest {
+public class FirehoseKafkaConsumerTest {
     @Mock
-    private KafkaConsumer kafkaConsumer;
-
+    private org.apache.kafka.clients.consumer.KafkaConsumer<byte[], byte[]> kafkaConsumer;
     @Mock
-    private ConsumerRecords consumerRecords;
-
+    private ConsumerRecords<byte[], byte[]> consumerRecords;
     @Mock
     private Instrumentation instrumentation;
-
     @Mock
     private KafkaConsumerConfig consumerConfig;
-
     private TestMessage message;
-
     private TestKey key;
-
-    private GenericConsumer genericConsumer;
+    private FirehoseKafkaConsumer firehoseKafkaConsumer;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
-        genericConsumer = new GenericConsumer(kafkaConsumer, consumerConfig, instrumentation);
+        firehoseKafkaConsumer = new FirehoseKafkaConsumer(kafkaConsumer, consumerConfig, instrumentation);
         when(consumerConfig.getSourceKafkaPollTimeoutMs()).thenReturn(500L);
         when(kafkaConsumer.poll(Duration.ofMillis(500L))).thenReturn(consumerRecords);
     }
@@ -78,7 +74,7 @@ public class GenericConsumerTest {
         Message expectedMsg2 = new Message(key.toByteArray(), message.toByteArray(), "topic2", 0, 100);
 
         when(consumerRecords.count()).thenReturn(2);
-        List<Message> messages = genericConsumer.readMessages();
+        List<Message> messages = firehoseKafkaConsumer.readMessages();
 
         assertNotNull(messages);
         assertEquals(2, messages.size());
@@ -96,7 +92,7 @@ public class GenericConsumerTest {
         Message expectedMsg1 = new Message(key.toByteArray(), message.toByteArray(), "topic1", 0, 100, headers, 1L, 1L);
         Message expectedMsg2 = new Message(key.toByteArray(), message.toByteArray(), "topic2", 0, 100, headers, 1L, 1L);
 
-        List<Message> messages = genericConsumer.readMessages();
+        List<Message> messages = firehoseKafkaConsumer.readMessages();
 
         assertNotNull(messages);
         assertEquals(2, messages.size());
@@ -114,7 +110,7 @@ public class GenericConsumerTest {
         when(consumerRecords.iterator()).thenReturn(iteratorMock);
         when(consumerRecords.count()).thenReturn(2);
 
-        genericConsumer.readMessages();
+        firehoseKafkaConsumer.readMessages();
 
         verify(instrumentation, times(1)).logInfo("Pulled {} messages", 2);
         verify(instrumentation, times(1)).capturePulledMessageHistogram(2);
@@ -127,8 +123,8 @@ public class GenericConsumerTest {
         Iterator iteratorMock = Mockito.mock(Iterator.class);
         when(iteratorMock.hasNext()).thenReturn(false);
         when(consumerRecords.iterator()).thenReturn(iteratorMock);
-        genericConsumer.readMessages();
-        genericConsumer.commit();
+        firehoseKafkaConsumer.readMessages();
+        firehoseKafkaConsumer.commit();
         verify(kafkaConsumer, times(0)).commitAsync();
         verify(kafkaConsumer, times(1)).commitSync();
     }
@@ -139,15 +135,15 @@ public class GenericConsumerTest {
         Iterator iteratorMock = Mockito.mock(Iterator.class);
         when(iteratorMock.hasNext()).thenReturn(false);
         when(consumerRecords.iterator()).thenReturn(iteratorMock);
-        genericConsumer.readMessages();
-        genericConsumer.commit();
+        firehoseKafkaConsumer.readMessages();
+        firehoseKafkaConsumer.commit();
         verify(kafkaConsumer, times(1)).commitAsync(any());
         verify(kafkaConsumer, times(0)).commitSync();
     }
 
     @Test
     public void shouldCallCloseOnConsumer() {
-        genericConsumer.close();
+        firehoseKafkaConsumer.close();
 
         verify(kafkaConsumer).close();
         verify(instrumentation).logInfo("Consumer is closing");
@@ -158,7 +154,7 @@ public class GenericConsumerTest {
         doThrow(new RuntimeException()).when(kafkaConsumer).close();
 
         try {
-            genericConsumer.close();
+            firehoseKafkaConsumer.close();
             verify(instrumentation, times(1)).logInfo("Consumer is closing");
         } catch (Exception kafkaConsumerException) {
             fail("Failed to supress exception on close");
@@ -168,7 +164,7 @@ public class GenericConsumerTest {
     @Test
     public void shouldCaptureNonFatalError() {
         doThrow(new RuntimeException()).when(kafkaConsumer).close();
-        genericConsumer.close();
+        firehoseKafkaConsumer.close();
         verify(instrumentation, times(1)).captureNonFatalError(any(), eq("Exception while closing consumer"));
     }
 
@@ -180,7 +176,7 @@ public class GenericConsumerTest {
             put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
             put(new TopicPartition("topic1", 3), new OffsetAndMetadata(1));
         }};
-        genericConsumer.commit(offsets);
+        firehoseKafkaConsumer.commit(offsets);
         verify(kafkaConsumer, times(1)).commitAsync(eq(offsets), any());
         verify(kafkaConsumer, times(0)).commitSync(offsets);
     }
@@ -193,8 +189,8 @@ public class GenericConsumerTest {
             put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
             put(new TopicPartition("topic1", 3), new OffsetAndMetadata(1));
         }};
-        genericConsumer.commit(offsets);
-        genericConsumer.commit(offsets);
+        firehoseKafkaConsumer.commit(offsets);
+        firehoseKafkaConsumer.commit(offsets);
         verify(kafkaConsumer, times(1)).commitSync(offsets);
 
         offsets = new HashMap<TopicPartition, OffsetAndMetadata>() {{
@@ -202,7 +198,7 @@ public class GenericConsumerTest {
             put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
             put(new TopicPartition("topic1", 3), new OffsetAndMetadata(2));
         }};
-        genericConsumer.commit(offsets);
+        firehoseKafkaConsumer.commit(offsets);
         verify(kafkaConsumer, times(1)).commitSync(new HashMap<TopicPartition, OffsetAndMetadata>() {{
             put(new TopicPartition("topic1", 3), new OffsetAndMetadata(2));
         }});
@@ -213,7 +209,7 @@ public class GenericConsumerTest {
             put(new TopicPartition("topic1", 3), new OffsetAndMetadata(2));
             put(new TopicPartition("topic1", 4), new OffsetAndMetadata(5));
         }};
-        genericConsumer.commit(offsets);
+        firehoseKafkaConsumer.commit(offsets);
         verify(kafkaConsumer, times(1)).commitSync(new HashMap<TopicPartition, OffsetAndMetadata>() {{
             put(new TopicPartition("topic1", 1), new OffsetAndMetadata(5));
             put(new TopicPartition("topic1", 4), new OffsetAndMetadata(5));

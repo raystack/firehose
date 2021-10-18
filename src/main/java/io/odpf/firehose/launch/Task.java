@@ -1,4 +1,4 @@
-package io.odpf.firehose.consumer;
+package io.odpf.firehose.launch;
 
 import java.util.ArrayList;
 import java.util.List;

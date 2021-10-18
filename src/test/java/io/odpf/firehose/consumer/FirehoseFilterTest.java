@@ -1,5 +1,6 @@
 package io.odpf.firehose.consumer;
 
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;

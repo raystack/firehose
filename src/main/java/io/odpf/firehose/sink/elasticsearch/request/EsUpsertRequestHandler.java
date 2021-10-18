@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.elasticsearch.request;
 
 import io.odpf.firehose.config.enums.EsSinkMessageType;
 import io.odpf.firehose.config.enums.EsSinkRequestType;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.serializer.MessageToJson;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.DocWriteRequest;

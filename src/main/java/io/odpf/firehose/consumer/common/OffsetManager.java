@@ -1,6 +1,6 @@
-package io.odpf.firehose.consumer.offset;
+package io.odpf.firehose.consumer.common;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 

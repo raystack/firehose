@@ -1,7 +1,9 @@
 package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.consumer.offset.OffsetManager;
+import io.odpf.firehose.consumer.common.FirehoseKafkaConsumer;
+import io.odpf.firehose.type.Message;
+import io.odpf.firehose.consumer.common.OffsetManager;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.Sink;
 
@@ -29,18 +31,18 @@ public class ConsumerAndOffsetManager implements AutoCloseable {
     private static final String SYNC_BATCH_KEY = "sync_batch_key";
     private final OffsetManager offsetManager = new OffsetManager();
     private final List<Sink> sinks;
-    private final GenericConsumer genericConsumer;
+    private final FirehoseKafkaConsumer firehoseKafkaConsumer;
     private final KafkaConsumerConfig kafkaConsumerConfig;
     private final Instrumentation instrumentation;
     private final boolean canSinkManageOffsets;
 
     public ConsumerAndOffsetManager(
             List<Sink> sinks,
-            GenericConsumer genericConsumer,
+            FirehoseKafkaConsumer firehoseKafkaConsumer,
             KafkaConsumerConfig kafkaConsumerConfig,
             Instrumentation instrumentation) {
         this.sinks = sinks;
-        this.genericConsumer = genericConsumer;
+        this.firehoseKafkaConsumer = firehoseKafkaConsumer;
         this.kafkaConsumerConfig = kafkaConsumerConfig;
         this.instrumentation = instrumentation;
         this.canSinkManageOffsets = sinks.get(0).canManageOffsets();
@@ -63,26 +65,26 @@ public class ConsumerAndOffsetManager implements AutoCloseable {
     }
 
     public List<Message> readMessagesFromKafka() {
-        return genericConsumer.readMessages();
+        return firehoseKafkaConsumer.readMessages();
     }
 
     public void commit() {
         if (kafkaConsumerConfig.isSourceKafkaCommitOnlyCurrentPartitionsEnable()) {
             if (canSinkManageOffsets) {
-                sinks.forEach(s -> genericConsumer.commit(s.getCommittableOffsets()));
+                sinks.forEach(s -> firehoseKafkaConsumer.commit(s.getCommittableOffsets()));
             } else {
-                genericConsumer.commit(offsetManager.getCommittableOffset());
+                firehoseKafkaConsumer.commit(offsetManager.getCommittableOffset());
             }
         } else {
-            genericConsumer.commit();
+            firehoseKafkaConsumer.commit();
         }
     }
 
     @Override
     public void close() throws IOException {
-        if (genericConsumer != null) {
+        if (firehoseKafkaConsumer != null) {
             instrumentation.logInfo("closing consumer");
-            genericConsumer.close();
+            firehoseKafkaConsumer.close();
         }
     }
 

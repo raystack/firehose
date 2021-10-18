@@ -8,7 +8,7 @@ import com.gojek.de.stencil.parser.Parser;
 
 import com.google.protobuf.UnknownFieldSet;
 import io.odpf.firehose.config.BlobSinkConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessage;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessageUtils;

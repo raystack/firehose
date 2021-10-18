@@ -1,7 +1,7 @@
 package io.odpf.firehose.metrics;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.util.Clock;
+import io.odpf.firehose.utils.Clock;
 import com.timgroup.statsd.NoOpStatsDClient;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;

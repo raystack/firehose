@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.prometheus.request;
 
 import cortexpb.Cortex;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.prometheus.builder.HeaderBuilder;

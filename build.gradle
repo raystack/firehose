@@ -275,6 +275,9 @@ jacocoTestCoverageVerification {
                               '**/serializer/**',
                               '**/cortexpb/**',
                               '**/Clock**',
+                              '**/KafkaUtils**',
+                              '**/ConsumerRebalancer**',
+                              '**/FirehoseConsumerFactory**',
                               '**/GoGoProtos**',])
         })
     }

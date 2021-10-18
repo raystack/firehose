@@ -1,7 +1,7 @@
 package io.odpf.firehose.metrics;
 
-import io.odpf.firehose.consumer.Message;
-import io.odpf.firehose.util.Clock;
+import io.odpf.firehose.type.Message;
+import io.odpf.firehose.utils.Clock;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

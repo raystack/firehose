@@ -1,11 +1,11 @@
 package io.odpf.firehose.sink.http;
 
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.AbstractSink;
-import io.odpf.firehose.util.Clock;
+import io.odpf.firehose.utils.Clock;
 import com.gojek.de.stencil.client.StencilClient;
 import org.gradle.internal.impldep.org.junit.Before;
 import org.junit.AfterClass;

@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.log;
 
 
 import io.odpf.firehose.config.AppConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.type.Message;
 import io.odpf.firehose.consumer.TestMessage;
 import com.google.protobuf.DynamicMessage;
 import com.gojek.de.stencil.parser.ProtoParser;
