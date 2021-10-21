@@ -39,6 +39,7 @@
   * [Prometheus Sink](reference/configuration/prometheus-sink.md)
   * [Redis Sink](reference/configuration/redis-sink.md)
   * [Blob Sink](reference/configuration/blob-sink.md)
+  * [Bigquery Sink](reference/configuration/bigquery-sink.md)
 * [Metrics](reference/metrics.md)
 * [FAQs](reference/core-faqs.md)
 * [Glossary](reference/glossary.md)

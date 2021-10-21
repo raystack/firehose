@@ -27,6 +27,7 @@ Following sinks are supported in the Firehose
 * [GRPC](https://en.wikipedia.org/wiki/GRPC) - GRPC based services
 * [Prometheus](https://en.wikipedia.org/wiki/Prometheus_%28software) - A time-series database
 * [MongoDB](https://en.wikipedia.org/wiki/MongoDB) - A NoSQL database
+* [Bigquery](https://cloud.google.com/bigquery) - A data warehouse provided by Google Cloud
 * [Blob Storage](https://gocloud.dev/howto/blob/) - A data storage architecture for large stores of unstructured data like google cloud storage, amazon s3, apache hadoop distributed filesystem
 
 ## How is Firehose different from Kafka-Connect?
