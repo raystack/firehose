@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink;
 
 import io.odpf.firehose.exception.SinkTaskFailedException;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

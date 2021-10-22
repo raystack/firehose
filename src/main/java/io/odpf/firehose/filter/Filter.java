@@ -1,6 +1,6 @@
 package io.odpf.firehose.filter;
 
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 
 import java.util.List;
 

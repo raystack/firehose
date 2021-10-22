@@ -1,4 +1,4 @@
-package io.odpf.firehose.type;
+package io.odpf.firehose.message;
 
 import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;

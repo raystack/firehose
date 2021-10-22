@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.prometheus.builder;
 
 
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import cortexpb.Cortex;

@@ -5,7 +5,7 @@ import com.google.api.client.util.DateTime;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.odpf.firehose.config.BigQuerySinkConfig;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;

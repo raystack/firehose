@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.mongodb.request;
 
 import com.mongodb.client.model.WriteModel;
 import io.odpf.firehose.config.enums.MongoSinkMessageType;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.JsonParseException;
 import io.odpf.firehose.serializer.MessageToJson;
 import org.bson.Document;

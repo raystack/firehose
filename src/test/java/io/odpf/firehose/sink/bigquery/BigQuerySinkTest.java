@@ -5,7 +5,7 @@ import com.google.cloud.bigquery.InsertAllRequest;
 import com.google.cloud.bigquery.InsertAllResponse;
 import com.google.cloud.bigquery.TableId;
 import io.odpf.firehose.TestMessageBQ;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.metrics.Instrumentation;

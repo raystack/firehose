@@ -10,7 +10,7 @@ import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import io.odpf.firehose.TestKeyBQ;
 import io.odpf.firehose.config.BigQuerySinkConfig;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryClient;
 import io.odpf.firehose.sink.bigquery.models.MetadataUtil;

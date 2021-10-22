@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.mongodb;
 
 import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.model.WriteModel;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.mongodb.client.MongoSinkClient;

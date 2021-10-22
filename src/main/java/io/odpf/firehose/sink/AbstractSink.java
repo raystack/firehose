@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink;
 
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.ConfigurationException;
 import io.odpf.firehose.exception.SinkException;

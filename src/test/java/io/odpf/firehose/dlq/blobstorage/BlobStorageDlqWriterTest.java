@@ -1,8 +1,8 @@
-package io.odpf.firehose.sinkdecorator.dlq.blobstorage;
+package io.odpf.firehose.dlq.blobstorage;
 
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.blobstorage.BlobStorageException;
 import io.odpf.firehose.blobstorage.BlobStorage;

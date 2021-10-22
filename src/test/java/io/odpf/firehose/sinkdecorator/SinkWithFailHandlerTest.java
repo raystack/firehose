@@ -3,7 +3,7 @@ package io.odpf.firehose.sinkdecorator;
 import io.odpf.firehose.config.ErrorConfig;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.error.ErrorHandler;
 import io.odpf.firehose.exception.SinkException;
 import io.odpf.firehose.sink.Sink;

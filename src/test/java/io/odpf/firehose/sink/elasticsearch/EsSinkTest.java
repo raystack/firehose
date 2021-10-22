@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.elasticsearch;
 
 import io.odpf.firehose.config.enums.SinkType;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.NeedToRetry;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.elasticsearch.request.EsRequestHandler;

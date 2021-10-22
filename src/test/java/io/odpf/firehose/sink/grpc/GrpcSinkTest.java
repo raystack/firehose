@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.grpc;
 
 
 
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestGrpcResponse;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;

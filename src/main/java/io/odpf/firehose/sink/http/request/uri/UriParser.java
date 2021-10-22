@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.http.request.uri;
 
 
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;

@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.redis.client;
 
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 
 import java.util.List;
 

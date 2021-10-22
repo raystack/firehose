@@ -1,6 +1,6 @@
 package io.odpf.firehose.proto;
 
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.ConfigurationException;
 import com.google.protobuf.Descriptors;

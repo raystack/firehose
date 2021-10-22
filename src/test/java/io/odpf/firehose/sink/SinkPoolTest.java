@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink;
 
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

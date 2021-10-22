@@ -44,8 +44,8 @@ import io.odpf.firehose.sinkdecorator.SinkFinal;
 import io.odpf.firehose.sinkdecorator.SinkWithDlq;
 import io.odpf.firehose.sinkdecorator.SinkWithFailHandler;
 import io.odpf.firehose.sinkdecorator.SinkWithRetry;
-import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
-import io.odpf.firehose.sinkdecorator.dlq.DlqWriterFactory;
+import io.odpf.firehose.dlq.DlqWriter;
+import io.odpf.firehose.dlq.DlqWriterFactory;
 import io.odpf.firehose.tracer.SinkTracer;
 import io.opentracing.Tracer;
 import io.opentracing.noop.NoopTracerFactory;
@@ -213,8 +213,7 @@ public class FirehoseConsumerFactory {
         if (!dlqConfig.getDlqSinkEnable()) {
             return sink;
         }
-        DlqWriterFactory dlqWriterFactory = new DlqWriterFactory();
-        DlqWriter dlqWriter = dlqWriterFactory.create(new HashMap<>(config), statsDReporter, tracer);
+        DlqWriter dlqWriter = DlqWriterFactory.create(new HashMap<>(config), statsDReporter, tracer);
         BackOffProvider backOffProvider = getBackOffProvider();
         return SinkWithDlq.withInstrumentationFactory(
                 sink,

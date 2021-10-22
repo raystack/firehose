@@ -4,7 +4,7 @@ package io.odpf.firehose.sink.elasticsearch.request;
 
 import io.odpf.firehose.config.enums.EsSinkMessageType;
 import io.odpf.firehose.config.enums.EsSinkRequestType;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestAggregatedSupplyMessage;
 import io.odpf.firehose.exception.JsonParseException;
 import io.odpf.firehose.serializer.MessageToJson;

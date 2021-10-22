@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.bigquery.models;
 
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;

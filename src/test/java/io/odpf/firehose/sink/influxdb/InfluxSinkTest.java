@@ -4,7 +4,7 @@ package io.odpf.firehose.sink.influxdb;
 
 
 import io.odpf.firehose.config.InfluxSinkConfig;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestBookingLogMessage;
 import io.odpf.firehose.consumer.TestFeedbackLogKey;
 import io.odpf.firehose.consumer.TestFeedbackLogMessage;

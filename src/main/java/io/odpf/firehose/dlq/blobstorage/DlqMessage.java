@@ -1,4 +1,4 @@
-package io.odpf.firehose.sinkdecorator.dlq.blobstorage;
+package io.odpf.firehose.dlq.blobstorage;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

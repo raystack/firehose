@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.http.request.create;
 
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.sink.http.request.entity.RequestEntityBuilder;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 

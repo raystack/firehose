@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.log;
 
 
 import io.odpf.firehose.config.AppConfig;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.gojek.de.stencil.parser.ProtoParser;

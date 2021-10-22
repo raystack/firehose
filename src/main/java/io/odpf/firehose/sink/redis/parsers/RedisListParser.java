@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.redis.parsers;
 
 
 import io.odpf.firehose.config.RedisSinkConfig;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.redis.dataentry.RedisDataEntry;

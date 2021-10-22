@@ -1,4 +1,4 @@
-package io.odpf.firehose.sinkdecorator.dlq;
+package io.odpf.firehose.dlq;
 
 import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.utils.KafkaUtils;
@@ -6,9 +6,9 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.blobstorage.BlobStorage;
 import io.odpf.firehose.blobstorage.BlobStorageFactory;
-import io.odpf.firehose.sinkdecorator.dlq.kafka.KafkaDlqWriter;
-import io.odpf.firehose.sinkdecorator.dlq.log.LogDlqWriter;
-import io.odpf.firehose.sinkdecorator.dlq.blobstorage.BlobStorageDlqWriter;
+import io.odpf.firehose.dlq.kafka.KafkaDlqWriter;
+import io.odpf.firehose.dlq.log.LogDlqWriter;
+import io.odpf.firehose.dlq.blobstorage.BlobStorageDlqWriter;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.kafka.TracingKafkaProducer;
 import org.aeonbits.owner.ConfigFactory;
@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class DlqWriterFactory {
 
-    public DlqWriter create(Map<String, String> configuration, StatsDReporter client, Tracer tracer) {
+    public static DlqWriter create(Map<String, String> configuration, StatsDReporter client, Tracer tracer) {
         DlqConfig dlqConfig = ConfigFactory.create(DlqConfig.class, configuration);
 
         switch (dlqConfig.getDlqWriterType()) {

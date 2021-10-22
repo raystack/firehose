@@ -1,6 +1,6 @@
 package io.odpf.firehose.metrics;
 
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.error.ErrorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

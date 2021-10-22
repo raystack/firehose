@@ -1,11 +1,11 @@
-package io.odpf.firehose.sinkdecorator.dlq;
+package io.odpf.firehose.dlq;
 
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.sinkdecorator.dlq.kafka.KafkaDlqWriter;
+import io.odpf.firehose.dlq.kafka.KafkaDlqWriter;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;

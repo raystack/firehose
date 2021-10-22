@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.http.request.header;
 
 import io.odpf.firehose.config.enums.HttpSinkParameterSourceType;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
 
 import java.util.Arrays;

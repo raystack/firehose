@@ -1,6 +1,6 @@
 package io.odpf.firehose.serializer;
 
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

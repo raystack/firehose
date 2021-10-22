@@ -1,9 +1,9 @@
-package io.odpf.firehose.sinkdecorator.dlq.kafka;
+package io.odpf.firehose.dlq.kafka;
 
 import io.odpf.firehose.error.ErrorInfo;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
+import io.odpf.firehose.dlq.DlqWriter;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 

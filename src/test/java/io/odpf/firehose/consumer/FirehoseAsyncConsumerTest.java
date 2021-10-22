@@ -1,6 +1,6 @@
 package io.odpf.firehose.consumer;
 
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.sink.SinkPool;
 import io.odpf.firehose.exception.SinkTaskFailedException;
 import io.odpf.firehose.filter.FilterException;

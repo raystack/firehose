@@ -1,11 +1,11 @@
-package io.odpf.firehose.sinkdecorator.dlq.blobstorage;
+package io.odpf.firehose.dlq.blobstorage;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.odpf.firehose.type.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.blobstorage.BlobStorageException;
 import io.odpf.firehose.blobstorage.BlobStorage;
-import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
+import io.odpf.firehose.dlq.DlqWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.internal.Base64;
 

@@ -1,4 +1,4 @@
-package io.odpf.firehose.sinkdecorator.dlq;
+package io.odpf.firehose.dlq;
 
 public enum DLQWriterType {
     KAFKA,
