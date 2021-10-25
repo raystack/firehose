@@ -2,8 +2,8 @@ package io.odpf.firehose.config;
 
 import io.odpf.firehose.config.converter.DlqWriterTypeConverter;
 import io.odpf.firehose.config.converter.BlobStorageTypeConverter;
-import io.odpf.firehose.blobstorage.BlobStorageType;
-import io.odpf.firehose.dlq.DLQWriterType;
+import io.odpf.firehose.sink.common.blobstorage.BlobStorageType;
+import io.odpf.firehose.sink.dlq.DLQWriterType;
 
 public interface DlqConfig extends AppConfig {
 

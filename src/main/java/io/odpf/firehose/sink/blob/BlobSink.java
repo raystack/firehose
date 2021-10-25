@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.blob;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.consumer.common.OffsetManager;
+import io.odpf.firehose.consumer.kafka.OffsetManager;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.SinkException;
 import io.odpf.firehose.exception.UnknownFieldsException;

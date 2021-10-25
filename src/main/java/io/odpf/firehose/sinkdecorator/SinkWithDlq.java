@@ -9,7 +9,7 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.Metrics;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
-import io.odpf.firehose.dlq.DlqWriter;
+import io.odpf.firehose.sink.dlq.DlqWriter;
 
 import java.io.IOException;
 import java.util.LinkedList;

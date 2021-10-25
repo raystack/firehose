@@ -8,7 +8,7 @@ import io.odpf.firehose.message.Message;
 import io.odpf.firehose.error.ErrorHandler;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.Metrics;
-import io.odpf.firehose.dlq.DlqWriter;
+import io.odpf.firehose.sink.dlq.DlqWriter;
 import org.aeonbits.owner.ConfigFactory;
 import org.hamcrest.Matchers;
 import org.junit.Before;

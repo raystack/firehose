@@ -1,7 +1,8 @@
 package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.consumer.common.FirehoseKafkaConsumer;
+import io.odpf.firehose.consumer.kafka.ConsumerAndOffsetManager;
+import io.odpf.firehose.consumer.kafka.FirehoseKafkaConsumer;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.filter.FilterException;
@@ -100,7 +101,7 @@ public class FirehoseSyncConsumerTest {
         Message msg2 = new Message(new byte[]{}, new byte[]{}, "topic", 0, 100);
         Message msg3 = new Message(new byte[]{}, new byte[]{}, "topic", 0, 100);
         messages = Arrays.asList(msg1, msg2, msg3);
-        Mockito.when(consumerAndOffsetManager.readMessagesFromKafka()).thenReturn(messages);
+        Mockito.when(consumerAndOffsetManager.readMessages()).thenReturn(messages);
         Mockito.when(firehoseFilter.applyFilter(messages)).thenReturn(new FilteredMessages() {{
             addToValidMessages(msg3);
             addToValidMessages(msg1);

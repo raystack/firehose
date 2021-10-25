@@ -1,7 +1,8 @@
 package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.consumer.common.FirehoseKafkaConsumer;
+import io.odpf.firehose.consumer.kafka.ConsumerAndOffsetManager;
+import io.odpf.firehose.consumer.kafka.FirehoseKafkaConsumer;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -44,7 +45,7 @@ public class ConsumerAndOffsetManagerTest {
         }};
         Mockito.when(s1.canManageOffsets()).thenReturn(false);
         Mockito.when(consumer.readMessages()).thenReturn(messages);
-        consumerAndOffsetManager.addOffsetsAndSetCommittable(consumerAndOffsetManager.readMessagesFromKafka());
+        consumerAndOffsetManager.addOffsetsAndSetCommittable(consumerAndOffsetManager.readMessages());
         consumerAndOffsetManager.commit();
         Mockito.verify(consumer, Mockito.times(1)).commit(new HashMap<TopicPartition, OffsetAndMetadata>() {{
             put(new TopicPartition("testing", 1), new OffsetAndMetadata(4));
@@ -85,7 +86,7 @@ public class ConsumerAndOffsetManagerTest {
         }});
 
         ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, consumer, config, instrumentation);
-        consumerAndOffsetManager.addOffsetsAndSetCommittable(consumerAndOffsetManager.readMessagesFromKafka());
+        consumerAndOffsetManager.addOffsetsAndSetCommittable(consumerAndOffsetManager.readMessages());
         consumerAndOffsetManager.commit();
         Mockito.verify(consumer, Mockito.times(1)).commit(new HashMap<TopicPartition, OffsetAndMetadata>() {{
             put(new TopicPartition("testing", 1), new OffsetAndMetadata(2));

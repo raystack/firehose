@@ -1,7 +1,7 @@
 package io.odpf.firehose.launch;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.consumer.common.FirehoseConsumer;
+import io.odpf.firehose.consumer.FirehoseConsumer;
 import io.odpf.firehose.consumer.FirehoseConsumerFactory;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;

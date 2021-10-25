@@ -2,7 +2,7 @@ package io.odpf.firehose.utils;
 
 import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.consumer.common.FirehoseKafkaConsumer;
+import io.odpf.firehose.consumer.kafka.FirehoseKafkaConsumer;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.parser.KafkaEnvironmentVariables;

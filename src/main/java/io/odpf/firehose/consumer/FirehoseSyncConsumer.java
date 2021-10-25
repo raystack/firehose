@@ -1,8 +1,8 @@
 package io.odpf.firehose.consumer;
 
-import io.odpf.firehose.consumer.common.FirehoseConsumer;
+import io.odpf.firehose.consumer.kafka.ConsumerAndOffsetManager;
+import io.odpf.firehose.exception.FirehoseConsumerFailedException;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -30,10 +30,10 @@ public class FirehoseSyncConsumer implements FirehoseConsumer {
     private final Instrumentation instrumentation;
 
     @Override
-    public void process() throws IOException, DeserializerException, FilterException {
+    public void process() throws IOException {
         Instant beforeCall = Instant.now();
         try {
-            List<Message> messages = consumerAndOffsetManager.readMessagesFromKafka();
+            List<Message> messages = consumerAndOffsetManager.readMessages();
             List<Span> spans = tracer.startTrace(messages);
             FilteredMessages filteredMessages = firehoseFilter.applyFilter(messages);
             consumerAndOffsetManager.addOffsetsAndSetCommittable(filteredMessages.getInvalidMessages());
@@ -44,6 +44,8 @@ public class FirehoseSyncConsumer implements FirehoseConsumer {
             consumerAndOffsetManager.commit();
             instrumentation.logInfo("Processed {} records in consumer", messages.size());
             tracer.finishTrace(spans);
+        } catch (FilterException e) {
+            throw new FirehoseConsumerFailedException(e);
         } finally {
             instrumentation.captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS, beforeCall);
         }
