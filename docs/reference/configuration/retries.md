@@ -24,11 +24,19 @@ Maximum expiry time in milliseconds for exponential backoff policy.
 * Type: `optional`
 * Default value: `60000`
 
-## `DLQ_ENABLE`
+## `RETRY_FAIL_AFTER_MAX_ATTEMPTS_ENABLE`
 
-Maximum
+Fail the firehose if the retries exceed
 
 * Example value: `true`
 * Type: `optional`
 * Default value: `false`
+
+## `RETRY_MAX_ATTEMPTS`
+
+Max attempts for retries
+
+* Example value: `3`
+* Type: `optional`
+* Default value: `2147483647`
 

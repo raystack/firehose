@@ -33,7 +33,7 @@
   * [ElasticSearch Sink](reference/configuration/elasticsearch-sink.md)
   * [GRPC Sink](reference/configuration/grpc-sink.md)
   * [HTTP Sink](reference/configuration/http-sink.md)
-  * [MongoDB Sink](reference/configuration/generic.md)
+  * [MongoDB Sink](reference/configuration/mongo-sink.md)
   * [InfluxDB Sink](reference/configuration/influxdb-sink.md)
   * [JDBC Sink](reference/configuration/jdbc-sink.md)
   * [Prometheus Sink](reference/configuration/prometheus-sink.md)

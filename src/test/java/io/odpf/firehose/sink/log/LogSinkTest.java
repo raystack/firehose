@@ -15,8 +15,8 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -28,7 +28,7 @@ public class LogSinkTest {
     @Mock
     private KeyOrMessageParser parser;
 
-    private DynamicMessage dynamicMessage = DynamicMessage.newBuilder(TestMessage.getDescriptor()).build();
+    private final DynamicMessage dynamicMessage = DynamicMessage.newBuilder(TestMessage.getDescriptor()).build();
 
     private Sink sink;
 
@@ -41,7 +41,7 @@ public class LogSinkTest {
 
     @Test
     public void shouldPrintProto() throws IOException, DeserializerException {
-        List<Message> messages = Arrays.asList(new Message(new byte[0], new byte[0], "topic", 0, 100));
+        List<Message> messages = Collections.singletonList(new Message(new byte[0], new byte[0], "topic", 0, 100));
 
         sink.pushMessage(messages);
 
@@ -51,7 +51,7 @@ public class LogSinkTest {
     }
 
     @Test
-    public void shouldParseProto() throws IOException, InvocationTargetException, IllegalAccessException, DeserializerException {
+    public void shouldParseProto() throws IOException {
         List<Message> messages = Arrays.asList(new Message(new byte[0], new byte[0], "topic", 0, 100),
                 new Message(new byte[0], new byte[0], "topic-2", 0, 100));
 
@@ -61,10 +61,10 @@ public class LogSinkTest {
     }
 
     @Test
-    public void shouldPrintTestProto() throws IOException, DeserializerException {
+    public void shouldPrintTestProto() throws IOException {
         TestKey testKey = TestKey.getDefaultInstance();
         TestMessage testMessage = TestMessage.getDefaultInstance();
-        List<Message> messages = Arrays.asList(new Message(testKey.toByteArray(), testMessage.toByteArray(), "topic", 0, 100));
+        List<Message> messages = Collections.singletonList(new Message(testKey.toByteArray(), testMessage.toByteArray(), "topic", 0, 100));
 
         sink.pushMessage(messages);
 
@@ -74,10 +74,10 @@ public class LogSinkTest {
     }
 
     @Test
-    public void shouldSkipParsingAndNotFailIfKeyIsNull() throws IOException, DeserializerException, InvocationTargetException, IllegalAccessException {
+    public void shouldSkipParsingAndNotFailIfKeyIsNull() throws IOException {
         byte[] testMessage = TestMessage.getDefaultInstance().toByteArray();
 
-        sink.pushMessage(Arrays.asList(new Message(null, testMessage, "topic", 0, 100)));
+        sink.pushMessage(Collections.singletonList(new Message(null, testMessage, "topic", 0, 100)));
 
         Mockito.verify(instrumentation, Mockito.times(1)).logInfo(
                 Mockito.eq("\n================= DATA =======================\n{}"),

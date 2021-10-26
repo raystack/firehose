@@ -28,7 +28,7 @@ public class DlqWriterFactory {
 
                 return new KafkaDlqWriter(tracingProducer, dlqConfig.getDlqKafkaTopic(), new Instrumentation(client, KafkaDlqWriter.class));
 
-            case OBJECTSTORAGE:
+            case BLOB_STORAGE:
                 configuration.put("GCS_TYPE", "DLQ_BLOB_STORAGE");
                 BlobStorage blobStorage = BlobStorageFactory.createObjectStorage(dlqConfig.getBlobStorageType(), configuration);
                 return new BlobStorageDlqWriter(blobStorage);

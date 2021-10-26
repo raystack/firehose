@@ -29,7 +29,7 @@ Read more about Apache Commons JEXL project [here](https://commons.apache.org/pr
 The filtering occurs in the following steps -
 
 * Firehose Consumer creates a Filter object and initializes it with the values of -`FILTER_DATA_SOURCE` i.e. key/message,`FILTER_JEXL_EXPRESSION` and `FILTER_SCHEMA_PROTO_CLASS`as configured in the environment variables. 
-* `JexlFilter` iterates over the input List of events. For each event, the Protobuf Class as specified by the environment variable `FILTER_JEXL_SCHEMA_PROTO_CLASS` , converts the key/message of the event from raw byte array to a POJO \(Plain Old Java Object\), which contains getters for accessing various fields of the event data.
+* `JexlFilter` iterates over the input List of events. For each event, the Protobuf Class as specified by the environment variable `FILTER_SCHEMA_PROTO_CLASS` , converts the key/message of the event from raw byte array to a POJO \(Plain Old Java Object\), which contains getters for accessing various fields of the event data.
 * A`JEXLContext` is created to link the key/message proto reference in the JEXL expression with the POJO object generated earlier.  JEXL engine converts `FILTER_JEXL_EXPRESSION`  string into `JEXLExpression` object and replaces all occurrences of references in the string by the generated POJO object.  `JEXLException` is thrown if the filter expression is invalid. 
 * The `JEXLExpression` is then evaluated for each of these parsed events. The messages for which the `JEXLExpression` evaluates to `true`, are added to the output List of messages and returned by the Filter. The rest of the messages are discarded by the Filter
 

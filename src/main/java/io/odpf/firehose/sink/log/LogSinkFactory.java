@@ -1,7 +1,6 @@
 package io.odpf.firehose.sink.log;
 
 
-
 import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.SinkFactory;
@@ -17,7 +16,7 @@ import java.util.Map;
  * Factory class to create the LogSink.
  * <p>
  * The consumer framework would reflectively instantiate this factory
- * using the configurations supplied and invoke {@see #create(Map<String, String> configuration, StatsDClient client)}
+ * using the configurations supplied and invoke {@see #create(Map < String, String > configuration, StatsDClient client)}
  * to obtain the LogSink sink implementation.
  */
 public class LogSinkFactory implements SinkFactory {
