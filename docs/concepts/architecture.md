@@ -57,6 +57,16 @@ _**Commit**_
 2. AsyncConsumer:
    1. In the Consumer thread, Firehose checks if any of the sink-pool tasks are finished. It sets the offsets of those messages to be committable. It commits the all the committable offsets. 
 
+_**Message Final State**_
+
+The final state of message can be any one of the followings after it is consumed from kafka:
+* Sink
+* DLQ
+* Ignored
+* Filtered
+
+One can monitor via plotting the metrics related to messages.
+
 ### Schema Handling
 
 * Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data. Data streams on Kafka topics are bound to a protobuf schema.

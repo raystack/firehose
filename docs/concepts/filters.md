@@ -31,7 +31,7 @@ The filtering occurs in the following steps -
 * Firehose Consumer creates a Filter object and initializes it with the values of -`FILTER_DATA_SOURCE` i.e. key/message,`FILTER_JEXL_EXPRESSION` and `FILTER_SCHEMA_PROTO_CLASS`as configured in the environment variables. 
 * `JexlFilter` iterates over the input List of events. For each event, the Protobuf Class as specified by the environment variable `FILTER_SCHEMA_PROTO_CLASS` , converts the key/message of the event from raw byte array to a POJO \(Plain Old Java Object\), which contains getters for accessing various fields of the event data.
 * A`JEXLContext` is created to link the key/message proto reference in the JEXL expression with the POJO object generated earlier.  JEXL engine converts `FILTER_JEXL_EXPRESSION`  string into `JEXLExpression` object and replaces all occurrences of references in the string by the generated POJO object.  `JEXLException` is thrown if the filter expression is invalid. 
-* The `JEXLExpression` is then evaluated for each of these parsed events. The messages for which the `JEXLExpression` evaluates to `true`, are added to the output List of messages and returned by the Filter. The rest of the messages are discarded by the Filter
+* The `JEXLExpression` is then evaluated for each of these parsed events. The messages for which the `JEXLExpression` evaluates to `true`, are added to the output List of messages and returned by the Filter.
 
 ## JSON - based Filtering
 
@@ -53,7 +53,7 @@ The filtering occurs in the following steps -
 * If`FILTER_JSON_ESB_MESSAGE_FORMAT=JSON`, then the serialized JSON byte array is deserialized to a JSON message string.
 * The JSON Schema validator performs a validation on the JSON message against the filter rules specified in the JSON Schema string provided in the environment variable`FILTER_JSON_SCHEMA.`
 * If there are any validation errors, then that key/message is filtered out and the validation errors are logged to the instrumentation in debug mode.
-* If all validation checks pass, then the key/message is added to the ArrayList of filtered messages and returned by the JsonFilter. The rest of the messages are discarded.
+* If all validation checks pass, then the key/message is added to the ArrayList of filtered messages and returned by the JsonFilter.
 
 ## Why Use Filters
 
@@ -61,5 +61,5 @@ Filters enable you to consume only a smaller subset of incoming messages fulfill
 
 Additionally, Filters can also help to significantly decrease consumer lag when the rate of incoming messages is too high, thus providing significant performance improvements for your sink.
 
-If your underlying sink is not able to handle increased \(or default\) volume of data being pushed to it, adding some sort of a filter condition in the Firehose to ignore unnecessary messages in the topic would help you bring down the volume of data being processed by the sink.
+If your underlying sink is not able to handle increased \(or default\) volume of data being pushed to it, adding a filter condition in the Firehose to ignore unnecessary messages in the topic would help you bring down the volume of data being processed by the sink.
 
