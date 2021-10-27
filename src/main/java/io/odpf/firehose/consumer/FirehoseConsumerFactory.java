@@ -215,13 +215,13 @@ public class FirehoseConsumerFactory {
         }
         DlqWriter dlqWriter = DlqWriterFactory.create(new HashMap<>(config), statsDReporter, tracer);
         BackOffProvider backOffProvider = getBackOffProvider();
-        return SinkWithDlq.withInstrumentationFactory(
+        return new SinkWithDlq(
                 sink,
                 dlqWriter,
                 backOffProvider,
                 dlqConfig,
                 errorHandler,
-                statsDReporter);
+                new Instrumentation(statsDReporter, SinkWithDlq.class));
     }
 
     /**

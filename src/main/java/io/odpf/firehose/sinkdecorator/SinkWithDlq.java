@@ -7,7 +7,6 @@ import io.odpf.firehose.error.ErrorScope;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.Metrics;
-import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.dlq.DlqWriter;
 
@@ -40,10 +39,6 @@ public class SinkWithDlq extends SinkDecorator {
         this.errorHandler = errorHandler;
         this.instrumentation = instrumentation;
         this.dlqConfig = dlqConfig;
-    }
-
-    public static SinkWithDlq withInstrumentationFactory(Sink sink, DlqWriter dlqWriter, BackOffProvider backOffProvider, DlqConfig dlqConfig, ErrorHandler errorHandler, StatsDReporter statsDReporter) {
-        return new SinkWithDlq(sink, dlqWriter, backOffProvider, dlqConfig, errorHandler, new Instrumentation(statsDReporter, SinkWithDlq.class));
     }
 
     /**

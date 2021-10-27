@@ -1,6 +1,5 @@
 package io.odpf.firehose.sink.dlq.kafka;
 
-import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.dlq.DlqWriter;
@@ -9,7 +8,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,11 +28,11 @@ public class KafkaDlqWriter implements DlqWriter {
     @Override
     public List<Message> write(List<Message> messages) throws IOException {
         if (messages.isEmpty()) {
-            return new LinkedList<>();
+            return Collections.emptyList();
         }
         CountDownLatch completedLatch = new CountDownLatch(1);
         AtomicInteger recordsProcessed = new AtomicInteger();
-        ArrayList<Message> retryMessages = new ArrayList<>();
+        List<Message> failedMessages = new ArrayList<>();
 
         instrumentation.logInfo("Pushing {} messages to retry queue topic : {}", messages.size(), topic);
         for (Message message : messages) {
@@ -42,7 +41,9 @@ public class KafkaDlqWriter implements DlqWriter {
                 recordsProcessed.incrementAndGet();
 
                 if (e != null) {
-                    addToFailedRecords(retryMessages, new Message(message, new ErrorInfo(e, null)));
+                    synchronized (failedMessages) {
+                        failedMessages.add(message);
+                    }
                 }
                 if (recordsProcessed.get() == messages.size()) {
                     completedLatch.countDown();
@@ -55,13 +56,7 @@ public class KafkaDlqWriter implements DlqWriter {
             instrumentation.logWarn(e.getMessage());
             instrumentation.captureNonFatalError(e);
         }
-        instrumentation.logInfo("Successfully pushed {} messages to {}", messages.size() - retryMessages.size(), topic);
-        return retryMessages;
-    }
-
-    private void addToFailedRecords(ArrayList<Message> retryMessages, Message message) {
-        synchronized (this) {
-            retryMessages.add(message);
-        }
+        instrumentation.logInfo("Successfully pushed {} messages to {}", messages.size() - failedMessages.size(), topic);
+        return failedMessages;
     }
 }
