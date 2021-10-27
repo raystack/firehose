@@ -22,6 +22,10 @@
 * [Monitoring](concepts/monitoring.md)
 * [Templating](concepts/templating.md)
 
+
+## Sink
+* [Bigquery](sink/bigquery.md)
+
 ## Reference
 
 * [Configuration](reference/configuration/README.md)
