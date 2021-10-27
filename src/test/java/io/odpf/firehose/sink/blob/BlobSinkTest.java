@@ -2,6 +2,7 @@ package io.odpf.firehose.sink.blob;
 
 import com.google.protobuf.DynamicMessage;
 import io.odpf.firehose.TestMessageBQ;
+import io.odpf.firehose.consumer.kafka.OffsetManager;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
@@ -46,9 +47,12 @@ public class BlobSinkTest {
 
     private BlobSink blobSink;
 
+    private OffsetManager offsetManager;
+
     @Before
     public void setUp() throws Exception {
-        blobSink = new BlobSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer);
+        offsetManager = new OffsetManager();
+        blobSink = new BlobSink(instrumentation, "objectstorage", offsetManager, writerOrchestrator, messageDeSerializer);
     }
 
     @Test
@@ -97,19 +101,19 @@ public class BlobSinkTest {
         blobSink.pushMessage(Arrays.asList(message1, message2));
 
         assertTrue(blobSink.canManageOffsets());
-        assertEquals(0, blobSink.getCommittableOffsets().size());
 
         when(writerOrchestrator.getFlushedPaths()).thenReturn(new HashSet<String>() {{
             add(path1);
         }});
-        Map<TopicPartition, OffsetAndMetadata> committableOffsets = blobSink.getCommittableOffsets();
+        blobSink.calculateCommittableOffsets();
+        Map<TopicPartition, OffsetAndMetadata> committableOffsets = offsetManager.getCommittableOffset();
         assertEquals(1, committableOffsets.size());
         assertEquals(new OffsetAndMetadata(3), committableOffsets.get(new TopicPartition("booking", 1)));
     }
 
     @Test
     public void shouldReturnMessageThatCausedDeserializerException() throws Exception {
-        blobSink = new BlobSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer);
+        blobSink = new BlobSink(instrumentation, "objectstorage", new OffsetManager(), writerOrchestrator, messageDeSerializer);
 
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
         Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 1, 2);
@@ -158,17 +162,15 @@ public class BlobSinkTest {
         offsetAndMetadataHashMap.put(topicPartition2, new OffsetAndMetadata(3));
         offsetAndMetadataHashMap.put(topicPartition3, new OffsetAndMetadata(7));
 
-        blobSink.addOffsets("key", messages);
-        blobSink.setCommittable("key");
-
-        Map<TopicPartition, OffsetAndMetadata> result = blobSink.getCommittableOffsets();
-
+        blobSink.addOffsetsAndSetCommittable(messages);
+        blobSink.calculateCommittableOffsets();
+        Map<TopicPartition, OffsetAndMetadata> result = offsetManager.getCommittableOffset();
         assertEquals(offsetAndMetadataHashMap, result);
     }
 
     @Test
     public void shouldReturnMessagesWhenMessagesHasErrorCausedByEmptyMessageException() {
-        blobSink = new BlobSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer);
+        blobSink = new BlobSink(instrumentation, "objectstorage", new OffsetManager(), writerOrchestrator, messageDeSerializer);
 
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 2, 1);
         Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 2, 2);
@@ -184,7 +186,7 @@ public class BlobSinkTest {
 
     @Test
     public void shouldReturnMessagesWhenMessagesHasErrorCausedByUnknownFields() {
-        blobSink = new BlobSink(instrumentation, "objectstorage", writerOrchestrator, messageDeSerializer);
+        blobSink = new BlobSink(instrumentation, "objectstorage", new OffsetManager(), writerOrchestrator, messageDeSerializer);
 
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 2, 1);
         Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 2, 2);

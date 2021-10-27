@@ -1,12 +1,10 @@
 package io.odpf.firehose.sink.redis;
 
 
-
 import io.odpf.firehose.config.RedisSinkConfig;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.AbstractSink;
-import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.redis.client.RedisClient;
 import io.odpf.firehose.sink.redis.client.RedisClientFactory;
 import com.gojek.de.stencil.client.StencilClient;
@@ -21,7 +19,7 @@ import java.util.Map;
  * using the configurations supplied and invoke {@see #create(Map < String, String > configuration, StatsDClient statsDReporter, StencilClient client)}
  * to obtain the RedisSink implementation.
  */
-public class RedisSinkFactory implements SinkFactory {
+public class RedisSinkFactory {
 
     /**
      * Creates Redis sink.
@@ -31,7 +29,7 @@ public class RedisSinkFactory implements SinkFactory {
      * @param stencilClient  the stencil client
      * @return the abstract sink
      */
-    public AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
+    public static AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         RedisSinkConfig redisSinkConfig = ConfigFactory.create(RedisSinkConfig.class, configuration);
         Instrumentation instrumentation = new Instrumentation(statsDReporter, RedisSinkFactory.class);
         String redisConfig = String.format("\n\tredis.urls = %s\n\tredis.key.template = %s\n\tredis.sink.type = %s"

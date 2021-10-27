@@ -61,8 +61,7 @@ public class SinkWithDlq extends SinkDecorator {
             throw new IOException("exhausted maximum number of allowed retry attempts to write messages to DLQ");
         }
         if (super.canManageOffsets()) {
-            super.addOffsets(DLQ_BATCH_KEY, messages);
-            super.setCommittable(DLQ_BATCH_KEY);
+            super.addOffsetsAndSetCommittable(messages);
         }
         returnedMessages.addAll(splitLists.get(Boolean.FALSE));
         return returnedMessages;

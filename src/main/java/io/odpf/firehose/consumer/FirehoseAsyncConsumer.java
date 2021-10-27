@@ -33,7 +33,9 @@ public class FirehoseAsyncConsumer implements FirehoseConsumer {
             List<Message> messages = consumerAndOffsetManager.readMessages();
             List<Span> spans = tracer.startTrace(messages);
             FilteredMessages filteredMessages = firehoseFilter.applyFilter(messages);
-            consumerAndOffsetManager.addOffsetsAndSetCommittable(filteredMessages.getInvalidMessages());
+            if (filteredMessages.sizeOfInvalidMessages() > 0) {
+                consumerAndOffsetManager.forceAddOffsetsAndSetCommittable(filteredMessages.getInvalidMessages());
+            }
             if (filteredMessages.sizeOfValidMessages() > 0) {
                 List<Message> validMessages = filteredMessages.getValidMessages();
                 Future<List<Message>> scheduledTask = scheduleTask(validMessages);

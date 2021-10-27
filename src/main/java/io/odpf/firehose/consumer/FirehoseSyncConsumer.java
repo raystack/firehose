@@ -36,7 +36,9 @@ public class FirehoseSyncConsumer implements FirehoseConsumer {
             List<Message> messages = consumerAndOffsetManager.readMessages();
             List<Span> spans = tracer.startTrace(messages);
             FilteredMessages filteredMessages = firehoseFilter.applyFilter(messages);
-            consumerAndOffsetManager.addOffsetsAndSetCommittable(filteredMessages.getInvalidMessages());
+            if (filteredMessages.sizeOfInvalidMessages() > 0) {
+                consumerAndOffsetManager.forceAddOffsetsAndSetCommittable(filteredMessages.getInvalidMessages());
+            }
             if (filteredMessages.sizeOfValidMessages() > 0) {
                 sink.pushMessage(filteredMessages.getValidMessages());
                 consumerAndOffsetManager.addOffsetsAndSetCommittable(filteredMessages.getValidMessages());

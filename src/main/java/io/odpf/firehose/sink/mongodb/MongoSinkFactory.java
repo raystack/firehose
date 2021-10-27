@@ -12,7 +12,6 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.serializer.MessageToJson;
 import io.odpf.firehose.sink.Sink;
-import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.mongodb.client.MongoSinkClient;
 import io.odpf.firehose.sink.mongodb.request.MongoRequestHandler;
 import io.odpf.firehose.sink.mongodb.request.MongoRequestHandlerFactory;
@@ -27,7 +26,7 @@ import java.util.Map;
  *
  * @since 0.1
  */
-public class MongoSinkFactory implements SinkFactory {
+public class MongoSinkFactory {
 
     /**
      * Creates MongoDB sink. Logs a success message to instrumentation
@@ -39,8 +38,7 @@ public class MongoSinkFactory implements SinkFactory {
      * @return created sink
      * @since 0.1
      */
-    @Override
-    public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
+    public static Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         MongoSinkConfig mongoSinkConfig = ConfigFactory.create(MongoSinkConfig.class, configuration);
         Instrumentation instrumentation = new Instrumentation(statsDReporter, MongoSinkFactory.class);
 
@@ -74,7 +72,7 @@ public class MongoSinkFactory implements SinkFactory {
      * @return the mongo client
      * @since 0.1
      */
-    private MongoClient buildMongoClient(MongoSinkConfig mongoSinkConfig, Instrumentation instrumentation) {
+    private static MongoClient buildMongoClient(MongoSinkConfig mongoSinkConfig, Instrumentation instrumentation) {
         List<ServerAddress> serverAddresses = MongoSinkFactoryUtil.getServerAddresses(mongoSinkConfig.getSinkMongoConnectionUrls(), instrumentation);
         MongoClientOptions options = MongoClientOptions.builder()
                 .connectTimeout(mongoSinkConfig.getSinkMongoConnectTimeoutMs())
@@ -108,7 +106,7 @@ public class MongoSinkFactory implements SinkFactory {
      *
      * @since 0.1
      */
-    private void logMongoConfig(MongoSinkConfig mongoSinkConfig, Instrumentation instrumentation) {
+    private static void logMongoConfig(MongoSinkConfig mongoSinkConfig, Instrumentation instrumentation) {
         String mongoConfig = String.format("\n\tMONGO connection urls: %s"
                         + "\n\tMONGO Database name: %s"
                         + "\n\tMONGO Primary Key: %s"

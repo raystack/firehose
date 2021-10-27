@@ -35,8 +35,7 @@ public class RedisSinkFactoryTest {
         configuration.put("SINK_REDIS_KEY_TEMPLATE", "test_%%s,6");
         configuration.put("SINK_REDIS_LIST_DATA_PROTO_INDEX", "3");
 
-        RedisSinkFactory redisSinkFactory = new RedisSinkFactory();
-        AbstractSink sink = redisSinkFactory.create(configuration, statsDReporter, stencilClient);
+        AbstractSink sink = RedisSinkFactory.create(configuration, statsDReporter, stencilClient);
         assertEquals(RedisSink.class, sink.getClass());
     }
 }

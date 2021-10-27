@@ -1,14 +1,12 @@
 package io.odpf.firehose.sink.elasticsearch;
 
 
-
 import io.odpf.firehose.config.EsSinkConfig;
 import io.odpf.firehose.config.enums.SinkType;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.serializer.MessageToJson;
 import io.odpf.firehose.sink.Sink;
-import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.elasticsearch.request.EsRequestHandler;
 import io.odpf.firehose.sink.elasticsearch.request.EsRequestHandlerFactory;
 import com.gojek.de.stencil.client.StencilClient;
@@ -26,7 +24,7 @@ import java.util.stream.Collectors;
 /**
  * Sink factory to configuration and create Elastic search sink.
  */
-public class EsSinkFactory implements SinkFactory {
+public class EsSinkFactory {
 
     /**
      * Creates Elastic search sink.
@@ -36,8 +34,7 @@ public class EsSinkFactory implements SinkFactory {
      * @param stencilClient  the stencil client
      * @return created sink
      */
-    @Override
-    public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
+    public static Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         EsSinkConfig esSinkConfig = ConfigFactory.create(EsSinkConfig.class, configuration);
 
         Instrumentation instrumentation = new Instrumentation(statsDReporter, EsSinkFactory.class);
@@ -65,7 +62,7 @@ public class EsSinkFactory implements SinkFactory {
                 esSinkConfig.getSinkEsRequestTimeoutMs(), esSinkConfig.getSinkEsShardsActiveWaitCount(), getStatusCodesAsList(esSinkConfig.getSinkEsRetryStatusCodeBlacklist()));
     }
 
-    HttpHost[] getHttpHosts(String esConnectionUrls, Instrumentation instrumentation) {
+    protected static HttpHost[] getHttpHosts(String esConnectionUrls, Instrumentation instrumentation) {
         if (esConnectionUrls != null && !esConnectionUrls.isEmpty()) {
             String[] esNodes = esConnectionUrls.trim().split(",");
             HttpHost[] httpHosts = new HttpHost[esNodes.length];
@@ -83,7 +80,7 @@ public class EsSinkFactory implements SinkFactory {
         }
     }
 
-    List<String> getStatusCodesAsList(String esRetryStatusCodeBlacklist) {
+    protected static List<String> getStatusCodesAsList(String esRetryStatusCodeBlacklist) {
         return Arrays
                 .stream(esRetryStatusCodeBlacklist.split(","))
                 .map(String::trim)

@@ -77,7 +77,7 @@ public class FirehoseAsyncConsumerTest {
     }
 
     @Test
-    public void shouldCallSetCommittableForDoneFutures() throws FilterException {
+    public void shouldCallSetCommittableForDoneFutures() {
         List<Message> messages = new ArrayList<Message>() {{
             add(new Message(new byte[0], new byte[0], "topic1", 1, 10));
             add(new Message(new byte[0], new byte[0], "topic1", 1, 11));
@@ -93,12 +93,12 @@ public class FirehoseAsyncConsumerTest {
 
         Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).addOffsets(future1, messages);
         Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).setCommittable(future1);
-        Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).addOffsetsAndSetCommittable(new ArrayList<>());
+        Mockito.verify(consumerAndOffsetManager, Mockito.times(0)).forceAddOffsetsAndSetCommittable(new ArrayList<>());
         Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).commit();
     }
 
     @Test
-    public void shouldThrowExceptionIfSinkTaskFails() throws Exception {
+    public void shouldThrowExceptionIfSinkTaskFails() {
         expectedException.expect(SinkTaskFailedException.class);
         List<Message> messages = new ArrayList<Message>() {{
             add(new Message(new byte[0], new byte[0], "topic1", 1, 10));
@@ -139,7 +139,7 @@ public class FirehoseAsyncConsumerTest {
         Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).addOffsets(future1, new ArrayList<Message>() {{
             add(messages.get(0));
         }});
-        Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).addOffsetsAndSetCommittable(new ArrayList<Message>() {{
+        Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).forceAddOffsetsAndSetCommittable(new ArrayList<Message>() {{
             add(messages.get(1));
             add(messages.get(2));
         }});

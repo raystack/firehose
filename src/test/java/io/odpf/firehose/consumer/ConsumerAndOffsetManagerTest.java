@@ -3,8 +3,8 @@ package io.odpf.firehose.consumer;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.consumer.kafka.ConsumerAndOffsetManager;
 import io.odpf.firehose.consumer.kafka.FirehoseKafkaConsumer;
+import io.odpf.firehose.consumer.kafka.OffsetManager;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.Sink;
 import org.aeonbits.owner.ConfigFactory;
@@ -25,7 +25,7 @@ public class ConsumerAndOffsetManagerTest {
     }
 
     @Test
-    public void shouldCommitToKafka() throws FilterException {
+    public void shouldCommitToKafka() {
         Sink s1 = Mockito.mock(Sink.class);
         Sink s2 = Mockito.mock(Sink.class);
         Sink s3 = Mockito.mock(Sink.class);
@@ -37,7 +37,8 @@ public class ConsumerAndOffsetManagerTest {
         FirehoseKafkaConsumer consumer = Mockito.mock(FirehoseKafkaConsumer.class);
         KafkaConsumerConfig config = ConfigFactory.create(KafkaConsumerConfig.class, new HashMap<>());
         Instrumentation instrumentation = Mockito.mock(Instrumentation.class);
-        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, consumer, config, instrumentation);
+        OffsetManager offsetManager = new OffsetManager();
+        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, offsetManager, consumer, config, instrumentation);
         List<Message> messages = new ArrayList<Message>() {{
             add(createMessage("testing", 1, 1));
             add(createMessage("testing", 1, 2));
@@ -53,7 +54,7 @@ public class ConsumerAndOffsetManagerTest {
     }
 
     @Test
-    public void shouldCommitToKafkaWithSinkManagesOwnOffsets() throws FilterException {
+    public void shouldCommitToKafkaWithSinkManagesOwnOffsets() {
         Sink s1 = Mockito.mock(Sink.class);
         Sink s2 = Mockito.mock(Sink.class);
         Sink s3 = Mockito.mock(Sink.class);
@@ -63,10 +64,11 @@ public class ConsumerAndOffsetManagerTest {
             add(s3);
         }};
         List<Message> messages = new ArrayList<Message>() {{
-            add(createMessage("testing", 1, 1));
-            add(createMessage("testing", 1, 2));
-            add(createMessage("testing", 1, 3));
+            add(createMessage("testing1", 1, 1));
+            add(createMessage("testing2", 1, 2));
+            add(createMessage("testing3", 1, 3));
         }};
+        OffsetManager offsetManager = new OffsetManager();
         Instrumentation instrumentation = Mockito.mock(Instrumentation.class);
         FirehoseKafkaConsumer consumer = Mockito.mock(FirehoseKafkaConsumer.class);
         KafkaConsumerConfig config = ConfigFactory.create(KafkaConsumerConfig.class, new HashMap<>());
@@ -75,27 +77,28 @@ public class ConsumerAndOffsetManagerTest {
         Mockito.when(s2.canManageOffsets()).thenReturn(true);
         Mockito.when(s3.canManageOffsets()).thenReturn(true);
         Mockito.when(consumer.readMessages()).thenReturn(messages);
-        Mockito.when(s1.getCommittableOffsets()).thenReturn(new HashMap<TopicPartition, OffsetAndMetadata>() {{
-            put(new TopicPartition("testing", 1), new OffsetAndMetadata(2));
-        }});
-        Mockito.when(s2.getCommittableOffsets()).thenReturn(new HashMap<TopicPartition, OffsetAndMetadata>() {{
-            put(new TopicPartition("testing", 1), new OffsetAndMetadata(3));
-        }});
-        Mockito.when(s3.getCommittableOffsets()).thenReturn(new HashMap<TopicPartition, OffsetAndMetadata>() {{
-            put(new TopicPartition("testing", 1), new OffsetAndMetadata(4));
-        }});
-
-        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, consumer, config, instrumentation);
+        Mockito.doAnswer(invocation -> {
+            offsetManager.addOffsetToBatch("test", messages.get(0));
+            offsetManager.setCommittable("test");
+            return null;
+        }).when(s1).calculateCommittableOffsets();
+        Mockito.doAnswer(invocation -> {
+            offsetManager.addOffsetToBatch("test", messages.get(1));
+            offsetManager.setCommittable("test");
+            return null;
+        }).when(s2).calculateCommittableOffsets();
+        Mockito.doAnswer(invocation -> {
+            offsetManager.addOffsetToBatch("test", messages.get(2));
+            offsetManager.setCommittable("test");
+            return null;
+        }).when(s3).calculateCommittableOffsets();
+        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, offsetManager, consumer, config, instrumentation);
         consumerAndOffsetManager.addOffsetsAndSetCommittable(consumerAndOffsetManager.readMessages());
         consumerAndOffsetManager.commit();
         Mockito.verify(consumer, Mockito.times(1)).commit(new HashMap<TopicPartition, OffsetAndMetadata>() {{
-            put(new TopicPartition("testing", 1), new OffsetAndMetadata(2));
-        }});
-        Mockito.verify(consumer, Mockito.times(1)).commit(new HashMap<TopicPartition, OffsetAndMetadata>() {{
-            put(new TopicPartition("testing", 1), new OffsetAndMetadata(3));
-        }});
-        Mockito.verify(consumer, Mockito.times(1)).commit(new HashMap<TopicPartition, OffsetAndMetadata>() {{
-            put(new TopicPartition("testing", 1), new OffsetAndMetadata(4));
+            put(new TopicPartition("testing2", 1), new OffsetAndMetadata(3));
+            put(new TopicPartition("testing3", 1), new OffsetAndMetadata(4));
+            put(new TopicPartition("testing1", 1), new OffsetAndMetadata(2));
         }});
     }
 }

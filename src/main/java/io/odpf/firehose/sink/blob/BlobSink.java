@@ -13,25 +13,23 @@ import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.blob.message.MessageDeSerializer;
 import io.odpf.firehose.sink.blob.message.Record;
 import io.odpf.firehose.sink.blob.writer.WriterOrchestrator;
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.common.TopicPartition;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 public class BlobSink extends AbstractSink {
 
     private final WriterOrchestrator writerOrchestrator;
-    private final OffsetManager offsetManager = new OffsetManager();
+    private final OffsetManager offsetManager;
     private final MessageDeSerializer messageDeSerializer;
 
     private List<Message> messages;
 
-    public BlobSink(Instrumentation instrumentation, String sinkType, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer) {
+    public BlobSink(Instrumentation instrumentation, String sinkType, OffsetManager offsetManager, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer) {
         super(instrumentation, sinkType);
+        this.offsetManager = offsetManager;
         this.writerOrchestrator = writerOrchestrator;
         this.messageDeSerializer = messageDeSerializer;
     }
@@ -77,9 +75,8 @@ public class BlobSink extends AbstractSink {
     }
 
     @Override
-    public Map<TopicPartition, OffsetAndMetadata> getCommittableOffsets() {
+    public void calculateCommittableOffsets() {
         writerOrchestrator.getFlushedPaths().forEach(offsetManager::setCommittable);
-        return offsetManager.getCommittableOffset();
     }
 
     @Override
@@ -88,12 +85,7 @@ public class BlobSink extends AbstractSink {
     }
 
     @Override
-    public void addOffsets(Object key, List<Message> messageList) {
-        this.offsetManager.addOffsetToBatch(key, messageList);
-    }
-
-    @Override
-    public void setCommittable(Object key) {
-        this.offsetManager.setCommittable(key);
+    public void addOffsetsAndSetCommittable(List<Message> messageList) {
+        offsetManager.addOffsetsAndSetCommittable(messageList);
     }
 }

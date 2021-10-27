@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 
 /**
  * OffsetManager is a data structure which keeps tracks of all offsets that can be committed to kafka.
+ *
+ * This class is thread safe. Multiple sinks can use the same object.
  */
 public class OffsetManager {
     private final Map<Object, Set<OffsetNode>> toBeCommittableBatchOffsets = new HashMap<>();
@@ -37,35 +39,33 @@ public class OffsetManager {
         messageList.forEach(m -> addOffsetToBatch(batch, m));
     }
 
-    private void addOffsetToBatch(Object batch, OffsetNode node) {
+    public synchronized void addOffsetsAndSetCommittable(List<Message> messageList) {
+        String syncBatchKey = "sync_batch_key";
+        addOffsetToBatch(syncBatchKey, messageList);
+        setCommittable(syncBatchKey);
+    }
+
+    private synchronized void addOffsetToBatch(Object batch, OffsetNode node) {
         toBeCommittableBatchOffsets.computeIfAbsent(batch, x -> new HashSet<>()).add(node);
         sortedOffsets.computeIfAbsent(
                 node.getTopicPartition(),
                 topicPartition -> new TreeSet<>(Comparator.comparingLong(offsetNode -> offsetNode.getOffsetAndMetadata().offset()))).add(node);
     }
 
-    public Set<OffsetNode> getOffsetsForBatch(Object key) {
-        return toBeCommittableBatchOffsets.get(key);
-    }
-
     /**
      * @param batch key for which all offsets can be committed.
      *              Removes the batch from the global map for the cleanup.
      */
-    public void setCommittable(Object batch) {
+    public synchronized void setCommittable(Object batch) {
         toBeCommittableBatchOffsets.getOrDefault(batch, new HashSet<>()).forEach(offsetNode -> offsetNode.setCommittable(true));
         toBeCommittableBatchOffsets.remove(batch);
-    }
-
-    public TreeSet<OffsetNode> getOffsetsForTopicPartition(TopicPartition topicPartition) {
-        return sortedOffsets.get(topicPartition);
     }
 
     /**
      * @return offsets for all partitions
      * It also compact internal sorted list per partition by removing redundant offsets.
      */
-    public Map<TopicPartition, OffsetAndMetadata> getCommittableOffset() {
+    public synchronized Map<TopicPartition, OffsetAndMetadata> getCommittableOffset() {
         return sortedOffsets.entrySet().stream().collect(
                 Collectors.toMap(
                         Map.Entry::getKey,
@@ -98,4 +98,14 @@ public class OffsetManager {
         nodes.removeIf(OffsetNode::isRemovable);
         return nodes.first().isCommittable() ? Optional.of(nodes.first()) : Optional.empty();
     }
+
+    protected TreeSet<OffsetNode> getOffsetsForTopicPartition(TopicPartition topicPartition) {
+        return sortedOffsets.get(topicPartition);
+    }
+
+    protected Set<OffsetNode> getOffsetsForBatch(Object key) {
+        return toBeCommittableBatchOffsets.get(key);
+    }
+
+
 }

@@ -9,7 +9,6 @@ import io.odpf.firehose.config.enums.SinkType;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
-import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryClient;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryRow;
@@ -21,10 +20,9 @@ import org.aeonbits.owner.ConfigFactory;
 import java.io.IOException;
 import java.util.Map;
 
-public class BigQuerySinkFactory implements SinkFactory {
+public class BigQuerySinkFactory {
 
-    @Override
-    public Sink create(Map<String, String> env, StatsDReporter statsDReporter, StencilClient defaultClient) {
+    public static Sink create(Map<String, String> env, StatsDReporter statsDReporter, StencilClient defaultClient) {
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, env);
         try {
             BigQueryClient bigQueryClient = new BigQueryClient(sinkConfig, new Instrumentation(statsDReporter, BigQueryClient.class));

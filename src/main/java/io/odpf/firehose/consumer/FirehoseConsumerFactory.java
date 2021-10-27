@@ -6,6 +6,7 @@ import com.gojek.de.stencil.parser.ProtoParser;
 import io.jaegertracing.Configuration;
 import io.odpf.firehose.consumer.kafka.ConsumerAndOffsetManager;
 import io.odpf.firehose.consumer.kafka.FirehoseKafkaConsumer;
+import io.odpf.firehose.consumer.kafka.OffsetManager;
 import io.odpf.firehose.utils.KafkaUtils;
 import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.config.DlqConfig;
@@ -70,6 +71,7 @@ public class FirehoseConsumerFactory {
     private final StencilClient stencilClient;
     private final Instrumentation instrumentation;
     private final KeyOrMessageParser parser;
+    private final OffsetManager offsetManager = new OffsetManager();
 
     /**
      * Instantiates a new Firehose consumer factory.
@@ -135,7 +137,7 @@ public class FirehoseConsumerFactory {
                 kafkaConsumerConfig.isTraceJaegarEnable());
         if (kafkaConsumerConfig.getSourceKafkaConsumerMode().equals(KafkaConsumerMode.SYNC)) {
             Sink sink = createSink(tracer);
-            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), firehoseKafkaConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
+            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), offsetManager, firehoseKafkaConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
             return new FirehoseSyncConsumer(
                     sink,
                     firehoseTracer,
@@ -149,7 +151,7 @@ public class FirehoseConsumerFactory {
             for (int ii = 0; ii < nThreads; ii++) {
                 sinks.add(createSink(tracer));
             }
-            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, firehoseKafkaConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
+            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, offsetManager, firehoseKafkaConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
             SinkPool sinkPool = new SinkPool(
                     new LinkedBlockingQueue<>(sinks),
                     Executors.newCachedThreadPool(),
@@ -172,27 +174,27 @@ public class FirehoseConsumerFactory {
         instrumentation.logInfo("Sink Type: {}", kafkaConsumerConfig.getSinkType().toString());
         switch (kafkaConsumerConfig.getSinkType()) {
             case JDBC:
-                return new JdbcSinkFactory().create(config, statsDReporter, stencilClient);
+                return JdbcSinkFactory.create(config, statsDReporter, stencilClient);
             case HTTP:
-                return new HttpSinkFactory().create(config, statsDReporter, stencilClient);
+                return HttpSinkFactory.create(config, statsDReporter, stencilClient);
             case INFLUXDB:
-                return new InfluxSinkFactory().create(config, statsDReporter, stencilClient);
+                return InfluxSinkFactory.create(config, statsDReporter, stencilClient);
             case LOG:
-                return new LogSinkFactory().create(config, statsDReporter, stencilClient);
+                return LogSinkFactory.create(config, statsDReporter, stencilClient);
             case ELASTICSEARCH:
-                return new EsSinkFactory().create(config, statsDReporter, stencilClient);
+                return EsSinkFactory.create(config, statsDReporter, stencilClient);
             case REDIS:
-                return new RedisSinkFactory().create(config, statsDReporter, stencilClient);
+                return RedisSinkFactory.create(config, statsDReporter, stencilClient);
             case GRPC:
-                return new GrpcSinkFactory().create(config, statsDReporter, stencilClient);
+                return GrpcSinkFactory.create(config, statsDReporter, stencilClient);
             case PROMETHEUS:
-                return new PromSinkFactory().create(config, statsDReporter, stencilClient);
+                return PromSinkFactory.create(config, statsDReporter, stencilClient);
             case BLOB:
-                return new BlobSinkFactory().create(config, statsDReporter, stencilClient);
+                return BlobSinkFactory.create(config, offsetManager, statsDReporter, stencilClient);
             case BIGQUERY:
-                return new BigQuerySinkFactory().create(config, statsDReporter, stencilClient);
+                return BigQuerySinkFactory.create(config, statsDReporter, stencilClient);
             case MONGODB:
-                return new MongoSinkFactory().create(config, statsDReporter, stencilClient);
+                return MongoSinkFactory.create(config, statsDReporter, stencilClient);
             default:
                 throw new ConfigurationException("Invalid Firehose SINK_TYPE");
 

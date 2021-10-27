@@ -22,12 +22,16 @@ import java.util.List;
  * consumerOffsetManager.setCommittable(key);
  * consumerOffsetManager.commit();
  * <p>
- * consumerOffsetManager.commit() commits offsets returned from sink if the sink can manages its own offsets
- * otherwise it commits offsets added to this class.
+ *
+ * OffsetManager is shared between consumer and the sink.
+ * So the offsets added there will be available here to commit.
+ *
+ * consumerOffsetManager.commit() calls the sink method to calculate committable offsets.
+ * then it fetches the offsets from offsetManager.getCommittableOffsets() and uses kafka api to commit.
+ *
  */
 public class ConsumerAndOffsetManager implements AutoCloseable {
-    private static final String SYNC_BATCH_KEY = "sync_batch_key";
-    private final OffsetManager offsetManager = new OffsetManager();
+    private final OffsetManager offsetManager;
     private final List<Sink> sinks;
     private final FirehoseKafkaConsumer firehoseKafkaConsumer;
     private final KafkaConsumerConfig kafkaConsumerConfig;
@@ -36,10 +40,12 @@ public class ConsumerAndOffsetManager implements AutoCloseable {
 
     public ConsumerAndOffsetManager(
             List<Sink> sinks,
+            OffsetManager offsetManager,
             FirehoseKafkaConsumer firehoseKafkaConsumer,
             KafkaConsumerConfig kafkaConsumerConfig,
             Instrumentation instrumentation) {
         this.sinks = sinks;
+        this.offsetManager = offsetManager;
         this.firehoseKafkaConsumer = firehoseKafkaConsumer;
         this.kafkaConsumerConfig = kafkaConsumerConfig;
         this.instrumentation = instrumentation;
@@ -47,19 +53,29 @@ public class ConsumerAndOffsetManager implements AutoCloseable {
     }
 
     public void addOffsets(Object key, List<Message> messages) {
-        offsetManager.addOffsetToBatch(key, messages);
-    }
-
-
-    public void addOffsetsAndSetCommittable(List<Message> messages) {
         if (!canSinkManageOffsets) {
-            addOffsets(SYNC_BATCH_KEY, messages);
-            setCommittable(SYNC_BATCH_KEY);
+            offsetManager.addOffsetToBatch(key, messages);
         }
     }
 
     public void setCommittable(Object key) {
-        offsetManager.setCommittable(key);
+        if (!canSinkManageOffsets) {
+            offsetManager.setCommittable(key);
+        }
+    }
+
+    public void addOffsetsAndSetCommittable(List<Message> messages) {
+        if (!canSinkManageOffsets) {
+            offsetManager.addOffsetsAndSetCommittable(messages);
+        }
+    }
+
+    /**
+     * Force-Update the offsets into offset manager regardless of sink managing the offsets.
+     * @param messages list of messages set to be committable
+     */
+    public void forceAddOffsetsAndSetCommittable(List<Message> messages) {
+        offsetManager.addOffsetsAndSetCommittable(messages);
     }
 
     public List<Message> readMessages() {
@@ -68,11 +84,8 @@ public class ConsumerAndOffsetManager implements AutoCloseable {
 
     public void commit() {
         if (kafkaConsumerConfig.isSourceKafkaCommitOnlyCurrentPartitionsEnable()) {
-            if (canSinkManageOffsets) {
-                sinks.forEach(s -> firehoseKafkaConsumer.commit(s.getCommittableOffsets()));
-            } else {
-                firehoseKafkaConsumer.commit(offsetManager.getCommittableOffset());
-            }
+            sinks.forEach(Sink::calculateCommittableOffsets);
+            firehoseKafkaConsumer.commit(offsetManager.getCommittableOffset());
         } else {
             firehoseKafkaConsumer.commit();
         }

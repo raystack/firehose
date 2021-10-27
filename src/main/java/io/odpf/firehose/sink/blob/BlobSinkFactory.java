@@ -3,13 +3,13 @@ package io.odpf.firehose.sink.blob;
 import com.gojek.de.stencil.client.StencilClient;
 import com.google.protobuf.Descriptors;
 import io.odpf.firehose.config.BlobSinkConfig;
+import io.odpf.firehose.consumer.kafka.OffsetManager;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.common.blobstorage.BlobStorage;
 import io.odpf.firehose.sink.common.blobstorage.BlobStorageFactory;
 import io.odpf.firehose.sink.common.blobstorage.BlobStorageType;
 import io.odpf.firehose.sink.Sink;
-import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.blob.message.MessageDeSerializer;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessage;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessageUtils;
@@ -26,19 +26,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BlobSinkFactory implements SinkFactory {
+public class BlobSinkFactory {
 
-    @Override
-    public Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
+    public static Sink create(Map<String, String> configuration, OffsetManager offsetManager, StatsDReporter statsDReporter, StencilClient stencilClient) {
         BlobSinkConfig sinkConfig = ConfigFactory.create(BlobSinkConfig.class, configuration);
         LocalStorage localStorage = getLocalFileWriterWrapper(sinkConfig, stencilClient, statsDReporter);
         BlobStorage sinkBlobStorage = createSinkObjectStorage(sinkConfig, new HashMap<>(configuration));
         WriterOrchestrator writerOrchestrator = new WriterOrchestrator(sinkConfig, localStorage, sinkBlobStorage, statsDReporter);
         MessageDeSerializer messageDeSerializer = new MessageDeSerializer(sinkConfig, stencilClient);
-        return new BlobSink(new Instrumentation(statsDReporter, BlobSink.class), sinkConfig.getSinkType().toString(), writerOrchestrator, messageDeSerializer);
+        return new BlobSink(
+                new Instrumentation(statsDReporter, BlobSink.class),
+                sinkConfig.getSinkType().toString(),
+                offsetManager,
+                writerOrchestrator,
+                messageDeSerializer);
     }
 
-    private Descriptors.Descriptor getMetadataMessageDescriptor(BlobSinkConfig sinkConfig) {
+    private static Descriptors.Descriptor getMetadataMessageDescriptor(BlobSinkConfig sinkConfig) {
         Descriptors.FileDescriptor fileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(sinkConfig.getOutputKafkaMetadataColumnName());
         return sinkConfig.getOutputKafkaMetadataColumnName().isEmpty()
                 ? fileDescriptor.findMessageTypeByName(KafkaMetadataProtoMessage.getTypeName())
@@ -46,7 +50,7 @@ public class BlobSinkFactory implements SinkFactory {
 
     }
 
-    private LocalStorage getLocalFileWriterWrapper(BlobSinkConfig sinkConfig, StencilClient stencilClient, StatsDReporter statsDReporter) {
+    private static LocalStorage getLocalFileWriterWrapper(BlobSinkConfig sinkConfig, StencilClient stencilClient, StatsDReporter statsDReporter) {
         Descriptors.Descriptor outputMessageDescriptor = stencilClient.get(sinkConfig.getInputSchemaProtoClass());
         Descriptors.Descriptor metadataMessageDescriptor = getMetadataMessageDescriptor(sinkConfig);
         List<WriterPolicy> writerPolicies = new ArrayList<>();
@@ -60,7 +64,7 @@ public class BlobSinkFactory implements SinkFactory {
                 new Instrumentation(statsDReporter, LocalStorage.class));
     }
 
-    public BlobStorage createSinkObjectStorage(BlobSinkConfig sinkConfig, Map<String, String> configuration) {
+    public static BlobStorage createSinkObjectStorage(BlobSinkConfig sinkConfig, Map<String, String> configuration) {
         if (sinkConfig.getBlobStorageType() == BlobStorageType.GCS) {
             configuration.put("GCS_TYPE", "SINK_BLOB");
             return BlobStorageFactory.createObjectStorage(sinkConfig.getBlobStorageType(), configuration);

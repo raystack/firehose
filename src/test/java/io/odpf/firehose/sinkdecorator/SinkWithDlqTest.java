@@ -205,12 +205,7 @@ public class SinkWithDlqTest {
         SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
         List<Message> pushResult = sinkWithDlq.pushMessage(messages);
 
-        ArgumentCaptor<List<Message>> argumentCaptor = ArgumentCaptor.forClass(List.class);
-        verify(sinkWithRetry, times(1)).addOffsets(eq(SinkWithDlq.DLQ_BATCH_KEY), argumentCaptor.capture());
-        List<Message> value = argumentCaptor.getValue();
-        assertThat(value, Matchers.containsInAnyOrder(dlqProcessedMessages.toArray()));
-
-        verify(sinkWithRetry, times(1)).setCommittable(SinkWithDlq.DLQ_BATCH_KEY);
+        verify(sinkWithRetry, times(1)).addOffsetsAndSetCommittable(dlqProcessedMessages);
         assertEquals(0, pushResult.size());
     }
 
@@ -223,8 +218,7 @@ public class SinkWithDlqTest {
         SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
 
         sinkWithDlq.pushMessage(messages);
-        verify(sinkWithRetry, never()).addOffsets(anyString(), anyList());
-        verify(sinkWithRetry, never()).setCommittable(anyString());
+        verify(sinkWithRetry, never()).addOffsetsAndSetCommittable(anyList());
     }
 
     @Test

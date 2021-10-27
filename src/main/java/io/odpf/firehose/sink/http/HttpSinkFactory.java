@@ -1,12 +1,10 @@
 package io.odpf.firehose.sink.http;
 
 
-
 import io.odpf.firehose.config.HttpSinkConfig;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.AbstractSink;
-import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.http.auth.OAuth2Credential;
 import io.odpf.firehose.sink.http.request.types.Request;
 import io.odpf.firehose.sink.http.request.RequestFactory;
@@ -28,7 +26,7 @@ import java.util.Map;
  * using the configurations supplied and invoke {@see #create(Map < String, String > configuration, StatsDClient client)}
  * to obtain the HTTPSink sink implementation. {@see ParameterizedHTTPSinkConfig}
  */
-public class HttpSinkFactory implements SinkFactory {
+public class HttpSinkFactory {
 
     /**
      * Create Http sink.
@@ -38,8 +36,7 @@ public class HttpSinkFactory implements SinkFactory {
      * @param stencilClient  the stencil client
      * @return the http sink
      */
-    @Override
-    public AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
+    public static AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         HttpSinkConfig httpSinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         Instrumentation instrumentation = new Instrumentation(statsDReporter, HttpSinkFactory.class);
@@ -54,7 +51,7 @@ public class HttpSinkFactory implements SinkFactory {
         return new HttpSink(new Instrumentation(statsDReporter, HttpSink.class), request, closeableHttpClient, stencilClient, httpSinkConfig.getSinkHttpRetryStatusCodeRanges(), httpSinkConfig.getSinkHttpRequestLogStatusCodeRanges());
     }
 
-    private CloseableHttpClient newHttpClient(HttpSinkConfig httpSinkConfig, StatsDReporter statsDReporter) {
+    private static CloseableHttpClient newHttpClient(HttpSinkConfig httpSinkConfig, StatsDReporter statsDReporter) {
         Integer maxHttpConnections = httpSinkConfig.getSinkHttpMaxConnections();
         RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(httpSinkConfig.getSinkHttpRequestTimeoutMs())
                 .setConnectionRequestTimeout(httpSinkConfig.getSinkHttpRequestTimeoutMs())
