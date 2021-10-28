@@ -32,6 +32,9 @@ Decorators are used for chained processing of messages.
 * SinkWithDlq
 * SinkFinal
 
+## [FirehoseConsumer](consumer.md)
+A firehose consumer read messages from kafka, pushes those messages to sink and commits offsets back to kafka based on certain strategies.
+
 ## [Offsets](offsets.md)
 
 Offset manager is a data structure used to manage offsets asynchronously. An offset should only be committed when a
