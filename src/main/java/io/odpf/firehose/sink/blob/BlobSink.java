@@ -16,8 +16,11 @@ import io.odpf.firehose.sink.blob.writer.WriterOrchestrator;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class BlobSink extends AbstractSink {
 
@@ -37,11 +40,12 @@ public class BlobSink extends AbstractSink {
     @Override
     protected List<Message> execute() throws Exception {
         List<Message> failedMessages = new LinkedList<>();
+        Map<Object, List<Message>> fileToMessages = new HashMap<>();
         for (Message message : messages) {
             try {
                 Record record = messageDeSerializer.deSerialize(message);
                 String filePath = writerOrchestrator.write(record);
-                offsetManager.addOffsetToBatch(filePath, message);
+                fileToMessages.computeIfAbsent(filePath, key -> new ArrayList<>()).add(message);
             } catch (EmptyMessageException e) {
                 getInstrumentation().logWarn("empty message found on topic: {}, partition: {}, offset: {}",
                         message.getTopic(), message.getPartition(), message.getOffset());
@@ -60,7 +64,7 @@ public class BlobSink extends AbstractSink {
                 throw new SinkException("Failed to deserialize the message", e);
             }
         }
-
+        offsetManager.addOffsetToBatch(fileToMessages);
         return failedMessages;
     }
 

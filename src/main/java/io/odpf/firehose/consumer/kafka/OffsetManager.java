@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 /**
  * OffsetManager is a data structure which keeps tracks of all offsets that can be committed to kafka.
- *
+ * <p>
  * This class is thread safe. Multiple sinks can use the same object.
  */
 public class OffsetManager {
@@ -25,24 +25,31 @@ public class OffsetManager {
     private final Map<TopicPartition, TreeSet<OffsetNode>> sortedOffsets = new HashMap<>();
 
     /**
-     * @param batch   key for which this offset belongs to.
-     * @param message message to extract offset metadata.
+     * @param offsetKeyToMessagesMap A map of key to list of messages to be added
      */
-    public void addOffsetToBatch(Object batch, Message message) {
-        OffsetNode currentNode = new OffsetNode(
-                new TopicPartition(message.getTopic(), message.getPartition()),
-                new OffsetAndMetadata(message.getOffset() + 1));
-        addOffsetToBatch(batch, currentNode);
-    }
-
-    public void addOffsetToBatch(Object batch, List<Message> messageList) {
-        messageList.forEach(m -> addOffsetToBatch(batch, m));
+    public synchronized void addOffsetToBatch(Map<Object, List<Message>> offsetKeyToMessagesMap) {
+        offsetKeyToMessagesMap.forEach(this::addOffsetToBatch);
     }
 
     public synchronized void addOffsetsAndSetCommittable(List<Message> messageList) {
         String syncBatchKey = "sync_batch_key";
         addOffsetToBatch(syncBatchKey, messageList);
         setCommittable(syncBatchKey);
+    }
+
+    public synchronized void addOffsetToBatch(Object batch, List<Message> messageList) {
+        messageList.forEach(m -> addOffsetToBatch(batch, m));
+    }
+
+    /**
+     * @param batch   key for which this offset belongs to.
+     * @param message message to extract offset metadata.
+     */
+    public synchronized void addOffsetToBatch(Object batch, Message message) {
+        OffsetNode currentNode = new OffsetNode(
+                new TopicPartition(message.getTopic(), message.getPartition()),
+                new OffsetAndMetadata(message.getOffset() + 1));
+        addOffsetToBatch(batch, currentNode);
     }
 
     private synchronized void addOffsetToBatch(Object batch, OffsetNode node) {
@@ -78,7 +85,7 @@ public class OffsetManager {
      * @param nodes Sorted List of offsets
      * @return the first offset that is set to be committable just before a non-committable offset in the list.
      */
-    public Optional<OffsetNode> compactAndFetchFirstCommittableNode(TreeSet<OffsetNode> nodes) {
+    protected Optional<OffsetNode> compactAndFetchFirstCommittableNode(TreeSet<OffsetNode> nodes) {
         if (nodes.size() == 0) {
             return Optional.empty();
         }
