@@ -5,7 +5,7 @@ import io.odpf.firehose.config.converter.BlobStorageTypeConverter;
 import io.odpf.firehose.sink.common.blobstorage.BlobStorageType;
 import io.odpf.firehose.sink.dlq.DLQWriterType;
 
-public interface DlqConfig extends DlqKafkaProducerConfig {
+public interface DlqConfig extends AppConfig {
 
     @Key("DLQ_WRITER_TYPE")
     @ConverterClass(DlqWriterTypeConverter.class)

@@ -1,6 +1,6 @@
 package io.odpf.firehose.config;
 
-public interface DlqKafkaProducerConfig extends AppConfig {
+public interface DlqKafkaProducerConfig extends DlqConfig {
 
     @Key("DLQ_KAFKA_ACKS")
     @DefaultValue("all")

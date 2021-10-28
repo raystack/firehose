@@ -1,6 +1,7 @@
 package io.odpf.firehose.sink.dlq;
 
 import io.odpf.firehose.config.DlqConfig;
+import io.odpf.firehose.config.DlqKafkaProducerConfig;
 import io.odpf.firehose.utils.KafkaUtils;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
@@ -23,10 +24,11 @@ public class DlqWriterFactory {
 
         switch (dlqConfig.getDlqWriterType()) {
             case KAFKA:
-                KafkaProducer<byte[], byte[]> kafkaProducer = KafkaUtils.getKafkaProducer(dlqConfig);
+                DlqKafkaProducerConfig dlqKafkaProducerConfig = ConfigFactory.create(DlqKafkaProducerConfig.class, configuration);
+                KafkaProducer<byte[], byte[]> kafkaProducer = KafkaUtils.getKafkaProducer(dlqKafkaProducerConfig);
                 TracingKafkaProducer<byte[], byte[]> tracingProducer = new TracingKafkaProducer<>(kafkaProducer, tracer);
 
-                return new KafkaDlqWriter(tracingProducer, dlqConfig.getDlqKafkaTopic(), new Instrumentation(client, KafkaDlqWriter.class));
+                return new KafkaDlqWriter(tracingProducer, dlqKafkaProducerConfig.getDlqKafkaTopic(), new Instrumentation(client, KafkaDlqWriter.class));
 
             case BLOB_STORAGE:
                 configuration.put("GCS_TYPE", "DLQ_BLOB_STORAGE");

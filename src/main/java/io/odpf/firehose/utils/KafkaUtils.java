@@ -1,6 +1,6 @@
 package io.odpf.firehose.utils;
 
-import io.odpf.firehose.config.DlqConfig;
+import io.odpf.firehose.config.DlqKafkaProducerConfig;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.consumer.kafka.FirehoseKafkaConsumer;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -92,7 +92,7 @@ public class KafkaUtils {
      * @param config the config
      * @return the kafka producer
      */
-    public static KafkaProducer<byte[], byte[]> getKafkaProducer(DlqConfig config) {
+    public static KafkaProducer<byte[], byte[]> getKafkaProducer(DlqKafkaProducerConfig config) {
         Properties props = new Properties();
         props.put("bootstrap.servers", config.getDlqKafkaBrokers());
         props.put("acks", config.getDlqKafkaAcks());
