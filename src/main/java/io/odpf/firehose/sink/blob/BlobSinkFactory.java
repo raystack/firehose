@@ -1,6 +1,5 @@
 package io.odpf.firehose.sink.blob;
 
-import com.gojek.de.stencil.client.StencilClient;
 import com.google.protobuf.Descriptors;
 import io.odpf.firehose.config.BlobSinkConfig;
 import io.odpf.firehose.consumer.kafka.OffsetManager;
@@ -19,6 +18,7 @@ import io.odpf.firehose.sink.blob.writer.local.LocalStorage;
 import io.odpf.firehose.sink.blob.writer.local.policy.SizeBasedRotatingPolicy;
 import io.odpf.firehose.sink.blob.writer.local.policy.TimeBasedRotatingPolicy;
 import io.odpf.firehose.sink.blob.writer.local.policy.WriterPolicy;
+import io.odpf.stencil.client.StencilClient;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.util.ArrayList;

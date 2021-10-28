@@ -2,11 +2,10 @@ package io.odpf.firehose.sink.http;
 
 
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.utils.Clock;
-import com.gojek.de.stencil.client.StencilClient;
+import io.odpf.stencil.client.StencilClient;
 import org.gradle.internal.impldep.org.junit.Before;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -17,7 +16,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.verify.VerificationTimes;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -66,7 +64,7 @@ public class HttpSinkFactoryTest {
     }
 
     @Test(expected = Test.None.class)
-    public void shouldNotEmbedAccessTokenIfGoAuthDisabled() throws IOException, DeserializerException {
+    public void shouldNotEmbedAccessTokenIfGoAuthDisabled() {
         Map<String, String> configuration = new HashMap<>();
         configuration.put("SINK_HTTP_OAUTH2_ENABLE", "false");
         configuration.put("SINK_HTTP_OAUTH2_ACCESS_TOKEN_URL", "http://127.0.0.1:1080/oauth2/token");
@@ -80,7 +78,7 @@ public class HttpSinkFactoryTest {
     }
 
     @Test(expected = Test.None.class)
-    public void shouldEmbedAccessTokenIfGoAuthEnabled() throws IOException, DeserializerException {
+    public void shouldEmbedAccessTokenIfGoAuthEnabled() {
         Map<String, String> configuration = new HashMap<>();
         configuration.put("SINK_HTTP_OAUTH2_ENABLE", "true");
         configuration.put("SINK_HTTP_OAUTH2_ACCESS_TOKEN_URL", "http://127.0.0.1:1080/oauth2/token");

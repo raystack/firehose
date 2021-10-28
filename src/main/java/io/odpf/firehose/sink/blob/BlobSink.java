@@ -65,7 +65,7 @@ public class BlobSink extends AbstractSink {
     }
 
     @Override
-    protected void prepare(List<Message> messageList) throws DeserializerException, IOException, SQLException {
+    protected void prepare(List<Message> messageList) throws IOException, SQLException {
         this.messages = messageList;
     }
 

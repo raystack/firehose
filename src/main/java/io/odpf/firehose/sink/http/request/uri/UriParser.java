@@ -5,7 +5,7 @@ import io.odpf.firehose.message.Message;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.gojek.de.stencil.parser.ProtoParser;
+import io.odpf.stencil.parser.ProtoParser;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.common.errors.InvalidConfigurationException;
 

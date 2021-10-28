@@ -1,8 +1,5 @@
 package io.odpf.firehose.sink.blob.message;
 
-import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.de.stencil.parser.Parser;
-import com.gojek.de.stencil.parser.ProtoParser;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -13,13 +10,15 @@ import io.odpf.firehose.proto.ProtoUtils;
 import io.odpf.firehose.exception.EmptyMessageException;
 import io.odpf.firehose.exception.UnknownFieldsException;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessageUtils;
+import io.odpf.stencil.client.StencilClient;
+import io.odpf.stencil.parser.ProtoParser;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class MessageDeSerializer {
 
     private final Descriptors.FileDescriptor kafkaMetadataFileDescriptor;
-    private final Parser protoParser;
+    private final ProtoParser protoParser;
     private final BlobSinkConfig sinkConfig;
 
     public MessageDeSerializer(BlobSinkConfig sinkConfig, StencilClient stencilClient) {

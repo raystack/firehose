@@ -1,8 +1,5 @@
 package io.odpf.firehose.consumer;
 
-import com.gojek.de.stencil.StencilClientFactory;
-import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.de.stencil.parser.ProtoParser;
 import io.jaegertracing.Configuration;
 import io.odpf.firehose.consumer.kafka.ConsumerAndOffsetManager;
 import io.odpf.firehose.consumer.kafka.FirehoseKafkaConsumer;
@@ -48,6 +45,10 @@ import io.odpf.firehose.sinkdecorator.SinkWithRetry;
 import io.odpf.firehose.sink.dlq.DlqWriter;
 import io.odpf.firehose.sink.dlq.DlqWriterFactory;
 import io.odpf.firehose.tracer.SinkTracer;
+import io.odpf.firehose.utils.StencilUtils;
+import io.odpf.stencil.StencilClientFactory;
+import io.odpf.stencil.client.StencilClient;
+import io.odpf.stencil.parser.ProtoParser;
 import io.opentracing.Tracer;
 import io.opentracing.noop.NoopTracerFactory;
 import org.aeonbits.owner.ConfigFactory;
@@ -93,7 +94,7 @@ public class FirehoseConsumerFactory {
 
         String stencilUrl = this.kafkaConsumerConfig.getSchemaRegistryStencilUrls();
         stencilClient = this.kafkaConsumerConfig.isSchemaRegistryStencilEnable()
-                ? StencilClientFactory.getClient(stencilUrl, config, this.statsDReporter.getClient())
+                ? StencilClientFactory.getClient(stencilUrl, StencilUtils.getStencilConfig(kafkaConsumerConfig), this.statsDReporter.getClient())
                 : StencilClientFactory.getClient();
         parser = new KeyOrMessageParser(new ProtoParser(stencilClient, kafkaConsumerConfig.getInputSchemaProtoClass()), kafkaConsumerConfig);
     }
@@ -192,7 +193,7 @@ public class FirehoseConsumerFactory {
             case BLOB:
                 return BlobSinkFactory.create(config, offsetManager, statsDReporter, stencilClient);
             case BIGQUERY:
-                return BigQuerySinkFactory.create(config, statsDReporter, stencilClient);
+                return BigQuerySinkFactory.create(config, statsDReporter);
             case MONGODB:
                 return MongoSinkFactory.create(config, statsDReporter, stencilClient);
             default:

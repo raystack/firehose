@@ -3,7 +3,6 @@ package io.odpf.firehose.sink.log;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;
-import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.Sink;
 import com.google.protobuf.DynamicMessage;
@@ -40,7 +39,7 @@ public class LogSinkTest {
     }
 
     @Test
-    public void shouldPrintProto() throws IOException, DeserializerException {
+    public void shouldPrintProto() throws IOException {
         List<Message> messages = Collections.singletonList(new Message(new byte[0], new byte[0], "topic", 0, 100));
 
         sink.pushMessage(messages);

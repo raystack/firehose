@@ -1,7 +1,6 @@
 package io.odpf.firehose.sink;
 
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.exception.DeserializerException;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -20,9 +19,9 @@ public interface Sink extends Closeable {
      * @param message list of {@see EsbMessage}
      * @return the list of failed messages
      * @throws IOException           in case of error conditions while persisting it to the custom sink.
-     * @throws DeserializerException in case of problems with deserialising the message into a protobuf object.
+     * @throws io.odpf.firehose.exception.DeserializerException in case of problems with deserialising the message into a protobuf object.
      */
-    List<Message> pushMessage(List<Message> message) throws IOException, DeserializerException;
+    List<Message> pushMessage(List<Message> message) throws IOException;
 
     /**
      * Method that inform that sink is managing kafka offset to be committed by its own.

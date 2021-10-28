@@ -1,8 +1,5 @@
 package io.odpf.firehose.sink.bigquery.proto;
 
-import com.gojek.de.stencil.models.DescriptorAndTypeName;
-import com.gojek.de.stencil.parser.Parser;
-import com.gojek.de.stencil.utils.StencilUtils;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
 import com.google.gson.Gson;
@@ -16,6 +13,9 @@ import io.odpf.firehose.sink.bigquery.exception.BQTableUpdateFailure;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryClient;
 import io.odpf.firehose.sink.bigquery.models.MetadataUtil;
 import io.odpf.firehose.sink.bigquery.models.ProtoField;
+import io.odpf.stencil.models.DescriptorAndTypeName;
+import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.utils.StencilUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateListener {
+public class ProtoUpdateListener extends io.odpf.stencil.cache.ProtoUpdateListener {
     private final BigQuerySinkConfig config;
     private final ProtoMapper protoMapper = new ProtoMapper();
     private final ProtoFieldParser protoMappingParser = new ProtoFieldParser();
@@ -37,7 +37,7 @@ public class ProtoUpdateListener extends com.gojek.de.stencil.cache.ProtoUpdateL
     @Getter
     private final MessageRecordConverterCache messageRecordConverterCache;
     @Setter
-    private Parser stencilParser;
+    private ProtoParser stencilParser;
     private static final Gson GSON = new Gson();
 
     public ProtoUpdateListener(BigQuerySinkConfig config, BigQueryClient bqClient, MessageRecordConverterCache messageRecordConverterCache) {

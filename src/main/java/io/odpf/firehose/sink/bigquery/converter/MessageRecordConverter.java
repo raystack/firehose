@@ -1,6 +1,5 @@
 package io.odpf.firehose.sink.bigquery.converter;
 
-import com.gojek.de.stencil.parser.Parser;
 import com.google.api.client.util.DateTime;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -16,6 +15,7 @@ import io.odpf.firehose.sink.bigquery.models.Record;
 import io.odpf.firehose.sink.bigquery.models.Records;
 import io.odpf.firehose.sink.bigquery.proto.UnknownProtoFields;
 import io.odpf.firehose.proto.ProtoUtils;
+import io.odpf.stencil.parser.ProtoParser;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,7 +31,7 @@ import java.util.Map;
 @Slf4j
 public class MessageRecordConverter {
     private final RowMapper rowMapper;
-    private final Parser parser;
+    private final ProtoParser parser;
     private final BigQuerySinkConfig config;
 
     public Records convert(List<Message> messages, Instant now) {

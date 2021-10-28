@@ -1,8 +1,5 @@
 package io.odpf.firehose.sink.bigquery.converter;
 
-import com.gojek.de.stencil.StencilClientFactory;
-import com.gojek.de.stencil.parser.Parser;
-import com.gojek.de.stencil.parser.ProtoParser;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.UnknownFieldSet;
@@ -15,6 +12,8 @@ import io.odpf.firehose.sink.bigquery.MessageUtils;
 import io.odpf.firehose.sink.bigquery.OffsetInfo;
 import io.odpf.firehose.sink.bigquery.models.Records;
 import io.odpf.firehose.exception.UnknownFieldsException;
+import io.odpf.stencil.StencilClientFactory;
+import io.odpf.stencil.parser.ProtoParser;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +37,7 @@ public class MessageRecordConverterTest {
     private final MessageUtils util = new MessageUtils();
     private MessageRecordConverter recordConverter;
     private RowMapper rowMapper;
-    private Parser parser;
+    private ProtoParser parser;
     private Instant now;
 
     @Before
@@ -233,7 +232,7 @@ public class MessageRecordConverterTest {
     @Test
     public void shouldReturnInvalidRecordsWhenUnknownFieldsFound() throws InvalidProtocolBufferException {
         System.setProperty("INPUT_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE", "false");
-        Parser mockParser = mock(Parser.class);
+        ProtoParser mockParser = mock(ProtoParser.class);
 
         OffsetInfo record1Offset = new OffsetInfo("topic1", 1, 101, Instant.now().toEpochMilli());
         Message consumerRecord = util.withOffsetInfo(record1Offset).createConsumerRecord("order-1",
@@ -258,7 +257,7 @@ public class MessageRecordConverterTest {
     @Test
     public void shouldIgnoreUnknownFieldsIfTheConfigIsSet() throws InvalidProtocolBufferException {
         System.setProperty("INPUT_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE", "true");
-        Parser mockParser = mock(Parser.class);
+        ProtoParser mockParser = mock(ProtoParser.class);
 
         OffsetInfo record1Offset = new OffsetInfo("topic1", 1, 101, Instant.now().toEpochMilli());
         Message consumerRecord = util.withOffsetInfo(record1Offset).createConsumerRecord("order-1",

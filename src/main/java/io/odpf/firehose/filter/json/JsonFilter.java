@@ -3,8 +3,6 @@ package io.odpf.firehose.filter.json;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.de.stencil.parser.ProtoParser;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.util.JsonFormat;
 import com.networknt.schema.JsonSchema;
@@ -17,6 +15,8 @@ import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.stencil.client.StencilClient;
+import io.odpf.stencil.parser.ProtoParser;
 
 import java.nio.charset.Charset;
 import java.util.List;

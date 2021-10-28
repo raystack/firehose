@@ -32,7 +32,7 @@ public abstract class AbstractSink implements Closeable, Sink {
      * @return the list of failed messages
      * @throws DeserializerException when invalid kafka message is encountered
      */
-    public List<Message> pushMessage(List<Message> messages) throws DeserializerException {
+    public List<Message> pushMessage(List<Message> messages) {
         List<Message> failedMessages = messages;
         try {
             instrumentation.logInfo("Preparing {} messages", messages.size());

@@ -4,7 +4,6 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.StringValue;
-import com.gojek.de.stencil.parser.Parser;
 
 import com.google.protobuf.UnknownFieldSet;
 import io.odpf.firehose.config.BlobSinkConfig;
@@ -13,6 +12,7 @@ import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessage;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessageUtils;
 import io.odpf.firehose.sink.blob.proto.NestedKafkaMetadataProtoMessage;
+import io.odpf.stencil.parser.ProtoParser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 public class MessageDeSerializerTest {
 
     @Mock
-    private Parser protoParser;
+    private ProtoParser protoParser;
 
     private MessageDeSerializer deSerializer;
 

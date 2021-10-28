@@ -11,7 +11,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-import com.gojek.de.stencil.parser.ProtoParser;
+import io.odpf.stencil.parser.ProtoParser;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
