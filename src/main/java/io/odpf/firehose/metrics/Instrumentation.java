@@ -151,7 +151,7 @@ public class Instrumentation {
     // ================ SinkExecutionTelemetry ================
 
     public void startExecution() {
-        startExecutionTime = statsDReporter.getClock().now();
+        startExecutionTime = Instant.now();
     }
 
     /**

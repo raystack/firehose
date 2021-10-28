@@ -1,7 +1,6 @@
 package io.odpf.firehose.metrics;
 
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.utils.Clock;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -115,8 +114,6 @@ public class InstrumentationTest {
 
     @Test
     public void shouldSetStartExecutionTime() {
-        Clock clock = new Clock();
-        when(statsDReporter.getClock()).thenReturn(clock);
         instrumentation.startExecution();
         Assert.assertEquals(instrumentation.getStartExecutionTime().getEpochSecond(), java.time.Instant.now().getEpochSecond());
     }

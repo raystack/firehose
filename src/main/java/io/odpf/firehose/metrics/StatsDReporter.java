@@ -1,7 +1,6 @@
 package io.odpf.firehose.metrics;
 
 import com.timgroup.statsd.StatsDClient;
-import io.odpf.firehose.utils.Clock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,20 +16,13 @@ import java.util.stream.Stream;
  */
 public class StatsDReporter implements Closeable {
 
-    private StatsDClient client;
-    private String globalTags;
+    private final StatsDClient client;
+    private final String globalTags;
     private static final Logger LOGGER = LoggerFactory.getLogger(StatsDReporter.class);
 
-    private Clock clock;
-
-    public StatsDReporter(StatsDClient client, Clock clock, String... globalTags) {
+    public StatsDReporter(StatsDClient client, String... globalTags) {
         this.client = client;
         this.globalTags = String.join(",", globalTags).replaceAll(":", "=");
-        this.clock = clock;
-    }
-
-    public Clock getClock() {
-        return clock;
     }
 
     public StatsDClient getClient() {
@@ -58,8 +50,9 @@ public class StatsDReporter implements Closeable {
     }
 
     public void captureDurationSince(String metric, Instant startTime, String... tags) {
-        client.recordExecutionTime(withTags(metric, tags), Duration.between(startTime, clock.now()).toMillis());
+        client.recordExecutionTime(withTags(metric, tags), Duration.between(startTime, Instant.now()).toMillis());
     }
+
     public void captureDuration(String metric, long duration, String... tags) {
         client.recordExecutionTime(withTags(metric, tags), duration);
     }

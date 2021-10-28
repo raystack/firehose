@@ -4,7 +4,6 @@ package io.odpf.firehose.sink.http;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.AbstractSink;
-import io.odpf.firehose.utils.Clock;
 import io.odpf.stencil.client.StencilClient;
 import org.gradle.internal.impldep.org.junit.Before;
 import org.junit.AfterClass;
@@ -21,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
@@ -71,7 +69,6 @@ public class HttpSinkFactoryTest {
         configuration.put("SINK_HTTP_SERVICE_URL", "http://127.0.0.1:1080/api");
         AbstractSink sink = HttpSinkFactory.create(configuration, statsDReporter, stencilClient);
 
-        when(statsDReporter.getClock()).thenReturn(new Clock());
         sink.pushMessage(messages);
 
         mockServer.verify(request().withPath("/oauth2/token"), VerificationTimes.exactly(0));
@@ -85,7 +82,6 @@ public class HttpSinkFactoryTest {
         configuration.put("SINK_HTTP_SERVICE_URL", "http://127.0.0.1:1080/api");
         AbstractSink sink = HttpSinkFactory.create(configuration, statsDReporter, stencilClient);
 
-        when(statsDReporter.getClock()).thenReturn(new Clock());
         sink.pushMessage(messages);
 
         mockServer.verify(request().withPath("/oauth2/token"), VerificationTimes.exactly(1));
