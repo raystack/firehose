@@ -13,8 +13,7 @@ public class BlobStorageFactory {
         if (storageType == BlobStorageType.GCS) {
             try {
                 GCSConfig gcsConfig = ConfigFactory.create(GCSConfig.class, config);
-                GoogleCloudStorage googleCloudStorage = new GoogleCloudStorage(gcsConfig);
-                return googleCloudStorage;
+                return new GoogleCloudStorage(gcsConfig);
             } catch (IOException e) {
                 throw new IllegalArgumentException("Exception while creating GCS Storage", e);
             }

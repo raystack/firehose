@@ -5,6 +5,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Bucket;
+import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
@@ -45,7 +46,18 @@ public class GoogleCloudStorage implements BlobStorage {
                 .setCredentials(credentials)
                 .setRetrySettings(retrySettings)
                 .build().getService();
+        checkBucket();
         logRetentionPolicy();
+    }
+
+    private void checkBucket() {
+        String bucketName = gcsConfig.getGCSBucketName();
+        Bucket bucket = storage.get(bucketName);
+        if (bucket == null) {
+            LOGGER.info("Bucket does not exist: " + bucketName);
+            LOGGER.info("Creating bucket in GCS: " + bucketName);
+            storage.create(BucketInfo.of(bucketName));
+        }
     }
 
     private void logRetentionPolicy() {
