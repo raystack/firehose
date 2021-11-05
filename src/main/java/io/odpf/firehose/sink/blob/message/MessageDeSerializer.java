@@ -38,10 +38,7 @@ public class MessageDeSerializer {
                 throw new UnknownFieldsException(dynamicMessage);
             }
 
-            DynamicMessage kafkaMetadata = null;
-            if (sinkConfig.getOutputIncludeKafkaMetadataEnable()) {
-                kafkaMetadata = KafkaMetadataUtils.createKafkaMetadata(kafkaMetadataFileDescriptor, message, sinkConfig.getOutputKafkaMetadataColumnName());
-            }
+            DynamicMessage kafkaMetadata = KafkaMetadataUtils.createKafkaMetadata(kafkaMetadataFileDescriptor, message, sinkConfig.getOutputKafkaMetadataColumnName());
             return new Record(dynamicMessage, kafkaMetadata);
         } catch (InvalidProtocolBufferException e) {
             throw new DeserializerException("failed to parse message", e);

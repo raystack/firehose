@@ -1,6 +1,7 @@
 package io.odpf.firehose.sink.blob.writer.local;
 
 import com.google.protobuf.Descriptors;
+import io.odpf.firehose.config.BlobSinkConfig;
 import io.odpf.firehose.sink.blob.message.Record;
 import org.apache.hadoop.fs.Path;
 import org.apache.parquet.hadoop.ParquetWriter;
@@ -19,16 +20,19 @@ public class LocalParquetFileWriter implements LocalFileWriter {
     private final String basePath;
     private long recordCount = 0;
     private boolean isClosed = false;
+    private BlobSinkConfig sinkConfig;
 
-    public LocalParquetFileWriter(long createdTimestampMillis, String basePath, String fullPath, int pageSize, int blockSize, Descriptors.Descriptor messageDescriptor, List<Descriptors.FieldDescriptor> metadataFieldDescriptor) throws IOException {
+    public LocalParquetFileWriter(long createdTimestampMillis, String basePath, String fullPath, BlobSinkConfig sinkConfig, Descriptors.Descriptor messageDescriptor, List<Descriptors.FieldDescriptor> metadataFieldDescriptor) throws IOException {
         this.parquetWriter = new ProtoParquetWriter(new Path(fullPath),
                 messageDescriptor,
                 metadataFieldDescriptor,
                 CompressionCodecName.GZIP,
-                blockSize, pageSize);
+                sinkConfig.getLocalFileWriterParquetBlockSize(),
+                sinkConfig.getLocalFileWriterParquetPageSize());
         this.createdTimestampMillis = createdTimestampMillis;
         this.fullPath = fullPath;
         this.basePath = basePath;
+        this.sinkConfig = sinkConfig;
     }
 
     @Override
@@ -45,7 +49,11 @@ public class LocalParquetFileWriter implements LocalFileWriter {
         if (isClosed) {
             return false;
         }
-        parquetWriter.write(Arrays.asList(record.getMessage(), record.getMetadata()));
+        if (sinkConfig.getOutputIncludeKafkaMetadataEnable()) {
+            parquetWriter.write(Arrays.asList(record.getMessage(), record.getMetadata()));
+        } else {
+            parquetWriter.write(record.getMessage());
+        }
         recordCount++;
         return true;
     }
