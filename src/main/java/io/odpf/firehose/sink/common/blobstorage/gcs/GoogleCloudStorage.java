@@ -5,7 +5,6 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Bucket;
-import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
@@ -17,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.bp.Duration;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -54,22 +54,22 @@ public class GoogleCloudStorage implements BlobStorage {
         String bucketName = gcsConfig.getGCSBucketName();
         Bucket bucket = storage.get(bucketName);
         if (bucket == null) {
-            LOGGER.info("Bucket does not exist: " + bucketName);
-            LOGGER.info("Creating bucket in GCS: " + bucketName);
-            storage.create(BucketInfo.of(bucketName));
+            LOGGER.info("Bucket does not exist:{}", bucketName);
+            LOGGER.info("Please create GCS bucket before running firehose: " + bucketName);
+            throw new IllegalArgumentException("GCS Bucket not found " + bucketName);
         }
     }
 
     private void logRetentionPolicy() {
         String bucketName = gcsConfig.getGCSBucketName();
         Bucket bucket = storage.get(bucketName, Storage.BucketGetOption.fields(Storage.BucketField.RETENTION_POLICY));
-        LOGGER.info("Retention Policy for " + bucketName);
-        LOGGER.info("Retention Period: " + bucket.getRetentionPeriod());
+        LOGGER.info("Retention Policy for {}", bucketName);
+        LOGGER.info("Retention Period: {}", bucket.getRetentionPeriod());
         if (bucket.retentionPolicyIsLocked() != null && bucket.retentionPolicyIsLocked()) {
             LOGGER.info("Retention Policy is locked");
         }
         if (bucket.getRetentionEffectiveTime() != null) {
-            LOGGER.info("Effective Time: " + new Date(bucket.getRetentionEffectiveTime()));
+            LOGGER.info("Effective Time: {}", new Date(bucket.getRetentionEffectiveTime()));
         }
     }
 
@@ -79,7 +79,7 @@ public class GoogleCloudStorage implements BlobStorage {
             byte[] content = Files.readAllBytes(Paths.get(filePath));
             store(objectName, content);
         } catch (IOException e) {
-            LOGGER.error("Failed to read local file " + filePath);
+            LOGGER.error("Failed to read local file {}", filePath);
             throw new BlobStorageException("file_io_error", "File Read failed", e);
         }
     }
@@ -87,11 +87,12 @@ public class GoogleCloudStorage implements BlobStorage {
     @Override
     public void store(String objectName, byte[] content) throws BlobStorageException {
         BlobInfo blobInfo = BlobInfo.newBuilder(BlobId.of(gcsConfig.getGCSBucketName(), objectName)).build();
+        String blobPath = String.join(File.separator, blobInfo.getBucket(), blobInfo.getName());
         try {
             storage.create(blobInfo, content);
-            LOGGER.info("Created object in GCS " + blobInfo.getBucket() + "/" + blobInfo.getName());
+            LOGGER.info("Created object in GCS {}", blobPath);
         } catch (StorageException e) {
-            LOGGER.error("Failed to create object in GCS " + blobInfo.getBucket() + "/" + blobInfo.getName());
+            LOGGER.error("Failed to create object in GCS {}", blobPath);
             String gcsErrorType = GCSErrorType.valueOfCode(e.getCode()).name();
             throw new BlobStorageException(gcsErrorType, "GCS Upload failed", e);
         }
