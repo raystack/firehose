@@ -7,7 +7,6 @@ import io.odpf.firehose.sink.common.blobstorage.BlobStorageException;
 import io.odpf.firehose.sink.common.blobstorage.BlobStorage;
 import io.odpf.firehose.sink.dlq.DlqWriter;
 import lombok.extern.slf4j.Slf4j;
-import org.bson.internal.Base64;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -17,6 +16,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -54,8 +54,8 @@ public class BlobStorageDlqWriter implements DlqWriter {
     private String convertToString(Message message) {
         try {
             return objectMapper.writeValueAsString(new DlqMessage(
-                    Base64.encode(message.getLogKey()),
-                    Base64.encode(message.getLogMessage()),
+                    Base64.getEncoder().encodeToString(message.getLogKey()),
+                    Base64.getEncoder().encodeToString(message.getLogMessage()),
                     message.getTopic(),
                     message.getPartition(),
                     message.getOffset(),

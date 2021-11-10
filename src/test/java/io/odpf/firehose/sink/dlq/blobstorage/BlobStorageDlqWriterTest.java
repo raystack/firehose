@@ -6,7 +6,6 @@ import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.sink.common.blobstorage.BlobStorageException;
 import io.odpf.firehose.sink.common.blobstorage.BlobStorage;
-import org.bson.internal.Base64;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +16,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Comparator;
 import java.util.List;
 
@@ -53,8 +53,8 @@ public class BlobStorageDlqWriterTest {
         List<Message> messages = Arrays.asList(message1, message2, message3, message4);
         Assert.assertEquals(0, blobStorageDLQWriter.write(messages).size());
 
-        String key = Base64.encode("123".getBytes());
-        String message = Base64.encode("abc".getBytes());
+        String key = Base64.getEncoder().encodeToString("123".getBytes());
+        String message = Base64.getEncoder().encodeToString("abc".getBytes());
         verify(blobStorage).store(contains("booking/2020-01-02"),
                 eq(("{\"key\":\"" + key + "\",\"value\":\"" + message + "\",\"topic\":\"booking\",\"partition\":1,\"offset\":3,\"timestamp\":1577923200000,\"error\":\"DESERIALIZATION_ERROR\"}\n"
                         + "{\"key\":\"" + key + "\",\"value\":\"" + message + "\",\"topic\":\"booking\",\"partition\":1,\"offset\":4,\"timestamp\":1577923200000,\"error\":\"DESERIALIZATION_ERROR\"}").getBytes()));
@@ -76,8 +76,8 @@ public class BlobStorageDlqWriterTest {
         List<Message> messages = Arrays.asList(message1, message2, message3, message4);
         Assert.assertEquals(0, blobStorageDLQWriter.write(messages).size());
 
-        String key = Base64.encode("123".getBytes());
-        String message = Base64.encode("abc".getBytes());
+        String key = Base64.getEncoder().encodeToString("123".getBytes());
+        String message = Base64.getEncoder().encodeToString("abc".getBytes());
         verify(blobStorage).store(contains("booking/2020-01-02"),
                 eq(("{\"key\":\"" + key + "\",\"value\":\"" + message + "\",\"topic\":\"booking\",\"partition\":1,\"offset\":3,\"timestamp\":1577923200000,\"error\":\"DESERIALIZATION_ERROR\"}\n"
                         + "{\"key\":\"" + key + "\",\"value\":\"" + message + "\",\"topic\":\"booking\",\"partition\":1,\"offset\":4,\"timestamp\":1577923200000,\"error\":\"SINK_UNKNOWN_ERROR\"}").getBytes()));
