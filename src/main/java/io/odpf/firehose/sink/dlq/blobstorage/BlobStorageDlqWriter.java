@@ -54,8 +54,8 @@ public class BlobStorageDlqWriter implements DlqWriter {
     private String convertToString(Message message) {
         try {
             return objectMapper.writeValueAsString(new DlqMessage(
-                    Base64.getEncoder().encodeToString(message.getLogKey()),
-                    Base64.getEncoder().encodeToString(message.getLogMessage()),
+                    Base64.getEncoder().encodeToString(message.getLogKey() == null ? "".getBytes() : message.getLogKey()),
+                    Base64.getEncoder().encodeToString(message.getLogMessage() == null ? "".getBytes() : message.getLogMessage()),
                     message.getTopic(),
                     message.getPartition(),
                     message.getOffset(),
