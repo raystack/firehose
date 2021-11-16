@@ -1,5 +1,9 @@
 package io.odpf.firehose.consumer;
 
+import io.odpf.firehose.consumer.kafka.ConsumerAndOffsetManager;
+import io.odpf.firehose.exception.FirehoseConsumerFailedException;
+import io.odpf.firehose.message.Message;
+import io.odpf.firehose.sink.SinkPool;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -15,7 +19,7 @@ import java.util.concurrent.Future;
 import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS;
 
 @AllArgsConstructor
-public class FirehoseAsyncConsumer implements KafkaConsumer {
+public class FirehoseAsyncConsumer implements FirehoseConsumer {
     private final SinkPool sinkPool;
     private final SinkTracer tracer;
     private final ConsumerAndOffsetManager consumerAndOffsetManager;
@@ -23,13 +27,15 @@ public class FirehoseAsyncConsumer implements KafkaConsumer {
     private final Instrumentation instrumentation;
 
     @Override
-    public void process() throws FilterException {
+    public void process() {
         Instant beforeCall = Instant.now();
         try {
-            List<Message> messages = consumerAndOffsetManager.readMessagesFromKafka();
+            List<Message> messages = consumerAndOffsetManager.readMessages();
             List<Span> spans = tracer.startTrace(messages);
             FilteredMessages filteredMessages = firehoseFilter.applyFilter(messages);
-            consumerAndOffsetManager.addOffsetsAndSetCommittable(filteredMessages.getInvalidMessages());
+            if (filteredMessages.sizeOfInvalidMessages() > 0) {
+                consumerAndOffsetManager.forceAddOffsetsAndSetCommittable(filteredMessages.getInvalidMessages());
+            }
             if (filteredMessages.sizeOfValidMessages() > 0) {
                 List<Message> validMessages = filteredMessages.getValidMessages();
                 Future<List<Message>> scheduledTask = scheduleTask(validMessages);
@@ -38,6 +44,8 @@ public class FirehoseAsyncConsumer implements KafkaConsumer {
             sinkPool.fetchFinishedSinkTasks().forEach(consumerAndOffsetManager::setCommittable);
             consumerAndOffsetManager.commit();
             tracer.finishTrace(spans);
+        } catch (FilterException e) {
+            throw new FirehoseConsumerFailedException(e);
         } finally {
             instrumentation.captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS, beforeCall);
         }

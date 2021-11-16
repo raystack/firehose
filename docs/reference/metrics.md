@@ -368,3 +368,20 @@ Total Size of the uploaded file in bytes.
 ### `File Upload Records Total`
 
 Total number records inside files that successfully being uploaded to blob storage.
+
+## Bigquery Sink
+
+### `Biquery Operation Total`
+
+Total number of bigquery API operation performed
+
+### `Bigquery Operation Latency`
+
+Time taken for bigquery API operation performed
+
+### `Bigquery Errors Total`
+
+Total numbers of error occurred on bigquery insert operation.
+
+
+

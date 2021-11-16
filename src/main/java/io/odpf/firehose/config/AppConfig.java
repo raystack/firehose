@@ -91,11 +91,11 @@ public interface AppConfig extends Config {
     Integer getRetryExponentialBackoffMaxMs();
 
     @Key("RETRY_FAIL_AFTER_MAX_ATTEMPTS_ENABLE")
-    @DefaultValue("true")
+    @DefaultValue("false")
     boolean getRetryFailAfterMaxAttemptsEnable();
 
     @Key("RETRY_MAX_ATTEMPTS")
-    @DefaultValue("1")
+    @DefaultValue("2147483647")
     Integer getRetryMaxAttempts();
 
     @Key("INPUT_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE")

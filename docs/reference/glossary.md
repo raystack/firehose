@@ -4,6 +4,12 @@
 
 [architecture](../concepts/architecture.md)
 
+## B
+
+[Bigquery sink](../guides/create_firehose.md#create-a-bigquery-sink)
+
+[Bigquery sink configs](configuration.md#bigquery-sink)
+
 ## C
 
 [Configurations](configuration/)

@@ -2,8 +2,8 @@ package io.odpf.firehose.sink.blob;
 
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
-import io.odpf.firehose.consumer.Message;
-import io.odpf.firehose.consumer.offset.OffsetManager;
+import io.odpf.firehose.message.Message;
+import io.odpf.firehose.consumer.kafka.OffsetManager;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.SinkException;
 import io.odpf.firehose.exception.UnknownFieldsException;
@@ -13,11 +13,11 @@ import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.blob.message.MessageDeSerializer;
 import io.odpf.firehose.sink.blob.message.Record;
 import io.odpf.firehose.sink.blob.writer.WriterOrchestrator;
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.common.TopicPartition;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -25,13 +25,14 @@ import java.util.Map;
 public class BlobSink extends AbstractSink {
 
     private final WriterOrchestrator writerOrchestrator;
-    private final OffsetManager offsetManager = new OffsetManager();
+    private final OffsetManager offsetManager;
     private final MessageDeSerializer messageDeSerializer;
 
     private List<Message> messages;
 
-    public BlobSink(Instrumentation instrumentation, String sinkType, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer) {
+    public BlobSink(Instrumentation instrumentation, String sinkType, OffsetManager offsetManager, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer) {
         super(instrumentation, sinkType);
+        this.offsetManager = offsetManager;
         this.writerOrchestrator = writerOrchestrator;
         this.messageDeSerializer = messageDeSerializer;
     }
@@ -39,11 +40,12 @@ public class BlobSink extends AbstractSink {
     @Override
     protected List<Message> execute() throws Exception {
         List<Message> failedMessages = new LinkedList<>();
+        Map<Object, List<Message>> fileToMessages = new HashMap<>();
         for (Message message : messages) {
             try {
                 Record record = messageDeSerializer.deSerialize(message);
                 String filePath = writerOrchestrator.write(record);
-                offsetManager.addOffsetToBatch(filePath, message);
+                fileToMessages.computeIfAbsent(filePath, key -> new ArrayList<>()).add(message);
             } catch (EmptyMessageException e) {
                 getInstrumentation().logWarn("empty message found on topic: {}, partition: {}, offset: {}",
                         message.getTopic(), message.getPartition(), message.getOffset());
@@ -62,12 +64,12 @@ public class BlobSink extends AbstractSink {
                 throw new SinkException("Failed to deserialize the message", e);
             }
         }
-
+        offsetManager.addOffsetToBatch(fileToMessages);
         return failedMessages;
     }
 
     @Override
-    protected void prepare(List<Message> messageList) throws DeserializerException, IOException, SQLException {
+    protected void prepare(List<Message> messageList) throws IOException, SQLException {
         this.messages = messageList;
     }
 
@@ -77,9 +79,8 @@ public class BlobSink extends AbstractSink {
     }
 
     @Override
-    public Map<TopicPartition, OffsetAndMetadata> getCommittableOffsets() {
+    public void calculateCommittableOffsets() {
         writerOrchestrator.getFlushedPaths().forEach(offsetManager::setCommittable);
-        return offsetManager.getCommittableOffset();
     }
 
     @Override
@@ -88,12 +89,7 @@ public class BlobSink extends AbstractSink {
     }
 
     @Override
-    public void addOffsets(Object key, List<Message> messageList) {
-        this.offsetManager.addOffsetToBatch(key, messageList);
-    }
-
-    @Override
-    public void setCommittable(Object key) {
-        this.offsetManager.setCommittable(key);
+    public void addOffsetsAndSetCommittable(List<Message> messageList) {
+        offsetManager.addOffsetsAndSetCommittable(messageList);
     }
 }

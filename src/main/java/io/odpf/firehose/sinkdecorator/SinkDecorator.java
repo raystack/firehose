@@ -1,14 +1,11 @@
 package io.odpf.firehose.sinkdecorator;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.sink.Sink;
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.common.TopicPartition;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Sink decorator provides internal processing on the use provided sink type.
@@ -37,8 +34,8 @@ public class SinkDecorator implements Sink {
     }
 
     @Override
-    public Map<TopicPartition, OffsetAndMetadata> getCommittableOffsets() {
-        return sink.getCommittableOffsets();
+    public void calculateCommittableOffsets() {
+        sink.calculateCommittableOffsets();
     }
 
     @Override
@@ -47,12 +44,7 @@ public class SinkDecorator implements Sink {
     }
 
     @Override
-    public void addOffsets(Object key, List<Message> messages) {
-        sink.addOffsets(key, messages);
-    }
-
-    @Override
-    public void setCommittable(Object key) {
-        sink.setCommittable(key);
+    public void addOffsetsAndSetCommittable(List<Message> messageList) {
+        sink.addOffsetsAndSetCommittable(messageList);
     }
 }

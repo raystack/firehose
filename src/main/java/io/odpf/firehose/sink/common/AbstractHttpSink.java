@@ -1,11 +1,11 @@
 package io.odpf.firehose.sink.common;
 
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.NeedToRetry;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
-import com.gojek.de.stencil.client.StencilClient;
+import io.odpf.stencil.client.StencilClient;
 import joptsimple.internal.Strings;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;

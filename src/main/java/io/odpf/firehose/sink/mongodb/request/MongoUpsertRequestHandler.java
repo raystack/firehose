@@ -6,7 +6,7 @@ import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.WriteModel;
 import io.odpf.firehose.config.enums.MongoSinkMessageType;
 import io.odpf.firehose.config.enums.MongoSinkRequestType;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.serializer.MessageToJson;
 import org.bson.Document;
 import org.json.simple.JSONObject;

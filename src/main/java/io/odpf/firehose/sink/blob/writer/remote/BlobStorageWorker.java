@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.blob.writer.remote;
 
-import io.odpf.firehose.blobstorage.BlobStorage;
-import io.odpf.firehose.blobstorage.BlobStorageException;
+import io.odpf.firehose.sink.common.blobstorage.BlobStorage;
+import io.odpf.firehose.sink.common.blobstorage.BlobStorageException;
 import io.odpf.firehose.sink.blob.writer.local.LocalFileMetadata;
 import lombok.AllArgsConstructor;
 

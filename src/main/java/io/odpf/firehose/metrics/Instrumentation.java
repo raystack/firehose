@@ -1,6 +1,6 @@
 package io.odpf.firehose.metrics;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.error.ErrorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,7 +151,7 @@ public class Instrumentation {
     // ================ SinkExecutionTelemetry ================
 
     public void startExecution() {
-        startExecutionTime = statsDReporter.getClock().now();
+        startExecutionTime = Instant.now();
     }
 
     /**

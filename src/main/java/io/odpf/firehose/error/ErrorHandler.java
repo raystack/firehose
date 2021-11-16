@@ -1,7 +1,7 @@
 package io.odpf.firehose.error;
 
 import io.odpf.firehose.config.ErrorConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import lombok.AllArgsConstructor;
 
 import java.util.List;

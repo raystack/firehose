@@ -1,9 +1,8 @@
 package io.odpf.firehose.launch;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.consumer.KafkaConsumer;
-import io.odpf.firehose.consumer.Task;
-import io.odpf.firehose.factory.FirehoseConsumerFactory;
+import io.odpf.firehose.consumer.FirehoseConsumer;
+import io.odpf.firehose.consumer.FirehoseConsumerFactory;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.metrics.StatsDReporterFactory;
@@ -41,7 +40,7 @@ public class Main {
                 new Instrumentation(statsDReporter, Task.class),
                 taskFinished -> {
 
-                    KafkaConsumer firehoseConsumer = null;
+                    FirehoseConsumer firehoseConsumer = null;
                     try {
                         firehoseConsumer = new FirehoseConsumerFactory(kafkaConsumerConfig, statsDReporter).buildConsumer();
                         while (true) {
@@ -70,7 +69,7 @@ public class Main {
         instrumentation.logInfo("Exiting main thread");
     }
 
-    private static void ensureThreadInterruptStateIsClearedAndClose(KafkaConsumer firehoseConsumer, Instrumentation instrumentation) {
+    private static void ensureThreadInterruptStateIsClearedAndClose(FirehoseConsumer firehoseConsumer, Instrumentation instrumentation) {
         Thread.interrupted();
         try {
             firehoseConsumer.close();

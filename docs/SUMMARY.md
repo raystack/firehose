@@ -16,11 +16,15 @@
 
 ## Concepts
 
-* [Overview](concepts/overview.md)
+* [Overview](concepts/README.md)
 * [Architecture](concepts/architecture.md)
 * [Filters](concepts/filters.md)
 * [Monitoring](concepts/monitoring.md)
 * [Templating](concepts/templating.md)
+
+
+## Sink
+* [Bigquery](sink/bigquery.md)
 
 ## Reference
 
@@ -33,12 +37,13 @@
   * [ElasticSearch Sink](reference/configuration/elasticsearch-sink.md)
   * [GRPC Sink](reference/configuration/grpc-sink.md)
   * [HTTP Sink](reference/configuration/http-sink.md)
-  * [MongoDB Sink](reference/configuration/generic.md)
+  * [MongoDB Sink](reference/configuration/mongo-sink.md)
   * [InfluxDB Sink](reference/configuration/influxdb-sink.md)
   * [JDBC Sink](reference/configuration/jdbc-sink.md)
   * [Prometheus Sink](reference/configuration/prometheus-sink.md)
   * [Redis Sink](reference/configuration/redis-sink.md)
   * [Blob Sink](reference/configuration/blob-sink.md)
+  * [Bigquery Sink](reference/configuration/bigquery-sink.md)
 * [Metrics](reference/metrics.md)
 * [FAQs](reference/core-faqs.md)
 * [Glossary](reference/glossary.md)

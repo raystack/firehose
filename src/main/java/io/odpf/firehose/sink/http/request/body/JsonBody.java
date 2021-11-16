@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.http.request.body;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.serializer.MessageSerializer;
 

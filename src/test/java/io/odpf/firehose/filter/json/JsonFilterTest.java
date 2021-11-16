@@ -1,8 +1,7 @@
 package io.odpf.firehose.filter.json;
 
-import com.gojek.de.stencil.client.StencilClient;
 import io.odpf.firehose.config.FilterConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestBookingLogKey;
 import io.odpf.firehose.consumer.TestBookingLogMessage;
 import io.odpf.firehose.consumer.TestKey;
@@ -11,6 +10,7 @@ import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.stencil.client.StencilClient;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Rule;

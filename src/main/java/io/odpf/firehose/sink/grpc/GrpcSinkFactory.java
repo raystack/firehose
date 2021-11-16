@@ -5,11 +5,10 @@ import io.odpf.firehose.config.GrpcSinkConfig;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.AbstractSink;
-import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.sink.grpc.client.GrpcClient;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import com.gojek.de.stencil.client.StencilClient;
+import io.odpf.stencil.client.StencilClient;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.util.Map;
@@ -21,10 +20,9 @@ import java.util.Map;
  * using the configurations supplied and invoke {@see #create(Map < String, String > configuration, StatsDClient client)}
  * to obtain the GrpcSink sink implementation.
  */
-public class GrpcSinkFactory implements SinkFactory {
+public class GrpcSinkFactory {
 
-    @Override
-    public AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
+    public static AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         GrpcSinkConfig grpcConfig = ConfigFactory.create(GrpcSinkConfig.class, configuration);
         Instrumentation instrumentation = new Instrumentation(statsDReporter, GrpcSinkFactory.class);
         String grpcSinkConfig = String.format("\n\tService host: %s\n\tService port: %s\n\tMethod url: %s\n\tResponse proto schema: %s",

@@ -2,14 +2,14 @@ package io.odpf.firehose.sink.redis.parsers;
 
 
 import io.odpf.firehose.config.RedisSinkConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
 import io.odpf.firehose.sink.redis.dataentry.RedisDataEntry;
 import io.odpf.firehose.sink.redis.dataentry.RedisHashSetFieldEntry;
 import com.google.protobuf.DynamicMessage;
-import com.gojek.de.stencil.parser.ProtoParser;
+import io.odpf.stencil.parser.ProtoParser;
 
 import java.util.ArrayList;
 import java.util.List;

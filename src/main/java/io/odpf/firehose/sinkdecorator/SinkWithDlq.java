@@ -1,15 +1,14 @@
 package io.odpf.firehose.sinkdecorator;
 
 import io.odpf.firehose.config.DlqConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.error.ErrorHandler;
 import io.odpf.firehose.error.ErrorScope;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.Metrics;
-import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
-import io.odpf.firehose.sinkdecorator.dlq.DlqWriter;
+import io.odpf.firehose.sink.dlq.DlqWriter;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -42,10 +41,6 @@ public class SinkWithDlq extends SinkDecorator {
         this.dlqConfig = dlqConfig;
     }
 
-    public static SinkWithDlq withInstrumentationFactory(Sink sink, DlqWriter dlqWriter, BackOffProvider backOffProvider, DlqConfig dlqConfig, ErrorHandler errorHandler, StatsDReporter statsDReporter) {
-        return new SinkWithDlq(sink, dlqWriter, backOffProvider, dlqConfig, errorHandler, new Instrumentation(statsDReporter, SinkWithDlq.class));
-    }
-
     /**
      * Pushes all the failed messages to kafka as DLQ.
      *
@@ -66,8 +61,7 @@ public class SinkWithDlq extends SinkDecorator {
             throw new IOException("exhausted maximum number of allowed retry attempts to write messages to DLQ");
         }
         if (super.canManageOffsets()) {
-            super.addOffsets(DLQ_BATCH_KEY, messages);
-            super.setCommittable(DLQ_BATCH_KEY);
+            super.addOffsetsAndSetCommittable(messages);
         }
         returnedMessages.addAll(splitLists.get(Boolean.FALSE));
         return returnedMessages;

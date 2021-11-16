@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.jdbc;
 
 import io.odpf.firehose.config.JdbcSinkConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
 import com.samskivert.mustache.Escapers;
 import com.samskivert.mustache.Mustache;

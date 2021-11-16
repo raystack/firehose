@@ -1,10 +1,10 @@
 package io.odpf.firehose.sink.jdbc;
 
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
-import com.gojek.de.stencil.client.StencilClient;
+import io.odpf.stencil.client.StencilClient;
 
 import java.io.IOException;
 import java.sql.Connection;

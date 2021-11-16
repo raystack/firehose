@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 import java.util.List;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.serializer.MessageSerializer;
 

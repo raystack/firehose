@@ -4,14 +4,14 @@ package io.odpf.firehose.sink.elasticsearch.request;
 
 import io.odpf.firehose.config.enums.EsSinkMessageType;
 import io.odpf.firehose.config.enums.EsSinkRequestType;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestAggregatedSupplyMessage;
 import io.odpf.firehose.exception.JsonParseException;
 import io.odpf.firehose.serializer.MessageToJson;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.de.stencil.parser.ProtoParser;
+import io.odpf.stencil.client.StencilClient;
+import io.odpf.stencil.parser.ProtoParser;
 import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.common.xcontent.XContentType;

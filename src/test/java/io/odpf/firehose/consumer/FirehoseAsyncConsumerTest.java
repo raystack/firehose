@@ -1,5 +1,9 @@
 package io.odpf.firehose.consumer;
 
+import io.odpf.firehose.consumer.kafka.ConsumerAndOffsetManager;
+import io.odpf.firehose.message.Message;
+import io.odpf.firehose.sink.SinkPool;
+import io.odpf.firehose.exception.SinkTaskFailedException;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.filter.NoOpFilter;
@@ -58,14 +62,14 @@ public class FirehoseAsyncConsumerTest {
             add(new Message(new byte[0], new byte[0], "topic1", 2, 6));
         }};
 
-        Mockito.when(consumerAndOffsetManager.readMessagesFromKafka()).thenReturn(messageList1);
+        Mockito.when(consumerAndOffsetManager.readMessages()).thenReturn(messageList1);
         Mockito.when(sinkPool.submitTask(messageList1)).thenReturn(future1);
         Mockito.when(sinkPool.submitTask(messageList2)).thenReturn(future2);
         Mockito.when(sinkPool.fetchFinishedSinkTasks()).thenReturn(new HashSet<>());
         Mockito.when(future1.isDone()).thenReturn(false);
         Mockito.when(future2.isDone()).thenReturn(false);
         asyncConsumer.process();
-        Mockito.when(consumerAndOffsetManager.readMessagesFromKafka()).thenReturn(messageList2);
+        Mockito.when(consumerAndOffsetManager.readMessages()).thenReturn(messageList2);
         asyncConsumer.process();
         Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).addOffsets(future1, messageList1);
         Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).addOffsets(future2, messageList2);
@@ -73,13 +77,13 @@ public class FirehoseAsyncConsumerTest {
     }
 
     @Test
-    public void shouldCallSetCommittableForDoneFutures() throws FilterException {
+    public void shouldCallSetCommittableForDoneFutures() {
         List<Message> messages = new ArrayList<Message>() {{
             add(new Message(new byte[0], new byte[0], "topic1", 1, 10));
             add(new Message(new byte[0], new byte[0], "topic1", 1, 11));
             add(new Message(new byte[0], new byte[0], "topic1", 1, 12));
         }};
-        Mockito.when(consumerAndOffsetManager.readMessagesFromKafka()).thenReturn(messages);
+        Mockito.when(consumerAndOffsetManager.readMessages()).thenReturn(messages);
 
         Mockito.when(sinkPool.submitTask(messages)).thenReturn(future1);
         Mockito.when(sinkPool.fetchFinishedSinkTasks()).thenReturn(new HashSet<Future<List<Message>>>() {{
@@ -89,21 +93,21 @@ public class FirehoseAsyncConsumerTest {
 
         Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).addOffsets(future1, messages);
         Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).setCommittable(future1);
-        Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).addOffsetsAndSetCommittable(new ArrayList<>());
+        Mockito.verify(consumerAndOffsetManager, Mockito.times(0)).forceAddOffsetsAndSetCommittable(new ArrayList<>());
         Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).commit();
     }
 
     @Test
-    public void shouldThrowExceptionIfSinkTaskFails() throws Exception {
-        expectedException.expect(AsyncConsumerFailedException.class);
+    public void shouldThrowExceptionIfSinkTaskFails() {
+        expectedException.expect(SinkTaskFailedException.class);
         List<Message> messages = new ArrayList<Message>() {{
             add(new Message(new byte[0], new byte[0], "topic1", 1, 10));
             add(new Message(new byte[0], new byte[0], "topic1", 1, 11));
             add(new Message(new byte[0], new byte[0], "topic1", 1, 12));
         }};
-        Mockito.when(consumerAndOffsetManager.readMessagesFromKafka()).thenReturn(messages);
+        Mockito.when(consumerAndOffsetManager.readMessages()).thenReturn(messages);
         Mockito.when(sinkPool.submitTask(messages)).thenReturn(future1);
-        Mockito.when(sinkPool.fetchFinishedSinkTasks()).thenThrow(new AsyncConsumerFailedException(new RuntimeException()));
+        Mockito.when(sinkPool.fetchFinishedSinkTasks()).thenThrow(new SinkTaskFailedException(new RuntimeException()));
         asyncConsumer.process();
     }
 
@@ -118,7 +122,7 @@ public class FirehoseAsyncConsumerTest {
             add(new Message(new byte[0], new byte[0], "topic1", 1, 12));
         }};
 
-        Mockito.when(consumerAndOffsetManager.readMessagesFromKafka()).thenReturn(messages);
+        Mockito.when(consumerAndOffsetManager.readMessages()).thenReturn(messages);
         Mockito.when(firehoseFilter.applyFilter(messages)).thenReturn(new FilteredMessages() {{
             addToValidMessages(messages.get(0));
             addToInvalidMessages(messages.get(1));
@@ -135,7 +139,7 @@ public class FirehoseAsyncConsumerTest {
         Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).addOffsets(future1, new ArrayList<Message>() {{
             add(messages.get(0));
         }});
-        Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).addOffsetsAndSetCommittable(new ArrayList<Message>() {{
+        Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).forceAddOffsetsAndSetCommittable(new ArrayList<Message>() {{
             add(messages.get(1));
             add(messages.get(2));
         }});

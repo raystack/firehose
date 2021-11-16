@@ -8,7 +8,7 @@ import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
-import com.gojek.de.stencil.client.StencilClient;
+import io.odpf.stencil.client.StencilClient;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,9 +55,8 @@ public class GrpcSinkFactoryTest {
         config.put("SINK_GRPC_SERVICE_HOST", "localhost");
         config.put("SINK_GRPC_SERVICE_PORT", "5000");
 
-        GrpcSinkFactory grpcSinkFactory = new GrpcSinkFactory();
 
-        Sink sink = grpcSinkFactory.create(config, statsDReporter, stencilClient);
+        Sink sink = GrpcSinkFactory.create(config, statsDReporter, stencilClient);
 
         Assert.assertNotNull(sink);
         server.shutdownNow();

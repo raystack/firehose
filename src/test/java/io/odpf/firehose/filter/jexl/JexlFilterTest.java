@@ -2,7 +2,7 @@ package io.odpf.firehose.filter.jexl;
 
 import io.odpf.firehose.config.FilterConfig;
 import io.odpf.firehose.config.enums.FilterDataSourceType;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestBookingLogKey;
 import io.odpf.firehose.consumer.TestBookingLogMessage;
 import io.odpf.firehose.consumer.TestKey;

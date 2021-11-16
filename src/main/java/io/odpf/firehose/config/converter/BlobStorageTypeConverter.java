@@ -1,6 +1,6 @@
 package io.odpf.firehose.config.converter;
 
-import io.odpf.firehose.blobstorage.BlobStorageType;
+import io.odpf.firehose.sink.common.blobstorage.BlobStorageType;
 import org.aeonbits.owner.Converter;
 
 import java.lang.reflect.Method;

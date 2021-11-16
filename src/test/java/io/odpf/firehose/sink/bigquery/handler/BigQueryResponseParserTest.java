@@ -4,7 +4,7 @@ import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.InsertAllResponse;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.odpf.firehose.TestMessageBQ;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.metrics.BigQueryMetrics;

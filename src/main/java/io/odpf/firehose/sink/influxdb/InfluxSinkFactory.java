@@ -1,14 +1,12 @@
 package io.odpf.firehose.sink.influxdb;
 
 
-
 import io.odpf.firehose.config.InfluxSinkConfig;
 import io.odpf.firehose.sink.AbstractSink;
-import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
-import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.de.stencil.parser.ProtoParser;
+import io.odpf.stencil.client.StencilClient;
+import io.odpf.stencil.parser.ProtoParser;
 import org.aeonbits.owner.ConfigFactory;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
@@ -18,7 +16,7 @@ import java.util.Map;
 /**
  * Influx sink factory create influx sink.
  */
-public class InfluxSinkFactory implements SinkFactory {
+public class InfluxSinkFactory {
     /**
      * Create Influx sink.
      *
@@ -27,8 +25,7 @@ public class InfluxSinkFactory implements SinkFactory {
      * @param stencilClient    the stencil client
      * @return Influx sink
      */
-    @Override
-    public AbstractSink create(Map<String, String> configProperties, StatsDReporter statsDReporter, StencilClient stencilClient) {
+    public static AbstractSink create(Map<String, String> configProperties, StatsDReporter statsDReporter, StencilClient stencilClient) {
         InfluxSinkConfig config = ConfigFactory.create(InfluxSinkConfig.class, configProperties);
 
         Instrumentation instrumentation = new Instrumentation(statsDReporter, InfluxSinkFactory.class);

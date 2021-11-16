@@ -4,14 +4,14 @@ package io.odpf.firehose.sink.redis.parsers;
 
 import io.odpf.firehose.config.RedisSinkConfig;
 import io.odpf.firehose.config.enums.RedisSinkDataType;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestBookingLogMessage;
 import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.redis.dataentry.RedisListEntry;
-import com.gojek.de.stencil.client.ClassLoadStencilClient;
-import com.gojek.de.stencil.parser.ProtoParser;
+import io.odpf.stencil.client.ClassLoadStencilClient;
+import io.odpf.stencil.parser.ProtoParser;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

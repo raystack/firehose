@@ -4,15 +4,15 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.StringValue;
-import com.gojek.de.stencil.parser.Parser;
 
 import com.google.protobuf.UnknownFieldSet;
 import io.odpf.firehose.config.BlobSinkConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessage;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessageUtils;
 import io.odpf.firehose.sink.blob.proto.NestedKafkaMetadataProtoMessage;
+import io.odpf.stencil.parser.ProtoParser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 public class MessageDeSerializerTest {
 
     @Mock
-    private Parser protoParser;
+    private ProtoParser protoParser;
 
     private MessageDeSerializer deSerializer;
 
@@ -60,11 +60,10 @@ public class MessageDeSerializerTest {
         Assert.assertEquals(dynamicMessage, record.getMessage());
 
         verify(protoParser, times(1)).parse(logMessage);
-        Assert.assertNotNull(record.getMetadata());
     }
 
     @Test
-    public void shouldCreateRecordWithoutMetadata() throws InvalidProtocolBufferException {
+    public void shouldAlwaysCreateRecordWithMetadata() throws InvalidProtocolBufferException {
         when(sinkConfig.getOutputIncludeKafkaMetadataEnable()).thenReturn(false);
 
         DynamicMessage dynamicMessage = DynamicMessage.newBuilder(StringValue.of("abc")).build();
@@ -73,8 +72,8 @@ public class MessageDeSerializerTest {
 
         Record record = deSerializer.deSerialize(message);
 
+        Assert.assertNotNull(record.getMetadata());
         Assert.assertEquals(dynamicMessage, record.getMessage());
-        Assert.assertNull(record.getMetadata());
 
         verify(protoParser, times(1)).parse(logMessage);
     }

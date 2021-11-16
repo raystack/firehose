@@ -9,7 +9,7 @@ import io.odpf.firehose.sink.http.request.types.ParameterizedHeaderRequest;
 import io.odpf.firehose.sink.http.request.types.ParameterizedUriRequest;
 import io.odpf.firehose.sink.http.request.types.Request;
 import io.odpf.firehose.sink.http.request.uri.UriParser;
-import com.gojek.de.stencil.client.StencilClient;
+import io.odpf.stencil.client.StencilClient;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;

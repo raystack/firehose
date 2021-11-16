@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.bigquery;
 import com.google.api.client.util.DateTime;
 import io.odpf.firehose.TestKeyBQ;
 import io.odpf.firehose.TestMessageBQ;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 
 import java.sql.Date;
 import java.time.Instant;

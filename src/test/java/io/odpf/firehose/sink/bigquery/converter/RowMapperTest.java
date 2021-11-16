@@ -1,10 +1,5 @@
 package io.odpf.firehose.sink.bigquery.converter;
 
-import com.gojek.de.stencil.DescriptorMapBuilder;
-import com.gojek.de.stencil.StencilClientFactory;
-import com.gojek.de.stencil.client.StencilClient;
-import com.gojek.de.stencil.models.DescriptorAndTypeName;
-import com.gojek.de.stencil.parser.ProtoParser;
 import com.google.api.client.util.DateTime;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
@@ -18,6 +13,11 @@ import io.odpf.firehose.TestMessageBQ;
 import io.odpf.firehose.TestNestedMessageBQ;
 import io.odpf.firehose.TestNestedRepeatedMessageBQ;
 import io.odpf.firehose.sink.bigquery.proto.ProtoUtil;
+import io.odpf.stencil.DescriptorMapBuilder;
+import io.odpf.stencil.StencilClientFactory;
+import io.odpf.stencil.client.StencilClient;
+import io.odpf.stencil.models.DescriptorAndTypeName;
+import io.odpf.stencil.parser.ProtoParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -2,14 +2,14 @@ package io.odpf.firehose.sink.blob.message;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessage;
 import io.odpf.firehose.sink.blob.proto.NestedKafkaMetadataProtoMessage;
 
 import java.time.Instant;
 
 /**
- *  KafkaMetadataUtils utility class for creating kafka metadata {@link com.google.protobuf.DynamicMessage DynamicMessage} from {@link io.odpf.firehose.consumer.Message}.
+ *  KafkaMetadataUtils utility class for creating kafka metadata {@link com.google.protobuf.DynamicMessage DynamicMessage} from {@link Message}.
  */
 public class KafkaMetadataUtils {
 

@@ -1,6 +1,6 @@
 package io.odpf.firehose.proto;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestBookingLogKey;
 import io.odpf.firehose.consumer.TestFeedbackLogKey;
 import io.odpf.firehose.consumer.TestFeedbackLogMessage;

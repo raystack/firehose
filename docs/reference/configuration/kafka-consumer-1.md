@@ -77,3 +77,10 @@ Defines the maximum age of config metadata in milliseconds
 * Type: `optional`
 * Default value: `500`
 
+## `SOURCE_KAFKA_CONSUMER_MODE`
+
+Mode can ASYNC or SYNC
+
+* Example value: `SYNC`
+* Type: `optional`
+* Default value: `SYNC`

@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Base64;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 
 import org.junit.Before;

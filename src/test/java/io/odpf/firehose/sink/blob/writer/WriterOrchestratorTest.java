@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.blob.writer;
 
 import io.odpf.firehose.config.BlobSinkConfig;
 import io.odpf.firehose.metrics.StatsDReporter;
-import io.odpf.firehose.blobstorage.BlobStorage;
+import io.odpf.firehose.sink.common.blobstorage.BlobStorage;
 import io.odpf.firehose.sink.blob.Constants;
 import io.odpf.firehose.sink.blob.TestProtoMessage;
 import io.odpf.firehose.sink.blob.message.Record;

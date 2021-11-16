@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.bigquery.models;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

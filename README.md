@@ -21,6 +21,7 @@ Discover why users choose Firehose as their main Kafka Consumer
     * InfluxDB
     * Elasticsearch
     * Redis
+    * Bigquery
     * Blob Storage/Object Storage :
         * Google Cloud Storage
 

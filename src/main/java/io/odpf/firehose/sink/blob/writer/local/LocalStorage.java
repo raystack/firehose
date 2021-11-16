@@ -40,8 +40,7 @@ public class LocalStorage {
                             System.currentTimeMillis(),
                             basePath.toString(),
                             fullPath.toString(),
-                            sinkConfig.getLocalFileWriterParquetPageSize(),
-                            sinkConfig.getLocalFileWriterParquetBlockSize(),
+                            sinkConfig,
                             messageDescriptor,
                             metadataFieldDescriptor);
                 } catch (IOException e) {
