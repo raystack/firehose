@@ -39,9 +39,8 @@ public class LocalFileChecker implements Runnable {
         timePartitionWriterMap.entrySet().removeAll(toBeRotated.entrySet());
         toBeRotated.forEach((path, writer) -> {
             try {
-                LocalFileMetadata metadata = writer.getMetadata();
                 Instant startTime = Instant.now();
-                writer.close();
+                LocalFileMetadata metadata = writer.closeAndFetchMetaData();
                 instrumentation.logInfo("Closing Local File {} ", metadata.getFullPath());
                 toBeFlushedToRemotePaths.add(metadata);
                 captureFileClosedSuccessMetric(startTime, metadata);

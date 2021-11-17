@@ -64,10 +64,12 @@ public class LocalFileCheckerTest {
 
         when(writer1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
         when(writer2.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-2", 1L, recordCount, fileSize));
+        when(writer1.closeAndFetchMetaData()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
+        when(writer2.closeAndFetchMetaData()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-2", 1L, recordCount, fileSize));
 
         worker.run();
-        verify(writer1, times(1)).close();
-        verify(writer2, times(1)).close();
+        verify(writer1, times(1)).closeAndFetchMetaData();
+        verify(writer2, times(1)).closeAndFetchMetaData();
         Assert.assertEquals(2, toBeFlushedToRemotePaths.size());
         Assert.assertEquals(0, writerMap.size());
     }
@@ -85,6 +87,8 @@ public class LocalFileCheckerTest {
 
         when(writer1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize1));
         when(writer2.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-2", 1L, recordCount, fileSize2));
+        when(writer1.closeAndFetchMetaData()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize1));
+        when(writer2.closeAndFetchMetaData()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-2", 1L, recordCount, fileSize2));
 
         worker.run();
         Assert.assertEquals(2, toBeFlushedToRemotePaths.size());
@@ -98,7 +102,7 @@ public class LocalFileCheckerTest {
         expectedException.expect(LocalFileWriterFailedException.class);
         writerMap.put(Paths.get("/tmp/a"), writer1);
         writerMap.put(Paths.get("/tmp/b"), writer2);
-        doThrow(new IOException("Failed")).when(writer1).close();
+        doThrow(new IOException("Failed")).when(writer1).closeAndFetchMetaData();
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
         when(localStorage.shouldRotate(writer2)).thenReturn(false);
         worker.run();
@@ -125,6 +129,8 @@ public class LocalFileCheckerTest {
         doNothing().when(writer1).close();
         when(writer1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
         when(writer2.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-2", 1L, recordCount, fileSize));
+        when(writer1.closeAndFetchMetaData()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
+        when(writer2.closeAndFetchMetaData()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-2", 1L, recordCount, fileSize));
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
         when(localStorage.shouldRotate(writer2)).thenReturn(false);
         worker.run();
@@ -137,9 +143,9 @@ public class LocalFileCheckerTest {
     @Test
     public void shouldRecordMetricOfSuccessfullyClosedFiles() throws IOException {
         writerMap.put(Paths.get("/tmp/a"), writer1);
-        doNothing().when(writer1).close();
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
         when(writer1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
+        when(writer1.closeAndFetchMetaData()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
         worker.run();
         verify(instrumentation).incrementCounter(LOCAL_FILE_CLOSE_TOTAL, SUCCESS_TAG);
     }
@@ -150,6 +156,7 @@ public class LocalFileCheckerTest {
         doNothing().when(writer1).close();
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
         when(writer1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
+        when(writer1.closeAndFetchMetaData()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
         worker.run();
 
         verify(instrumentation, times(1)).captureDurationSince(eq(LOCAL_FILE_CLOSING_TIME_MILLISECONDS), any(Instant.class));
@@ -161,6 +168,7 @@ public class LocalFileCheckerTest {
         doNothing().when(writer1).close();
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
         when(writer1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
+        when(writer1.closeAndFetchMetaData()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
         worker.run();
 
         verify(instrumentation, times(1)).captureCount(LOCAL_FILE_SIZE_BYTES, fileSize);
@@ -170,7 +178,7 @@ public class LocalFileCheckerTest {
     public void shouldRecordMetricOfFailedClosedFiles() throws IOException {
         writerMap.put(Paths.get("/tmp/a"), writer1);
         writerMap.put(Paths.get("/tmp/b"), writer2);
-        doThrow(new IOException("Failed")).when(writer1).close();
+        doThrow(new IOException("Failed")).when(writer1).closeAndFetchMetaData();
         when(localStorage.shouldRotate(writer1)).thenReturn(true);
         when(localStorage.shouldRotate(writer2)).thenReturn(false);
 
@@ -192,12 +200,15 @@ public class LocalFileCheckerTest {
 
         when(writer1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
         when(writer2.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-2", 1L, recordCount, fileSize));
+
+        when(writer1.closeAndFetchMetaData()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
+        when(writer2.closeAndFetchMetaData()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-2", 1L, recordCount, fileSize));
         worker.run();
         worker.run();
         worker.run();
 
-        verify(writer1, times(1)).close();
-        verify(writer2, times(1)).close();
+        verify(writer1, times(1)).closeAndFetchMetaData();
+        verify(writer2, times(1)).closeAndFetchMetaData();
         Assert.assertEquals(2, toBeFlushedToRemotePaths.size());
         Assert.assertEquals(0, writerMap.size());
         verify(instrumentation, times(3)).captureValue(LOCAL_FILE_OPEN_TOTAL, 2);

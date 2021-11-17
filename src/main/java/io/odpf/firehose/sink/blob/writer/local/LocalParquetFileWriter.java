@@ -20,7 +20,7 @@ public class LocalParquetFileWriter implements LocalFileWriter {
     private final String basePath;
     private long recordCount = 0;
     private boolean isClosed = false;
-    private BlobSinkConfig sinkConfig;
+    private final BlobSinkConfig sinkConfig;
 
     public LocalParquetFileWriter(long createdTimestampMillis, String basePath, String fullPath, BlobSinkConfig sinkConfig, Descriptors.Descriptor messageDescriptor, List<Descriptors.FieldDescriptor> metadataFieldDescriptor) throws IOException {
         this.parquetWriter = new ProtoParquetWriter(new Path(fullPath),
@@ -62,5 +62,12 @@ public class LocalParquetFileWriter implements LocalFileWriter {
     public synchronized void close() throws IOException {
         this.isClosed = true;
         parquetWriter.close();
+    }
+
+    @Override
+    public synchronized LocalFileMetadata closeAndFetchMetaData() throws IOException {
+        LocalFileMetadata metadata = getMetadata();
+        this.close();
+        return metadata;
     }
 }
