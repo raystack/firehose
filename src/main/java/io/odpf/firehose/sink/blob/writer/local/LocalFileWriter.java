@@ -14,4 +14,6 @@ public interface LocalFileWriter extends Closeable {
     boolean write(Record record) throws IOException;
 
     LocalFileMetadata getMetadata();
+
+    LocalFileMetadata closeAndFetchMetaData() throws IOException;
 }
