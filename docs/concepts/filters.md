@@ -49,8 +49,8 @@ You can read more about JSON Schema [here](https://json-schema.org/). For more d
 The filtering occurs in the following steps -
 
 * JSON filter configurations are validated and logged to instrumentation by JsonFilterUtil. In case any configuration is invalid, then IllegalArgumentException is thrown and Firehose is terminated.
-* If `FILTER_JSON_ESB_MESSAGE_FORMAT=PROTOBUF`, then the serialized key/message protobuf byte array is deserialized to POJO object by the Proto schema class. It is then converted to a JSON string so that it can be parsed by the JSON Schema Validator.
-* If`FILTER_JSON_ESB_MESSAGE_FORMAT=JSON`, then the serialized JSON byte array is deserialized to a JSON message string.
+* If `FILTER_ESB_MESSAGE_FORMAT=PROTOBUF`, then the serialized key/message protobuf byte array is deserialized to POJO object by the Proto schema class. It is then converted to a JSON string so that it can be parsed by the JSON Schema Validator.
+* If`FILTER_ESB_MESSAGE_FORMAT=JSON`, then the serialized JSON byte array is deserialized to a JSON message string.
 * The JSON Schema validator performs a validation on the JSON message against the filter rules specified in the JSON Schema string provided in the environment variable`FILTER_JSON_SCHEMA.`
 * If there are any validation errors, then that key/message is filtered out and the validation errors are logged to the instrumentation in debug mode.
 * If all validation checks pass, then the key/message is added to the ArrayList of filtered messages and returned by the JsonFilter.
