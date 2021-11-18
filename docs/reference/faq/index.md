@@ -70,8 +70,7 @@ The filename is generated as a random UUID string. For the local file, base dire
 are generated with names based on whether partitioning is enabled or not:
 
 1. If **SINK_BLOB_FILE_PARTITION_TIME_GRANULARITY_TYPE** is set to NONE meaning partitioning is disabled, the parquet
-   files  
-   created are placed in just one directory with name set to the topic name of the kafka messages.
+   files created are placed in directories with name set to the topic name of the kafka messages being processed.
 2. If **SINK_BLOB_FILE_PARTITION_TIME_GRANULARITY_TYPE** is set to DAY, the parquet files generated are placed in
    directories  
    with names in the format [topic-name]/[date-prefix][date], where,  
