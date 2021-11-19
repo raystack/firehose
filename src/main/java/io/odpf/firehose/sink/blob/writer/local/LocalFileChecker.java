@@ -33,9 +33,9 @@ public class LocalFileChecker implements Runnable {
     @Override
     public void run() {
         instrumentation.captureValue(LOCAL_FILE_OPEN_TOTAL, timePartitionWriterMap.size());
-        Map<Path, LocalFileWriter> toBeRotated;
-        toBeRotated = timePartitionWriterMap.entrySet().stream().filter(kv -> localStorage.shouldRotate(kv.getValue()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<Path, LocalFileWriter> toBeRotated =
+                timePartitionWriterMap.entrySet().stream().filter(kv -> localStorage.shouldRotate(kv.getValue()))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         timePartitionWriterMap.entrySet().removeAll(toBeRotated.entrySet());
         toBeRotated.forEach((path, writer) -> {
             try {
