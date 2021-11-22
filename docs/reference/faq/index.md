@@ -61,6 +61,25 @@ answers.
             - [How to support a new data base which supports JDBC, e:g MySQL ?](#how-to-support-a-new-data-base-which-supports-jdbc-eg-mysql-)
             - [Any transaction, locking provision?](#any-transaction-locking-provision)
             - [Are there any chances of race conditions?](#are-there-any-chances-of-race-conditions)
+        - [HTTP Sink](#http-sink)
+            - [How does the payload look like?](#how-does-the-payload-look-like)
+            - [Does it support DELETE calls?](#does-it-support-delete-calls)
+            - [How many messages are pushed in one call?](#how-many-messages-are-pushed-in-one-call)
+            - [How can I configure the number of connections?](#how-can-i-configure-the-number-of-connections)
+            - [What data types of request body are supported?](#what-data-types-of-request-body-are-supported)
+            - [Does it support client side load balancing?](#does-it-support-client-side-load-balancing)
+            - [Which authentication methods are supported?](#which-authentication-methods-are-supported)
+            - [How can I pass a particular input field as a header in request?](#how-can-i-pass-a-particular-input-field-as-a-header-in-request)
+            - [How can I pass a particular input field as a query param in request?](#how-can-i-pass-a-particular-input-field-as-a-query-param-in-request)
+            - [What happens if my services fails ?](#what-happens-if-my-services-fails-)
+            - [How are HTTP connections handled, long lived?](#how-are-http-connections-handled-long-lived)
+            - [What is logRequest config?](#what-is-logrequest-config)
+            - [What is shouldRetry config?](#what-is-shouldretry-config)
+            - [What happens in case of null response?](#what-happens-in-case-of-null-response)
+            - [What happens in case of null status code in a non-null response?](#what-happens-in-case-of-null-status-code-in-a-non-null-response)
+            - [When is a message dropped?](#when-is-a-message-dropped)
+            - [What is the difference between Parameterised vs Dynamic Url ?](#what-is-the-difference-between-parameterised-vs-dynamic-url-)
+            - [For parameterised header, how is the data added?](#for-parameterised-header-how-is-the-data-added)
 
 ## Firehose Sinks
 
@@ -427,3 +446,122 @@ As the inserts are independent of each other and depends on events, there is no 
 
 In cases where the unique key in the db is different from Kafka key, there can be cases where data from one partition
 can override the data from other partition.
+
+### HTTP Sink
+
+#### How does the payload look like?
+
+The payload format differs based on the configs **SINK_HTTP_DATA_FORMAT**, **SINK_HTTP_JSON_BODY_TEMPLATE**, **
+SINK_HTTP_PARAMETER_SOURCE**, **SINK_HTTP_SERVICE_URL** and **SINK_HTTP_PARAMETER_PLACEMENT**. For details on what these
+configs mean, please have a look at the config section.
+
+#### Does it support DELETE calls?
+
+At the moment, the HTTP Sink supports only PUT and POST methods.
+
+#### How many messages are pushed in one call?
+
+Firehose can support batching of messages in one HTTP call based on special configurations. In such cases, the total
+number of messages which are pulled from Kafka in a single fetch can be serialised into one request. This is controlled
+by the config **SOURCE_KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS**.
+
+#### How can I configure the number of connections?
+
+The max number of HTTP connections can be configured by specifying the config **SINK_HTTP_MAX_CONNECTIONS**.
+
+#### What data types of request body are supported?
+
+The request body can be sent as a JSON string in which the message proto is parsed into their respective fields in the
+request body. It can also be sent in a standard JSON format as below, with each of the fields being set to the
+respective encoded serialised string from the Kafka message:
+
+        {
+         "topic":"sample-topic",
+         "log_key":"CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM=",
+         "log_message":"CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM="
+      }
+
+#### Does it support client side load balancing?
+
+Yes. The IP/hostname of the Load Balancer fronting the HTTP Sink Servers can be provided to Firehose via **
+SINK_HTTP_SERVICE_URL**. Firehose will call this endpoint when pushing messages and then the LB can take care of
+distributing the load among multiple sink servers.
+
+#### Which authentication methods are supported?
+
+Firehose supports OAuth authentication for the HTTP Sink.
+
+#### How can I pass a particular input field as a header in request?
+
+1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message`
+   (based on whether the field one requires in the http request is part of the key or the message in the Kafka record)
+2. set **SINK_HTTP_PARAMETER_PLACEMENT** to `header`, and
+3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the proto class for the input Kafka message and set **
+   INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be
+   mapped to the header name.
+
+#### How can I pass a particular input field as a query param in request?
+
+1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message`
+   (based on whether the field one requires in the http request is part of the key or the message in the Kafka record),
+2. set **SINK_HTTP_PARAMETER_PLACEMENT** to `query`, and
+3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the proto class for the input Kafka message and set **
+   INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be
+   mapped to the query parameter name.
+
+#### What happens if my services fails ?
+
+If messages failed to get pushed to the HTTP endpoint with a retryable status code as specified via **
+SINK_HTTP_RETRY_STATUS_CODE_RANGES** config, Firehose will retry sending the messages for a fixed number of attempts. If
+the messages still failed to get published after retries, Firehose will push these messages to the DLQ topic if DLQ is
+enabled via configs. If not enabled, it will drop the messages.
+
+#### How are HTTP connections handled, long lived?
+
+A connection pool is created with max number of connections set to **SINK_HTTP_MAX_CONNECTIONS** configuration. Firehose
+doesn't support maintaining keep-alive connections and hence connections are renewed every-time the default TTL for
+PoolingHttpClientConnectionManager expires.For more details,
+see [here](https://hc.apache.org/httpcomponents-client-4.5.x/current/httpclient/apidocs/org/apache/http/impl/conn/PoolingHttpClientConnectionManager.html)
+
+#### What is logRequest config?
+
+If the response received from the http sink endpoint is null or if the status code of the response is within the range
+of **SINK_HTTP_REQUEST_LOG_STATUS_CODE_RANGES** config, then the request payload is logged. e;g, `200-500`
+
+#### What is shouldRetry config?
+
+If the response received from the http sink endpoint is null or if the status code of the response is within the range
+of **SINK_HTTP_RETRY_STATUS_CODE_RANGES** config, then the request is again retried for a configured number of attempts
+with backoff. e;g, `400-500`
+
+#### What happens in case of null response?
+
+If the request to the sink fails with a null status code, Firehose will attempt to retry calling the endpoint for a
+configured number of attempts with backoff. After that, if DLQ is enabled, the messages are pushed to DLQ queue with
+backoff. If not enabled, no more attempts are made.
+
+#### What happens in case of null status code in a non-null response?
+
+If the request to the sink fails with a null status code, Firehose will drop the messages and not retry sending them
+again.
+
+#### When is a message dropped?
+
+If the request to the sink fails with a retryable status code as specified via **SINK_HTTP_RETRY_STATUS_CODE_RANGES**
+config, Firehose will attempt to retry calling the endpoint for a configured number of attempts with backoff. After
+that, if DLQ is enabled, the messages are pushed to DLQ queue with backoff. If DLQ is disabled, messages are dropped.
+
+#### What is the difference between Parameterised vs Dynamic Url ?
+
+In parameterised query and parameterised header HTTP sink mode, the incoming Kafka message is converted to query
+parameters and header parameters in the HTTP request respectively. In case of dynamic url HTTP sink mode, the input
+Kafka message is parsed into the request body.
+
+#### For parameterised header, how is the data added?
+
+1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message`
+   (based on whether the field one requires in the http request is part of the key or the message in the Kafka record),
+2. set **SINK_HTTP_PARAMETER_PLACEMENT** to `header`, and
+3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the Protobuf class for the input Kafka message and **
+   INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be
+   mapped to the header name.
