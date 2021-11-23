@@ -102,8 +102,8 @@ public class FirehoseKafkaConsumer implements AutoCloseable {
             commitAsync(latestOffsets);
         } else {
             kafkaConsumer.commitSync(latestOffsets);
-            committedOffsets.putAll(offsets);
         }
+        committedOffsets.putAll(offsets);
     }
 
     private void commitAsync(Map<TopicPartition, OffsetAndMetadata> offsets) {
