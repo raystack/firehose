@@ -87,7 +87,7 @@ answers.
             - [Why Protobuf ? Can it support other formats like JSON, AVRO, Thrift ?](#why-protobuf--can-it-support-other-formats-like-json-avro-thrift-)
             - [Does firehose have support for SSL on Kafka?](#does-firehose-have-support-for-ssl-on-kafka)
             - [How does  Firehose create the Kafka consumer?](#how-does--firehose-create-the-kafka-consumer)
-            - [Can I change the consumer group name or reset it ? Overall, how do I handle my consumer group operations?](#can-i-change-the-consumer-group-name-or-reset-it--overall--how-do-i-handle-my-consumer-group-operations)
+            - [Can I change the consumer group name or reset it ? Overall, how do I handle my consumer group operations?](#can-i-change-the-consumer-group-name-or-reset-it--overall-how-do-i-handle-my-consumer-group-operations)
             - [What are the advantages of Firehose over Kafka connect ?](#what-are-the-advantages-of-firehose-over-kafka-connect-)
             - [What problems does Firehose solve?](#what-problems-does-firehose-solve)
             - [Can I do any transformations before sending data to sink, for example filtering ?](#can-i-do-any-transformations-before-sending-data-to-sink-for-example-filtering-)
