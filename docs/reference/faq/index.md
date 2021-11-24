@@ -39,8 +39,8 @@ answers.
         - [Redis Sink](#redis-sink)
             - [What is the Redis version supported ?](#what-is-the-redis-version-supported-)
             - [What Data types are supported in Redis sink?](#what-data-types-are-supported-in-redis-sink)
-            - [How to use Redis cluster for Redis sink?](#how-to-use-redis-cluster-for-redis-sink)
             - [What all deployments types of Redis is supported ?](#what-all-deployments-types-of-redis-is-supported-)
+            - [How to use Redis cluster for Redis sink?](#how-to-use-redis-cluster-for-redis-sink)
             - [How to specify a template for the keys ?](#how-to-specify-a-template-for-the-keys-)
             - [How to select nested fields?](#how-to-select-nested-fields)
             - [What is the behaviour on connection failures?](#what-is-the-behaviour-on-connection-failures)
@@ -241,6 +241,10 @@ Jedis is [fully compatible](https://github.com/redis/jedis#jedis) with redis 2.8
 
 Redis Sink supports persisting the input Kafka messages as LIST and HASHSET data types into Redis.
 
+#### What all deployments types of Redis is supported ?
+
+Redis Sink currently supports Standalone and Cluster deployments of Redis.
+
 #### How to use Redis cluster for Redis sink?
 
 To use Redis cluster as the sink, set the following configs as follows:
@@ -248,10 +252,6 @@ To use Redis cluster as the sink, set the following configs as follows:
 1. **SINK_REDIS_URLS** to be set to the cluster node URLs separated by comma as a delimiter. For
    example, `127.0.0.1:30004,127.0.0.1:30002,127.0.0.1:30003`
 2. **SINK_REDIS_DEPLOYMENT_TYPE** to be set as CLUSTER
-
-#### What all deployments types of Redis is supported ?
-
-Redis Sink currently supports Standalone and Cluster deployments of Redis.
 
 #### How to specify a template for the keys ?
 
