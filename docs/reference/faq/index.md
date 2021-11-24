@@ -604,9 +604,10 @@ Firehose has the capability to run parallelly on threads. Each thread does the f
 * Filter the messages (optional)
 * Push these messages to sink: All the existing sink types follow the same contract/lifecycle defined
   in `AbstractSink.java`. It consists of two stages:
-  a. **Prepare**: Transformation over-filtered messages’ list to prepare the sink-specific insert/update client
-  requests. b. **Execute**: Requests created in the prepare stage are executed at this step and a list of failed
-  messages is returned (if any) for retry.
+  * **Prepare**: Transformation over-filtered messages’ list to prepare the sink-specific insert/update client
+      requests.
+  * **Execute**: Requests created in the prepare stage are executed at this step and a list of failed
+    messages is returned (if any) for retry.
 * If the push to the sink fails with a retryable exception, Firehose will attempt to retry pushing the messages for a
   configured number of attempts with backoff. After that, if DLQ is enabled, the messages are pushed to DLQ queue with
   backoff. If DLQ is disabled, messages are dropped.
