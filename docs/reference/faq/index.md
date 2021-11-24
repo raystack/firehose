@@ -234,7 +234,8 @@ to `label1=value1,label2=value2`.
 
 #### What is the Redis version supported ?
 
-Firehose uses Jedis v3.0.1 as of the latest release and hence any Redis version compatible with it can be used.
+Firehose uses Jedis v3.0.1 (as of the latest release) as the redis client. At the time of writing this documentation, 
+Jedis is [fully compatible](https://github.com/redis/jedis#jedis) with redis 2.8.x, 3.x.x and above.
 
 #### What Data types are supported in Redis sink?
 
