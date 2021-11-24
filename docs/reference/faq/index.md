@@ -704,12 +704,10 @@ on how to configure the Kafka consumer.
 
 #### Can I change the consumer group name or reset it ? Overall, how do I handle my consumer group operations?
 
-Yes, the Kafka consumer group name can be changed by specifying the following configuration **
-SOURCE_KAFKA_CONSUMER_GROUP_ID**. The Kafka consumer in Firehose can also be reset. However, the default behaviour is
+Yes, the Kafka consumer group name can be changed by specifying the following configuration **SOURCE_KAFKA_CONSUMER_GROUP_ID**. The Kafka consumer in Firehose can also be reset. However, the default behaviour is
 currently set to read from the latest offset. To know further details on how to tune the Kafka consumer group, you can
 have a look at the Kafka consumer configurations already exposed by
-Firehose [here](https://github.com/odpf/firehose/blob/main/docs/reference/configuration/kafka-consumer-1.md#kafka-consumer)
-.
+Firehose [here](https://github.com/odpf/firehose/blob/main/docs/reference/configuration/kafka-consumer-1.md#kafka-consumer).
 
 #### What are the advantages of Firehose over Kafka connect ?
 
@@ -789,8 +787,8 @@ destination/ database to consume only the required fields.
 #### How do I configure the Protobuf schema for the topic Firehose needs to consume?
 
 Generated Protobuf Descriptors are hosted behind a Stencil server artifactory/HTTP endpoint. This endpoint URL and the
-ProtoDescriptor class that the Firehose deployment should use to deserialise raw data with is configured in Firehose in
-the environment variables`SCHEMA_REGISTRY_STENCIL_URLS`and`INPUT_SCHEMA_PROTO_CLASS`  respectively .
+ProtoDescriptor class that the Firehose deployment should use to deserialise raw data with is configured in Firehose in 
+the environment variables **SCHEMA_REGISTRY_STENCIL_URLS** and **INPUT_SCHEMA_PROTO_CLASS**  respectively.
 
 The Proto Descriptor set of the Kafka messages must be uploaded to the Stencil server.
 Refer  [this guide](https://github.com/odpf/stencil/blob/master/docs/guides/quick_start.md)  on how to setup and
@@ -802,7 +800,7 @@ ODPF Stencil API is a dynamic schema registry for hosting and managing versions 
 handling i.e., find the mapped schema for the topic, downloading the descriptors, and dynamically being notified
 of/updating with the latest schema is abstracted through the Stencil library.
 
-The Stencil Client is a proprietary library that provides an abstraction layer, for schema handling. Schema Caching,
+The Stencil Client is a proprietary library that provides an abstraction layer, for schema handling. Schema caching,
 dynamic schema updates are features of the stencil client library.
 
 Refer  [this article](https://odpf.gitbook.io/stencil/)  for further information of the features, configuration and
