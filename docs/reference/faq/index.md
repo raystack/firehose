@@ -36,6 +36,18 @@ answers.
             - [Is the table automatically created ?](#is-the-table-automatically-created-)
             - [Does this sink support BigQuery table clustering configuration ?](#does-this-sink-support-bigquery-table-clustering-configuration-)
             - [Does this sink support BigQuery table labeling ?](#does-this-sink-support-bigquery-table-labeling-)
+        - [Redis Sink](#redis-sink)
+            - [What is the Redis version supported ?](#what-is-the-redis-version-supported-)
+            - [What Data types are supported in Redis sink?](#what-data-types-are-supported-in-redis-sink)
+            - [What all deployments types of Redis is supported ?](#what-all-deployments-types-of-redis-is-supported-)
+            - [How to use Redis cluster for Redis sink?](#how-to-use-redis-cluster-for-redis-sink)
+            - [How to specify a template for the keys ?](#how-to-specify-a-template-for-the-keys-)
+            - [How to select nested fields?](#how-to-select-nested-fields)
+            - [What is the behaviour on connection failures?](#what-is-the-behaviour-on-connection-failures)
+            - [How can TTL be configured for the Redis keys?](#how-can-ttl-be-configured-for-the-redis-keys)
+            - [Does it support deleting the keys?](#does-it-support-deleting-the-keys)
+            - [What are some of the use cases of this sink?](#what-are-some-of-the-use-cases-of-this-sink)
+            - [What happens if the Redis goes down?](#what-happens-if-the-redis-goes-down)
 
 ## Firehose Sinks
 
@@ -217,3 +229,95 @@ No, table clustering is not yet supported as of the latest release.
 Yes, both table labels and dataset labels can be specified by setting them in configs **SINK_BIGQUERY_TABLE_LABELS**
 and **SINK_BIGQUERY_DATASET_LABELS** respectively. For example, **SINK_BIGQUERY_TABLE_LABELS** can be set
 to `label1=value1,label2=value2`.
+
+### Redis Sink
+
+#### What is the Redis version supported ?
+
+Firehose uses Jedis v3.0.1 (as of the latest release) as the redis client. At the time of writing this documentation, 
+Jedis is [fully compatible](https://github.com/redis/jedis#jedis) with redis 2.8.x, 3.x.x and above.
+
+#### What Data types are supported in Redis sink?
+
+Redis Sink supports persisting the input Kafka messages as LIST and HASHSET data types into Redis.
+
+#### What all deployments types of Redis is supported ?
+
+Redis Sink currently supports Standalone and Cluster deployments of Redis.
+
+#### How to use Redis cluster for Redis sink?
+
+To use Redis cluster as the sink, set the following configs as follows:
+
+1. **SINK_REDIS_URLS** to be set to the cluster node URLs separated by comma as a delimiter. For
+   example, `127.0.0.1:30004,127.0.0.1:30002,127.0.0.1:30003`
+2. **SINK_REDIS_DEPLOYMENT_TYPE** to be set as CLUSTER
+
+#### How to specify a template for the keys ?
+
+The template key can be specified using the config **SINK_REDIS_KEY_TEMPLATE**. This can be set to either :
+
+1. A constant
+2. As a template string: for example, `Service\_%%s,1`. Here, Firehose will extract the value of the incoming message
+   field having protobuf index 1 and create the Redis key as per the template.
+
+#### How to select nested fields?
+
+Nested fields can only be selected from the incoming Kafka message when the data type to be pushed to Redis is set as
+HashSet. To do so, ensure **SINK_REDIS_DATA_TYPE** config is set to HASHSET and **INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING**
+config is set as a JSON indicating the mapping of input message proto field numbers to the desired field names in the
+redis hash set entry. For example, consider a proto as follows:-
+
+    message Driver {
+        int32 driver_id = 1;
+        PersonName driver_name = 2;
+    }
+    
+    message PersonName {
+        string fname = 1;
+        string lname = 2;
+    }
+
+Now consider that each entry in the Redis is required to be a HASHSET consisting of driver id as the key and the
+driver's first name and last name as the value fields with names as `first_name` and `last_name` respectively.
+Accordingly, the **INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** config can be set as follows:-
+
+    {""2"":""{\""1\"":\""first_name\"", \""2\"":\""last_name\""}""}"
+
+#### What is the behaviour on connection failures?
+
+If messages failed to get pushed to Redis because of some error( either due to connection timeout or Redis server
+failure), Firehose will retry sending the messages for a fixed number of attempts depending on whether a retryable
+exception was thrown. If the messages still failed to get published after retries, Firehose will push these messages to
+the DLQ topic if DLQ is enabled via configs. If not enabled, it will drop the messages.
+
+#### How can TTL be configured for the Redis keys?
+
+The TTL can be set in 2 ways :-
+
+1. Expiring keys after some duration: Set **SINK_REDIS_TTL_TYPE** to `DURATION` and **SINK_REDIS_TTL_VALUE** to the
+   duration in seconds.
+2. Expiring keys at some fixed time: Set **SINK_REDIS_TTL_TYPE** to `EXACT_TIME` and **SINK_REDIS_TTL_VALUE** to
+   the `UNIX` timestamp when the key needs to expire.
+
+#### Does it support deleting the keys?
+
+Keys can be deleted by configuring a TTL. To know how to set the TTL, please
+look [here](#how-can-ttl-be-configured-for-the-redis-keys).
+
+#### What are some of the use cases of this sink?
+
+Some possible use cases could be:-
+
+1. High throughput data generated by one application needs to be streamed back to another application for fast lookup
+   purposes. For example, recommendations based on customer interactions.
+2. Constant schema but fast changing value of an external entity as published by one application needs to be quickly
+   communicated to multiple services to maintain an accurate representation of the entity in internal systems. For
+   example, caching of GCM keys in push notification systems.
+
+#### What happens if the Redis goes down?
+
+If messages failed to get pushed to Redis because of some error( either due to connection timeout or Redis server
+failure), Firehose will retry sending the messages for a fixed number of attempts depending on whether a retryable
+exception was thrown. If the messages still failed to get published after retries, Firehose will push these messages to
+the DLQ topic if DLQ is enabled via configs. If not enabled, it will drop the messages.
