@@ -8,6 +8,7 @@ import io.odpf.firehose.metrics.Instrumentation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.clients.consumer.OffsetCommitCallback;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.header.internals.RecordHeaders;
@@ -214,5 +215,40 @@ public class FirehoseKafkaConsumerTest {
             put(new TopicPartition("topic1", 1), new OffsetAndMetadata(5));
             put(new TopicPartition("topic1", 4), new OffsetAndMetadata(5));
         }});
+    }
+
+    @Test
+    public void shouldCommitLatestOffsetsWithAsyncCommit() {
+        when(consumerConfig.isSourceKafkaAsyncCommitEnable()).thenReturn(true);
+        Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(1));
+        }};
+        firehoseKafkaConsumer.commit(offsets);
+        firehoseKafkaConsumer.commit(offsets);
+        verify(kafkaConsumer, times(1)).commitAsync(eq(offsets), Mockito.any(OffsetCommitCallback.class));
+
+        offsets = new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(2));
+        }};
+        firehoseKafkaConsumer.commit(offsets);
+        verify(kafkaConsumer, times(1)).commitAsync(eq(new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(2));
+        }}), Mockito.any(OffsetCommitCallback.class));
+
+        offsets = new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(5));
+            put(new TopicPartition("topic1", 2), new OffsetAndMetadata(1));
+            put(new TopicPartition("topic1", 3), new OffsetAndMetadata(2));
+            put(new TopicPartition("topic1", 4), new OffsetAndMetadata(5));
+        }};
+        firehoseKafkaConsumer.commit(offsets);
+        verify(kafkaConsumer, times(1)).commitAsync(eq(new HashMap<TopicPartition, OffsetAndMetadata>() {{
+            put(new TopicPartition("topic1", 1), new OffsetAndMetadata(5));
+            put(new TopicPartition("topic1", 4), new OffsetAndMetadata(5));
+        }}), Mockito.any(OffsetCommitCallback.class));
     }
 }
