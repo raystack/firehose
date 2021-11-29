@@ -48,6 +48,19 @@ answers.
             - [Does it support deleting the keys?](#does-it-support-deleting-the-keys)
             - [What are some of the use cases of this sink?](#what-are-some-of-the-use-cases-of-this-sink)
             - [What happens if the Redis goes down?](#what-happens-if-the-redis-goes-down)
+        - [JDBC Sink](#jdbc-sink)
+            - [What are some of the use cases of this sink?](#what-are-some-of-the-use-cases-of-this-sink)
+            - [What monitoring metrics are available for this sink?](#what-monitoring-metrics-are-available-for-this-sink)
+            - [Do we need to create table/schema before pushing data via JDBC sink ?](#do-we-need-to-create-tableschema-before-pushing-data-via-jdbc-sink-)
+            - [Any restriction of version of supported database?](#any-restriction-of-version-of-supported-database)
+            - [How messages get mapped to the queries?](#how-messages-get-mapped-to-the-queries)
+            - [How data types are handled?](#how-data-types-are-handled)
+            - [How are the database connections are formed?](#how-are-the-database-connections-are-formed)
+            - [How does JDBC sink handles connection pooling?](#how-does-jdbc-sink-handles-connection-pooling)
+            - [When and how do the DB connections gets closed?](#when-and-how-do-the-db-connections-gets-closed)
+            - [How to support a new database which supports JDBC, e:g MySQL ?](#how-to-support-a-new-database-which-supports-jdbc-eg-mysql-)
+            - [Any transaction, locking provision?](#any-transaction-locking-provision)
+            - [Are there any chances of race conditions?](#are-there-any-chances-of-race-conditions)
 
 ## Firehose Sinks
 
@@ -321,3 +334,99 @@ If messages failed to get pushed to Redis because of some error( either due to c
 failure), Firehose will retry sending the messages for a fixed number of attempts depending on whether a retryable
 exception was thrown. If the messages still failed to get published after retries, Firehose will push these messages to
 the DLQ topic if DLQ is enabled via configs. If not enabled, it will drop the messages.
+
+### JDBC Sink
+
+#### What are some of the use cases of this sink?
+
+This sink can be used for cases when one would want to run customised and frequently changing queries on the streaming
+data, for joining with other data to do complex analytics or for doing transactional processing.
+
+#### What monitoring metrics are available for this sink?
+
+Along with the generic Firehose metrics, this sink also exposes metrics to monitor the following:-
+
+1. Connection pool size for the JDBC connection
+2. Total active and idle connections in the pool
+
+#### Do we need to create table/schema before pushing data via JDBC sink ?
+
+Yes. The table needs to created before Firehose can stream data to it. The table name can be specified via the config **
+SINK_JDBC_TABLE_NAME**.
+
+#### Any restriction of version of supported database?
+
+Firehose JDBC sink works with PostgresSQL ver. 9 and above.
+
+#### How messages get mapped to the queries?
+
+Firehose maps an incoming Kafka message to a query based on 2 configs: **INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** and **
+SINK_JDBC_UNIQUE_KEYS**. For example, consider a proto as follows:-
+
+    message Driver {
+        int32 driver_id = 1;
+        PersonName driver_name = 2;
+    }
+    
+    message PersonName {
+        string fname = 1;
+        string lname = 2;
+    }
+
+Now consider that the Driver table in the database has 3 columns: `id`, `first_name` and `last_name`. Accordingly, one
+can set the **INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** config as follows:-
+
+    {""1"":""id"", ""2"":""{\""1\"":\""first_name\"", \""2\"":\""last_name\""}""}
+
+This will output a row in the Driver table as follows:-
+
+| id   | first_name | last_name |
+|------|------------|-----------|
+| 1234 | Chuck      | Norris    |
+
+Unique keys as per the table schema can be configured by setting the config **SINK_JDBC_UNIQUE_KEYS**. For
+example: `order_number,driver_id`. When trying to push a message from Kafka to the database table, Firehose will
+construct a query which first tries to do an INSERT. If there is a conflict, such as a unique key constraint violation,
+the query tries to do an update of all the non-unique columns of the row with appropriate values from the message. If
+still there is a conflict, the query won't do anything.
+
+#### How data types are handled?
+
+Firehose can insert/update rows into the DB table with columns of data type string only.
+
+1. For a field of type as a nested Protobuf message, Firehose will serialise this message into a JSON string. While 
+serialising, it will trim insignificant whitespaces, retain the default field names as specified in the message 
+descriptor and use the default values for the field if no value is set. 
+2. For a field of type collection of messages, the individual messages are converted into JSON strings and then 
+serialised into a JSON array. The array itself is then serialised into a string. 
+3. For a field of type Timestamp, Firehose will parse it into an Instant type and then serialise it as a string. 
+4. For fields of all other data types in the Kafka message, the field values are simply serialised to string.
+
+#### How are the database connections are formed?
+
+DB connections are created using a [Hikari Connection Pool](https://github.com/brettwooldridge/HikariCP).
+
+#### How does JDBC sink handles connection pooling?
+
+JDBC Sink creates a [Hikari Connection Pool](https://github.com/brettwooldridge/HikariCP) (based on max pool size). The connections are used and released back to the
+pool while in use. When firehose shuts down, it closes the pool.
+
+#### When and how do the DB connections gets closed?
+
+When the main thread is interrupted, Firehose consumer is closed which in turn closes the JDBC sink which in turn closes
+the pool.
+
+#### How to support a new database which supports JDBC, e:g MySQL ?
+
+Adding of new DB sinks can be supported by making the necessary code changes, such as including the necessary JDBC
+driver dependencies, changing the `JDBCSinkFactory.java` class to create instance of the new sink, extending and
+overriding the `AbstractSink.java` class lifecycle methods to handle the processing of messages, etc.
+
+#### Any transaction, locking provision?
+
+As the inserts are independent of each other and depends on events, there is no locking/transaction provision.
+
+#### Are there any chances of race conditions?
+
+In cases where the unique key in the db is different from Kafka key, there can be cases where data from one partition
+can override the data from other partition.
