@@ -58,9 +58,28 @@ answers.
             - [How are the database connections are formed?](#how-are-the-database-connections-are-formed)
             - [How does JDBC sink handles connection pooling?](#how-does-jdbc-sink-handles-connection-pooling)
             - [When and how do the DB connections gets closed?](#when-and-how-do-the-db-connections-gets-closed)
-            - [How to support a new database which supports JDBC, e:g MySQL ?](#how-to-support-a-new-database-which-supports-jdbc-eg-mysql-)
+            - [How to support a new data base which supports JDBC, e:g MySQL ?](#how-to-support-a-new-data-base-which-supports-jdbc-eg-mysql-)
             - [Any transaction, locking provision?](#any-transaction-locking-provision)
             - [Are there any chances of race conditions?](#are-there-any-chances-of-race-conditions)
+        - [HTTP Sink](#http-sink)
+            - [How does the payload look like?](#how-does-the-payload-look-like)
+            - [Does it support DELETE calls?](#does-it-support-delete-calls)
+            - [How many messages are pushed in one call?](#how-many-messages-are-pushed-in-one-call)
+            - [How can I configure the number of connections?](#how-can-i-configure-the-number-of-connections)
+            - [What data types of request body are supported?](#what-data-types-of-request-body-are-supported)
+            - [Does it support client side load balancing?](#does-it-support-client-side-load-balancing)
+            - [Which authentication methods are supported?](#which-authentication-methods-are-supported)
+            - [How can I pass a particular input field as a header in request?](#how-can-i-pass-a-particular-input-field-as-a-header-in-request)
+            - [How can I pass a particular input field as a query param in request?](#how-can-i-pass-a-particular-input-field-as-a-query-param-in-request)
+            - [What happens if my services fails ?](#what-happens-if-my-services-fails-)
+            - [How are HTTP connections handled, long lived?](#how-are-http-connections-handled-long-lived)
+            - [What is logRequest config?](#what-is-logrequest-config)
+            - [What is shouldRetry config?](#what-is-shouldretry-config)
+            - [What happens in case of null response?](#what-happens-in-case-of-null-response)
+            - [What happens in case of null status code in a non-null response?](#what-happens-in-case-of-null-status-code-in-a-non-null-response)
+            - [When is a message dropped?](#when-is-a-message-dropped)
+            - [What is the difference between Parameterised vs Dynamic Url ?](#what-is-the-difference-between-parameterised-vs-dynamic-url-)
+            - [For parameterised header, how is the data added?](#for-parameterised-header-how-is-the-data-added)
 
 ## Firehose Sinks
 
@@ -392,23 +411,21 @@ still there is a conflict, the query won't do anything.
 
 #### How data types are handled?
 
-Firehose can insert/update rows into the DB table with columns of data type string only.
-
-1. For a field of type as a nested Protobuf message, Firehose will serialise this message into a JSON string. While 
-serialising, it will trim insignificant whitespaces, retain the default field names as specified in the message 
-descriptor and use the default values for the field if no value is set. 
-2. For a field of type collection of messages, the individual messages are converted into JSON strings and then 
-serialised into a JSON array. The array itself is then serialised into a string. 
-3. For a field of type Timestamp, Firehose will parse it into an Instant type and then serialise it as a string. 
-4. For fields of all other data types in the Kafka message, the field values are simply serialised to string.
+Firehose can insert/update rows into the DB table with columns of data type string only. For a field of type as a nested
+Protobuf message, Firehose will serialise this message into a JSON string. While serialising, it will trim insignificant
+whitespaces, retain the default field names as specified in the message descriptor and use the default values for the
+field if no value is set. For a field of type collection of messages, the individual messages are converted into JSON
+strings and then serialised into a JSON array. The array itself is then serialised into a string. For a field of type
+Timestamp, Firehose will parse it into an Instant type and then serialise it as a string. For fields of all other data
+types in the Kafka message, the field values are simply serialised to string.
 
 #### How are the database connections are formed?
 
-DB connections are created using a [Hikari Connection Pool](https://github.com/brettwooldridge/HikariCP).
+DB connections are created using a Hikari Connection Pool.
 
 #### How does JDBC sink handles connection pooling?
 
-JDBC Sink creates a [Hikari Connection Pool](https://github.com/brettwooldridge/HikariCP) (based on max pool size). The connections are used and released back to the
+JDBC Sink creates a Hikari ConnectionPool (based on max pool size). The connections are used and released back to the
 pool while in use. When firehose shuts down, it closes the pool.
 
 #### When and how do the DB connections gets closed?
@@ -416,7 +433,7 @@ pool while in use. When firehose shuts down, it closes the pool.
 When the main thread is interrupted, Firehose consumer is closed which in turn closes the JDBC sink which in turn closes
 the pool.
 
-#### How to support a new database which supports JDBC, e:g MySQL ?
+#### How to support a new data base which supports JDBC, e:g MySQL ?
 
 Adding of new DB sinks can be supported by making the necessary code changes, such as including the necessary JDBC
 driver dependencies, changing the `JDBCSinkFactory.java` class to create instance of the new sink, extending and
@@ -430,3 +447,122 @@ As the inserts are independent of each other and depends on events, there is no 
 
 In cases where the unique key in the db is different from Kafka key, there can be cases where data from one partition
 can override the data from other partition.
+
+### HTTP Sink
+
+#### How does the payload look like?
+
+The payload format differs based on the configs **SINK_HTTP_DATA_FORMAT**, **SINK_HTTP_JSON_BODY_TEMPLATE**, 
+**SINK_HTTP_PARAMETER_SOURCE**, **SINK_HTTP_SERVICE_URL** and **SINK_HTTP_PARAMETER_PLACEMENT**. For details on what these
+configs mean, please have a look at the config section.
+
+#### Does it support DELETE calls?
+
+At the moment, the HTTP Sink supports only PUT and POST methods.
+
+#### How many messages are pushed in one call?
+
+Firehose can support batching of messages in one HTTP call based on special configurations. In such cases, the total
+number of messages which are pulled from Kafka in a single fetch can be serialised into one request. This is controlled
+by the config **SOURCE_KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS**.
+
+#### How can I configure the number of connections?
+
+The max number of HTTP connections can be configured by specifying the config **SINK_HTTP_MAX_CONNECTIONS**.
+
+#### What data types of request body are supported?
+
+The request body can be sent as a JSON string in which the message proto is parsed into their respective fields in the
+request body. It can also be sent in a standard JSON format as below, with each of the fields being set to the
+respective encoded serialised string from the Kafka message:
+
+        {
+         "topic":"sample-topic",
+         "log_key":"CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM=",
+         "log_message":"CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM="
+      }
+
+#### Does it support client side load balancing?
+
+Yes. The IP/hostname of the Load Balancer fronting the HTTP Sink Servers can be provided to Firehose via 
+**SINK_HTTP_SERVICE_URL**. Firehose will call this endpoint when pushing messages and then the LB can take care of
+distributing the load among multiple sink servers.
+
+#### Which authentication methods are supported?
+
+Firehose supports OAuth authentication for the HTTP Sink.
+
+#### How can I pass a particular input field as a header in request?
+
+1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message` 
+(based on whether the field one requires in the http request is part of the key or the message in the Kafka record)
+2. set **SINK_HTTP_PARAMETER_PLACEMENT** to `header`, and
+3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the proto class for the input Kafka message and set 
+**INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be 
+mapped to the header name.
+
+#### How can I pass a particular input field as a query param in request?
+
+1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message` 
+(based on whether the field one requires in the http request is part of the key or the message in the Kafka record),
+2. set **SINK_HTTP_PARAMETER_PLACEMENT** to `query`, and
+3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the proto class for the input Kafka message and set 
+**INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be 
+mapped to the query parameter name.
+
+#### What happens if my services fails ?
+
+If messages failed to get pushed to the HTTP endpoint with a retryable status code as specified via 
+**SINK_HTTP_RETRY_STATUS_CODE_RANGES** config, Firehose will retry sending the messages for a fixed number of attempts. 
+If the messages still failed to get published after retries, Firehose will push these messages to the DLQ topic if DLQ is
+enabled via configs. If not enabled, it will drop the messages.
+
+#### How are HTTP connections handled, long lived?
+
+A connection pool is created with max number of connections set to **SINK_HTTP_MAX_CONNECTIONS** configuration. Firehose
+doesn't support maintaining keep-alive connections and hence connections are renewed every-time the default TTL for
+PoolingHttpClientConnectionManager expires.For more details,
+see [here](https://hc.apache.org/httpcomponents-client-4.5.x/current/httpclient/apidocs/org/apache/http/impl/conn/PoolingHttpClientConnectionManager.html)
+
+#### What is logRequest config?
+
+If the response received from the http sink endpoint is null or if the status code of the response is within the range
+of **SINK_HTTP_REQUEST_LOG_STATUS_CODE_RANGES** config, then the request payload is logged. e;g, `200-500`
+
+#### What is shouldRetry config?
+
+If the response received from the http sink endpoint is null or if the status code of the response is within the range
+of **SINK_HTTP_RETRY_STATUS_CODE_RANGES** config, then the request is again retried for a configured number of attempts
+with backoff. e;g, `400-500`
+
+#### What happens in case of null response?
+
+If the request to the sink fails with a null status code, Firehose will attempt to retry calling the endpoint for a
+configured number of attempts with backoff. After that, if DLQ is enabled, the messages are pushed to DLQ queue with
+backoff. If not enabled, no more attempts are made.
+
+#### What happens in case of null status code in a non-null response?
+
+If the request to the sink fails with a null status code, Firehose will drop the messages and not retry sending them
+again.
+
+#### When is a message dropped?
+
+If the request to the sink fails with a retryable status code as specified via **SINK_HTTP_RETRY_STATUS_CODE_RANGES**
+config, Firehose will attempt to retry calling the endpoint for a configured number of attempts with backoff. After
+that, if DLQ is enabled, the messages are pushed to DLQ queue with backoff. If DLQ is disabled, messages are dropped.
+
+#### What is the difference between Parameterised vs Dynamic Url ?
+
+In parameterised query and parameterised header HTTP sink mode, the incoming Kafka message is converted to query
+parameters and header parameters in the HTTP request respectively. In case of dynamic url HTTP sink mode, the input
+Kafka message is parsed into the request body.
+
+#### For parameterised header, how is the data added?
+
+1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message` (based on whether the field one requires in the http 
+request is part of the key or the message in the Kafka record),
+2. set **SINK_HTTP_PARAMETER_PLACEMENT** to `header`, and
+3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the Protobuf class for the input Kafka message and 
+**INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be 
+mapped to the header name.
