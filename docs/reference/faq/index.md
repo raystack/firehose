@@ -452,8 +452,8 @@ can override the data from other partition.
 
 #### How does the payload look like?
 
-The payload format differs based on the configs **SINK_HTTP_DATA_FORMAT**, **SINK_HTTP_JSON_BODY_TEMPLATE**, **
-SINK_HTTP_PARAMETER_SOURCE**, **SINK_HTTP_SERVICE_URL** and **SINK_HTTP_PARAMETER_PLACEMENT**. For details on what these
+The payload format differs based on the configs **SINK_HTTP_DATA_FORMAT**, **SINK_HTTP_JSON_BODY_TEMPLATE**, 
+**SINK_HTTP_PARAMETER_SOURCE**, **SINK_HTTP_SERVICE_URL** and **SINK_HTTP_PARAMETER_PLACEMENT**. For details on what these
 configs mean, please have a look at the config section.
 
 #### Does it support DELETE calls?
@@ -484,8 +484,8 @@ respective encoded serialised string from the Kafka message:
 
 #### Does it support client side load balancing?
 
-Yes. The IP/hostname of the Load Balancer fronting the HTTP Sink Servers can be provided to Firehose via **
-SINK_HTTP_SERVICE_URL**. Firehose will call this endpoint when pushing messages and then the LB can take care of
+Yes. The IP/hostname of the Load Balancer fronting the HTTP Sink Servers can be provided to Firehose via 
+**SINK_HTTP_SERVICE_URL**. Firehose will call this endpoint when pushing messages and then the LB can take care of
 distributing the load among multiple sink servers.
 
 #### Which authentication methods are supported?
@@ -494,27 +494,27 @@ Firehose supports OAuth authentication for the HTTP Sink.
 
 #### How can I pass a particular input field as a header in request?
 
-1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message`
-   (based on whether the field one requires in the http request is part of the key or the message in the Kafka record)
+1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message` 
+(based on whether the field one requires in the http request is part of the key or the message in the Kafka record)
 2. set **SINK_HTTP_PARAMETER_PLACEMENT** to `header`, and
-3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the proto class for the input Kafka message and set **
-   INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be
-   mapped to the header name.
+3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the proto class for the input Kafka message and set 
+**INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be 
+mapped to the header name.
 
 #### How can I pass a particular input field as a query param in request?
 
-1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message`
-   (based on whether the field one requires in the http request is part of the key or the message in the Kafka record),
+1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message` 
+(based on whether the field one requires in the http request is part of the key or the message in the Kafka record),
 2. set **SINK_HTTP_PARAMETER_PLACEMENT** to `query`, and
-3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the proto class for the input Kafka message and set **
-   INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be
-   mapped to the query parameter name.
+3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the proto class for the input Kafka message and set 
+**INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be 
+mapped to the query parameter name.
 
 #### What happens if my services fails ?
 
-If messages failed to get pushed to the HTTP endpoint with a retryable status code as specified via **
-SINK_HTTP_RETRY_STATUS_CODE_RANGES** config, Firehose will retry sending the messages for a fixed number of attempts. If
-the messages still failed to get published after retries, Firehose will push these messages to the DLQ topic if DLQ is
+If messages failed to get pushed to the HTTP endpoint with a retryable status code as specified via 
+**SINK_HTTP_RETRY_STATUS_CODE_RANGES** config, Firehose will retry sending the messages for a fixed number of attempts. 
+If the messages still failed to get published after retries, Firehose will push these messages to the DLQ topic if DLQ is
 enabled via configs. If not enabled, it will drop the messages.
 
 #### How are HTTP connections handled, long lived?
@@ -560,9 +560,9 @@ Kafka message is parsed into the request body.
 
 #### For parameterised header, how is the data added?
 
-1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message`
-   (based on whether the field one requires in the http request is part of the key or the message in the Kafka record),
+1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message` (based on whether the field one requires in the http 
+request is part of the key or the message in the Kafka record),
 2. set **SINK_HTTP_PARAMETER_PLACEMENT** to `header`, and
-3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the Protobuf class for the input Kafka message and **
-   INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be
-   mapped to the header name.
+3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the Protobuf class for the input Kafka message and 
+**INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be 
+mapped to the header name.
