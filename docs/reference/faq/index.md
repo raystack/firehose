@@ -58,7 +58,7 @@ answers.
             - [How are the database connections are formed?](#how-are-the-database-connections-are-formed)
             - [How does JDBC sink handles connection pooling?](#how-does-jdbc-sink-handles-connection-pooling)
             - [When and how do the DB connections gets closed?](#when-and-how-do-the-db-connections-gets-closed)
-            - [How to support a new data base which supports JDBC, e:g MySQL ?](#how-to-support-a-new-data-base-which-supports-jdbc-eg-mysql-)
+            - [How to support a new database which supports JDBC, e:g MySQL ?](#how-to-support-a-new-database-which-supports-jdbc-eg-mysql-)
             - [Any transaction, locking provision?](#any-transaction-locking-provision)
             - [Are there any chances of race conditions?](#are-there-any-chances-of-race-conditions)
 
@@ -391,21 +391,23 @@ still there is a conflict, the query won't do anything.
 
 #### How data types are handled?
 
-Firehose can insert/update rows into the DB table with columns of data type string only. For a field of type as a nested
-Protobuf message, Firehose will serialise this message into a JSON string. While serialising, it will trim insignificant
-whitespaces, retain the default field names as specified in the message descriptor and use the default values for the
-field if no value is set. For a field of type collection of messages, the individual messages are converted into JSON
-strings and then serialised into a JSON array. The array itself is then serialised into a string. For a field of type
-Timestamp, Firehose will parse it into an Instant type and then serialise it as a string. For fields of all other data
-types in the Kafka message, the field values are simply serialised to string.
+Firehose can insert/update rows into the DB table with columns of data type string only.
+
+1. For a field of type as a nested Protobuf message, Firehose will serialise this message into a JSON string. While 
+serialising, it will trim insignificant whitespaces, retain the default field names as specified in the message 
+descriptor and use the default values for the field if no value is set. 
+2. For a field of type collection of messages, the individual messages are converted into JSON strings and then 
+serialised into a JSON array. The array itself is then serialised into a string. 
+3. For a field of type Timestamp, Firehose will parse it into an Instant type and then serialise it as a string. 
+4. For fields of all other data types in the Kafka message, the field values are simply serialised to string.
 
 #### How are the database connections are formed?
 
-DB connections are created using a Hikari Connection Pool.
+DB connections are created using a [Hikari Connection Pool](https://github.com/brettwooldridge/HikariCP).
 
 #### How does JDBC sink handles connection pooling?
 
-JDBC Sink creates a Hikari ConnectionPool (based on max pool size). The connections are used and released back to the
+JDBC Sink creates a [Hikari Connection Pool](https://github.com/brettwooldridge/HikariCP) (based on max pool size). The connections are used and released back to the
 pool while in use. When firehose shuts down, it closes the pool.
 
 #### When and how do the DB connections gets closed?
@@ -413,7 +415,7 @@ pool while in use. When firehose shuts down, it closes the pool.
 When the main thread is interrupted, Firehose consumer is closed which in turn closes the JDBC sink which in turn closes
 the pool.
 
-#### How to support a new data base which supports JDBC, e:g MySQL ?
+#### How to support a new database which supports JDBC, e:g MySQL ?
 
 Adding of new DB sinks can be supported by making the necessary code changes, such as including the necessary JDBC
 driver dependencies, changing the `JDBCSinkFactory.java` class to create instance of the new sink, extending and
