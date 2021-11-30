@@ -599,8 +599,7 @@ hence, needs to be tested prior to use.
 
 #### How does the execution work? Is the entire process sync or async ?
 
-Firehose has the capability to run parallelly on threads. Each thread does the following:
-
+The execution works as follows:
 * Get messages from Kafka
 * Filter the messages (optional)
 * Push these messages to sink: All the existing sink types follow the same contract/lifecycle defined
@@ -614,6 +613,9 @@ Firehose has the capability to run parallelly on threads. Each thread does the f
   backoff. If DLQ is disabled, messages are dropped.
 * Captures telemetry and success/failure events and send them to Telegraf
 * Repeat the process above again
+
+Firehose can configure its Kafka consumer to work in either sync or async mode. For more details, you can look 
+[here](docs/concepts/consumer.md)
 
 #### Is there any code snippet which shows how I can produce sample message in supported data format?
 
@@ -745,11 +747,10 @@ the [Filters](https://github.com/odpf/firehose/blob/main/docs/concepts/filters.m
 #### How to optimise parallelism based on input rate of Kafka messages? Does it depend on sink ?
 
 You can increase the workers in the Firehose which will effectively multiply the number of records being processed by
-Firehose. However, please be mindful of the fact that your sink also needs to be able to process this higher volume of
-data being pushed to it. Because if it is not, then this will only compound the problem of increasing lag.
-
-Adding some sort of a filter condition in the Firehose to ignore unnecessary messages in the topic would help you bring
-down the volume of data being processed by the sink.
+Firehose. Adding some sort of filter condition in the Firehose to ignore unnecessary messages in the topic would help 
+you bring down the volume of data being processed by the sink.Firehose can also be configured for its Kafka consumer to 
+work in [async mode](docs/concepts/consumer.md), thereby allowing it to do offset management and commit asynchronously 
+improving performance.
 
 #### What are the retry mechanisms in firehose?
 
