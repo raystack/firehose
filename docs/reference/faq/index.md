@@ -615,7 +615,7 @@ The execution works as follows:
 * Repeat the process above again
 
 Firehose can configure its Kafka consumer to work in either sync or async mode. For more details, you can look 
-[here](docs/concepts/consumer.md)
+[here](/docs/concepts/consumer.md)
 
 #### Is there any code snippet which shows how I can produce sample message in supported data format?
 
@@ -749,7 +749,7 @@ the [Filters](https://github.com/odpf/firehose/blob/main/docs/concepts/filters.m
 You can increase the workers in the Firehose which will effectively multiply the number of records being processed by
 Firehose. Adding some sort of filter condition in the Firehose to ignore unnecessary messages in the topic would help 
 you bring down the volume of data being processed by the sink.Firehose can also be configured for its Kafka consumer to 
-work in [async mode](docs/concepts/consumer.md), thereby allowing it to do offset management and commit asynchronously 
+work in [async mode](/docs/concepts/consumer.md), thereby allowing it to do offset management and commit asynchronously 
 improving performance.
 
 #### What are the retry mechanisms in firehose?
