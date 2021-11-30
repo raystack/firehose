@@ -80,6 +80,29 @@ answers.
             - [When is a message dropped?](#when-is-a-message-dropped)
             - [What is the difference between Parameterised vs Dynamic Url ?](#what-is-the-difference-between-parameterised-vs-dynamic-url-)
             - [For parameterised header, how is the data added?](#for-parameterised-header-how-is-the-data-added)
+        - [General Queries](#general-queries)
+            - [Which Java versions firehose work with?](#which-java-versions-firehose-work-with)
+            - [How does the execution work? Is the entire process sync or async ?](#how-does-the-execution-work-is-the-entire-process-sync-or-async-)
+            - [Is there any code snippet which shows how I can produce sample message in supported data format?](#is-there-any-code-snippet-which-shows-how-i-can-produce-sample-message-in-supported-data-format)
+            - [Why Protobuf ? Can it support other formats like JSON, AVRO, Thrift ?](#why-protobuf--can-it-support-other-formats-like-json-avro-thrift-)
+            - [Does firehose have support for SSL on Kafka?](#does-firehose-have-support-for-ssl-on-kafka)
+            - [How does  Firehose create the Kafka consumer?](#how-does--firehose-create-the-kafka-consumer)
+            - [Can I change the consumer group name or reset it ? Overall, how do I handle my consumer group operations?](#can-i-change-the-consumer-group-name-or-reset-it--overall-how-do-i-handle-my-consumer-group-operations)
+            - [What are the advantages of Firehose over Kafka connect ?](#what-are-the-advantages-of-firehose-over-kafka-connect-)
+            - [What problems does Firehose solve?](#what-problems-does-firehose-solve)
+            - [Can I do any transformations before sending data to sink, for example filtering ?](#can-i-do-any-transformations-before-sending-data-to-sink-for-example-filtering-)
+            - [How to optimise parallelism based on input rate of Kafka messages? Does it depend on sink ?](#how-to-optimise-parallelism-based-on-input-rate-of-kafka-messages-does-it-depend-on-sink-)
+            - [What are the retry mechanisms in firehose?](#what-are-the-retry-mechanisms-in-firehose)
+            - [Which Kafka client configs are available ?](#which-kafka-client-configs-are-available-)
+            - [What all data formats are supported?](#what-all-data-formats-are-supported)
+            - [Can we select particular fields from the input message?](#can-we-select-particular-fields-from-the-input-message)
+            - [How do I configure the Protobuf schema for the topic Firehose needs to consume?](#how-do-i-configure-the-protobuf-schema-for-the-topic-firehose-needs-to-consume)
+            - [What is Stencil in context of firehose ?](#what-is-stencil-in-context-of-firehose-)
+            - [Will I have any data loss if my firehose is failed ?](#will-i-have-any-data-loss-if-my-firehose-is-failed-)
+            - [How does firehose handle failed messages?](#how-does-firehose-handle-failed-messages)
+            - [What all metrics are produced for me to monitor ?](#what-all-metrics-are-produced-for-me-to-monitor-)
+            - [What kind of delivery guarantees does Firehose provide? Is it different from what Kafka is tuned for?](#what-kind-of-delivery-guarantees-does-firehose-provide-is-it-different-from-what-kafka-is-tuned-for)
+            - [What happens if my firehose is stopped and Kafka retention is for few days?](#what-happens-if-my-firehose-is-stopped-and-kafka-retention-is-for-few-days)
 
 ## Firehose Sinks
 
@@ -566,3 +589,275 @@ request is part of the key or the message in the Kafka record),
 3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the Protobuf class for the input Kafka message and 
 **INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be 
 mapped to the header name.
+
+### General Queries
+
+#### Which Java versions firehose work with?
+
+Firehose has been developed and tested to work with Java 8. Compatibility with lower or higher versions is not known and
+hence, needs to be tested prior to use.
+
+#### How does the execution work? Is the entire process sync or async ?
+
+The execution works as follows:
+* Get messages from Kafka
+* Filter the messages (optional)
+* Push these messages to sink: All the existing sink types follow the same contract/lifecycle defined
+  in `AbstractSink.java`. It consists of two stages:
+    * **Prepare**: Transformation over-filtered messages’ list to prepare the sink-specific insert/update client
+      requests.
+    * **Execute**: Requests created in the prepare stage are executed at this step and a list of failed
+      messages is returned (if any) for retry.
+* If the push to the sink fails with a retryable exception, Firehose will attempt to retry pushing the messages for a
+  configured number of attempts with backoff. After that, if DLQ is enabled, the messages are pushed to DLQ queue with
+  backoff. If DLQ is disabled, messages are dropped.
+* Captures telemetry and success/failure events and send them to Telegraf
+* Repeat the process above again
+
+Firehose can configure its Kafka consumer to work in either sync or async mode. For more details, you can look 
+[here](/docs/concepts/consumer.md)
+
+#### Is there any code snippet which shows how I can produce sample message in supported data format?
+
+Following is an example to demonstrate how to create a Protobuf message and then produce it to a Kafka cluster. Firstly,
+create a  `.proto`  file containing all the required field names and their corresponding integer tags. Save it in a new
+file named  `person.proto`
+
+```
+syntax = "proto2";
+
+package tutorial;
+
+option java_multiple_files = true;
+option java_package = "com.example.tutorial.protos";
+option java_outer_classname = "PersonProtos";
+
+message Person {
+  optional string name = 1;
+  optional int32 id = 2;
+  optional string email = 3;
+
+  enum PhoneType {
+    MOBILE = 0;
+    HOME = 1;
+    WORK = 2;
+  }
+
+  message PhoneNumber {
+    optional string number = 1;
+    optional PhoneType type = 2 [default = HOME];
+  }
+
+  repeated PhoneNumber phones = 4;
+}
+
+```
+
+Next, compile your  `.proto`  file using Protobuf compiler i.e.  `protoc`.This will generate Person, PersonOrBuilder and
+PersonProtos Java source files. Specify the source directory (where your application's source code lives – the current
+directory is used if you don't provide a value), the destination directory (where you want the generated code to go;
+often the same as  `$SRC_DIR`), and the path to your  `.proto`
+
+```
+protoc -I=$SRC_DIR --java_out=$DST_DIR $SRC_DIR/person.proto
+
+```
+
+Lastly, add the following lines in your Java code to generate a POJO (Plain Old Java Object) of the Person proto class
+and serialize it to a byte array, using the  `toByteArray()`  method of
+the  [com.google.protobuf.GeneratedMessageV3](https://www.javadoc.io/static/com.google.protobuf/protobuf-java/3.5.1/com/google/protobuf/GeneratedMessageV3.html)
+class. The byte array is then sent to the Kafka cluster by the producer.
+
+    KafkaProducer<byte[], byte[]> producer = new KafkaProducer<>(properties);
+    
+    Person john = Person.newBuilder()
+                    .setId(87182872)
+                    .setName("John Doe")
+                    .setEmail("jdoe@example.com")
+                    .addPhones(
+                            Person.PhoneNumber.newBuilder()
+                                    .setNumber("555-4321")
+                                    .setType(Person.PhoneType.HOME))
+                    .build();
+    
+    producer.send(new ProducerRecord<byte[], byte[]>(topicName, john.toByteArray()));
+
+Refer  [https://developers.google.com/protocol-buffers](https://developers.google.com/protocol-buffers)  for more info
+on how to create protobuf files.
+
+#### Why Protobuf ? Can it support other formats like JSON, AVRO, Thrift ?
+
+Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serialising structured data.
+Data streams on Kafka topics are bound to a Protobuf schema. Protobuf is much more lightweight that other schema formats
+like JSON, since it encodes the keys in the message to integers.
+
+ElasticSearch and MongoDB sink support both JSON and Protobuf as the input schema. For other sinks, Firehose currently
+supports only Protobuf. Support for JSON and Avro is planned and incorporated in the future roadmap.
+
+#### Does firehose have support for SSL on Kafka?
+
+No, the Kafka consumer used in Firehose doesn't support SSL.
+
+#### How does  Firehose create the Kafka consumer?
+
+When Firehose starts, it creates as many Kafka consumers as specified by the config **APPLICATION_THREAD_COUNT** (
+default set to 1). Each consumer runs on a separate thread. Please
+look [here](https://github.com/odpf/firehose/blob/main/docs/reference/configuration.md#kafka-consumer) for more details
+on how to configure the Kafka consumer.
+
+#### Can I change the consumer group name or reset it ? Overall, how do I handle my consumer group operations?
+
+Yes, the Kafka consumer group name can be changed by specifying the following configuration **SOURCE_KAFKA_CONSUMER_GROUP_ID**. The Kafka consumer in Firehose can also be reset. However, the default behaviour is
+currently set to read from the latest offset. To know further details on how to tune the Kafka consumer group, you can
+have a look at the Kafka consumer configurations already exposed by
+Firehose [here](https://github.com/odpf/firehose/blob/main/docs/reference/configuration/kafka-consumer-1.md#kafka-consumer).
+
+#### What are the advantages of Firehose over Kafka connect ?
+
+- **Ease of use:**  Firehose is easier to install, and using different sinks only requires changing a few
+  configurations. However, Kafka Connect requires connectors to be installed across all the worker nodes within the
+  cluster when used in distributed mode.
+- **Filtering:**  Value-based filtering is much easier to implement as compared to Kafka Connect. Requires no additional
+  plugins/schema-registry to be installed.
+- **Extensible:**  Provides a comprehensible abstract sink contract making it easier to add a new sink in Firehose.
+  Firehose also comes with an inbuilt serialisation/deserialisation and doesn't require any converters and serialisers
+  when implementing a new sink.
+- **Easy monitoring:**  Firehose provides a detailed health dashboard (Grafana) for effortless monitoring.
+- **Connectors:**  Some of the Kafka connect available connectors usually have limitations. It's usually rare to find
+  all the required features in a single connector and so is to find documentation for the same.
+- **Fully open-source:**  Firehose is completely open-source while separation of commercial and open-source features is
+  not very structured in Kafka Connect and for monitoring and advanced features, confluent control center requires an
+  enterprise subscription.
+
+#### What problems does Firehose solve?
+
+Every micro-service needs its own sink to be developed for common operations such as streaming data from Kafka to data
+lakes or other endpoints, along with real-time filtering, parsing, and monitoring of the sink.
+
+With Firehose, you don't need to write sink code for every such microservice, or manage resources to sink data from
+Kafka server to your database/service endpoint. Having provided all the configuration parameters of the sink, Firehose
+will create, manage and monitor one for you. It also automatically scales to match the throughput of your data and
+requires no ongoing administration.
+
+#### Can I do any transformations before sending data to sink, for example filtering ?
+
+Yes, Firehose provides JEXL based filters based on the fields in key or message of the Kafka record. Read
+the [Filters](https://github.com/odpf/firehose/blob/main/docs/concepts/filters.md) section for further details.
+
+#### How to optimise parallelism based on input rate of Kafka messages? Does it depend on sink ?
+
+You can increase the workers in the Firehose which will effectively multiply the number of records being processed by
+Firehose. Adding some sort of filter condition in the Firehose to ignore unnecessary messages in the topic would help 
+you bring down the volume of data being processed by the sink.Firehose can also be configured for its Kafka consumer to 
+work in [async mode](/docs/concepts/consumer.md), thereby allowing it to do offset management and commit asynchronously 
+improving performance.
+
+#### What are the retry mechanisms in firehose?
+
+If the push to the sink fails with a retryable error, Firehose will attempt to retry pushing the messages for a
+configured number of attempts with backoff. If the messages still fail to get pushed, and if DLQ is enabled, the
+messages are pushed to DLQ queue with backoff. If push fails and DLQ is disabled, messages are dropped.
+
+Starting with version 0.2, Firehose also provides the ability to tag different error types under a specific scope: `DLQ`
+, `RETRY` or `FAIL`. This enables Firehose to effectively determine at runtime as to what should be the strategy when a
+particular error is encountered. For more details, please look at `ErrorConfig.java` class and classes in
+the `io.odpf.firehose.error` package.
+
+#### Which Kafka client configs are available ?
+
+Firehose provides various Kafka client configurations.
+Refer [Kafka Consumer Configurations](https://github.com/odpf/firehose/blob/main/docs/reference/configuration/kafka-consumer-1.md)
+section.
+
+#### What all data formats are supported?
+
+ElasticSearch and MongoDB sink support both JSON and Protobuf as the input schema. For other sinks, we currently support
+only Protobuf. Support for JSON and Avro is planned and incorporated in the roadmap.
+
+Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serialising structured data.
+Data streams on Kafka topics are bound to a Protobuf schema. Follow the instructions
+in  [this article](https://developers.google.com/protocol-buffers/docs/javatutorial)  on how to create, compile and
+serialize a Protobuf object to send it to a binary OutputStream.
+Refer  [this guide](https://developers.google.com/protocol-buffers/docs/proto3)  for detailed Protobuf syntax and rules
+to create a  `.proto`  file.
+
+#### Can we select particular fields from the input message?
+
+Firehose will send all the fields of the incoming messages to the specified sink. But you can configure your sink
+destination/ database to consume only the required fields.
+
+#### How do I configure the Protobuf schema for the topic Firehose needs to consume?
+
+Generated Protobuf Descriptors are hosted behind a Stencil server artifactory/HTTP endpoint. This endpoint URL and the
+ProtoDescriptor class that the Firehose deployment should use to deserialise raw data with is configured in Firehose in
+the environment variables **SCHEMA_REGISTRY_STENCIL_URLS** and **INPUT_SCHEMA_PROTO_CLASS**  respectively.
+
+The Proto Descriptor set of the Kafka messages must be uploaded to the Stencil server.
+Refer  [this guide](https://github.com/odpf/stencil/blob/master/docs/guides/quick_start.md)  on how to setup and
+configure the Stencil server.
+
+#### What is Stencil in context of firehose ?
+
+ODPF Stencil API is a dynamic schema registry for hosting and managing versions of Protobuf descriptors. The schema
+handling i.e., find the mapped schema for the topic, downloading the descriptors, and dynamically being notified
+of/updating with the latest schema is abstracted through the Stencil library.
+
+The Stencil Client is a proprietary library that provides an abstraction layer, for schema handling. Schema caching,
+dynamic schema updates are features of the stencil client library.
+
+Refer  [this article](https://odpf.gitbook.io/stencil/)  for further information of the features, configuration and
+deployment instructions of the Stencil API. Source code of Stencil Server and Client API can be found in
+its  [Github repository](https://github.com/odpf/stencil).
+
+#### Will I have any data loss if my firehose is failed ?
+
+Firehose follows an *at-least* once policy. After a batch of messages is pushed to the sink successfully, Firehose
+commits the offset before the consumer polls another batch from Kafka. Thus, failed messages are not committed.
+
+So, when Firehose is restarted, the Kafka Consumer automatically starts pulling messages from the last committed offset
+of the consumer group. No data loss occurs.
+
+#### How does firehose handle failed messages?
+
+If the push to the sink fails with a retryable error, Firehose will attempt to retry pushing the messages for a
+configured number of attempts with backoff. If the messages still fail to get pushed, and if DLQ is enabled, the
+messages are pushed to DLQ queue with backoff. If push fails and DLQ is disabled, messages are dropped.
+
+Starting with version 0.2, Firehose also provides the ability to tag different error types under a specific scope: `DLQ`
+, `RETRY` or `FAIL`. This enables Firehose to effectively determine at runtime as to what should be the strategy when a
+particular error is encountered. For more details, please look at `ErrorConfig.java` class and classes in
+the `io.odpf.firehose.error` package.
+
+#### What all metrics are produced for me to monitor ?
+
+Firehose exposes critical metrics to monitor the health of your delivery streams and take any necessary actions. Refer
+the [Metrics](https://github.com/odpf/firehose/blob/main/docs/reference/metrics.md) section for further details on each
+metric.
+
+#### What kind of delivery guarantees does Firehose provide? Is it different from what Kafka is tuned for?
+
+Firehose provides at-least once delivery guarantee. In case of a failure or restart, the Kafka Consumer in Firehose will
+automatically starts pulling messages from the last committed offset of the consumer group. Hence, no data loss occurs.
+
+If the push to the sink fails with a retryable error, Firehose will attempt to retry pushing the messages for a
+configured number of attempts with backoff. If the messages still fail to get pushed, and if DLQ is enabled, the
+messages are pushed to DLQ queue with backoff. If push fails and DLQ is disabled, messages are dropped.
+
+Starting with version 0.2, Firehose also provides the ability to tag different error types under a specific scope: `DLQ`
+, `RETRY` or `FAIL`. This enables Firehose to effectively determine at runtime as to what should be the strategy when a
+particular error is encountered. For more details, please look at `ErrorConfig.java` class and classes in
+the `io.odpf.firehose.error` package.
+
+#### What happens if my firehose is stopped and Kafka retention is for few days?
+
+When firehose restarts, it will start reading from the last committed offset. If the message at the last committed
+offset for the partition was deleted due to retention period, the following 3 cases can happen:-
+
+1. If the config **SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_OFFSET_RESET** is set to `latest`, then Firehose will start
+   consuming from the latest offset for the partition.
+2. If the config **SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_OFFSET_RESET** is set to `earliest`, then Firehose will start
+   consuming from the earliest available offset for the partition. For example, if the committed offset was 10, but the
+   earliest available offset is now 21, Firehose will start reading from offset 21 for the partition. This is also the
+   default behaviour in case this config is not specified at all.
+3. If the config **SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_OFFSET_RESET** is set to `none` or anything else, then Firehose
+   will terminate with an abnormal status code.
