@@ -102,7 +102,16 @@ public class OffsetManager {
                 previous.setRemovable(true);
             }
         }
-        nodes.removeIf(OffsetNode::isRemovable);
+
+        // Compact
+        iterator = nodes.iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().isRemovable()) {
+                iterator.remove();
+            } else {
+                break;
+            }
+        }
         return nodes.first().isCommittable() ? Optional.of(nodes.first()) : Optional.empty();
     }
 

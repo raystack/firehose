@@ -10,6 +10,7 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import io.odpf.firehose.config.FilterConfig;
+import io.odpf.firehose.config.enums.FilterMessageFormatType;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
@@ -30,12 +31,12 @@ import static io.odpf.firehose.config.enums.FilterDataSourceType.KEY;
  */
 public class JsonFilter implements Filter {
 
-    private final ProtoParser parser;
     private final FilterConfig filterConfig;
     private final Instrumentation instrumentation;
     private final JsonSchema schema;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final JsonFormat.Printer jsonPrinter;
+    private JsonFormat.Printer jsonPrinter;
+    private ProtoParser parser;
 
     /**
      * Instantiates a new Json filter.
@@ -44,12 +45,14 @@ public class JsonFilter implements Filter {
      * @param instrumentation the instrumentation
      */
     public JsonFilter(StencilClient stencilClient, FilterConfig filterConfig, Instrumentation instrumentation) {
-        this.parser = new ProtoParser(stencilClient, filterConfig.getFilterSchemaProtoClass());
         this.instrumentation = instrumentation;
         this.filterConfig = filterConfig;
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
         this.schema = schemaFactory.getSchema(filterConfig.getFilterJsonSchema());
-        this.jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
+        if (filterConfig.getFilterESBMessageFormat() == FilterMessageFormatType.PROTOBUF) {
+            this.parser = new ProtoParser(stencilClient, filterConfig.getFilterSchemaProtoClass());
+            this.jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
+        }
     }
 
     /**
@@ -91,7 +94,7 @@ public class JsonFilter implements Filter {
     }
 
     private String deserialize(byte[] data) throws FilterException {
-        switch (filterConfig.getFilterJsonMessageFormat()) {
+        switch (filterConfig.getFilterESBMessageFormat()) {
             case PROTOBUF:
                 try {
                     DynamicMessage message = parser.parse(data);

@@ -102,8 +102,8 @@ public class FirehoseKafkaConsumer implements AutoCloseable {
             commitAsync(latestOffsets);
         } else {
             kafkaConsumer.commitSync(latestOffsets);
-            committedOffsets.putAll(offsets);
         }
+        committedOffsets.putAll(latestOffsets);
     }
 
     private void commitAsync(Map<TopicPartition, OffsetAndMetadata> offsets) {
@@ -115,7 +115,6 @@ public class FirehoseKafkaConsumer implements AutoCloseable {
             instrumentation.incrementCounter(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, FAILURE_TAG);
         } else {
             instrumentation.incrementCounter(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, SUCCESS_TAG);
-            committedOffsets.putAll(offsets);
         }
     }
 }

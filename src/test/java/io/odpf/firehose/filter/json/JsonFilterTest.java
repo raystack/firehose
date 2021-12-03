@@ -66,7 +66,7 @@ public class JsonFilterTest {
         Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 101);
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
@@ -96,7 +96,7 @@ public class JsonFilterTest {
         Message message2 = new Message(testKeyProto2.toByteArray(), testBookingLogMessage2.toByteArray(), "topic1", 0, 101);
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"driver_pickup_location\":{\"properties\":{\"latitude\":{\"minimum\":88}}}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
@@ -116,7 +116,7 @@ public class JsonFilterTest {
         Message message1 = new Message(testKeyJson1.getBytes(), testMessageJson1.getBytes(), "topic1", 0, 100);
         Message message2 = new Message(testKeyJson2.getBytes(), testMessageJson2.getBytes(), "topic1", 0, 101);
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "JSON");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "JSON");
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
@@ -137,7 +137,7 @@ public class JsonFilterTest {
         Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 101);
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         filterConfigs.put("FILTER_JSON_SCHEMA", "");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
@@ -156,7 +156,7 @@ public class JsonFilterTest {
         Message message1 = new Message(testKeyJson1.getBytes(), testMessageJson1.getBytes(), "topic1", 0, 100);
         Message message2 = new Message(testKeyJson2.getBytes(), testMessageJson2.getBytes(), "topic1", 0, 101);
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "JSON");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "JSON");
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "");
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
@@ -180,7 +180,7 @@ public class JsonFilterTest {
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"customer_dynamic_surge_enabled\":{\"const\":\"true\"}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestBookingLogMessage.class.getName());
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         FilterConfig bookingConsumerConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         when(stencilClient.get(TestBookingLogMessage.class.getName())).thenReturn(TestMessage.getDescriptor());
         JsonFilter bookingFilter = new JsonFilter(stencilClient, bookingConsumerConfig, instrumentation);
@@ -196,7 +196,7 @@ public class JsonFilterTest {
         Message message1 = new Message(new byte[]{1, 2}, testMessageJson1.getBytes(), "topic1", 0, 100);
         Message message2 = new Message(testKeyJson2.getBytes(), testMessageJson2.getBytes(), "topic1", 0, 101);
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "JSON");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "JSON");
         filterConfigs.put("FILTER_DATA_SOURCE", "key");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
@@ -213,7 +213,7 @@ public class JsonFilterTest {
         Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 101);
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_DATA_SOURCE", "key");
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
@@ -230,7 +230,7 @@ public class JsonFilterTest {
         Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 101);
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_DATA_SOURCE", "key");
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", "ss");
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
@@ -247,7 +247,7 @@ public class JsonFilterTest {
         Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 101);
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
@@ -262,7 +262,7 @@ public class JsonFilterTest {
         Message message1 = new Message(testKeyJson1.getBytes(), testMessageJson1.getBytes(), "topic1", 0, 100);
         Message message2 = new Message(testKeyJson2.getBytes(), testMessageJson2.getBytes(), "topic1", 0, 101);
         Map<String, String> filterConfigs = new HashMap<>();
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "JSON");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "JSON");
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);

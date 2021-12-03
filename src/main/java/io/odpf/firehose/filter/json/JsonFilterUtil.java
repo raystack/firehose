@@ -21,8 +21,8 @@ public class JsonFilterUtil {
     public static void logConfigs(FilterConfig filterConfig, Instrumentation instrumentation) {
         instrumentation.logInfo("\n\tFilter data source type: {}", filterConfig.getFilterDataSource());
         instrumentation.logInfo("\n\tFilter JSON Schema: {}", filterConfig.getFilterJsonSchema());
-        instrumentation.logInfo("\n\tFilter ESB message format: {}", filterConfig.getFilterJsonMessageFormat());
-        if (filterConfig.getFilterJsonMessageFormat() == PROTOBUF) {
+        instrumentation.logInfo("\n\tFilter ESB message format: {}", filterConfig.getFilterESBMessageFormat());
+        if (filterConfig.getFilterESBMessageFormat() == PROTOBUF) {
             instrumentation.logInfo("\n\tMessage Proto class: {}", filterConfig.getFilterSchemaProtoClass());
         }
     }
@@ -38,11 +38,11 @@ public class JsonFilterUtil {
             instrumentation.logError("Failed to create filter due to invalid config");
             throw new IllegalArgumentException("Filter JSON Schema is invalid");
         }
-        if (filterConfig.getFilterJsonMessageFormat() == null) {
+        if (filterConfig.getFilterESBMessageFormat() == null) {
             instrumentation.logError("Failed to create filter due to invalid config");
             throw new IllegalArgumentException("Filter ESB message type cannot be null");
         }
-        if (filterConfig.getFilterJsonMessageFormat() == PROTOBUF && filterConfig.getFilterSchemaProtoClass() == null) {
+        if (filterConfig.getFilterESBMessageFormat() == PROTOBUF && filterConfig.getFilterSchemaProtoClass() == null) {
             instrumentation.logError("Failed to create filter due to invalid config");
             throw new IllegalArgumentException("Proto Schema class cannot be null");
         }

@@ -52,11 +52,26 @@ public class LocalStorage {
     }
 
     public void deleteLocalFile(String pathString) {
-        try {
-            instrumentation.logInfo("Deleting Local File " + pathString);
-            Files.delete(Paths.get(pathString));
-        } catch (IOException e) {
-            throw new LocalFileWriterFailedException(e);
+        switch (sinkConfig.getLocalFileWriterType()) {
+            case PARQUET:
+                try {
+                    Path filePath = Paths.get(pathString);
+                    Path crcFilePath = filePath.getParent().resolve("." + filePath.getFileName() + ".crc");
+                    instrumentation.logInfo("Deleting Local File {}", filePath);
+                    instrumentation.logInfo("Deleting Local File {}", crcFilePath);
+                    deleteLocalFile(filePath, crcFilePath);
+                } catch (IOException e) {
+                    throw new LocalFileWriterFailedException(e);
+                }
+                break;
+            default:
+                throw new ConfigurationException("unsupported file writer type");
+        }
+    }
+
+    public void deleteLocalFile(Path... paths) throws IOException {
+        for (Path path : paths) {
+            Files.delete(path);
         }
     }
 

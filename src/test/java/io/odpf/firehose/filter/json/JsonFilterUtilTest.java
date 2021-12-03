@@ -38,7 +38,7 @@ public class JsonFilterUtilTest {
     public void shouldLogFilterConfigsForValidConfiguration() {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
@@ -66,7 +66,7 @@ public class JsonFilterUtilTest {
     public void shouldThrowIllegalArgumentExceptionForNullJsonSchema() {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         thrown.expect(IllegalArgumentException.class);
@@ -90,7 +90,7 @@ public class JsonFilterUtilTest {
     public void shouldThrowExceptionForNullProtoSchemaClassForProtobufMessageFormat() {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         thrown.expect(IllegalArgumentException.class);
@@ -102,7 +102,7 @@ public class JsonFilterUtilTest {
     public void shouldNotThrowIllegalArgumentExceptionForValidFilterConfig() {
         Map<String, String> filterConfigs = new HashMap<>();
         filterConfigs.put("FILTER_DATA_SOURCE", "message");
-        filterConfigs.put("FILTER_JSON_ESB_MESSAGE_FORMAT", "PROTOBUF");
+        filterConfigs.put("FILTER_ESB_MESSAGE_FORMAT", "PROTOBUF");
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
