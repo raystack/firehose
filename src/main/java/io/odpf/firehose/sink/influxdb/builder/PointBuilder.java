@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.influxdb.builder;
 
 import io.odpf.firehose.config.InfluxSinkConfig;
-import io.odpf.firehose.exception.EglcConfigurationException;
+import io.odpf.firehose.exception.ConfigurationException;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Duration;
 import com.google.protobuf.DynamicMessage;
@@ -76,7 +76,7 @@ public class PointBuilder {
 
     private void addFieldsToPoint(Message message, Properties protoIndexMapping) throws InvalidProtocolBufferException {
         if (protoIndexMapping.isEmpty()) {
-            throw new EglcConfigurationException(FIELD_NAME_MAPPING_ERROR_MESSAGE);
+            throw new ConfigurationException(FIELD_NAME_MAPPING_ERROR_MESSAGE);
         }
         Map<String, Object> fieldNameValueMap = new HashMap<>();
         for (Object protoFieldIndex : protoIndexMapping.keySet()) {

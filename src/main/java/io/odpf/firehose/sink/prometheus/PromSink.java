@@ -5,7 +5,7 @@ import io.odpf.firehose.sink.common.AbstractHttpSink;
 import io.odpf.firehose.sink.prometheus.request.PromRequest;
 import com.google.protobuf.DynamicMessage;
 import cortexpb.Cortex;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.stencil.client.StencilClient;
@@ -63,7 +63,7 @@ public class PromSink extends AbstractHttpSink {
     }
 
     protected void captureMessageDropCount(HttpResponse response, List<String> contentStringList) {
-        getInstrumentation().captureCountWithTags(SINK_MESSAGES_DROP_TOTAL, contentStringList.size(), "cause= " + statusCode(response));
+        getInstrumentation().captureCount(SINK_MESSAGES_DROP_TOTAL, contentStringList.size(), "cause= " + statusCode(response));
         getInstrumentation().logInfo("Message dropped because of status code: " + statusCode(response));
     }
 

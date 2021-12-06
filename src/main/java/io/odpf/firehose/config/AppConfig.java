@@ -1,9 +1,7 @@
 package io.odpf.firehose.config;
 
-import io.odpf.firehose.config.converter.FilterTypeConverter;
 import io.odpf.firehose.config.converter.ProtoIndexToFieldMapConverter;
 import io.odpf.firehose.config.converter.SinkTypeConverter;
-import io.odpf.firehose.config.enums.FilterType;
 import io.odpf.firehose.config.enums.SinkType;
 import org.aeonbits.owner.Config;
 
@@ -76,17 +74,6 @@ public interface AppConfig extends Config {
     @DefaultValue("message")
     String getKafkaRecordParserMode();
 
-    @Key("FILTER_JEXL_DATA_SOURCE")
-    @ConverterClass(FilterTypeConverter.class)
-    @DefaultValue("NONE")
-    FilterType getFilterJexlDataSource();
-
-    @Key("FILTER_JEXL_EXPRESSION")
-    String getFilterJexlExpression();
-
-    @Key("FILTER_JEXL_SCHEMA_PROTO_CLASS")
-    String getFilterJexlSchemaProtoClass();
-
     @Key("TRACE_JAEGAR_ENABLE")
     @DefaultValue("false")
     Boolean isTraceJaegarEnable();
@@ -103,7 +90,15 @@ public interface AppConfig extends Config {
     @DefaultValue("60000")
     Integer getRetryExponentialBackoffMaxMs();
 
-    @Key("DLQ_ENABLE")
+    @Key("RETRY_FAIL_AFTER_MAX_ATTEMPTS_ENABLE")
     @DefaultValue("false")
-    Boolean isDlqEnable();
+    boolean getRetryFailAfterMaxAttemptsEnable();
+
+    @Key("RETRY_MAX_ATTEMPTS")
+    @DefaultValue("2147483647")
+    Integer getRetryMaxAttempts();
+
+    @Key("INPUT_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE")
+    @DefaultValue("true")
+    boolean getInputSchemaProtoAllowUnknownFieldsEnable();
 }

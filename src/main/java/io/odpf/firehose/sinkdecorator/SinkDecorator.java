@@ -1,6 +1,6 @@
 package io.odpf.firehose.sinkdecorator;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.sink.Sink;
 
@@ -25,11 +25,26 @@ public class SinkDecorator implements Sink {
 
     @Override
     public List<Message> pushMessage(List<Message> message) throws IOException, DeserializerException {
-        return this.sink.pushMessage(message);
+        return sink.pushMessage(message);
     }
 
     @Override
     public void close() throws IOException {
+        sink.close();
+    }
 
+    @Override
+    public void calculateCommittableOffsets() {
+        sink.calculateCommittableOffsets();
+    }
+
+    @Override
+    public boolean canManageOffsets() {
+        return sink.canManageOffsets();
+    }
+
+    @Override
+    public void addOffsetsAndSetCommittable(List<Message> messageList) {
+        sink.addOffsetsAndSetCommittable(messageList);
     }
 }

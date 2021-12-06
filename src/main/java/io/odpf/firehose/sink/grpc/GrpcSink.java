@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.grpc;
 
 
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;

@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.http;
 
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.common.AbstractHttpSink;
@@ -68,7 +68,7 @@ public class HttpSink extends AbstractHttpSink {
 
         List<String> result = Arrays.asList(requestBody.replaceAll("^\\[|]$", "").split("},\\s*\\{"));
 
-        getInstrumentation().captureCountWithTags(SINK_MESSAGES_DROP_TOTAL, result.size(), "cause= " + statusCode(response));
+        getInstrumentation().captureCount(SINK_MESSAGES_DROP_TOTAL, result.size(), "cause= " + statusCode(response));
         getInstrumentation().logInfo("Message dropped because of status code: " + statusCode(response));
     }
 }

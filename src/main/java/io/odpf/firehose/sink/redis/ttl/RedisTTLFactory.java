@@ -1,14 +1,14 @@
 package io.odpf.firehose.sink.redis.ttl;
 
 import io.odpf.firehose.config.RedisSinkConfig;
-import io.odpf.firehose.exception.EglcConfigurationException;
+import io.odpf.firehose.exception.ConfigurationException;
 
 public class RedisTTLFactory {
 
     public static RedisTtl getTTl(RedisSinkConfig redisSinkConfig) {
         long redisTTLValue = redisSinkConfig.getSinkRedisTtlValue();
         if (redisTTLValue < 0) {
-            throw new EglcConfigurationException("Provide a positive TTL value");
+            throw new ConfigurationException("Provide a positive TTL value");
         }
         switch (redisSinkConfig.getSinkRedisTtlType()) {
             case EXACT_TIME:

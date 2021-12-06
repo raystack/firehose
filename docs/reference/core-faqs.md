@@ -49,8 +49,7 @@ Firehose provides various Kafka client configurations. Refer [Generic Configurat
 
 ## What all data formats are supported ?
 
-Elasticsearch and MongoDB sink support both JSON and Protobuf as the input schema.
-For other sinks, we currently support only Protobuf. Support for JSON and Avro is planned and incorporated in our roadmap. Please refer to our Roadmap section for more details.
+Elasticsearch and MongoDB sink support both JSON and Protobuf as the input schema. For other sinks, we currently support only Protobuf. Support for JSON and Avro is planned and incorporated in our roadmap. Please refer to our Roadmap section for more details.
 
 Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data. Data streams on Kafka topics are bound to a Protobuf schema.
 
@@ -150,6 +149,7 @@ Protocol buffers are Google's language-neutral, platform-neutral, extensible mec
 Elasticsearch and MongoDB sink support both JSON and Protobuf as the input schema.
 
 For other sinks, we currently support only Protobuf. Support for JSON and Avro is planned and incorporated in our roadmap. Please refer to our Roadmap section for more details.
+
 ## Will I have any data loss if my Firehose fails ?
 
 After a batch of messages is sent successfully, Firehose commits the offset before the consumer polls another batch from Kafka. Thus, failed messages are not committed.
@@ -181,7 +181,7 @@ When Firehose is restarted, the Kafka Consumer automatically starts pulling mess
 
 ## How to configure the filter for a proto field based on some data?
 
-The environment variables `FILTER_JEXL_DATA_SOURCE` , `FILTER_JEXL_EXPRESSION` and `FILTER_JEXL_SCHEMA_PROTO_CLASS` need to be set for filters to work. The required filters need to be written in JEXL expression format. Refer [Using Filters](../guides/filters.md) section for more details.
+The environment variables `FILTER_DATA_SOURCE` , `FILTER_JEXL_EXPRESSION` and `FILTER_SCHEMA_PROTO_CLASS` need to be set for filters to work. The required filters need to be written in JEXL expression format. Refer [Using Filters](../guides/filters/) section for more details.
 
 ## Can I perform basic arithmetic operations in filters?
 

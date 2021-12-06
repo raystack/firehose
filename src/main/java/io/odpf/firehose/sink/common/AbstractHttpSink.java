@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.common;
 
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.NeedToRetry;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
@@ -112,7 +112,7 @@ public abstract class AbstractHttpSink extends AbstractSink {
         String urlTag = "url=" + httpRequestMethod.getURI().getPath();
         String statusCode = statusCode(response);
         String httpCodeTag = statusCode.equals("null") ? "status_code=" : "status_code=" + statusCode;
-        getInstrumentation().captureCountWithTags(SINK_HTTP_RESPONSE_CODE_TOTAL, 1, httpCodeTag, urlTag);
+        getInstrumentation().captureCount(SINK_HTTP_RESPONSE_CODE_TOTAL, 1, httpCodeTag, urlTag);
     }
 
 

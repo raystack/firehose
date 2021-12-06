@@ -5,7 +5,7 @@ import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.WriteModel;
 import io.odpf.firehose.config.enums.SinkType;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.mongodb.client.MongoSinkClient;
 import io.odpf.firehose.sink.mongodb.request.MongoRequestHandler;

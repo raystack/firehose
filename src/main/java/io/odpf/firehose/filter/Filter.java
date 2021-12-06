@@ -1,6 +1,6 @@
 package io.odpf.firehose.filter;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 
 import java.util.List;
 
@@ -16,5 +16,6 @@ public interface Filter {
      * @return filtered messages.
      * @throws FilterException the filter exception
      */
-    List<Message> filter(List<Message> messages) throws FilterException;
+    FilteredMessages filter(List<Message> messages) throws FilterException;
+
 }

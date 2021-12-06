@@ -7,7 +7,7 @@ import com.mongodb.client.model.InsertOneModel;
 import com.mongodb.client.model.ReplaceOneModel;
 import io.odpf.firehose.config.enums.MongoSinkMessageType;
 import io.odpf.firehose.config.enums.MongoSinkRequestType;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestAggregatedSupplyMessage;
 import io.odpf.firehose.exception.JsonParseException;
 import io.odpf.firehose.serializer.MessageToJson;

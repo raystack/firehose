@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.prometheus;
 
 import cortexpb.Cortex;
 import io.odpf.firehose.config.converter.RangeToHashMapConverter;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.NeedToRetry;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -36,8 +36,6 @@ import java.util.Map;
 
 import static io.odpf.firehose.sink.prometheus.PromSinkConstants.PROMETHEUS_LABEL_FOR_METRIC_NAME;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -139,18 +137,6 @@ public class PromSinkTest {
     }
 
     @Test
-    public void shouldCatchIOExceptionInAbstractSinkAndCaptureFailedExecutionTelemetry() throws Exception {
-        when(httpPost.getURI()).thenReturn(new URI("http://dummy.com"));
-        when(request.build(messages)).thenReturn(httpPostList);
-        when(httpClient.execute(any(HttpPost.class))).thenThrow(IOException.class);
-
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
-        promSink.pushMessage(messages);
-
-        verify(instrumentation, times(1)).captureFailedExecutionTelemetry(any(IOException.class), anyInt());
-    }
-
-    @Test
     public void shouldCloseStencilClient() throws IOException {
         PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
 
@@ -189,7 +175,7 @@ public class PromSinkTest {
                         + "\nRequest Headers: [Accept: text/plain]"
                         + "\nRequest Body: " + body);
         verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_messages_drop_total", 1, "cause= 500");
+        verify(instrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 1, "cause= 500");
     }
 
     @Test
@@ -230,7 +216,7 @@ public class PromSinkTest {
         promSink.prepare(messages);
         promSink.execute();
         verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_messages_drop_total", 1, "cause= 500");
+        verify(instrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 1, "cause= 500");
     }
 
     @Test(expected = NeedToRetry.class)
@@ -261,7 +247,7 @@ public class PromSinkTest {
         promSink.prepare(messages);
         promSink.execute();
         verify(instrumentation, times(0)).logInfo("Message dropped because of status code: 200");
-        verify(instrumentation, times(0)).captureCountWithTags("firehose_sink_messages_drop_total", 1, "200");
+        verify(instrumentation, times(0)).captureCount("firehose_sink_messages_drop_total", 1, "200");
     }
 
     @Test
@@ -277,7 +263,7 @@ public class PromSinkTest {
         promSink.prepare(messages);
         promSink.execute();
         verify(instrumentation, times(0)).logInfo("Message dropped because of status code: 201");
-        verify(instrumentation, times(0)).captureCountWithTags("firehose_sink_messages_drop_total", 1, "201");
+        verify(instrumentation, times(0)).captureCount("firehose_sink_messages_drop_total", 1, "201");
     }
 
     @Test
@@ -294,7 +280,7 @@ public class PromSinkTest {
         promSink.prepare(messages);
         promSink.execute();
 
-        verify(instrumentation, times(1)).captureCountWithTags("firehose_sink_http_response_code_total", 1, "status_code=" + statusLine.getStatusCode(), "url=" + uri.getPath());
+        verify(instrumentation, times(1)).captureCount("firehose_sink_http_response_code_total", 1, "status_code=" + statusLine.getStatusCode(), "url=" + uri.getPath());
     }
 
     @Test

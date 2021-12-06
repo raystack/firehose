@@ -123,3 +123,17 @@ _**Note:**_ [_**DATABASE**_](../reference/configuration/#-sink_influx_db_name) _
 * You don’t need to modify them necessarily, It is recommended to use them with the default values. More details [here](../reference/configuration/#-standard).
 
 
+## Create a Blob Sink
+
+* it requires the following [variables](../reference/configuration.md#objectstorage-sink) to be set.
+* Only support google cloud storage for now.
+* Only support writing protobuf message to apache parquet file format for now.
+* The protobuf message need to have a `google.protobuf.Timestamp` field as partitioning timestamp, `event_timestamp` field is usually being used.
+* Google cloud credential with some google cloud storage permission is required to run this sink.
+
+## Create a Bigquery Sink
+
+* it requires the following [variables](../reference/configuration.md#bigquery-sink) to be set.
+* This sink will generate bigquery schema from protobuf message schema and update bigquery table with the latest generated schema.
+* The protobuf message of a `google.protobuf.Timestamp` field might be needed when table partitioning is enabled.
+* Google cloud credential with some bigquery permission is required to run this sink.

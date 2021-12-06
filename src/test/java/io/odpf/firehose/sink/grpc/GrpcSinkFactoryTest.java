@@ -55,9 +55,8 @@ public class GrpcSinkFactoryTest {
         config.put("SINK_GRPC_SERVICE_HOST", "localhost");
         config.put("SINK_GRPC_SERVICE_PORT", "5000");
 
-        GrpcSinkFactory grpcSinkFactory = new GrpcSinkFactory();
 
-        Sink sink = grpcSinkFactory.create(config, statsDReporter, stencilClient);
+        Sink sink = GrpcSinkFactory.create(config, statsDReporter, stencilClient);
 
         Assert.assertNotNull(sink);
         server.shutdownNow();

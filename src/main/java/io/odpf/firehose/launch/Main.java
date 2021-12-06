@@ -2,8 +2,7 @@ package io.odpf.firehose.launch;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.consumer.FirehoseConsumer;
-import io.odpf.firehose.consumer.Task;
-import io.odpf.firehose.factory.FirehoseConsumerFactory;
+import io.odpf.firehose.consumer.FirehoseConsumerFactory;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.metrics.StatsDReporterFactory;
@@ -43,16 +42,13 @@ public class Main {
 
                     FirehoseConsumer firehoseConsumer = null;
                     try {
-                        firehoseConsumer = new FirehoseConsumerFactory(
-                                kafkaConsumerConfig,
-                                statsDReporter)
-                                .buildConsumer();
+                        firehoseConsumer = new FirehoseConsumerFactory(kafkaConsumerConfig, statsDReporter).buildConsumer();
                         while (true) {
                             if (Thread.interrupted()) {
                                 instrumentation.logWarn("Consumer Thread interrupted, leaving the loop!");
                                 break;
                             }
-                            firehoseConsumer.processPartitions();
+                            firehoseConsumer.process();
                         }
                     } catch (Exception e) {
                         instrumentation.captureFatalError(e, "Exception on creating the consumer, exiting the application");

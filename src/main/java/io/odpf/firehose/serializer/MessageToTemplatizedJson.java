@@ -1,9 +1,9 @@
 package io.odpf.firehose.serializer;
 
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.exception.EglcConfigurationException;
+import io.odpf.firehose.exception.ConfigurationException;
 import io.odpf.firehose.metrics.Instrumentation;
 import com.google.gson.Gson;
 import com.google.protobuf.DynamicMessage;
@@ -37,7 +37,7 @@ public class MessageToTemplatizedJson implements MessageSerializer {
     public static MessageToTemplatizedJson create(Instrumentation instrumentation, String httpSinkJsonBodyTemplate, ProtoParser protoParser) {
         MessageToTemplatizedJson messageToTemplatizedJson = new MessageToTemplatizedJson(instrumentation, httpSinkJsonBodyTemplate, protoParser);
         if (messageToTemplatizedJson.isInvalidJson()) {
-            throw new EglcConfigurationException("Given HTTPSink JSON body template :"
+            throw new ConfigurationException("Given HTTPSink JSON body template :"
                     + httpSinkJsonBodyTemplate
                     + ", must be a valid JSON.");
         }

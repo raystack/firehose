@@ -4,7 +4,7 @@ package io.odpf.firehose.sink.redis.parsers;
 
 import io.odpf.firehose.config.RedisSinkConfig;
 import io.odpf.firehose.config.enums.RedisSinkDataType;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestBookingLogMessage;
 import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;

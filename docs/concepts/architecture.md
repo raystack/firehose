@@ -6,10 +6,13 @@ Firehose has the capability to run parallelly on threads. Each thread does the f
 
 * Get messages from Kafka
 * Filter the messages \(optional\)
-* Push these messages to sink
-* In case push fails and DLQ is:
-  * enabled: Firehose keeps on retrying for the configured number of attempts before the messages got pushed to DLQ Kafka topic
-  * disabled: Firehose keeps on retrying until it receives a success code
+* Messages are processed by a chain of decorators, each decorator calling the previous one and processing the returned result.
+  * Push these messages to sink.
+  * Process the messages not pushed to sink by chained decorators.
+    1. Fail if the error is configured.
+    2. Retry if the error is configured.
+    3. Push to DLQ if the error is configured.
+    4. Ignore messages.
 * Captures telemetry and success/failure events and send them to Telegraf
 * Repeat the process
 
@@ -19,8 +22,10 @@ Firehose has the capability to run parallelly on threads. Each thread does the f
 
 _**Consumer**_
 
-* Firehose Consumer consumes messages from the configured Kafka in batches, [`SOURCE_KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS`](../reference/configuration/#source_kafka_consumer_config_max_poll_records) can be configured which decides this batch size.
-* The consumer then processes each message and sends the messages’ list to Filter.
+* Firehose supports sync and async consumers. 
+  * Sync and async consumers differ in their kafka offset commit strategy.
+  * SyncConsumer pulls messages from kafka, sends to sink and commits offsets in one single threads. Although Sink can choose to manage its own offsets by implementation appropriate methods. Consumer will get offsets from the sink while committing.
+  * AsyncConsumer pulls messages from kafka, submit a task to send messages to SinkPool, tries to commit the kafka offsets for the messages for which the tasks are finished. 
 
 _**Filter**_
 
@@ -37,13 +42,30 @@ _**Sink**_
   * Execute: Requests created in the Prepare stage are executed at this step and a list of failed messages is returned \(if any\) for retry.
 * If the batch has any failures, Firehose will retry to push the failed messages to the sink
 
+_**SinkPool**_
+* Firehose can have a sinkpool to submit tasks based on the configuration. SinkPool is used to asynchronously process messages. 
+* SinkPool is defined by number of threads and poll timeout of the worker queue.
+
 _**Instrumentation**_
 
 * Instrumentation is a wrapper around statsD client and logging. Its job is to capture Important metrics such as Latencies, Successful/Failed Messages Count, Sink Response Time, etc. for each record that goes through the Firehose ecosystem.
 
 _**Commit**_
 
-* After the messages are sent successfully, Firehose commits the offset, and the consumer polls another batch from Kafka.
+1. SyncConsumer: 
+   1. In the Consumer thread, Firehose commits the offset after the messages are sent successfully .
+2. AsyncConsumer:
+   1. In the Consumer thread, Firehose checks if any of the sink-pool tasks are finished. It sets the offsets of those messages to be committable. It commits the all the committable offsets. 
+
+_**Message Final State**_
+
+The final state of message can be any one of the followings after it is consumed from kafka:
+* Sink
+* DLQ
+* Ignored
+* Filtered
+
+One can monitor via plotting the metrics related to messages.
 
 ### Schema Handling
 

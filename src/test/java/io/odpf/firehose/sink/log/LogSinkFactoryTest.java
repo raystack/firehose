@@ -32,8 +32,7 @@ public class LogSinkFactoryTest {
 
     @Test
     public void shouldCreateLogSink() {
-        LogSinkFactory logSinkFactory = new LogSinkFactory();
-        Sink sink = logSinkFactory.create(configuration, statsDReporter, stencilClient);
+        Sink sink = LogSinkFactory.create(configuration, statsDReporter, stencilClient);
         assertEquals(LogSink.class, sink.getClass());
     }
 }

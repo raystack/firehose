@@ -27,7 +27,7 @@ public class PromSinkFactoryTest {
 
         Map<String, String> configuration = new HashMap<>();
         configuration.put("SINK_PROM_SERVICE_URL", "dummyEndpoint");
-        AbstractSink sink = new PromSinkFactory().create(configuration, statsDReporter, stencilClient);
+        AbstractSink sink = PromSinkFactory.create(configuration, statsDReporter, stencilClient);
 
         assertEquals(PromSink.class, sink.getClass());
     }

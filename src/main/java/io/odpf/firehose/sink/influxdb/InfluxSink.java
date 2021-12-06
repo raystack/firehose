@@ -4,7 +4,7 @@ package io.odpf.firehose.sink.influxdb;
 
 import io.odpf.firehose.sink.influxdb.builder.PointBuilder;
 import io.odpf.firehose.config.InfluxSinkConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.metrics.Instrumentation;
 import com.google.protobuf.DynamicMessage;

@@ -5,7 +5,7 @@ import io.odpf.firehose.consumer.TestBookingLogMessage;
 import io.odpf.firehose.consumer.TestDurationMessage;
 import io.odpf.firehose.consumer.TestFeedbackLogMessage;
 import io.odpf.firehose.consumer.TestLocation;
-import io.odpf.firehose.exception.EglcConfigurationException;
+import io.odpf.firehose.exception.ConfigurationException;
 import com.google.protobuf.Duration;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -385,7 +385,7 @@ public class TimeSeriesBuilderTest {
 
     @Test
     public void testMessageWithEmptyMetricProtoMappingConfig() throws InvalidProtocolBufferException {
-        expectedEx.expect(EglcConfigurationException.class);
+        expectedEx.expect(ConfigurationException.class);
         expectedEx.expectMessage("field index mapping cannot be empty; at least one field value is required");
 
         Properties promConfigProps = new Properties();
@@ -441,7 +441,7 @@ public class TimeSeriesBuilderTest {
 
     @Test
     public void testMessageWithEmptyFieldIndex() throws InvalidProtocolBufferException {
-        expectedEx.expect(EglcConfigurationException.class);
+        expectedEx.expect(ConfigurationException.class);
         expectedEx.expectMessage("field index mapping cannot be empty; at least one field value is required");
 
         Properties promConfigProps = new Properties();

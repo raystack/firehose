@@ -5,7 +5,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
 import cortexpb.Cortex;
-import io.odpf.firehose.exception.EglcConfigurationException;
+import io.odpf.firehose.exception.ConfigurationException;
 
 import java.util.List;
 import java.util.Properties;
@@ -68,7 +68,7 @@ public class TimeSeriesBuilder {
 
     private void checkValidity() {
         if (metricNameProtoIndexMapping == null || metricNameProtoIndexMapping.isEmpty()) {
-            throw new EglcConfigurationException(FIELD_NAME_MAPPING_ERROR_MESSAGE);
+            throw new ConfigurationException(FIELD_NAME_MAPPING_ERROR_MESSAGE);
         }
     }
 

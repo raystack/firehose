@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.redis.parsers;
 
 
 import io.odpf.firehose.config.RedisSinkConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.sink.redis.dataentry.RedisDataEntry;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;

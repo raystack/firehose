@@ -2,8 +2,10 @@ package io.odpf.firehose.sink.grpc;
 
 
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestGrpcResponse;
+import io.odpf.firehose.error.ErrorInfo;
+import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.grpc.client.GrpcClient;
@@ -59,7 +61,7 @@ public class GrpcSinkTest {
         sink.pushMessage(Collections.singletonList(message));
         verify(grpcClient, times(1)).execute(any(byte[].class), eq(headers));
 
-        verify(instrumentation, times(1)).logDebug("Preparing {} messages", 1);
+        verify(instrumentation, times(1)).logInfo("Preparing {} messages", 1);
         verify(instrumentation, times(1)).logDebug("Response: {}", response);
         verify(instrumentation, times(0)).logWarn("Grpc Service returned error");
         verify(instrumentation, times(1)).logDebug("Failed messages count: {}", 0);
@@ -69,6 +71,7 @@ public class GrpcSinkTest {
     public void shouldReturnBackListOfFailedMessages() throws IOException, DeserializerException {
         when(message.getLogMessage()).thenReturn(new byte[]{});
         when(message.getHeaders()).thenReturn(new RecordHeaders());
+        when(message.getErrorInfo()).thenReturn(new ErrorInfo(null, ErrorType.DESERIALIZATION_ERROR));
         TestGrpcResponse build = TestGrpcResponse.newBuilder().setSuccess(false).build();
         DynamicMessage response = DynamicMessage.parseFrom(build.getDescriptorForType(), build.toByteArray());
         when(grpcClient.execute(any(), any(RecordHeaders.class))).thenReturn(response);
@@ -77,7 +80,7 @@ public class GrpcSinkTest {
         assertFalse(failedMessages.isEmpty());
         assertEquals(1, failedMessages.size());
 
-        verify(instrumentation, times(1)).logDebug("Preparing {} messages", 1);
+        verify(instrumentation, times(1)).logInfo("Preparing {} messages", 1);
         verify(instrumentation, times(1)).logDebug("Response: {}", response);
         verify(instrumentation, times(1)).logWarn("Grpc Service returned error");
         verify(instrumentation, times(1)).logDebug("Failed messages count: {}", 1);

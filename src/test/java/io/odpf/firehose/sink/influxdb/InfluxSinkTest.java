@@ -4,7 +4,7 @@ package io.odpf.firehose.sink.influxdb;
 
 
 import io.odpf.firehose.config.InfluxSinkConfig;
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestBookingLogMessage;
 import io.odpf.firehose.consumer.TestFeedbackLogKey;
 import io.odpf.firehose.consumer.TestFeedbackLogMessage;
@@ -140,23 +140,6 @@ public class InfluxSinkTest {
     }
 
     @Test
-    public void shouldCaptureFailedExecutionTelemetryIncaseOfExceptions() throws DeserializerException, IOException {
-        expectedPoint = pointBuilder.tag("driver_id", driverId).build();
-        setupFieldNameIndexMappingProperties();
-        setupTagNameIndexMappingProperties();
-        config = ConfigFactory.create(InfluxSinkConfig.class, props);
-        sink = new InfluxSink(instrumentation, "influx", config, new ProtoParser(stencilClient, config.getInputSchemaProtoClass()), client, stencilClient);
-
-        RuntimeException runtimeException = new RuntimeException();
-        doThrow(runtimeException).when(instrumentation).startExecution();
-
-        sink.pushMessage(messages);
-
-        verify(instrumentation, times(1)).captureFailedExecutionTelemetry(runtimeException, messages.size());
-    }
-
-
-    @Test
     public void shouldPushMessagesWithType() throws DeserializerException, IOException {
         expectedPoint = pointBuilder.build();
         setupFieldNameIndexMappingProperties();
@@ -168,7 +151,7 @@ public class InfluxSinkTest {
         sink.pushMessage(messages);
         verify(instrumentation, times(1)).capturePreExecutionLatencies(messages);
         verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).logDebug("Preparing {} messages", messages.size());
+        verify(instrumentation, times(1)).logInfo("Preparing {} messages", messages.size());
         verify(client, times(1)).write(batchPointsArgumentCaptor.capture());
         List<BatchPoints> batchPointsList = batchPointsArgumentCaptor.getAllValues();
 
@@ -208,7 +191,7 @@ public class InfluxSinkTest {
         verify(client, times(1)).write(batchPointsArgumentCaptor.capture());
         List<BatchPoints> batchPointsList = batchPointsArgumentCaptor.getAllValues();
 
-        verify(instrumentation, times(1)).logDebug("Preparing {} messages", messages.size());
+        verify(instrumentation, times(1)).logInfo("Preparing {} messages", messages.size());
         verify(instrumentation, times(1)).logDebug("Data point: {}", batchPointsList.get(0).getPoints().get(0).toString());
         verify(instrumentation, times(1)).logDebug("Batch points: {}", batchPointsList.get(0).toString());
     }

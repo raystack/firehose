@@ -4,7 +4,6 @@ import com.timgroup.statsd.NoOpStatsDClient;
 import com.timgroup.statsd.NonBlockingStatsDClientBuilder;
 import com.timgroup.statsd.StatsDClient;
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.util.Clock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,9 +14,9 @@ import org.slf4j.LoggerFactory;
  */
 public class StatsDReporterFactory {
 
-    private String statsDHost;
-    private Integer statsDPort;
-    private String[] globalTags;
+    private final String statsDHost;
+    private final Integer statsDPort;
+    private final String[] globalTags;
     private static final Logger LOGGER = LoggerFactory.getLogger(StatsDReporterFactory.class);
 
     public StatsDReporterFactory(String statsDHost, Integer statsDPort, String[] globalTags) {
@@ -36,8 +35,7 @@ public class StatsDReporterFactory {
 
     public StatsDReporter buildReporter() {
         StatsDClient statsDClient = buildStatsDClient();
-        Clock clockInstance = new Clock();
-        return new StatsDReporter(statsDClient, clockInstance, globalTags);
+        return new StatsDReporter(statsDClient, globalTags);
     }
 
     private StatsDClient buildStatsDClient() {

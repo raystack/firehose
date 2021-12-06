@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.elasticsearch;
 
-import io.odpf.firehose.consumer.Message;
+import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.NeedToRetry;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
@@ -85,7 +85,7 @@ public class EsSink extends AbstractSink {
                 String responseStatus = String.valueOf(response.status().getStatus());
                 if (esRetryStatusCodeBlacklist.contains(responseStatus)) {
                     getInstrumentation().logInfo("Not retrying due to response status: {} is under blacklisted status code", responseStatus);
-                    getInstrumentation().incrementCounterWithTags(SINK_MESSAGES_DROP_TOTAL, "cause=" + response.status().name());
+                    getInstrumentation().incrementCounter(SINK_MESSAGES_DROP_TOTAL, "cause=" + response.status().name());
                     getInstrumentation().logInfo("Message dropped because of status code: " + responseStatus);
                 } else {
                     throw new NeedToRetry(bulkResponse.buildFailureMessage());

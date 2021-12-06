@@ -26,7 +26,9 @@ Following sinks are supported in the Firehose
 * [ElasticSearch](https://en.wikipedia.org/wiki/Elasticsearch) - A search database
 * [GRPC](https://en.wikipedia.org/wiki/GRPC) - GRPC based services
 * [Prometheus](https://en.wikipedia.org/wiki/Prometheus_%28software) - A time-series database
-* [MongoDB ](https://en.wikipedia.org/wiki/MongoDB)- A NoSQL database
+* [MongoDB](https://en.wikipedia.org/wiki/MongoDB) - A NoSQL database
+* [Bigquery](https://cloud.google.com/bigquery) - A data warehouse provided by Google Cloud
+* [Blob Storage](https://gocloud.dev/howto/blob/) - A data storage architecture for large stores of unstructured data like google cloud storage, amazon s3, apache hadoop distributed filesystem
 
 ## How is Firehose different from Kafka-Connect?
 
@@ -42,7 +44,8 @@ Following sinks are supported in the Firehose
 Explore the following resources to get started with Firehose:
 
 * [Guides](guides/overview.md) provide guidance on creating Firehose with different sinks.
-* [Concepts](concepts/overview.md) describe all important Firehose concepts.
+* [Concepts](concepts/README.md) describe all important Firehose concepts.
+* [FAQs](reference/faq/index.md) lists down some common frequently asked questions about Firehose and related components.
 * [Reference](reference/configuration/) contains details about configurations, metrics, FAQs, and other aspects of Firehose.
 * [Contributing](contribute/contribution.md) contains resources for anyone who wants to contribute to Firehose.
 

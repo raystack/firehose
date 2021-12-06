@@ -4,6 +4,12 @@
 
 [architecture](../concepts/architecture.md)
 
+## B
+
+[Bigquery sink](../guides/create_firehose.md#create-a-bigquery-sink)
+
+[Bigquery sink configs](configuration.md#bigquery-sink)
+
 ## C
 
 [Configurations](configuration/)
@@ -30,9 +36,9 @@
 
 [Filter](../concepts/architecture.md#components)
 
-[Filter configs](../guides/filters.md#filter-variables)
+[Filter configs](../guides/filters/#filter-variables)
 
-[Filter expression syntax](../guides/filters.md#filter-expressions)
+[Filter expression syntax](../guides/filters/#filter-expressions)
 
 [Firehose integration](../concepts/architecture.md#firehose-integration)
 
@@ -66,9 +72,9 @@
 
 [JDBC sink configs](configuration/#jdbc-sink)
 
-[JEXL filters](../guides/filters.md#filter-expressions)
+[JEXL filters](../guides/filters/#filter-expressions)
 
-[JEXL expression syntax](../guides/filters.md#syntax)
+[JEXL expression syntax](../guides/filters/#syntax)
 
 ## K
 
@@ -86,7 +92,13 @@
 
 [metrics](metrics.md)
 
-[MongoDB sink configs](configuration.md#mongodb-sink)
+[MongoDB sink configs](https://github.com/sumitaich1998/firehose/tree/ebdab0c700724e026d8aac80d3df061030661eb6/docs/reference/configuration.md#mongodb-sink)
+
+## O
+
+[Object Storage Sink](../guides/create_firehose.md#create-a-blob-sink)
+
+[Blob Sink Config](configuration/blob-sink.md)
 
 ## P
 
