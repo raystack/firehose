@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+
+## [0.2.0](https://github.com/odpf/firehose/releases/tag/v0.2.0) (2021-12-06)
+
+### Features
+- Added Async Consumer.
+- Added Json Filter.
+- Added new offset management.
+- Added DLQ writer with GCS support.
+- Added Error handling of messages returned from sink.
+- Added Blob sink with GCS support.
+- Added Bigquery Sink.
+
 ## [0.1.4](https://github.com/odpf/firehose/releases/tag/v0.1.4) (2021-10-13) 
 
 ### Features
