@@ -33,7 +33,7 @@ lombok {
 }
 
 group 'io.odpf'
-version '0.1.4'
+version '0.2.0'
 
 def projName = "firehose"
 
