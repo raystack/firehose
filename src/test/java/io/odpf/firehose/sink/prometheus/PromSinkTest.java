@@ -280,7 +280,7 @@ public class PromSinkTest {
         promSink.prepare(messages);
         promSink.execute();
 
-        verify(instrumentation, times(1)).captureCount("firehose_sink_http_response_code_total", 1, "status_code=" + statusLine.getStatusCode(), "url=" + uri.getPath());
+        verify(instrumentation, times(1)).captureCount("firehose_sink_http_response_code_total", 1, "status_code=" + statusLine.getStatusCode());
     }
 
     @Test

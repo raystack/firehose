@@ -66,7 +66,7 @@ public abstract class AbstractHttpSink extends AbstractSink {
                 }
             } finally {
                 consumeResponse(response);
-                captureHttpStatusCount(httpRequest, response);
+                captureHttpStatusCount(response);
             }
         }
         return new ArrayList<>();
@@ -108,13 +108,11 @@ public abstract class AbstractHttpSink extends AbstractSink {
         }
     }
 
-    private void captureHttpStatusCount(HttpEntityEnclosingRequestBase httpRequestMethod, HttpResponse response) {
-        String urlTag = "url=" + httpRequestMethod.getURI().getPath();
+    private void captureHttpStatusCount(HttpResponse response) {
         String statusCode = statusCode(response);
         String httpCodeTag = statusCode.equals("null") ? "status_code=" : "status_code=" + statusCode;
-        getInstrumentation().captureCount(SINK_HTTP_RESPONSE_CODE_TOTAL, 1, httpCodeTag, urlTag);
+        getInstrumentation().captureCount(SINK_HTTP_RESPONSE_CODE_TOTAL, 1, httpCodeTag);
     }
-
 
     private void printRequest(HttpEntityEnclosingRequestBase httpRequest, List<String> contentStringList) throws IOException {
         String entireRequest = String.format("\nRequest Method: %s\nRequest Url: %s\nRequest Headers: %s\nRequest Body: %s",
