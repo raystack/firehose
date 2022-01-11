@@ -8,7 +8,6 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +34,7 @@ public class JdbcMapFieldTest {
         TestAuditEntityLogMessage auditEntityLogMessage = TestAuditEntityLogMessage.newBuilder().putAllCurrentState(currentStates).build();
 
         Descriptors.FieldDescriptor currentEntityFieldDescriptor = TestAuditEntityLogMessage.getDescriptor().getFields().get(6);
-        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "io.odpf.firehose.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
+        DynamicMessage auditEntityParsed = stencilClient.getParser("io.odpf.firehose.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
         Object columnValue = auditEntityParsed.getField(currentEntityFieldDescriptor);
 
         JdbcMapField jdbcMapField = new JdbcMapField(columnValue, currentEntityFieldDescriptor);
@@ -54,7 +53,7 @@ public class JdbcMapFieldTest {
         TestAuditEntityLogMessage auditEntityLogMessage = TestAuditEntityLogMessage.newBuilder().putAllCurrentState(currentStates).build();
 
         Descriptors.FieldDescriptor currentEntityFieldDescriptor = TestAuditEntityLogMessage.getDescriptor().getFields().get(6);
-        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "io.odpf.firehose.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
+        DynamicMessage auditEntityParsed = stencilClient.getParser("io.odpf.firehose.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
         Object columnValue = auditEntityParsed.getField(currentEntityFieldDescriptor);
 
         JdbcMapField jdbcMapField = new JdbcMapField(columnValue, currentEntityFieldDescriptor);
@@ -74,7 +73,7 @@ public class JdbcMapFieldTest {
         TestAuditEntityLogMessage auditEntityLogMessage = TestAuditEntityLogMessage.newBuilder().putAllCurrentState(currentStates).build();
 
         Descriptors.FieldDescriptor currentEntityFieldDescriptor = TestAuditEntityLogMessage.getDescriptor().getFields().get(6);
-        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "io.odpf.firehose.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
+        DynamicMessage auditEntityParsed = stencilClient.getParser("io.odpf.firehose.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
         Object columnValue = auditEntityParsed.getField(currentEntityFieldDescriptor);
 
         JdbcMapField jdbcMapField = new JdbcMapField(columnValue, currentEntityFieldDescriptor);
@@ -91,7 +90,7 @@ public class JdbcMapFieldTest {
         TestAuditEntityLogMessage auditEntityLogMessage = TestAuditEntityLogMessage.newBuilder().setAuditId("audit_id").putAllCurrentState(currentStates).build();
 
         Descriptors.FieldDescriptor auditIdFieldDescriptor = TestAuditEntityLogMessage.getDescriptor().getFields().get(0);
-        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "io.odpf.firehose.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
+        DynamicMessage auditEntityParsed = stencilClient.getParser("io.odpf.firehose.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
         Object columnValue = auditEntityParsed.getField(auditIdFieldDescriptor);
 
         JdbcMapField jdbcMapField = new JdbcMapField(columnValue, auditIdFieldDescriptor);

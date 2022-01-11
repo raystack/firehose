@@ -12,7 +12,7 @@ import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.JsonFormat;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -29,17 +29,17 @@ import java.util.Date;
  * EsbMessageToJson Serialize protobuff message content into JSON.
  */
 public class MessageToJson implements MessageSerializer {
-    private ProtoParser protoParser;
+    private Parser protoParser;
     private Gson gson;
     private boolean preserveFieldNames;
     private boolean wrapInsideArray;
     private boolean enableSimpleDateFormat;
 
-    public MessageToJson(ProtoParser protoParser, boolean preserveFieldNames, boolean enableSimpleDateFormat) {
+    public MessageToJson(Parser protoParser, boolean preserveFieldNames, boolean enableSimpleDateFormat) {
         this(protoParser, preserveFieldNames, false, enableSimpleDateFormat);
     }
 
-    public MessageToJson(ProtoParser protoParser, boolean preserveFieldNames, boolean wrappedInsideArray, boolean enableSimpleDateFormat) {
+    public MessageToJson(Parser protoParser, boolean preserveFieldNames, boolean wrappedInsideArray, boolean enableSimpleDateFormat) {
         this.protoParser = protoParser;
         this.preserveFieldNames = preserveFieldNames;
         this.wrapInsideArray = wrappedInsideArray;

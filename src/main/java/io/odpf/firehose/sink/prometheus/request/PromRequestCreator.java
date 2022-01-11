@@ -8,7 +8,7 @@ import io.odpf.firehose.sink.prometheus.builder.HeaderBuilder;
 import io.odpf.firehose.sink.prometheus.builder.RequestEntityBuilder;
 import io.odpf.firehose.sink.prometheus.builder.TimeSeriesBuilder;
 import io.odpf.firehose.sink.prometheus.builder.WriteRequestBuilder;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 
 /**
  * Prometheus Request Creator.
@@ -16,7 +16,7 @@ import io.odpf.stencil.parser.ProtoParser;
 public class PromRequestCreator {
     private PromSinkConfig promSinkConfig;
     private StatsDReporter statsDReporter;
-    private ProtoParser protoParser;
+    private Parser protoParser;
 
 
     /**
@@ -26,7 +26,7 @@ public class PromRequestCreator {
      * @param promSinkConfig  the configuration for prometheus sink
      * @param protoParser           the proto parser
      */
-    public PromRequestCreator(StatsDReporter statsDReporter, PromSinkConfig promSinkConfig, ProtoParser protoParser) {
+    public PromRequestCreator(StatsDReporter statsDReporter, PromSinkConfig promSinkConfig, Parser protoParser) {
         this.statsDReporter = statsDReporter;
         this.promSinkConfig = promSinkConfig;
         this.protoParser = protoParser;

@@ -1,10 +1,13 @@
 package io.odpf.firehose.config;
 
 import io.odpf.firehose.config.converter.ProtoIndexToFieldMapConverter;
+import io.odpf.firehose.config.converter.SchemaRegistryHeadersConverter;
 import io.odpf.firehose.config.converter.SinkTypeConverter;
 import io.odpf.firehose.config.enums.SinkType;
 import org.aeonbits.owner.Config;
+import org.apache.http.Header;
 
+import java.util.List;
 import java.util.Properties;
 
 public interface AppConfig extends Config {
@@ -51,6 +54,12 @@ public interface AppConfig extends Config {
 
     @Key("SCHEMA_REGISTRY_STENCIL_FETCH_AUTH_BEARER_TOKEN")
     String getSchemaRegistryStencilFetchAuthBearerToken();
+
+    @Key("SCHEMA_REGISTRY_STENCIL_FETCH_HEADERS")
+    @TokenizerClass(SchemaRegistryHeadersConverter.class)
+    @ConverterClass(SchemaRegistryHeadersConverter.class)
+    @DefaultValue("")
+    List<Header> getSchemaRegistryFetchHeaders();
 
     @Key("SCHEMA_REGISTRY_STENCIL_CACHE_AUTO_REFRESH")
     @DefaultValue("false")

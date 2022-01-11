@@ -10,7 +10,7 @@ import io.odpf.firehose.consumer.TestMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.odpf.stencil.client.ClassLoadStencilClient;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.apache.kafka.common.errors.InvalidConfigurationException;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,9 +23,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 public class UriParserTest {
     @Mock
-    private ProtoParser protoParser;
-    private ProtoParser testMessageProtoParser;
-    private ProtoParser bookingMessageProtoParser;
+    private Parser protoParser;
+    private Parser testMessageProtoParser;
+    private Parser bookingMessageProtoParser;
     private Message message;
     private Message bookingMessage;
 
@@ -40,8 +40,8 @@ public class UriParserTest {
         this.bookingMessage = new Message(testKey.toByteArray(), testBookingLogMessage.toByteArray(), "test", 1, 11);
 
         StencilClient stencilClient = new ClassLoadStencilClient();
-        testMessageProtoParser = new ProtoParser(stencilClient, TestMessage.class.getCanonicalName());
-        bookingMessageProtoParser = new ProtoParser(stencilClient, TestBookingLogMessage.class.getCanonicalName());
+        testMessageProtoParser = stencilClient.getParser(TestMessage.class.getCanonicalName());
+        bookingMessageProtoParser = stencilClient.getParser(TestBookingLogMessage.class.getCanonicalName());
     }
 
     @Test

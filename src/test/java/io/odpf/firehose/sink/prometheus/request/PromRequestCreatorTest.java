@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.prometheus.request;
 
 import io.odpf.firehose.config.PromSinkConfig;
 import io.odpf.firehose.metrics.StatsDReporter;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +20,7 @@ public class PromRequestCreatorTest {
     private StatsDReporter statsDReporter;
 
     @Mock
-    private ProtoParser protoParser;
+    private Parser protoParser;
 
     @Before
     public void setup() {

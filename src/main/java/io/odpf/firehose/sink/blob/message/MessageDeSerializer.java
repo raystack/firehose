@@ -11,19 +11,19 @@ import io.odpf.firehose.exception.EmptyMessageException;
 import io.odpf.firehose.exception.UnknownFieldsException;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessageUtils;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class MessageDeSerializer {
 
     private final Descriptors.FileDescriptor kafkaMetadataFileDescriptor;
-    private final ProtoParser protoParser;
+    private final Parser protoParser;
     private final BlobSinkConfig sinkConfig;
 
     public MessageDeSerializer(BlobSinkConfig sinkConfig, StencilClient stencilClient) {
         this.sinkConfig = sinkConfig;
-        this.protoParser = new ProtoParser(stencilClient, sinkConfig.getInputSchemaProtoClass());
+        this.protoParser = stencilClient.getParser(sinkConfig.getInputSchemaProtoClass());
         this.kafkaMetadataFileDescriptor = KafkaMetadataProtoMessageUtils.createFileDescriptor(sinkConfig.getOutputKafkaMetadataColumnName());
     }
 

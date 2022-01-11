@@ -5,7 +5,7 @@ import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestMessage;
 import com.google.protobuf.DynamicMessage;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +22,7 @@ public class KeyOrMessageParserTest {
     private AppConfig appConfig;
 
     @Mock
-    private ProtoParser protoParser;
+    private Parser protoParser;
 
     private DynamicMessage dynamicMessage;
 

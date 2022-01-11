@@ -6,7 +6,6 @@ import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
 import org.aeonbits.owner.ConfigFactory;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
@@ -34,6 +33,6 @@ public class InfluxSinkFactory {
         InfluxDB client = InfluxDBFactory.connect(config.getSinkInfluxUrl(), config.getSinkInfluxUsername(), config.getSinkInfluxPassword());
         instrumentation.logInfo("InfluxDB connection established");
 
-        return new InfluxSink(new Instrumentation(statsDReporter, InfluxSink.class), "influx.db", config, new ProtoParser(stencilClient, config.getInputSchemaProtoClass()), client, stencilClient);
+        return new InfluxSink(new Instrumentation(statsDReporter, InfluxSink.class), "influx.db", config, stencilClient.getParser(config.getInputSchemaProtoClass()), client, stencilClient);
     }
 }

@@ -5,7 +5,7 @@ import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.message.Message;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import lombok.AllArgsConstructor;
 
 import java.io.IOException;
@@ -16,7 +16,7 @@ import java.io.IOException;
 @AllArgsConstructor
 public class KeyOrMessageParser {
 
-    private ProtoParser protoParser;
+    private Parser protoParser;
     private AppConfig appConfig;
 
     /**

@@ -7,7 +7,7 @@ import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
 import cortexpb.Cortex;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,7 +33,7 @@ public class WriteRequestBuilderTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     @Mock
-    private ProtoParser protoParser;
+    private Parser protoParser;
 
     private Message message1;
     private Message message2;

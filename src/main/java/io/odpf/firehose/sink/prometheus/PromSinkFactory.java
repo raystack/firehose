@@ -7,7 +7,7 @@ import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.prometheus.request.PromRequest;
 import io.odpf.firehose.sink.prometheus.request.PromRequestCreator;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -44,7 +44,7 @@ public class PromSinkFactory {
         CloseableHttpClient closeableHttpClient = newHttpClient(promSinkConfig);
         instrumentation.logInfo("HTTP connection established");
 
-        ProtoParser protoParser = new ProtoParser(stencilClient, promSchemaProtoClass);
+        Parser protoParser = stencilClient.getParser(promSchemaProtoClass);
 
         PromRequest request = new PromRequestCreator(statsDReporter, promSinkConfig, protoParser).createRequest();
 

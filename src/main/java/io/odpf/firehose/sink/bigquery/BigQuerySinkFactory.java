@@ -14,7 +14,7 @@ import io.odpf.firehose.sink.bigquery.proto.ProtoUpdateListener;
 import io.odpf.firehose.utils.StencilUtils;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.io.IOException;
@@ -29,12 +29,14 @@ public class BigQuerySinkFactory {
             MessageRecordConverterCache recordConverterWrapper = new MessageRecordConverterCache();
             ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(sinkConfig, bigQueryClient, recordConverterWrapper);
             StencilClient client = sinkConfig.isSchemaRegistryStencilEnable()
-                    ? StencilClientFactory.getClient(sinkConfig.getSchemaRegistryStencilUrls(), StencilUtils.getStencilConfig(sinkConfig), statsDReporter.getClient(), protoUpdateListener)
+                    ? StencilClientFactory.getClient(sinkConfig.getSchemaRegistryStencilUrls(),
+                            StencilUtils.getStencilConfig(sinkConfig, statsDReporter.getClient()).toBuilder()
+                                    .updateListener(protoUpdateListener).build())
                     : StencilClientFactory.getClient();
 
-            ProtoParser parser = new ProtoParser(client, sinkConfig.getInputSchemaProtoClass());
+            Parser parser = client.getParser(sinkConfig.getInputSchemaProtoClass());
             protoUpdateListener.setStencilParser(parser);
-            protoUpdateListener.update(client.getAllDescriptorAndTypeName());
+            protoUpdateListener.onSchemaUpdate(client.getAll());
             BigQueryRow rowCreator;
             if (sinkConfig.isRowInsertIdEnabled()) {
                 rowCreator = new BigQueryRowWithInsertId();

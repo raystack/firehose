@@ -10,7 +10,7 @@ import io.odpf.firehose.exception.ConfigurationException;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,7 +37,7 @@ public class MessageToTemplatizedJsonTest {
     private Instrumentation instrumentation;
 
     @Mock
-    private ProtoParser protoParser;
+    private Parser protoParser;
 
     private String logMessage;
     private String logKey;
@@ -53,7 +53,7 @@ public class MessageToTemplatizedJsonTest {
     public void shouldProperlySerializeMessageToTemplateWithSingleUnknownField() {
         String template = "{\"test\":\"$.vehicle_type\"}";
         StencilClient stencilClient = StencilClientFactory.getClient();
-        protoParser = new ProtoParser(stencilClient, TestAggregatedSupplyMessage.class.getName());
+        protoParser = stencilClient.getParser(TestAggregatedSupplyMessage.class.getName());
         MessageToTemplatizedJson messageToTemplatizedJson = MessageToTemplatizedJson
                 .create(instrumentation, template, protoParser);
         Message message = new Message(Base64.getDecoder().decode(logKey.getBytes()),
@@ -68,7 +68,7 @@ public class MessageToTemplatizedJsonTest {
     public void shouldProperlySerializeMessageToTemplateWithAsItIs() {
         String template = "\"$._all_\"";
         StencilClient stencilClient = StencilClientFactory.getClient();
-        protoParser = new ProtoParser(stencilClient, TestAggregatedSupplyMessage.class.getName());
+        protoParser = stencilClient.getParser(TestAggregatedSupplyMessage.class.getName());
         MessageToTemplatizedJson messageToTemplatizedJson = MessageToTemplatizedJson
                 .create(instrumentation, template, protoParser);
         Message message = new Message(Base64.getDecoder().decode(logKey.getBytes()),
@@ -93,7 +93,7 @@ public class MessageToTemplatizedJsonTest {
 
         String template = "{\"test\":\"$.invalidPath\"}";
         StencilClient stencilClient = StencilClientFactory.getClient();
-        protoParser = new ProtoParser(stencilClient, TestAggregatedSupplyMessage.class.getName());
+        protoParser = stencilClient.getParser(TestAggregatedSupplyMessage.class.getName());
         MessageToTemplatizedJson messageToTemplatizedJson = MessageToTemplatizedJson
                 .create(instrumentation, template, protoParser);
         Message message = new Message(Base64.getDecoder().decode(logKey.getBytes()),
@@ -135,7 +135,7 @@ public class MessageToTemplatizedJsonTest {
         List<String> pathList = new ArrayList<>(paths);
 
         StencilClient stencilClient = StencilClientFactory.getClient();
-        protoParser = new ProtoParser(stencilClient, TestAggregatedSupplyMessage.class.getName());
+        protoParser = stencilClient.getParser(TestAggregatedSupplyMessage.class.getName());
         MessageToTemplatizedJson.create(instrumentation, template, protoParser);
 
         Mockito.verify(instrumentation, Mockito.times(1)).logDebug("\nPaths: {}", pathList);

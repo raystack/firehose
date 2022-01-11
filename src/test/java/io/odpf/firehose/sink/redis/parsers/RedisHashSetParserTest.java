@@ -13,7 +13,7 @@ import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
 import io.odpf.firehose.sink.redis.dataentry.RedisHashSetFieldEntry;
 import io.odpf.stencil.client.ClassLoadStencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,11 +43,11 @@ public class RedisHashSetParserTest {
     private StatsDReporter statsDReporter;
 
     private Message message;
-    private ProtoParser testKeyProtoParser;
-    private ProtoParser testMessageProtoParser;
+    private Parser testKeyProtoParser;
+    private Parser testMessageProtoParser;
     private ClassLoadStencilClient stencilClient;
     private Message bookingMessage;
-    private ProtoParser bookingMessageProtoParser;
+    private Parser bookingMessageProtoParser;
     private String bookingOrderNumber = "booking-order-1";
 
     @Before
@@ -59,9 +59,9 @@ public class RedisHashSetParserTest {
         this.message = new Message(testKey.toByteArray(), testMessage.toByteArray(), "test", 1, 11);
         this.bookingMessage = new Message(testKey.toByteArray(), testBookingLogMessage.toByteArray(), "test", 1, 11);
         stencilClient = new ClassLoadStencilClient();
-        testMessageProtoParser = new ProtoParser(stencilClient, TestMessage.class.getCanonicalName());
-        bookingMessageProtoParser = new ProtoParser(stencilClient, TestBookingLogMessage.class.getCanonicalName());
-        testKeyProtoParser = new ProtoParser(stencilClient, TestKey.class.getCanonicalName());
+        testMessageProtoParser = stencilClient.getParser(TestMessage.class.getCanonicalName());
+        bookingMessageProtoParser = stencilClient.getParser(TestBookingLogMessage.class.getCanonicalName());
+        testKeyProtoParser = stencilClient.getParser(TestKey.class.getCanonicalName());
     }
 
     private void setRedisSinkConfig(String parserMode, String collectionKeyTemplate, RedisSinkDataType redisSinkDataType) {
@@ -321,7 +321,7 @@ public class RedisHashSetParserTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowInvalidProtocolBufferExceptionWhenIncorrectProtocolUsed() {
         setRedisSinkConfig("message", "Test-%s,1", RedisSinkDataType.HASHSET);
-        ProtoParser protoParserForTest = new ProtoParser(stencilClient, TestNestedRepeatedMessage.class.getCanonicalName());
+        Parser protoParserForTest = stencilClient.getParser(TestNestedRepeatedMessage.class.getCanonicalName());
         ProtoToFieldMapper protoToFieldMapperForTest = new ProtoToFieldMapper(protoParserForTest, getProperties("3", "details"));
         RedisParser redisMessageParser = new RedisHashSetParser(protoToFieldMapperForTest, protoParserForTest, redisSinkConfig, statsDReporter);
 

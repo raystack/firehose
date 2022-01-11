@@ -10,7 +10,6 @@ import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.elasticsearch.request.EsRequestHandler;
 import io.odpf.firehose.sink.elasticsearch.request.EsRequestHandlerFactory;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
@@ -49,7 +48,7 @@ public class EsSinkFactory {
         instrumentation.logDebug(esConfig);
         EsRequestHandler esRequestHandler = new EsRequestHandlerFactory(esSinkConfig, new Instrumentation(statsDReporter, EsRequestHandlerFactory.class),
                 esSinkConfig.getSinkEsIdField(), esSinkConfig.getSinkEsInputMessageType(),
-                new MessageToJson(new ProtoParser(stencilClient, esSinkConfig.getInputSchemaProtoClass()), esSinkConfig.isSinkEsPreserveProtoFieldNamesEnable(), false),
+                new MessageToJson(stencilClient.getParser(esSinkConfig.getInputSchemaProtoClass()), esSinkConfig.isSinkEsPreserveProtoFieldNamesEnable(), false),
                 esSinkConfig.getSinkEsTypeName(),
                 esSinkConfig.getSinkEsIndexName(),
                 esSinkConfig.getSinkEsRoutingKeyName())

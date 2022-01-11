@@ -11,7 +11,7 @@ import io.odpf.firehose.serializer.MessageToJson;
 import io.odpf.firehose.serializer.MessageToTemplatizedJson;
 import io.odpf.firehose.serializer.JsonWrappedProtoByte;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import lombok.AllArgsConstructor;
 
 /**
@@ -33,7 +33,7 @@ public class SerializerFactory {
         }
 
         if (httpSinkConfig.getSinkHttpDataFormat() == HttpSinkDataFormatType.JSON) {
-            ProtoParser protoParser = new ProtoParser(stencilClient, httpSinkConfig.getInputSchemaProtoClass());
+            Parser protoParser = stencilClient.getParser(httpSinkConfig.getInputSchemaProtoClass());
             if (httpSinkConfig.getSinkHttpJsonBodyTemplate().isEmpty()) {
                 instrumentation.logDebug("Serializer type: EsbMessageToJson", HttpSinkDataFormatType.JSON);
                 return new MessageToJson(protoParser, false, true);

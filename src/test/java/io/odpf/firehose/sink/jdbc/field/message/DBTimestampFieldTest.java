@@ -9,7 +9,6 @@ import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Timestamp;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +32,7 @@ public class DBTimestampFieldTest {
         TestAuditEntityLogMessage auditEntityLogMessage = TestAuditEntityLogMessage.newBuilder().setEventTimestamp(timestamp).build();
 
         Descriptors.FieldDescriptor timestampFieldDescriptor = TestAuditEntityLogMessage.getDescriptor().getFields().get(3);
-        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "io.odpf.firehose.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
+        DynamicMessage auditEntityParsed = stencilClient.getParser("io.odpf.firehose.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
         Object columnValue = auditEntityParsed.getField(timestampFieldDescriptor);
 
         JdbcTimestampField dbTime = new JdbcTimestampField(columnValue);
@@ -49,7 +48,7 @@ public class DBTimestampFieldTest {
         TestAuditEntityLogMessage auditEntityLogMessage = TestAuditEntityLogMessage.newBuilder().setEventTimestamp(timestamp).build();
 
         Descriptors.FieldDescriptor timestampFieldDescriptor = TestAuditEntityLogMessage.getDescriptor().getFields().get(3);
-        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "io.odpf.firehose.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
+        DynamicMessage auditEntityParsed = stencilClient.getParser("io.odpf.firehose.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
         Object columnValue = auditEntityParsed.getField(timestampFieldDescriptor);
 
         JdbcTimestampField dbTime = new JdbcTimestampField(columnValue);
@@ -65,7 +64,7 @@ public class DBTimestampFieldTest {
         TestAuditEntityLogMessage auditEntityLogMessage = TestAuditEntityLogMessage.newBuilder().setEventTimestamp(timestamp).setAuditId("audit_id").build();
 
         Descriptors.FieldDescriptor auditIdFieldDescriptor = TestAuditEntityLogMessage.getDescriptor().getFields().get(0);
-        DynamicMessage auditEntityParsed = new ProtoParser(stencilClient, "io.odpf.firehose.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
+        DynamicMessage auditEntityParsed = stencilClient.getParser("io.odpf.firehose.consumer.TestAuditEntityLogMessage").parse(auditEntityLogMessage.toByteArray());
         Object columnValue = auditEntityParsed.getField(auditIdFieldDescriptor);
 
         JdbcTimestampField dbTime = new JdbcTimestampField(columnValue);

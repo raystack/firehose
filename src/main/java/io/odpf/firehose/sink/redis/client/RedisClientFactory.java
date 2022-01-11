@@ -13,7 +13,7 @@ import io.odpf.firehose.sink.redis.parsers.RedisParserFactory;
 import io.odpf.firehose.sink.redis.ttl.RedisTtl;
 import io.odpf.firehose.sink.redis.ttl.RedisTTLFactory;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.apache.commons.lang.StringUtils;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
@@ -45,7 +45,7 @@ public class RedisClientFactory {
     }
 
     public RedisClient getClient() {
-        ProtoParser protoParser = new ProtoParser(stencilClient, redisSinkConfig.getInputSchemaProtoClass());
+        Parser protoParser =  stencilClient.getParser(redisSinkConfig.getInputSchemaProtoClass());
         ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, redisSinkConfig.getInputSchemaProtoToColumnMapping());
         RedisParser redisParser = RedisParserFactory.getParser(protoToFieldMapper, protoParser, redisSinkConfig, statsDReporter);
         RedisSinkDeploymentType redisSinkDeploymentType = redisSinkConfig.getSinkRedisDeploymentType();

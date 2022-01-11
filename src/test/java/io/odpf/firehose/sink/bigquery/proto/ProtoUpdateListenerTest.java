@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.LegacySQLTypeName;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Descriptors.Descriptor;
+
 import io.odpf.firehose.TestKeyBQ;
 import io.odpf.firehose.config.BigQuerySinkConfig;
 import io.odpf.firehose.message.Message;
@@ -14,8 +17,7 @@ import io.odpf.firehose.sink.bigquery.models.MetadataUtil;
 import io.odpf.firehose.sink.bigquery.models.ProtoField;
 import io.odpf.firehose.sink.bigquery.models.Records;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.models.DescriptorAndTypeName;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,6 +25,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
@@ -49,11 +52,13 @@ public class ProtoUpdateListenerTest {
     private MessageRecordConverterCache converterWrapper;
 
     @Before
-    public void setUp() {
+    public void setUp() throws InvalidProtocolBufferException {
         System.setProperty("INPUT_SCHEMA_PROTO_CLASS", "io.odpf.firehose.TestKeyBQ");
         System.setProperty("SINK_BIGQUERY_ENABLE_AUTO_SCHEMA_UPDATE", "false");
         config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
         converterWrapper = new MessageRecordConverterCache();
+        when(stencilClient.parse(Mockito.anyString(), Mockito.any())).thenCallRealMethod();
+        when(stencilClient.getParser(Mockito.anyString())).thenCallRealMethod();
     }
 
     @Test
@@ -64,10 +69,10 @@ public class ProtoUpdateListenerTest {
         returnedProtoField.addField(ProtoUtil.createProtoField("order_number", 1));
         returnedProtoField.addField(ProtoUtil.createProtoField("order_url", 2));
 
-        HashMap<String, DescriptorAndTypeName> descriptorsMap = new HashMap<String, DescriptorAndTypeName>() {{
-            put(String.format("%s", TestKeyBQ.class.getName()), new DescriptorAndTypeName(TestKeyBQ.getDescriptor(), String.format(".%s.%s", TestKeyBQ.getDescriptor().getFile().getPackage(), TestKeyBQ.getDescriptor().getName())));
+        HashMap<String, Descriptor> descriptorsMap = new HashMap<String, Descriptor>() {{
+            put(String.format("%s", TestKeyBQ.class.getName()), TestKeyBQ.getDescriptor());
         }};
-        when(stencilClient.get(TestKeyBQ.class.getName())).thenReturn(descriptorsMap.get(TestKeyBQ.class.getName()).getDescriptor());
+        when(stencilClient.get(TestKeyBQ.class.getName())).thenReturn(descriptorsMap.get(TestKeyBQ.class.getName()));
         ObjectNode objNode = JsonNodeFactory.instance.objectNode();
         objNode.put("1", "order_number");
         objNode.put("2", "order_url");
@@ -79,9 +84,9 @@ public class ProtoUpdateListenerTest {
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
 
-        ProtoParser protoParser = new ProtoParser(stencilClient, config.getInputSchemaProtoClass());
+        Parser protoParser = stencilClient.getParser(config.getInputSchemaProtoClass());
         protoUpdateListener.setStencilParser(protoParser);
-        protoUpdateListener.onProtoUpdate("", descriptorsMap);
+        protoUpdateListener.onSchemaUpdate(descriptorsMap);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
         Instant now = Instant.now();
         Message testMessage = new Message("".getBytes(), testKeyBQ.toByteArray(), "topic", 1, 1);
@@ -96,14 +101,14 @@ public class ProtoUpdateListenerTest {
     public void shouldThrowExceptionIfParserFails() {
         ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(config, bigQueryClient, converterWrapper);
 
-        HashMap<String, DescriptorAndTypeName> descriptorsMap = new HashMap<String, DescriptorAndTypeName>() {{
-            put(String.format("%s.%s", TestKeyBQ.class.getPackage(), TestKeyBQ.class.getName()), new DescriptorAndTypeName(TestKeyBQ.getDescriptor(), String.format(".%s.%s", TestKeyBQ.getDescriptor().getFile().getPackage(), TestKeyBQ.getDescriptor().getName())));
+        HashMap<String, Descriptor> descriptorsMap = new HashMap<String, Descriptor>() {{
+            put(String.format("%s.%s", TestKeyBQ.class.getPackage(), TestKeyBQ.class.getName()), TestKeyBQ.getDescriptor());
         }};
         ObjectNode objNode = JsonNodeFactory.instance.objectNode();
         objNode.put("1", "order_number");
         objNode.put("2", "order_url");
 
-        protoUpdateListener.onProtoUpdate("", descriptorsMap);
+        protoUpdateListener.onSchemaUpdate(descriptorsMap);
     }
 
     @Test(expected = RuntimeException.class)
@@ -113,8 +118,8 @@ public class ProtoUpdateListenerTest {
         returnedProtoField.addField(ProtoUtil.createProtoField("order_number", 1));
         returnedProtoField.addField(ProtoUtil.createProtoField("order_url", 2));
 
-        HashMap<String, DescriptorAndTypeName> descriptorsMap = new HashMap<String, DescriptorAndTypeName>() {{
-            put(String.format("%s.%s", TestKeyBQ.class.getPackage(), TestKeyBQ.class.getName()), new DescriptorAndTypeName(TestKeyBQ.getDescriptor(), String.format(".%s.%s", TestKeyBQ.getDescriptor().getFile().getPackage(), TestKeyBQ.getDescriptor().getName())));
+        HashMap<String, Descriptor> descriptorsMap = new HashMap<String, Descriptor>() {{
+            put(String.format("%s.%s", TestKeyBQ.class.getPackage(), TestKeyBQ.class.getName()), TestKeyBQ.getDescriptor());
         }};
         ObjectNode objNode = JsonNodeFactory.instance.objectNode();
         objNode.put("1", "order_number");
@@ -127,7 +132,7 @@ public class ProtoUpdateListenerTest {
         }};
         doThrow(new BigQueryException(10, "bigquery mapping has failed")).when(bigQueryClient).upsertTable(bqSchemaFields);
 
-        protoUpdateListener.onProtoUpdate("", descriptorsMap);
+        protoUpdateListener.onSchemaUpdate(descriptorsMap);
     }
 
     @Test(expected = RuntimeException.class)
@@ -138,8 +143,8 @@ public class ProtoUpdateListenerTest {
         returnedProtoField.addField(ProtoUtil.createProtoField("order_number", 1));
         returnedProtoField.addField(ProtoUtil.createProtoField("order_url", 2));
 
-        HashMap<String, DescriptorAndTypeName> descriptorsMap = new HashMap<String, DescriptorAndTypeName>() {{
-            put(String.format("%s.%s", TestKeyBQ.class.getPackage(), TestKeyBQ.class.getName()), new DescriptorAndTypeName(TestKeyBQ.getDescriptor(), String.format(".%s.%s", TestKeyBQ.getDescriptor().getFile().getPackage(), TestKeyBQ.getDescriptor().getName())));
+        HashMap<String, Descriptor> descriptorsMap = new HashMap<String, Descriptor>() {{
+            put(String.format("%s.%s", TestKeyBQ.class.getPackage(), TestKeyBQ.class.getName()), TestKeyBQ.getDescriptor());
         }};
         ObjectNode objNode = JsonNodeFactory.instance.objectNode();
         objNode.put("1", "order_number");
@@ -152,7 +157,7 @@ public class ProtoUpdateListenerTest {
         }};
         doThrow(new RuntimeException("cannot change dataset location")).when(bigQueryClient).upsertTable(bqSchemaFields);
 
-        protoUpdateListener.onProtoUpdate("", descriptorsMap);
+        protoUpdateListener.onSchemaUpdate(descriptorsMap);
     }
 
     @Test
@@ -163,10 +168,10 @@ public class ProtoUpdateListenerTest {
         returnedProtoField.addField(ProtoUtil.createProtoField("order_number", 1));
         returnedProtoField.addField(ProtoUtil.createProtoField("order_url", 2));
 
-        HashMap<String, DescriptorAndTypeName> descriptorsMap = new HashMap<String, DescriptorAndTypeName>() {{
-            put(String.format("%s", TestKeyBQ.class.getName()), new DescriptorAndTypeName(TestKeyBQ.getDescriptor(), String.format(".%s.%s", TestKeyBQ.getDescriptor().getFile().getPackage(), TestKeyBQ.getDescriptor().getName())));
+        HashMap<String, Descriptor> descriptorsMap = new HashMap<String, Descriptor>() {{
+            put(String.format("%s", TestKeyBQ.class.getName()), TestKeyBQ.getDescriptor());
         }};
-        when(stencilClient.get(TestKeyBQ.class.getName())).thenReturn(descriptorsMap.get(TestKeyBQ.class.getName()).getDescriptor());
+        when(stencilClient.get(TestKeyBQ.class.getName())).thenReturn(descriptorsMap.get(TestKeyBQ.class.getName()));
         ObjectNode objNode = JsonNodeFactory.instance.objectNode();
         objNode.put("1", "order_number");
         objNode.put("2", "order_url");
@@ -177,9 +182,9 @@ public class ProtoUpdateListenerTest {
             addAll(MetadataUtil.getMetadataFields()); // metadata fields are not namespaced
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
-        ProtoParser protoParser = new ProtoParser(stencilClient, config.getInputSchemaProtoClass());
+        Parser protoParser = stencilClient.getParser(config.getInputSchemaProtoClass());
         protoUpdateListener.setStencilParser(protoParser);
-        protoUpdateListener.onProtoUpdate("", descriptorsMap);
+        protoUpdateListener.onSchemaUpdate(descriptorsMap);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
         Instant now = Instant.now();
         Message testMessage = new Message("".getBytes(), testKeyBQ.toByteArray(), "topic", 1, 1);
@@ -200,10 +205,10 @@ public class ProtoUpdateListenerTest {
         returnedProtoField.addField(ProtoUtil.createProtoField("order_number", 1));
         returnedProtoField.addField(ProtoUtil.createProtoField("order_url", 2));
 
-        HashMap<String, DescriptorAndTypeName> descriptorsMap = new HashMap<String, DescriptorAndTypeName>() {{
-            put(String.format("%s", TestKeyBQ.class.getName()), new DescriptorAndTypeName(TestKeyBQ.getDescriptor(), String.format(".%s.%s", TestKeyBQ.getDescriptor().getFile().getPackage(), TestKeyBQ.getDescriptor().getName())));
+        HashMap<String, Descriptor> descriptorsMap = new HashMap<String, Descriptor>() {{
+            put(String.format("%s", TestKeyBQ.class.getName()), TestKeyBQ.getDescriptor());
         }};
-        when(stencilClient.get(TestKeyBQ.class.getName())).thenReturn(descriptorsMap.get(TestKeyBQ.class.getName()).getDescriptor());
+        when(stencilClient.get(TestKeyBQ.class.getName())).thenReturn(descriptorsMap.get(TestKeyBQ.class.getName()));
         ObjectNode objNode = JsonNodeFactory.instance.objectNode();
         objNode.put("1", "order_number");
         objNode.put("2", "order_url");
@@ -215,9 +220,9 @@ public class ProtoUpdateListenerTest {
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
 
-        ProtoParser protoParser = new ProtoParser(stencilClient, config.getInputSchemaProtoClass());
+        Parser protoParser = stencilClient.getParser(config.getInputSchemaProtoClass());
         protoUpdateListener.setStencilParser(protoParser);
-        protoUpdateListener.onProtoUpdate("", descriptorsMap);
+        protoUpdateListener.onSchemaUpdate(descriptorsMap);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
         Instant now = Instant.now();
         Message testMessage = new Message("".getBytes(), testKeyBQ.toByteArray(), "topic", 1, 1);
@@ -240,8 +245,8 @@ public class ProtoUpdateListenerTest {
         returnedProtoField.addField(ProtoUtil.createProtoField("order_number", 1));
         returnedProtoField.addField(ProtoUtil.createProtoField("order_url", 2));
 
-        HashMap<String, DescriptorAndTypeName> descriptorsMap = new HashMap<String, DescriptorAndTypeName>() {{
-            put(String.format("%s", TestKeyBQ.class.getName()), new DescriptorAndTypeName(TestKeyBQ.getDescriptor(), String.format(".%s.%s", TestKeyBQ.getDescriptor().getFile().getPackage(), TestKeyBQ.getDescriptor().getName())));
+        HashMap<String, Descriptor> descriptorsMap = new HashMap<String, Descriptor>() {{
+            put(String.format("%s", TestKeyBQ.class.getName()), TestKeyBQ.getDescriptor());
         }};
         ObjectNode objNode = JsonNodeFactory.instance.objectNode();
         objNode.put("1", "order_number");
@@ -254,7 +259,7 @@ public class ProtoUpdateListenerTest {
         }};
 
         Exception exception = Assertions.assertThrows(RuntimeException.class, () -> {
-            protoUpdateListener.onProtoUpdate("", descriptorsMap);
+            protoUpdateListener.onSchemaUpdate(descriptorsMap);
         });
         Assert.assertEquals("Metadata field(s) is already present in the schema. fields: [order_number]", exception.getMessage());
         verify(bigQueryClient, times(0)).upsertTable(bqSchemaFields);

@@ -5,7 +5,7 @@ import io.odpf.firehose.message.Message;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.common.errors.InvalidConfigurationException;
 
@@ -16,10 +16,10 @@ import java.util.List;
  * URI parser for http requests.
  */
 public class UriParser {
-    private ProtoParser protoParser;
+    private Parser protoParser;
     private String parserMode;
 
-    public UriParser(ProtoParser protoParser, String parserMode) {
+    public UriParser(Parser protoParser, String parserMode) {
         this.protoParser = protoParser;
         this.parserMode = parserMode;
     }

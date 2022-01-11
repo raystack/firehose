@@ -48,7 +48,6 @@ import io.odpf.firehose.tracer.SinkTracer;
 import io.odpf.firehose.utils.StencilUtils;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
 import io.opentracing.Tracer;
 import io.opentracing.noop.NoopTracerFactory;
 import org.aeonbits.owner.ConfigFactory;
@@ -94,9 +93,9 @@ public class FirehoseConsumerFactory {
 
         String stencilUrl = this.kafkaConsumerConfig.getSchemaRegistryStencilUrls();
         stencilClient = this.kafkaConsumerConfig.isSchemaRegistryStencilEnable()
-                ? StencilClientFactory.getClient(stencilUrl, StencilUtils.getStencilConfig(kafkaConsumerConfig), this.statsDReporter.getClient())
+                ? StencilClientFactory.getClient(stencilUrl, StencilUtils.getStencilConfig(kafkaConsumerConfig, statsDReporter.getClient()))
                 : StencilClientFactory.getClient();
-        parser = new KeyOrMessageParser(new ProtoParser(stencilClient, kafkaConsumerConfig.getInputSchemaProtoClass()), kafkaConsumerConfig);
+        parser = new KeyOrMessageParser(stencilClient.getParser(kafkaConsumerConfig.getInputSchemaProtoClass()), kafkaConsumerConfig);
     }
 
     private FirehoseFilter buildFilter(FilterConfig filterConfig) {
