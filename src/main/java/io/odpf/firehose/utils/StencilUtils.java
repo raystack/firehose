@@ -14,6 +14,7 @@ public class StencilUtils {
                 .fetchBackoffMinMs(appconfig.getSchemaRegistryStencilFetchBackoffMinMs())
                 .fetchRetries(appconfig.getSchemaRegistryStencilFetchRetries())
                 .fetchTimeoutMs(appconfig.getSchemaRegistryStencilFetchTimeoutMs())
+                .refreshStrategy(appconfig.getSchemaRegistryStencilRefreshStrategy())
                 .build();
     }
 }
