@@ -15,6 +15,7 @@ import io.odpf.firehose.utils.StencilUtils;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
 import io.odpf.stencil.Parser;
+import io.odpf.stencil.config.StencilConfig;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.io.IOException;
@@ -27,16 +28,17 @@ public class BigQuerySinkFactory {
         try {
             BigQueryClient bigQueryClient = new BigQueryClient(sinkConfig, new Instrumentation(statsDReporter, BigQueryClient.class));
             MessageRecordConverterCache recordConverterWrapper = new MessageRecordConverterCache();
+            StencilClient stencilClient;
             ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(sinkConfig, bigQueryClient, recordConverterWrapper);
-            StencilClient client = sinkConfig.isSchemaRegistryStencilEnable()
-                    ? StencilClientFactory.getClient(sinkConfig.getSchemaRegistryStencilUrls(),
-                            StencilUtils.getStencilConfig(sinkConfig, statsDReporter.getClient()).toBuilder()
-                                    .updateListener(protoUpdateListener).build())
-                    : StencilClientFactory.getClient();
-
-            Parser parser = client.getParser(sinkConfig.getInputSchemaProtoClass());
+            StencilConfig stencilConfig = StencilUtils.getStencilConfig(sinkConfig, statsDReporter.getClient(), protoUpdateListener);
+            if (sinkConfig.isSchemaRegistryStencilEnable()) {
+                stencilClient = StencilClientFactory.getClient(sinkConfig.getSchemaRegistryStencilUrls(), stencilConfig);
+            } else {
+                stencilClient = StencilClientFactory.getClient();
+            }
+            Parser parser = stencilClient.getParser(sinkConfig.getInputSchemaProtoClass());
             protoUpdateListener.setStencilParser(parser);
-            protoUpdateListener.onSchemaUpdate(client.getAll());
+            protoUpdateListener.onSchemaUpdate(stencilClient.getAll());
             BigQueryRow rowCreator;
             if (sinkConfig.isRowInsertIdEnabled()) {
                 rowCreator = new BigQueryRowWithInsertId();

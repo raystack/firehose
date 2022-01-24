@@ -8,15 +8,11 @@ import io.odpf.stencil.cache.SchemaRefreshStrategy;
 
 public class SchemaRegistryRefreshConverter implements Converter<SchemaRefreshStrategy> {
 
-  @Override
-  public SchemaRefreshStrategy convert(Method method, String input) {
-    switch (input.toUpperCase()) {
-      case "LONG_POLLING":
-        return SchemaRefreshStrategy.longPollingStrategy();
-      case "VERSION_BASED_REFRESH":
-        return SchemaRefreshStrategy.versionBasedRefresh();
-      default:
+    @Override
+    public SchemaRefreshStrategy convert(Method method, String input) {
+        if ("VERSION_BASED_REFRESH".equalsIgnoreCase(input)) {
+            return SchemaRefreshStrategy.versionBasedRefresh();
+        }
         return SchemaRefreshStrategy.longPollingStrategy();
     }
-  }
 }
