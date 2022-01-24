@@ -9,7 +9,7 @@ import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.metrics.Instrumentation;
 import com.google.protobuf.DynamicMessage;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
@@ -25,7 +25,7 @@ public class InfluxSink extends AbstractSink {
     public static final String FIELD_NAME_MAPPING_ERROR_MESSAGE = "field index mapping cannot be empty; at least one field value is required";
 
     private InfluxSinkConfig config;
-    private ProtoParser protoParser;
+    private Parser protoParser;
     private PointBuilder pointBuilder;
     private InfluxDB client;
     private BatchPoints batchPoints;
@@ -41,7 +41,7 @@ public class InfluxSink extends AbstractSink {
      * @param client          the client
      * @param stencilClient   the stencil client
      */
-    public InfluxSink(Instrumentation instrumentation, String sinkType, InfluxSinkConfig config, ProtoParser protoParser, InfluxDB client, StencilClient stencilClient) {
+    public InfluxSink(Instrumentation instrumentation, String sinkType, InfluxSinkConfig config, Parser protoParser, InfluxDB client, StencilClient stencilClient) {
         super(instrumentation, sinkType);
         this.config = config;
         this.protoParser = protoParser;

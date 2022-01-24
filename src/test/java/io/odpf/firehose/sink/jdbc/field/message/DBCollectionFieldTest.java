@@ -7,7 +7,6 @@ import io.odpf.firehose.consumer.TestFeedbackLogMessage;
 import io.odpf.firehose.consumer.TestReason;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +38,7 @@ public class DBCollectionFieldTest {
 
         Descriptors.FieldDescriptor reasonFieldDescriptor = TestFeedbackLogMessage.getDescriptor().getFields().get(10);
 
-        DynamicMessage feedbackParsed = new ProtoParser(stencilClient, "io.odpf.firehose.consumer.TestFeedbackLogMessage").parse(feedback.toByteArray());
+        DynamicMessage feedbackParsed = stencilClient.getParser("io.odpf.firehose.consumer.TestFeedbackLogMessage").parse(feedback.toByteArray());
         Object columnValue = feedbackParsed.getField(reasonFieldDescriptor);
 
         JdbcCollectionField dbCollectionField = new JdbcCollectionField(columnValue, reasonFieldDescriptor);
@@ -63,7 +62,7 @@ public class DBCollectionFieldTest {
 
         Descriptors.FieldDescriptor reasonFieldDescriptor = TestFeedbackLogMessage.getDescriptor().getFields().get(10);
 
-        DynamicMessage feedbackParsed = new ProtoParser(stencilClient, "io.odpf.firehose.consumer.TestFeedbackLogMessage").parse(feedback.toByteArray());
+        DynamicMessage feedbackParsed = stencilClient.getParser("io.odpf.firehose.consumer.TestFeedbackLogMessage").parse(feedback.toByteArray());
         Object columnValue = feedbackParsed.getField(reasonFieldDescriptor);
 
         JdbcCollectionField dbCollectionField = new JdbcCollectionField(columnValue, reasonFieldDescriptor);
@@ -87,7 +86,7 @@ public class DBCollectionFieldTest {
 
         Descriptors.FieldDescriptor orderNumberFieldDescriptor = TestFeedbackLogMessage.getDescriptor().getFields().get(0);
 
-        DynamicMessage feedbackParsed = new ProtoParser(stencilClient, "io.odpf.firehose.consumer.TestFeedbackLogMessage").parse(feedback.toByteArray());
+        DynamicMessage feedbackParsed = stencilClient.getParser("io.odpf.firehose.consumer.TestFeedbackLogMessage").parse(feedback.toByteArray());
         Object columnValue = feedbackParsed.getField(orderNumberFieldDescriptor);
 
         JdbcCollectionField dbCollectionField = new JdbcCollectionField(columnValue, orderNumberFieldDescriptor);

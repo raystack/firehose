@@ -5,7 +5,7 @@ import io.odpf.firehose.config.RedisSinkConfig;
 import io.odpf.firehose.config.enums.RedisSinkDataType;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 
 /**
  * Redis parser factory.
@@ -21,7 +21,7 @@ public class RedisParserFactory {
      * @param statsDReporter     the statsd reporter
      * @return RedisParser
      */
-    public static RedisParser getParser(ProtoToFieldMapper protoToFieldMapper, ProtoParser protoParser, RedisSinkConfig redisSinkConfig, StatsDReporter statsDReporter) {
+    public static RedisParser getParser(ProtoToFieldMapper protoToFieldMapper, Parser protoParser, RedisSinkConfig redisSinkConfig, StatsDReporter statsDReporter) {
 
         RedisParser redisParser;
 

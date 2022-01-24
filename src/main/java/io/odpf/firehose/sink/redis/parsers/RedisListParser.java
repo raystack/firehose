@@ -8,7 +8,7 @@ import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.redis.dataentry.RedisDataEntry;
 import io.odpf.firehose.sink.redis.dataentry.RedisListEntry;
 import com.google.protobuf.DynamicMessage;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class RedisListParser extends RedisParser {
      * @param redisSinkConfig the redis sink config
      * @param statsDReporter  the stats d reporter
      */
-    public RedisListParser(ProtoParser protoParser, RedisSinkConfig redisSinkConfig, StatsDReporter statsDReporter) {
+    public RedisListParser(Parser protoParser, RedisSinkConfig redisSinkConfig, StatsDReporter statsDReporter) {
         super(protoParser, redisSinkConfig);
         this.redisSinkConfig = redisSinkConfig;
         this.statsDReporter = statsDReporter;

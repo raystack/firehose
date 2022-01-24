@@ -16,8 +16,7 @@ import io.odpf.firehose.sink.bigquery.proto.ProtoUtil;
 import io.odpf.stencil.DescriptorMapBuilder;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.models.DescriptorAndTypeName;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,7 +46,7 @@ public class RowMapperTest {
 
     @Before
     public void setUp() throws IOException, Descriptors.DescriptorValidationException {
-        ProtoParser protoParser = new ProtoParser(StencilClientFactory.getClient(), TestMessageBQ.class.getName());
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         now = Instant.now();
         createdAt = Timestamp.newBuilder().setSeconds(now.getEpochSecond()).setNanos(now.getNano()).build();
         TestMessageBQ testMessage = TestMessageBQ.newBuilder()
@@ -64,9 +63,9 @@ public class RowMapperTest {
 
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream fileInputStream = new FileInputStream(classLoader.getResource("__files/descriptors.bin").getFile());
-        Map<String, DescriptorAndTypeName> descriptorMap = new DescriptorMapBuilder().buildFrom(fileInputStream);
+        Map<String, Descriptors.Descriptor> descriptorMap = DescriptorMapBuilder.buildFrom(fileInputStream);
         stencilClientWithURL = mock(StencilClient.class);
-        when(stencilClientWithURL.get("io.odpf.firehose.TestMessageChildBQ")).thenReturn(descriptorMap.get("io.odpf.firehose.TestMessageChildBQ").getDescriptor());
+        when(stencilClientWithURL.get("io.odpf.firehose.TestMessageChildBQ")).thenReturn(descriptorMap.get("io.odpf.firehose.TestMessageChildBQ"));
     }
 
     @Test
@@ -104,7 +103,7 @@ public class RowMapperTest {
         fieldMappings.put("11", durationMappings);
 
         TestMessageBQ message = ProtoUtil.generateTestMessage(now);
-        ProtoParser messageProtoParser = new ProtoParser(StencilClientFactory.getClient(), TestMessageBQ.class.getName());
+        Parser messageProtoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         Map<String, Object> fields = new RowMapper(fieldMappings).map(messageProtoParser.parse(message.toByteArray()));
         Map durationFields = (Map) fields.get("duration");
         assertEquals("order-1", fields.get("duration_id"));
@@ -122,7 +121,7 @@ public class RowMapperTest {
         TestMessageBQ message1 = ProtoUtil.generateTestMessage(now);
         TestMessageBQ message2 = ProtoUtil.generateTestMessage(now);
 
-        ProtoParser protoParser = new ProtoParser(StencilClientFactory.getClient(), TestNestedMessageBQ.class.getName());
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedMessageBQ.class.getName());
         TestNestedMessageBQ nestedMessage1 = ProtoUtil.generateTestNestedMessage("nested-message-1", message1);
         TestNestedMessageBQ nestedMessage2 = ProtoUtil.generateTestNestedMessage("nested-message-2", message2);
         Arrays.asList(nestedMessage1, nestedMessage2).forEach(msg -> {
@@ -149,7 +148,7 @@ public class RowMapperTest {
                 .addAliases("alias1").addAliases("alias2")
                 .build();
 
-        ProtoParser protoParser = new ProtoParser(StencilClientFactory.getClient(), TestMessageBQ.class.getName());
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         Map<String, Object> fields = new RowMapper(fieldMappings).map(protoParser.parse(message.toByteArray()));
 
         assertEquals(orderNumber, fields.get("order_number"));
@@ -173,7 +172,7 @@ public class RowMapperTest {
         fieldMappings.put("2", getTestMessageProperties());
 
 
-        ProtoParser protoParser = new ProtoParser(StencilClientFactory.getClient(), TestNestedRepeatedMessageBQ.class.getName());
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedRepeatedMessageBQ.class.getName());
         Map<String, Object> fields = new RowMapper(fieldMappings).map(protoParser.parse(message.toByteArray()));
 
         assertEquals(number, fields.get("number_field"));
@@ -196,7 +195,7 @@ public class RowMapperTest {
         fieldMappings.put("3", "number_field");
         fieldMappings.put("2", getTestMessageProperties());
 
-        ProtoParser protoParser = new ProtoParser(StencilClientFactory.getClient(), TestNestedRepeatedMessageBQ.class.getName());
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedRepeatedMessageBQ.class.getName());
         Map<String, Object> fields = new RowMapper(fieldMappings).map(protoParser.parse(message.toByteArray()));
 
         assertEquals(number, fields.get("number_field"));
@@ -222,7 +221,7 @@ public class RowMapperTest {
         currStateMapping.put("2", "value");
         fieldMappings.put("9", currStateMapping);
 
-        ProtoParser protoParser = new ProtoParser(StencilClientFactory.getClient(), TestMessageBQ.class.getName());
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         Map<String, Object> fields = new RowMapper(fieldMappings).map(protoParser.parse(message.toByteArray()));
 
         assertEquals(message.getOrderNumber(), fields.get("order_number_field"));
@@ -258,7 +257,7 @@ public class RowMapperTest {
         fieldMappings.put("1", "order_number_field");
         fieldMappings.put("13", "properties");
 
-        ProtoParser protoParser = new ProtoParser(StencilClientFactory.getClient(), TestMessageBQ.class.getName());
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         Map<String, Object> fields = new RowMapper(fieldMappings).map(protoParser.parse(message.toByteArray()));
 
         assertEquals(message.getOrderNumber(), fields.get("order_number_field"));
@@ -323,7 +322,7 @@ public class RowMapperTest {
     public void shouldReturnNullWhenNoDateFieldIsProvided() throws InvalidProtocolBufferException {
         TestMessageBQ testMessage = TestMessageBQ.newBuilder()
                 .build();
-        ProtoParser protoParser = new ProtoParser(StencilClientFactory.getClient(), TestMessageBQ.class.getName());
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         dynamicMessage = protoParser.parse(testMessage.toByteArray());
         Properties fieldMappings = new Properties();
         fieldMappings.put("14", getDateProperties());
@@ -343,7 +342,7 @@ public class RowMapperTest {
                 .addUpdatedAt(createdAt).addUpdatedAt(createdAt)
                 .build();
 
-        ProtoParser protoParser = new ProtoParser(StencilClientFactory.getClient(), TestMessageBQ.class.getName());
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         Map<String, Object> fields = new RowMapper(fieldMappings).map(protoParser.parse(message.toByteArray()));
 
         assertEquals(Arrays.asList(new DateTime(now.toEpochMilli()), new DateTime(now.toEpochMilli())), fields.get("updated_at"));
@@ -359,7 +358,7 @@ public class RowMapperTest {
                         .putFields("age", Value.newBuilder().setStringValue("50").build()).build())
                 .build();
 
-        ProtoParser protoParser = new ProtoParser(StencilClientFactory.getClient(), TestMessageBQ.class.getName());
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         Map<String, Object> fields = new RowMapper(fieldMappings).map(protoParser.parse(message.toByteArray()));
 
         assertEquals("{\"name\":\"John\",\"age\":\"50\"}", fields.get("properties"));
@@ -378,7 +377,7 @@ public class RowMapperTest {
                         .putFields("age", Value.newBuilder().setStringValue("60").build()).build())
                 .build();
 
-        ProtoParser protoParser = new ProtoParser(StencilClientFactory.getClient(), TestMessageBQ.class.getName());
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         Map<String, Object> fields = new RowMapper(fieldMappings).map(protoParser.parse(message.toByteArray()));
 
         assertEquals(Arrays.asList("{\"name\":\"John\",\"age\":\"50\"}", "{\"name\":\"John\",\"age\":\"60\"}"), fields.get("attributes"));

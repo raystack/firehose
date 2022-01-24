@@ -8,7 +8,7 @@ import io.odpf.firehose.consumer.TestAggregatedSupplyMessage;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,12 +19,12 @@ import static org.junit.Assert.assertEquals;
 public class MessageToJsonTest {
     private String logMessage;
     private String logKey;
-    private ProtoParser protoParser;
+    private Parser protoParser;
 
     @Before
     public void setUp() {
         StencilClient stencilClient = StencilClientFactory.getClient();
-        protoParser = new ProtoParser(stencilClient, TestAggregatedSupplyMessage.class.getName());
+        protoParser = stencilClient.getParser(TestAggregatedSupplyMessage.class.getName());
         logMessage = "CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM\u003d";
         logKey = "CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigC";
     }

@@ -5,7 +5,7 @@ import io.odpf.firehose.message.Message;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import cortexpb.Cortex;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,7 +18,7 @@ public class WriteRequestBuilder {
 
     private Cortex.WriteRequest.Builder writeRequestBuilder = Cortex.WriteRequest.newBuilder();
     private TimeSeriesBuilder timeSeriesBuilder;
-    private ProtoParser protoParser;
+    private Parser protoParser;
 
     /**
      * Instantiates a new Write request builder.
@@ -26,7 +26,7 @@ public class WriteRequestBuilder {
      * @param timeSeriesBuilder the TimeSeriesBuilder
      * @param protoParser       the proto parser
      */
-    public WriteRequestBuilder(TimeSeriesBuilder timeSeriesBuilder, ProtoParser protoParser) {
+    public WriteRequestBuilder(TimeSeriesBuilder timeSeriesBuilder, Parser protoParser) {
         this.timeSeriesBuilder = timeSeriesBuilder;
         this.protoParser = protoParser;
     }

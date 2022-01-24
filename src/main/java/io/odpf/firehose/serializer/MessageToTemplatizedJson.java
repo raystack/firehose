@@ -11,7 +11,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
@@ -29,12 +29,12 @@ public class MessageToTemplatizedJson implements MessageSerializer {
     private static final String ALL_FIELDS_FROM_TEMPLATE = "\"$._all_\"";
     private final String httpSinkJsonBodyTemplate;
     private final Gson gson;
-    private ProtoParser protoParser;
+    private Parser protoParser;
     private HashSet<String> pathsToReplace;
     private JSONParser jsonParser;
     private Instrumentation instrumentation;
 
-    public static MessageToTemplatizedJson create(Instrumentation instrumentation, String httpSinkJsonBodyTemplate, ProtoParser protoParser) {
+    public static MessageToTemplatizedJson create(Instrumentation instrumentation, String httpSinkJsonBodyTemplate, Parser protoParser) {
         MessageToTemplatizedJson messageToTemplatizedJson = new MessageToTemplatizedJson(instrumentation, httpSinkJsonBodyTemplate, protoParser);
         if (messageToTemplatizedJson.isInvalidJson()) {
             throw new ConfigurationException("Given HTTPSink JSON body template :"
@@ -45,7 +45,7 @@ public class MessageToTemplatizedJson implements MessageSerializer {
         return messageToTemplatizedJson;
     }
 
-    public MessageToTemplatizedJson(Instrumentation instrumentation, String httpSinkJsonBodyTemplate, ProtoParser protoParser) {
+    public MessageToTemplatizedJson(Instrumentation instrumentation, String httpSinkJsonBodyTemplate, Parser protoParser) {
         this.httpSinkJsonBodyTemplate = httpSinkJsonBodyTemplate;
         this.protoParser = protoParser;
         this.jsonParser = new JSONParser();

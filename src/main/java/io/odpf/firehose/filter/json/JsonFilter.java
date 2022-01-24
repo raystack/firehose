@@ -17,7 +17,7 @@ import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 
 import java.nio.charset.Charset;
 import java.util.List;
@@ -36,7 +36,7 @@ public class JsonFilter implements Filter {
     private final JsonSchema schema;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private JsonFormat.Printer jsonPrinter;
-    private ProtoParser parser;
+    private Parser parser;
 
     /**
      * Instantiates a new Json filter.
@@ -50,7 +50,7 @@ public class JsonFilter implements Filter {
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
         this.schema = schemaFactory.getSchema(filterConfig.getFilterJsonSchema());
         if (filterConfig.getFilterESBMessageFormat() == FilterMessageFormatType.PROTOBUF) {
-            this.parser = new ProtoParser(stencilClient, filterConfig.getFilterSchemaProtoClass());
+            this.parser = stencilClient.getParser(filterConfig.getFilterSchemaProtoClass());
             this.jsonPrinter = JsonFormat.printer().preservingProtoFieldNames();
         }
     }

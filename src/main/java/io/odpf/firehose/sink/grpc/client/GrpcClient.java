@@ -15,7 +15,6 @@ import io.grpc.Channel;
 import io.grpc.ClientInterceptors;
 import io.grpc.CallOptions;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
@@ -32,14 +31,12 @@ public class GrpcClient {
 
     private Instrumentation instrumentation;
     private final GrpcSinkConfig grpcSinkConfig;
-    private ProtoParser protoParser;
     private StencilClient stencilClient;
     private ManagedChannel managedChannel;
 
     public GrpcClient(Instrumentation instrumentation, GrpcSinkConfig grpcSinkConfig, ManagedChannel managedChannel, StencilClient stencilClient) {
         this.instrumentation = instrumentation;
         this.grpcSinkConfig = grpcSinkConfig;
-        this.protoParser = new ProtoParser(stencilClient, grpcSinkConfig.getSinkGrpcResponseSchemaProtoClass());
         this.stencilClient = stencilClient;
         this.managedChannel = managedChannel;
     }
@@ -68,7 +65,7 @@ public class GrpcClient {
                     CallOptions.DEFAULT,
                     logMessage);
 
-            dynamicMessage = protoParser.parse(response);
+            dynamicMessage = stencilClient.parse(grpcSinkConfig.getSinkGrpcResponseSchemaProtoClass(), response);
 
         } catch (Exception e) {
             instrumentation.logWarn(e.getMessage());

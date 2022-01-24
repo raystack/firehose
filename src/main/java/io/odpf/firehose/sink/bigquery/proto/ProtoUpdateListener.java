@@ -4,6 +4,8 @@ import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.google.protobuf.Descriptors.Descriptor;
+
 import io.odpf.firehose.config.BigQuerySinkConfig;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverter;
 import io.odpf.firehose.sink.bigquery.converter.MessageRecordConverterCache;
@@ -13,9 +15,7 @@ import io.odpf.firehose.sink.bigquery.exception.BQTableUpdateFailure;
 import io.odpf.firehose.sink.bigquery.handler.BigQueryClient;
 import io.odpf.firehose.sink.bigquery.models.MetadataUtil;
 import io.odpf.firehose.sink.bigquery.models.ProtoField;
-import io.odpf.stencil.models.DescriptorAndTypeName;
-import io.odpf.stencil.parser.ProtoParser;
-import io.odpf.stencil.utils.StencilUtils;
+import io.odpf.stencil.Parser;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class ProtoUpdateListener extends io.odpf.stencil.cache.ProtoUpdateListener {
+public class ProtoUpdateListener implements io.odpf.stencil.SchemaUpdateListener {
     private final BigQuerySinkConfig config;
     private final ProtoMapper protoMapper = new ProtoMapper();
     private final ProtoFieldParser protoMappingParser = new ProtoFieldParser();
@@ -37,32 +37,35 @@ public class ProtoUpdateListener extends io.odpf.stencil.cache.ProtoUpdateListen
     @Getter
     private final MessageRecordConverterCache messageRecordConverterCache;
     @Setter
-    private ProtoParser stencilParser;
+    private Parser stencilParser;
     private static final Gson GSON = new Gson();
 
     public ProtoUpdateListener(BigQuerySinkConfig config, BigQueryClient bqClient, MessageRecordConverterCache messageRecordConverterCache) {
-        super(config.getInputSchemaProtoClass());
         this.config = config;
         this.bqClient = bqClient;
         this.messageRecordConverterCache = messageRecordConverterCache;
     }
 
-    public void update(Map<String, DescriptorAndTypeName> newDescriptors) {
-        onProtoUpdate("", newDescriptors);
-    }
-
     @Override
-    public void onProtoUpdate(String url, Map<String, DescriptorAndTypeName> newDescriptors) {
+    public void onSchemaUpdate(Map<String, Descriptor> newDescriptors) {
         log.info("stencil cache was refreshed, validating if bigquery schema changed");
         try {
             ProtoField protoField = new ProtoField();
-            protoField = protoMappingParser.parseFields(protoField, config.getInputSchemaProtoClass(), StencilUtils.getAllProtobufDescriptors(newDescriptors), StencilUtils.getTypeNameToPackageNameMap(newDescriptors));
+            protoField = protoMappingParser.parseFields(protoField, config.getInputSchemaProtoClass(), newDescriptors,
+                    getTypeNameToPackageNameMap(newDescriptors));
             updateProtoParser(protoField);
         } catch (BigQueryException | IOException e) {
             String errMsg = "Error while updating bigquery table on callback:" + e.getMessage();
             log.error(errMsg);
             throw new BQTableUpdateFailure(errMsg, e);
         }
+    }
+
+    private Map<String, String> getTypeNameToPackageNameMap(Map<String, Descriptor> descriptors) {
+        return descriptors.entrySet().stream()
+                .collect(Collectors.toMap(
+                        (mapEntry) -> String.format(".%s", mapEntry.getValue().getFullName()),
+                        (mapEntry) -> mapEntry.getKey()));
     }
 
     // First get latest protomapping, update bq schema, and if all goes fine

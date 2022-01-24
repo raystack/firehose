@@ -9,7 +9,7 @@ import io.odpf.firehose.proto.ProtoToFieldMapper;
 import io.odpf.firehose.sink.redis.dataentry.RedisDataEntry;
 import io.odpf.firehose.sink.redis.dataentry.RedisHashSetFieldEntry;
 import com.google.protobuf.DynamicMessage;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ public class RedisHashSetParser extends RedisParser {
      * @param redisSinkConfig    the redis sink config
      * @param statsDReporter     the statsd reporter
      */
-    public RedisHashSetParser(ProtoToFieldMapper protoToFieldMapper, ProtoParser protoParser, RedisSinkConfig redisSinkConfig, StatsDReporter statsDReporter) {
+    public RedisHashSetParser(ProtoToFieldMapper protoToFieldMapper, Parser protoParser, RedisSinkConfig redisSinkConfig, StatsDReporter statsDReporter) {
         super(protoParser, redisSinkConfig);
         this.protoToFieldMapper = protoToFieldMapper;
         this.redisSinkConfig = redisSinkConfig;

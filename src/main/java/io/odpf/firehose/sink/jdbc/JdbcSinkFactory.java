@@ -7,7 +7,7 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.util.Map;
@@ -47,7 +47,7 @@ public class JdbcSinkFactory {
     }
 
     private static QueryTemplate createQueryTemplate(JdbcSinkConfig jdbcSinkConfig, StencilClient stencilClient) {
-        ProtoParser protoParser = new ProtoParser(stencilClient, jdbcSinkConfig.getInputSchemaProtoClass());
+        Parser protoParser = stencilClient.getParser(jdbcSinkConfig.getInputSchemaProtoClass());
         ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, jdbcSinkConfig.getInputSchemaProtoToColumnMapping());
         return new QueryTemplate(jdbcSinkConfig, protoToFieldMapper);
     }

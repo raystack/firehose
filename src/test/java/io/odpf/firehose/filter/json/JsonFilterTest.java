@@ -11,12 +11,14 @@ import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.stencil.client.StencilClient;
+import io.odpf.stencil.Parser;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
@@ -24,6 +26,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.times;
@@ -46,9 +50,11 @@ public class JsonFilterTest {
     private Instrumentation instrumentation;
     @Mock
     private StencilClient stencilClient;
+    @Mock
+    private Parser parser;
 
     @Before
-    public void setup() {
+    public void setup() throws InvalidProtocolBufferException {
         MockitoAnnotations.initMocks(this);
         testKeyProto1 = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
         testMessageProto1 = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
@@ -58,6 +64,8 @@ public class JsonFilterTest {
         testMessageProto2 = TestMessage.newBuilder().setOrderNumber("92").setOrderUrl("pqr").setOrderDetails("details").build();
         testKeyJson2 = "{\"order_number\":\"92\",\"order_url\":\"pqr\"}";
         testMessageJson2 = "{\"order_number\":\"92\",\"order_url\":\"pqr\",\"order_details\":\"details\"}";
+        when(stencilClient.parse(Mockito.anyString(), Mockito.any())).thenCallRealMethod();
+        when(stencilClient.getParser(Mockito.anyString())).thenCallRealMethod();
     }
 
     @Test

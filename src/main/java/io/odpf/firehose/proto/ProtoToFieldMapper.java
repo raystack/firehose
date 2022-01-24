@@ -5,7 +5,7 @@ import io.odpf.firehose.sink.jdbc.JdbcMapper;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.apache.http.util.Asserts;
 
 import java.util.Enumeration;
@@ -18,7 +18,7 @@ import java.util.Properties;
  */
 public class ProtoToFieldMapper {
 
-    private final ProtoParser protoParser;
+    private final Parser protoParser;
     private final Properties protoIndexToFieldMapping;
 
     /**
@@ -27,7 +27,7 @@ public class ProtoToFieldMapper {
      * @param protoParser              the proto parser
      * @param protoIndexToFieldMapping the proto index to field mapping
      */
-    public ProtoToFieldMapper(ProtoParser protoParser, Properties protoIndexToFieldMapping) {
+    public ProtoToFieldMapper(Parser protoParser, Properties protoIndexToFieldMapping) {
         this.protoParser = protoParser;
         this.protoIndexToFieldMapping = protoIndexToFieldMapping;
     }

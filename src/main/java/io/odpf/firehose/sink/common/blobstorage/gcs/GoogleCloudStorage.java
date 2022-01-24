@@ -52,7 +52,7 @@ public class GoogleCloudStorage implements BlobStorage {
 
     private void checkBucket() {
         String bucketName = gcsConfig.getGCSBucketName();
-        Bucket bucket = storage.get(bucketName);
+        Bucket bucket = storage.get(bucketName, Storage.BucketGetOption.userProject(gcsConfig.getGCloudProjectID()));
         if (bucket == null) {
             LOGGER.info("Bucket does not exist:{}", bucketName);
             LOGGER.info("Please create GCS bucket before running firehose: " + bucketName);
@@ -62,7 +62,10 @@ public class GoogleCloudStorage implements BlobStorage {
 
     private void logRetentionPolicy() {
         String bucketName = gcsConfig.getGCSBucketName();
-        Bucket bucket = storage.get(bucketName, Storage.BucketGetOption.fields(Storage.BucketField.RETENTION_POLICY));
+        Bucket bucket = storage.get(
+                bucketName,
+                Storage.BucketGetOption.fields(Storage.BucketField.RETENTION_POLICY),
+                Storage.BucketGetOption.userProject(gcsConfig.getGCloudProjectID()));
         LOGGER.info("Retention Policy for {}", bucketName);
         LOGGER.info("Retention Period: {}", bucket.getRetentionPeriod());
         if (bucket.retentionPolicyIsLocked() != null && bucket.retentionPolicyIsLocked()) {
@@ -89,7 +92,7 @@ public class GoogleCloudStorage implements BlobStorage {
         BlobInfo blobInfo = BlobInfo.newBuilder(BlobId.of(gcsConfig.getGCSBucketName(), objectName)).build();
         String blobPath = String.join(File.separator, blobInfo.getBucket(), blobInfo.getName());
         try {
-            storage.create(blobInfo, content);
+            storage.create(blobInfo, content, Storage.BlobTargetOption.userProject(gcsConfig.getGCloudProjectID()));
             LOGGER.info("Created object in GCS {}", blobPath);
         } catch (StorageException e) {
             LOGGER.error("Failed to create object in GCS {}", blobPath);

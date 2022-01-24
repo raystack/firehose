@@ -9,7 +9,6 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +27,7 @@ public class DBDefaultMessageFieldTest {
         TestBookingLogMessage booking = TestBookingLogMessage.newBuilder().setDriverDropoffLocation(TestLocation.newBuilder().setName("location_name").build()).build();
 
         Descriptors.FieldDescriptor locationFieldDescriptor = TestBookingLogMessage.getDescriptor().getFields().get(12);
-        DynamicMessage bookingParsed = new ProtoParser(stencilClient, "io.odpf.firehose.consumer.TestBookingLogMessage").parse(booking.toByteArray());
+        DynamicMessage bookingParsed = stencilClient.getParser("io.odpf.firehose.consumer.TestBookingLogMessage").parse(booking.toByteArray());
         Object columnValue = bookingParsed.getField(locationFieldDescriptor);
 
         JdbcDefaultMessageField dbDefaultMessageField = new JdbcDefaultMessageField(columnValue);
@@ -41,7 +40,7 @@ public class DBDefaultMessageFieldTest {
         TestBookingLogMessage booking = TestBookingLogMessage.newBuilder().setDriverDropoffLocation(TestLocation.newBuilder().setName("location_name").build()).build();
 
         Descriptors.FieldDescriptor locationFieldDescriptor = TestBookingLogMessage.getDescriptor().getFields().get(12);
-        DynamicMessage bookingParsed = new ProtoParser(stencilClient, "io.odpf.firehose.consumer.TestBookingLogMessage").parse(booking.toByteArray());
+        DynamicMessage bookingParsed = stencilClient.getParser("io.odpf.firehose.consumer.TestBookingLogMessage").parse(booking.toByteArray());
         Object columnValue = bookingParsed.getField(locationFieldDescriptor);
 
         JdbcDefaultMessageField dbDefaultMessageField = new JdbcDefaultMessageField(columnValue);
@@ -55,7 +54,7 @@ public class DBDefaultMessageFieldTest {
         TestBookingLogMessage booking = TestBookingLogMessage.newBuilder().setDriverDropoffLocation(TestLocation.newBuilder().setName("location_name").build()).setCustomerId("customer_id").build();
 
         Descriptors.FieldDescriptor customerIdFieldDescriptor = TestBookingLogMessage.getDescriptor().getFields().get(5);
-        DynamicMessage bookingParsed = new ProtoParser(stencilClient, "io.odpf.firehose.consumer.TestBookingLogMessage").parse(booking.toByteArray());
+        DynamicMessage bookingParsed = stencilClient.getParser("io.odpf.firehose.consumer.TestBookingLogMessage").parse(booking.toByteArray());
         Object columnValue = bookingParsed.getField(customerIdFieldDescriptor);
 
         JdbcDefaultMessageField dbDefaultMessageField = new JdbcDefaultMessageField(columnValue);

@@ -1,7 +1,6 @@
 package io.odpf.firehose.sink.mongodb;
 
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
@@ -45,7 +44,7 @@ public class MongoSinkFactory {
         logMongoConfig(mongoSinkConfig, instrumentation);
         MongoRequestHandler mongoRequestHandler = new MongoRequestHandlerFactory(mongoSinkConfig, new Instrumentation(statsDReporter, MongoRequestHandlerFactory.class),
                 mongoSinkConfig.getSinkMongoPrimaryKey(), mongoSinkConfig.getSinkMongoInputMessageType(),
-                new MessageToJson(new ProtoParser(stencilClient, mongoSinkConfig.getInputSchemaProtoClass()), mongoSinkConfig.isSinkMongoPreserveProtoFieldNamesEnable(), false)
+                new MessageToJson(stencilClient.getParser(mongoSinkConfig.getInputSchemaProtoClass()), mongoSinkConfig.isSinkMongoPreserveProtoFieldNamesEnable(), false)
         ).getRequestHandler();
 
         MongoClient mongoClient = buildMongoClient(mongoSinkConfig, instrumentation);

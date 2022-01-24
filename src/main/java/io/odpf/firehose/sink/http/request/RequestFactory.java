@@ -20,7 +20,7 @@ import io.odpf.firehose.sink.http.request.types.SimpleRequest;
 import io.odpf.firehose.sink.http.request.uri.UriBuilder;
 import io.odpf.firehose.sink.http.request.uri.UriParser;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 
 import java.util.Arrays;
 import java.util.List;
@@ -75,7 +75,7 @@ public class RequestFactory {
     }
 
     private ProtoToFieldMapper getProtoToFieldMapper() {
-        ProtoParser protoParser = new ProtoParser(stencilClient, httpSinkConfig.getSinkHttpParameterSchemaProtoClass());
+        Parser protoParser = stencilClient.getParser(httpSinkConfig.getSinkHttpParameterSchemaProtoClass());
         return new ProtoToFieldMapper(protoParser, httpSinkConfig.getInputSchemaProtoToColumnMapping());
     }
 

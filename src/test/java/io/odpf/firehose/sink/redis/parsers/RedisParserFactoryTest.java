@@ -8,7 +8,7 @@ import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
 import io.odpf.stencil.client.ClassLoadStencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,13 +36,13 @@ public class RedisParserFactoryTest {
 
     private ClassLoadStencilClient stencilClient;
     private ProtoToFieldMapper protoToFieldMapper;
-    private ProtoParser testMessageProtoParser;
+    private Parser testMessageProtoParser;
 
 
     @Before
     public void setUp() throws Exception {
         stencilClient = new ClassLoadStencilClient();
-        testMessageProtoParser = new ProtoParser(stencilClient, TestMessage.class.getCanonicalName());
+        testMessageProtoParser = stencilClient.getParser(TestMessage.class.getCanonicalName());
         protoToFieldMapper = new ProtoToFieldMapper(testMessageProtoParser, getProperties("3", "details"));
     }
 

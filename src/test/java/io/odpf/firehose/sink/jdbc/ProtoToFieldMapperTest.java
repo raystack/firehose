@@ -13,7 +13,7 @@ import io.odpf.firehose.proto.ProtoToFieldMapper;
 import com.google.protobuf.Timestamp;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import net.minidev.json.JSONObject;
 import org.gradle.internal.impldep.org.testng.Assert;
 import org.junit.After;
@@ -31,12 +31,12 @@ public class ProtoToFieldMapperTest {
 
     private TestFeedbackLogMessage message;
     private Properties protoToDbMapping;
-    private ProtoParser protoParser;
+    private Parser protoParser;
 
     private TestMessage testMessage;
     private TestNestedRepeatedMessage nestedMessage;
     private Properties nestedProtoToDbMapping;
-    private ProtoParser nestedProtoParser;
+    private Parser nestedProtoParser;
     private StencilClient stencilClient;
     private Timestamp defaultTimestamp;
     private Instant now;
@@ -65,7 +65,7 @@ public class ProtoToFieldMapperTest {
         protoToDbMapping.put("6", "feedback_comment");
         stencilClient = StencilClientFactory.getClient();
 
-        protoParser = new ProtoParser(stencilClient, TestFeedbackLogMessage.class.getName());
+        protoParser = stencilClient.getParser(TestFeedbackLogMessage.class.getName());
 
 
         TestMessage.Builder testBuilder = TestMessage.newBuilder();
@@ -90,7 +90,7 @@ public class ProtoToFieldMapperTest {
         nestedProtoToDbMapping.put("3", "number_field");
         nestedProtoToDbMapping.put("4", "repeated_number_field");
 
-        nestedProtoParser = new ProtoParser(stencilClient, TestNestedRepeatedMessage.class.getName());
+        nestedProtoParser = stencilClient.getParser(TestNestedRepeatedMessage.class.getName());
     }
 
     @After
@@ -169,7 +169,7 @@ public class ProtoToFieldMapperTest {
 
     @Test
     public void messageWithMapShouldBeConvertedToJson() throws Exception {
-        ProtoParser parser = new ProtoParser(stencilClient, TestMapMessage.class.getName());
+        Parser parser = stencilClient.getParser(TestMapMessage.class.getName());
         Properties mapping = new Properties();
         mapping.put("2", "map_field");
         mapping.put("1", "order_number");
@@ -193,7 +193,7 @@ public class ProtoToFieldMapperTest {
 
     @Test
     public void nestedMessageWithNestedPropertiesShouldBeMapped() throws Exception {
-        ProtoParser parser = new ProtoParser(stencilClient, TestNestedMessage.class.getName());
+        Parser parser = stencilClient.getParser(TestNestedMessage.class.getName());
         Properties mapping = new Properties();
         Properties nestedProperties = new Properties();
         nestedProperties.put("1", "order_number");
@@ -224,7 +224,7 @@ public class ProtoToFieldMapperTest {
 
     @Test(expected = RuntimeException.class)
     public void shouldThrowClassNotFoundExceptionOnInvalidClasName() {
-        protoParser = new ProtoParser(stencilClient, "NonexistentClass");
+        protoParser = stencilClient.getParser("NonexistentClass");
         ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, protoToDbMapping);
 
         protoToFieldMapper.getFields(TestBookingLogMessage.newBuilder().setCustomerEmail("test.com").build().toByteArray());

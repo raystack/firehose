@@ -12,7 +12,7 @@ import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessage;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessageUtils;
 import io.odpf.firehose.sink.blob.proto.NestedKafkaMetadataProtoMessage;
-import io.odpf.stencil.parser.ProtoParser;
+import io.odpf.stencil.Parser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 public class MessageDeSerializerTest {
 
     @Mock
-    private ProtoParser protoParser;
+    private Parser protoParser;
 
     private MessageDeSerializer deSerializer;
 

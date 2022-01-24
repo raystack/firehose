@@ -6,7 +6,6 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.parser.ProtoParser;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.util.Map;
@@ -30,7 +29,7 @@ public class LogSinkFactory {
      */
     public static Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         AppConfig appConfig = ConfigFactory.create(AppConfig.class, configuration);
-        KeyOrMessageParser parser = new KeyOrMessageParser(new ProtoParser(stencilClient, appConfig.getInputSchemaProtoClass()), appConfig);
+        KeyOrMessageParser parser = new KeyOrMessageParser(stencilClient.getParser(appConfig.getInputSchemaProtoClass()), appConfig);
         return new LogSink(parser, new Instrumentation(statsDReporter, LogSink.class));
     }
 }
