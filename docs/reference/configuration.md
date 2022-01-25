@@ -474,6 +474,16 @@ This field decides what all data will be stored in the List for each message.
 
 * Type: `required (For List)`
 
+### `SINK_REDIS_KEY_VALUE_DATA_PROTO_INDEX`
+
+This field decides what data will be stored in the value part of key-value pair
+
+* Example value: `6`
+
+  This will get the value of the field with index 6 in your proto and push that to the Redis as value with the corresponding keyTemplate\
+
+* Type: `required (For KeyValue)`
+
 ### `SINK_REDIS_TTL_TYPE`
 
 * Example value: `DURATION`
