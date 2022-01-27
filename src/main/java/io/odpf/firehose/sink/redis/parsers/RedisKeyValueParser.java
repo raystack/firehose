@@ -9,7 +9,7 @@ import io.odpf.firehose.sink.redis.dataentry.RedisDataEntry;
 import io.odpf.firehose.sink.redis.dataentry.RedisKeyValueEntry;
 import io.odpf.stencil.Parser;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class RedisKeyValueParser extends RedisParser {
@@ -32,6 +32,6 @@ public class RedisKeyValueParser extends RedisParser {
         }
         Instrumentation instrumentation = new Instrumentation(statsDReporter, RedisKeyValueEntry.class);
         RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(redisKey, getDataByFieldNumber(parsedMessage, protoIndex).toString(), instrumentation);
-        return Arrays.asList(redisKeyValueEntry);
+        return Collections.singletonList(redisKeyValueEntry);
     }
 }
