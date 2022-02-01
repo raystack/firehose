@@ -1,15 +1,13 @@
 package io.odpf.firehose.sink.redis.parsers;
 
 
-
 import io.odpf.firehose.config.RedisSinkConfig;
 import io.odpf.firehose.config.enums.RedisSinkDataType;
 import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
-import io.odpf.stencil.client.ClassLoadStencilClient;
 import io.odpf.stencil.Parser;
-import org.junit.Assert;
+import io.odpf.stencil.client.ClassLoadStencilClient;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,6 +18,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Properties;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 
@@ -56,7 +55,7 @@ public class RedisParserFactoryTest {
 
         RedisParser parser = RedisParserFactory.getParser(protoToFieldMapper, testMessageProtoParser, redisSinkConfig, statsDReporter);
 
-        Assert.assertEquals(RedisListParser.class, parser.getClass());
+        assertEquals(RedisListParser.class, parser.getClass());
     }
 
     @Test
@@ -65,7 +64,16 @@ public class RedisParserFactoryTest {
 
         RedisParser parser = RedisParserFactory.getParser(protoToFieldMapper, testMessageProtoParser, redisSinkConfig, statsDReporter);
 
-        Assert.assertEquals(RedisHashSetParser.class, parser.getClass());
+        assertEquals(RedisHashSetParser.class, parser.getClass());
+    }
+
+    @Test
+    public void shouldReturnNewRedisKeyValueParser() {
+        setRedisSinkConfig(RedisSinkDataType.KEYVALUE);
+
+        RedisParser parser = RedisParserFactory.getParser(protoToFieldMapper, testMessageProtoParser, redisSinkConfig, statsDReporter);
+
+        assertEquals(RedisKeyValueParser.class, parser.getClass());
     }
 
     private Properties getProperties(String s, String order) {

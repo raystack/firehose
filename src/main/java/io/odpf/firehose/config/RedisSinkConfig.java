@@ -22,6 +22,9 @@ public interface RedisSinkConfig extends AppConfig {
     @Key("SINK_REDIS_LIST_DATA_PROTO_INDEX")
     String getSinkRedisListDataProtoIndex();
 
+    @Key("SINK_REDIS_KEY_VALUE_DATA_PROTO_INDEX")
+    String getSinkRedisKeyValuetDataProtoIndex();
+
     @Key("SINK_REDIS_TTL_TYPE")
     @DefaultValue("DISABLE")
     @ConverterClass(RedisSinkTtlTypeConverter.class)
