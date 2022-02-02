@@ -8,11 +8,11 @@ Filter expressions are JEXL expressions used to filter messages just after readi
 
 ### Rules to write expressions:
 
-* All the expressions are like a piece of Java code. Follow rules for every data type, as like writing a Java code. Parenthesis `()`can be used to combine multiple arithmetic or logical expressions into a single JEXL expression, which evaluates to a boolean value ie. `true` or `false`
-* Start with the object reference of the schema proto class of the key/message on which you wish to apply the filter. Make sure to change the first letter of the proto class to lower case.                                                                                                                                                               eg - `sampleLogMessage`  \(if `FILTER_SCHEMA_PROTO_CLASS=com.xyz.SampleLogMessage` \)
-* Access a particular field by calling the getter method on the proto object. The name of the getter method will be the field name, changed to camel-case, with all underscore \( `_`\) characters removed, and prefixed by the string `get`                                                                                                                                    eg - if the field name is `vehicle_type` , then the getter method name would be `getVehicleType()`
-* Access nested fields using linked invocations of the getter methods, `.`  and repeatedly call the getter method for the every level of nested field.                                                                                                                            eg - `sampleLogKey.getEventTimestamp().getSeconds()`    
-* You can combine multiple fields of the key/message protobuf in a single JEXL expression and perform any arithmetic or logical operations between them.                                                                                                                                    e.g - `sampleKey.getTime().getSeconds() * 1000 + sampleKey.getTime().getMillis() > 22809`
+- All the expressions are like a piece of Java code. Follow rules for every data type, as like writing a Java code. Parenthesis `()`can be used to combine multiple arithmetic or logical expressions into a single JEXL expression, which evaluates to a boolean value ie. `true` or `false`
+- Start with the object reference of the schema proto class of the key/message on which you wish to apply the filter. Make sure to change the first letter of the proto class to lower case. eg - `sampleLogMessage` \(if `FILTER_SCHEMA_PROTO_CLASS=com.xyz.SampleLogMessage` \)
+- Access a particular field by calling the getter method on the proto object. The name of the getter method will be the field name, changed to camel-case, with all underscore \( `_`\) characters removed, and prefixed by the string `get` eg - if the field name is `vehicle_type` , then the getter method name would be `getVehicleType()`
+- Access nested fields using linked invocations of the getter methods, `.` and repeatedly call the getter method for the every level of nested field. eg - `sampleLogKey.getEventTimestamp().getSeconds()`
+- You can combine multiple fields of the key/message protobuf in a single JEXL expression and perform any arithmetic or logical operations between them. e.g - `sampleKey.getTime().getSeconds() * 1000 + sampleKey.getTime().getMillis() > 22809`
 
 ## Syntax
 
@@ -344,17 +344,16 @@ gcm_key: "abc123"
 
 _**Key**_-_**based filter expressions examples:**_
 
-* `sampleLogKey.getDriverId()=="abcde12345"`
-* `sampleLogKey.getVehicleType()=="BIKE"`
-* `sampleLogKey.getEventTimestamp().getSeconds()==186178`
-* `sampleLogKey.getDriverId()=="abcde12345"&&sampleLogKey.getVehicleType=="BIKE"` \(multiple conditions example 1\)
-* `sampleLogKey.getVehicleType()=="BIKE"||sampleLogKey.getEventTimestamp().getSeconds()==186178` \(multiple conditions example 2\)
+- `sampleLogKey.getDriverId()=="abcde12345"`
+- `sampleLogKey.getVehicleType()=="BIKE"`
+- `sampleLogKey.getEventTimestamp().getSeconds()==186178`
+- `sampleLogKey.getDriverId()=="abcde12345"&&sampleLogKey.getVehicleType=="BIKE"` \(multiple conditions example 1\)
+- `sampleLogKey.getVehicleType()=="BIKE"||sampleLogKey.getEventTimestamp().getSeconds()==186178` \(multiple conditions example 2\)
 
 _**Message -based filter expressions examples:**_
 
-* `sampleLogMessage.getGcmKey()=="abc123"`
-* `sampleLogMessage.getDriverId()=="abcde12345"&&sampleLogMessage.getDriverLocation().getLatitude()>0.6487193703651428`
-* `sampleLogMessage.getDriverLocation().getAltitudeInMeters>0.9949166178703308`
+- `sampleLogMessage.getGcmKey()=="abc123"`
+- `sampleLogMessage.getDriverId()=="abcde12345"&&sampleLogMessage.getDriverLocation().getLatitude()>0.6487193703651428`
+- `sampleLogMessage.getDriverLocation().getAltitudeInMeters>0.9949166178703308`
 
 _**Note: Use `log` sink for testing the applied filtering**_
-
