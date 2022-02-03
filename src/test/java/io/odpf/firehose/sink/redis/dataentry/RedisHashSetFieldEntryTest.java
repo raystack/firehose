@@ -8,7 +8,9 @@ import io.odpf.firehose.sink.redis.ttl.RedisTtl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 import redis.clients.jedis.JedisCluster;
@@ -31,12 +33,16 @@ public class RedisHashSetFieldEntryTest {
 
     private RedisTtl redisTTL;
     private RedisHashSetFieldEntry redisHashSetFieldEntry;
+    private InOrder inOrderPipeline;
+    private InOrder inOrderJedis;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
         redisTTL = new NoRedisTtl();
         redisHashSetFieldEntry = new RedisHashSetFieldEntry("test-key", "test-field", "test-value", instrumentation);
+        inOrderPipeline = Mockito.inOrder(pipeline);
+        inOrderJedis = Mockito.inOrder(jedisCluster);
     }
 
     @Test
@@ -54,7 +60,8 @@ public class RedisHashSetFieldEntryTest {
         redisTTL = new ExactTimeTtl(1000L);
         redisHashSetFieldEntry.pushMessage(pipeline, redisTTL);
 
-        verify(pipeline, times(1)).expireAt("test-key", 1000L);
+        inOrderPipeline.verify(pipeline, times(1)).hset("test-key", "test-field", "test-value");
+        inOrderPipeline.verify(pipeline, times(1)).expireAt("test-key", 1000L);
         verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 
@@ -63,7 +70,8 @@ public class RedisHashSetFieldEntryTest {
         redisTTL = new DurationTtl(1000);
         redisHashSetFieldEntry.pushMessage(pipeline, redisTTL);
 
-        verify(pipeline, times(1)).expire("test-key", 1000);
+        inOrderPipeline.verify(pipeline, times(1)).hset("test-key", "test-field", "test-value");
+        inOrderPipeline.verify(pipeline, times(1)).expire("test-key", 1000);
         verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 
@@ -82,7 +90,8 @@ public class RedisHashSetFieldEntryTest {
         redisTTL = new ExactTimeTtl(1000L);
         redisHashSetFieldEntry.pushMessage(jedisCluster, redisTTL);
 
-        verify(jedisCluster, times(1)).expireAt("test-key", 1000L);
+        inOrderJedis.verify(jedisCluster, times(1)).hset("test-key", "test-field", "test-value");
+        inOrderJedis.verify(jedisCluster, times(1)).expireAt("test-key", 1000L);
         verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 
@@ -91,7 +100,8 @@ public class RedisHashSetFieldEntryTest {
         redisTTL = new DurationTtl(1000);
         redisHashSetFieldEntry.pushMessage(jedisCluster, redisTTL);
 
-        verify(jedisCluster, times(1)).expire("test-key", 1000);
+        inOrderJedis.verify(jedisCluster, times(1)).hset("test-key", "test-field", "test-value");
+        inOrderJedis.verify(jedisCluster, times(1)).expire("test-key", 1000);
         verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 }
