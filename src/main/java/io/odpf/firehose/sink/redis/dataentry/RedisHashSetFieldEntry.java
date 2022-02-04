@@ -21,15 +21,15 @@ public class RedisHashSetFieldEntry implements RedisDataEntry {
 
     @Override
     public void pushMessage(Pipeline jedisPipelined, RedisTtl redisTTL) {
-        redisTTL.setTtl(jedisPipelined, getKey());
         getInstrumentation().logDebug("key: {}, field: {}, value: {}", getKey(), getField(), getValue());
         jedisPipelined.hset(getKey(), getField(), getValue());
+        redisTTL.setTtl(jedisPipelined, getKey());
     }
 
     @Override
     public void pushMessage(JedisCluster jedisCluster, RedisTtl redisTTL) {
-        redisTTL.setTtl(jedisCluster, getKey());
         getInstrumentation().logDebug("key: {}, field: {}, value: {}", getKey(), getField(), getValue());
         jedisCluster.hset(getKey(), getField(), getValue());
+        redisTTL.setTtl(jedisCluster, getKey());
     }
 }
