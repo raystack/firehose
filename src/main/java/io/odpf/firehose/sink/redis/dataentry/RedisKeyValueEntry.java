@@ -19,16 +19,16 @@ public class RedisKeyValueEntry implements RedisDataEntry {
 
     @Override
     public void pushMessage(Pipeline jedisPipelined, RedisTtl redisTTL) {
-        redisTTL.setTtl(jedisPipelined, key);
         instrumentation.logDebug("key: {}, value: {}", key, value);
         jedisPipelined.set(key, value);
+        redisTTL.setTtl(jedisPipelined, key);
     }
 
     @Override
     public void pushMessage(JedisCluster jedisCluster, RedisTtl redisTTL) {
-        redisTTL.setTtl(jedisCluster, key);
         instrumentation.logDebug("key: {}, value: {}", key, value);
         jedisCluster.set(key, value);
+        redisTTL.setTtl(jedisCluster, key);
 
     }
 
