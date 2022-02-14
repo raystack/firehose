@@ -23,11 +23,22 @@ import java.util.Map;
 
 public class BigQuerySinkFactory {
 
-    public static Sink create(Map<String, String> env, StatsDReporter statsDReporter) {
-        BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, env);
+    private BigQueryClient bigQueryClient;
+    private MessageRecordConverterCache recordConverterWrapper;
+    private BigQueryRow rowCreator;
+    private final StatsDReporter statsDReporter;
+    private final Map<String, String> config;
+
+    public BigQuerySinkFactory(Map<String, String> env, StatsDReporter statsDReporter) {
+        this.config = env;
+        this.statsDReporter = statsDReporter;
+    }
+
+    public void init() {
+        BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, config);
         try {
-            BigQueryClient bigQueryClient = new BigQueryClient(sinkConfig, new Instrumentation(statsDReporter, BigQueryClient.class));
-            MessageRecordConverterCache recordConverterWrapper = new MessageRecordConverterCache();
+            this.bigQueryClient = new BigQueryClient(sinkConfig, new Instrumentation(statsDReporter, BigQueryClient.class));
+            this.recordConverterWrapper = new MessageRecordConverterCache();
             StencilClient stencilClient;
             ProtoUpdateListener protoUpdateListener = new ProtoUpdateListener(sinkConfig, bigQueryClient, recordConverterWrapper);
             StencilConfig stencilConfig = StencilUtils.getStencilConfig(sinkConfig, statsDReporter.getClient(), protoUpdateListener);
@@ -39,20 +50,22 @@ public class BigQuerySinkFactory {
             Parser parser = stencilClient.getParser(sinkConfig.getInputSchemaProtoClass());
             protoUpdateListener.setStencilParser(parser);
             protoUpdateListener.onSchemaUpdate(stencilClient.getAll());
-            BigQueryRow rowCreator;
             if (sinkConfig.isRowInsertIdEnabled()) {
-                rowCreator = new BigQueryRowWithInsertId();
+                this.rowCreator = new BigQueryRowWithInsertId();
             } else {
-                rowCreator = new BigQueryRowWithoutInsertId();
+                this.rowCreator = new BigQueryRowWithoutInsertId();
             }
-            return new BigQuerySink(
-                    new Instrumentation(statsDReporter, BigQuerySink.class),
-                    SinkType.BIGQUERY.name(),
-                    bigQueryClient,
-                    recordConverterWrapper,
-                    rowCreator);
         } catch (IOException e) {
             throw new IllegalArgumentException("Exception occurred while creating sink", e);
         }
+    }
+
+    public Sink create() {
+        return new BigQuerySink(
+                new Instrumentation(statsDReporter, BigQuerySink.class),
+                SinkType.BIGQUERY.name(),
+                bigQueryClient,
+                recordConverterWrapper,
+                rowCreator);
     }
 }

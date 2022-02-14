@@ -24,6 +24,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.ArrayList;
 
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -80,6 +81,48 @@ public class BQClientTest {
         verify(bigquery).create(DatasetInfo.newBuilder(tableId.getDataset()).setLocation("US").build());
         verify(bigquery).create(tableInfo);
         verify(bigquery, never()).update(tableInfo);
+    }
+
+    @Test
+    public void shouldUpsertWithRetries() {
+        when(bqConfig.isTablePartitioningEnabled()).thenReturn(false);
+        when(bqConfig.getTableName()).thenReturn("bq-table");
+        when(bqConfig.getDatasetName()).thenReturn("bq-proto");
+        when(bqConfig.getBigQueryDatasetLocation()).thenReturn("US");
+        bqClient = new BigQueryClient(bigquery, bqConfig, instrumentation);
+
+        ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
+            add(Field.newBuilder("test-1", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
+            add(Field.newBuilder("test-2", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
+            add(Field.newBuilder(Constants.OFFSET_COLUMN_NAME, LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
+            add(Field.newBuilder(Constants.TOPIC_COLUMN_NAME, LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
+            add(Field.newBuilder(Constants.LOAD_TIME_COLUMN_NAME, LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build());
+            add(Field.newBuilder(Constants.TIMESTAMP_COLUMN_NAME, LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build());
+            add(Field.newBuilder(Constants.PARTITION_COLUMN_NAME, LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
+        }};
+
+        TableDefinition tableDefinition = getNonPartitionedTableDefinition(bqSchemaFields);
+        ArrayList<Field> updatedBQSchemaFields = new ArrayList<>(bqSchemaFields);
+        updatedBQSchemaFields.add(Field.newBuilder("new-field", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
+        TableDefinition updatedBQTableDefinition = getNonPartitionedTableDefinition(updatedBQSchemaFields);
+
+        TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
+        TableInfo tableInfo = TableInfo.newBuilder(tableId, updatedBQTableDefinition).build();
+        when(bigquery.getDataset(tableId.getDataset())).thenReturn(dataset);
+        when(dataset.exists()).thenReturn(true);
+        when(dataset.getLocation()).thenReturn("US");
+        when(table.exists()).thenReturn(true);
+        when(bigquery.getTable(tableId)).thenReturn(table);
+        when(table.getDefinition()).thenReturn(mockTableDefinition);
+        when(mockTableDefinition.getSchema()).thenReturn(tableDefinition.getSchema());
+        when(bigquery.update(tableInfo))
+                .thenThrow(new BigQueryException(500, " Error while updating bigquery table on callback:Exceeded rate limits: too many table update operations"))
+                .thenThrow(new BigQueryException(500, " Error while updating bigquery table on callback:Exceeded rate limits: too many table update operations"))
+                .thenThrow(new BigQueryException(500, " Error while updating bigquery table on callback:Exceeded rate limits: too many table update operations"))
+                .thenReturn(table);
+        bqClient.upsertTable(updatedBQSchemaFields);
+        verify(bigquery, never()).create(tableInfo);
+        verify(bigquery, times(4)).update(tableInfo);
     }
 
     @Test

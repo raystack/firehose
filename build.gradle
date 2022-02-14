@@ -76,11 +76,14 @@ dependencies {
     implementation group: 'org.influxdb', name: 'influxdb-java', version: '2.5'
     implementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.10'
+    implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.35'
     implementation group: 'redis.clients', name: 'jedis', version: '3.0.1'
     implementation group: 'io.opentracing', name: 'opentracing-api', version: '0.33.0'
     implementation group: 'io.opentracing.contrib', name: 'opentracing-kafka-client', version: '0.1.4'
     implementation group: 'io.jaegertracing', name: 'jaeger-client', version: '1.0.0'
-    implementation group: 'org.elasticsearch.client', name: 'elasticsearch-rest-high-level-client', version: '6.3.1'
+    implementation(group: 'org.elasticsearch.client', name: 'elasticsearch-rest-high-level-client', version: '6.3.1') {
+        exclude group: "log4j", module: "log4j"
+    }
     implementation 'io.confluent:monitoring-interceptors:3.0.0'
     implementation "io.grpc:grpc-all:1.18.0"
     implementation group: 'org.jfrog.buildinfo', name: 'build-info-extractor', version: '2.6.3'
@@ -274,6 +277,7 @@ jacocoTestCoverageVerification {
                               '**/exception/**',
                               '**/serializer/**',
                               '**/cortexpb/**',
+                              '**/SinkFactory**',
                               '**/Clock**',
                               '**/KafkaUtils**',
                               '**/ConsumerRebalancer**',
