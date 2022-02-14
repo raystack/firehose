@@ -9,4 +9,9 @@
     <root level="${LOG_LEVEL:-INFO}">
         <appender-ref ref="STDOUT"/>
     </root>
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <resetJUL>true</resetJUL>
+    </contextListener>
+    <!-- Adding different log level To fix https://github.com/protocolbuffers/protobuf/issues/9478 -->
+    <logger name="com.google.protobuf.TextFormat" level="WARN"/>
 </configuration>

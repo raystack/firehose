@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Random;
 
 public class BigQueryClient {
     private final BigQuery bigquery;
@@ -34,6 +35,9 @@ public class BigQueryClient {
     private final BigQuerySinkConfig bqConfig;
     private final BQTableDefinition bqTableDefinition;
     private final Instrumentation instrumentation;
+    private static final int TABLE_INFO_UPDATE_RETRIES = 10;
+    private static final int DEFAULT_SLEEP_RETRY = 10000;
+    private final Random random = new Random(System.currentTimeMillis());
 
     public BigQueryClient(BigQuerySinkConfig bqConfig, Instrumentation instrumentation) throws IOException {
         this(getBigQueryInstance(bqConfig), bqConfig, instrumentation);
@@ -72,7 +76,29 @@ public class BigQueryClient {
         TableInfo tableInfo = TableInfo.newBuilder(tableID, tableDefinition)
                 .setLabels(bqConfig.getTableLabels())
                 .build();
-        upsertDatasetAndTable(tableInfo);
+        upsertDatasetAndTableWithRetry(tableInfo);
+    }
+
+    private void upsertDatasetAndTableWithRetry(TableInfo info) {
+        for (int ii = 0; ii < TABLE_INFO_UPDATE_RETRIES; ii++) {
+            try {
+                upsertDatasetAndTable(info);
+                return;
+            } catch (BigQueryException e) {
+                instrumentation.logWarn(e.getMessage());
+                if (e.getMessage().contains("Exceeded rate limits")) {
+                    try {
+                        int sleepMillis = random.nextInt(DEFAULT_SLEEP_RETRY);
+                        instrumentation.logInfo("Waiting for " + sleepMillis + " milliseconds");
+                        Thread.sleep(sleepMillis);
+                    } catch (InterruptedException interruptedException) {
+                        instrumentation.captureNonFatalError(interruptedException, "Sleep interrupted");
+                    }
+                } else {
+                    throw e;
+                }
+            }
+        }
     }
 
     private void upsertDatasetAndTable(TableInfo tableInfo) {
