@@ -65,7 +65,7 @@ public class BlobSinkFactory {
     }
 
     public static BlobStorage createSinkObjectStorage(BlobSinkConfig sinkConfig, Map<String, String> configuration) {
-        if (sinkConfig.getBlobStorageType() == BlobStorageType.GCS) {
+        if (sinkConfig.getBlobStorageType() == BlobStorageType.GCS || sinkConfig.getBlobStorageType() == BlobStorageType.S3) {
             configuration.put("GCS_TYPE", "SINK_BLOB");
             return BlobStorageFactory.createObjectStorage(sinkConfig.getBlobStorageType(), configuration);
         }

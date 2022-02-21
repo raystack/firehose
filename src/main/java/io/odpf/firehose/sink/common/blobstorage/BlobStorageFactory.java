@@ -1,7 +1,9 @@
 package io.odpf.firehose.sink.common.blobstorage;
 
 import io.odpf.firehose.config.GCSConfig;
+import io.odpf.firehose.config.S3Config;
 import io.odpf.firehose.sink.common.blobstorage.gcs.GoogleCloudStorage;
+import io.odpf.firehose.sink.common.blobstorage.s3.S3;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.io.IOException;
@@ -16,6 +18,15 @@ public class BlobStorageFactory {
                 return new GoogleCloudStorage(gcsConfig);
             } catch (IOException e) {
                 throw new IllegalArgumentException("Exception while creating GCS Storage", e);
+            }
+        }
+        else if (storageType == BlobStorageType.S3) {
+            try {
+                S3Config s3Config= ConfigFactory.create(S3Config.class, config);
+                return new S3(s3Config);
+            }
+            catch (Exception e) {
+                throw new IllegalArgumentException("Exception while creating S3 Storage", e);
             }
         }
         throw new IllegalArgumentException("Blob Storage Type " + storageType + " is not supported");
