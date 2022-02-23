@@ -18,8 +18,6 @@ import software.amazon.awssdk.services.s3.model.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 
 public class S3 implements BlobStorage {
     private static final Logger LOGGER = LoggerFactory.getLogger(S3.class);
@@ -38,7 +36,7 @@ public class S3 implements BlobStorage {
                 .overrideConfiguration(overrideConfiguration)
                 .build();
         checkBucket(s3Config.getS3BucketName());
-        this.bucketName=s3Config.getS3BucketName();
+        this.bucketName = s3Config.getS3BucketName();
 
     }
 
@@ -47,7 +45,7 @@ public class S3 implements BlobStorage {
             final HeadBucketRequest request = HeadBucketRequest.builder().bucket(bucketName).build();
 
             this.s3Client.headBucket(request);
-            LOGGER.info("Bucket found "+bucketName);
+            LOGGER.info("Bucket found " + bucketName);
         } catch (NoSuchBucketException ex) {
             LOGGER.error("Bucket not found " + bucketName);
             throw new IllegalArgumentException("S3 Bucket not found " + bucketName + "\n" + ex);
@@ -64,7 +62,7 @@ public class S3 implements BlobStorage {
     @Override
     public void store(String objectName, String filePath) throws BlobStorageException {
         try {
-            System.out.println("upload started");
+            LOGGER.info("upload started");
             byte[] content = Files.readAllBytes(Paths.get(filePath));
             store(objectName, content);
         } catch (IOException e) {
@@ -75,30 +73,17 @@ public class S3 implements BlobStorage {
     }
 
     @Override
-    public void store( String objectName, byte[] content) throws BlobStorageException {
+    public void store(String objectName, byte[] content) throws BlobStorageException {
         try {
-            Map<String, String> metadata = new HashMap<>();
-            metadata.put("x-amz-meta-myVal", "test");
-            PutObjectRequest putOb = PutObjectRequest.builder()
+            PutObjectRequest putObject = PutObjectRequest.builder()
                     .bucket(this.bucketName)
                     .key(objectName)
                     .build();
-            PutObjectResponse response = this.s3Client.putObject(putOb,
-                    RequestBody.fromBytes(content));
-            System.out.println(response.eTag());
-        }
-        catch (SdkServiceException ase) {
-            LOGGER.error("Caught an AmazonServiceException, which " + "means your request made it "
-                    + "to Amazon S3, but was rejected with an error response" + " for some reason.", ase);
-            LOGGER.info("Error Message:    " + ase.getMessage());
-            LOGGER.info("Key:       " + objectName);
-            throw ase;
-        } catch (SdkClientException ace) {
-            LOGGER.error("Caught an AmazonClientException, which " + "means the client encountered "
-                    + "an internal error while trying to " + "communicate with S3, "
-                    + "such as not being able to access the network.", ace);
-            LOGGER.error("Error Message: {}, {}", objectName, ace.getMessage());
-            throw ace;
+            this.s3Client.putObject(putObject, RequestBody.fromBytes(content));
+            LOGGER.info("Created object in GCS {}", objectName);
+        } catch (SdkServiceException | SdkClientException ase) {
+            LOGGER.error("Failed to create object in GCS {}", objectName);
+            throw new BlobStorageException(ase.getMessage(),ase.getMessage(),ase);
         }
 
     }
