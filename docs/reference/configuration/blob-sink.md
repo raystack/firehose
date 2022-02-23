@@ -124,10 +124,10 @@ The name of google cloud storage bucket. Here is further documentation of google
 
 ## `SINK_BLOB_GCS_CREDENTIAL_PATH`
 
-Full path of google cloud credentials file. Here is further documentation of google cloud authentication and [credentials](https://cloud.google.com/docs/authentication/getting-started). Required Only if `SINK_TYPE` is `GCS`
+Full path of google cloud credentials file. Here is further documentation of google cloud authentication and [credentials](https://cloud.google.com/docs/authentication/getting-started).
 
 * Example value: `/.secret/google-cloud-credentials.json`
-* Type: `optional` 
+* Type: `required`
 
 ## `SINK_BLOB_GCS_RETRY_MAX_ATTEMPTS`
 
