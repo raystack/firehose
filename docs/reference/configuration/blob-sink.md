@@ -4,9 +4,9 @@ A Blob sink Firehose \(`SINK_TYPE`=`blob`\) requires the following variables to 
 
 ## `SINK_BLOB_STORAGE_TYPE`
 
-Defines the types of blob storage the destination remote file system the file will be uploaded. Currently, the only supported blob storage is `GCS` (google cloud storage).
+Defines the types of blob storage the destination remote file system the file will be uploaded. Currently, the only supported blob storages are `GCS` (google cloud storage) and `S3` (Amazon S3) .
 
-* Example value: `GCS`
+* Example value: `GCS` or `S3`
 * Type: `required`
 
 ## `SINK_BLOB_LOCAL_FILE_WRITER_TYPE`
@@ -124,10 +124,10 @@ The name of google cloud storage bucket. Here is further documentation of google
 
 ## `SINK_BLOB_GCS_CREDENTIAL_PATH`
 
-Full path of google cloud credentials file. Here is further documentation of google cloud authentication and [credentials](https://cloud.google.com/docs/authentication/getting-started).
+Full path of google cloud credentials file. Here is further documentation of google cloud authentication and [credentials](https://cloud.google.com/docs/authentication/getting-started). Required Only if `SINK_TYPE` is `GCS`
 
 * Example value: `/.secret/google-cloud-credentials.json`
-* Type: `required`
+* Type: `optional` 
 
 ## `SINK_BLOB_GCS_RETRY_MAX_ATTEMPTS`
 
@@ -194,3 +194,39 @@ Multiplier of google cloud storage client RPC call timeout. When this config is 
 * Example value: `1`
 * Type: `optional`
 * Default value: `1`
+
+## `SINK_BLOB_S3_REGION"`
+
+Amazon S3 creates buckets in a Region that you specify. 
+
+* Example value: `ap-south-1`
+* Type: `required`
+
+## `SINK_BLOB_S3_BUCKET_NAME"`
+
+The Name of  Amazon S3 bucket .Here is further documentation of s3 [bucket name](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingBucket.html).
+
+* Example value: `sink_bucket`
+* Type: `required`
+
+## `SINK_BLOB_S3_ACCESS_KEY"`
+
+Access Key to access the bucket. This key can also be set through env using `AWS_ACCESS_KEY_ID` key or by creating credentials file in `${HOME}/.aws/credentials` folder . Here is further documentation on how to set through [credentials file](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) or [environment varialbes](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html) 
+
+* Example value: `AKIAIOSFODNN7EXAMPLE`
+* Type: `required`
+
+## `SINK_BLOB_S3_SECRET_KEY"`
+
+Secret Key to access the bucket. This key can also be set through env using `AWS_SECRET_ACCESS_KEY` key or by creating credentials file in `${HOME}/.aws/credentials` folder . Here is further documentation on how to set through [credentials file](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) or [environment varialbes](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html)
+
+* Example value: `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY`
+* Type: `required`
+
+## `SINK_BLOB_S3_RETRY_MAX_ATTEMPTS`
+
+Number of retry of the s3 upload request when the request failed.
+
+* Example value: `10`
+* Type: `optional`
+* Default value : `10`
