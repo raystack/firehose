@@ -13,8 +13,10 @@ import software.amazon.awssdk.core.retry.RetryPolicy;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
-
+import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -35,24 +37,21 @@ public class S3 implements BlobStorage {
                 .region(Region.of(s3Config.getS3Region()))
                 .overrideConfiguration(overrideConfiguration)
                 .build();
-        checkBucket(s3Config.getS3BucketName());
         this.bucketName = s3Config.getS3BucketName();
-
+        checkBucket();
     }
 
-    private void checkBucket(String bucketName) {
+    private void checkBucket() {
         try {
-            final HeadBucketRequest request = HeadBucketRequest.builder().bucket(bucketName).build();
-
+            final HeadBucketRequest request = HeadBucketRequest.builder().bucket(this.bucketName).build();
             this.s3Client.headBucket(request);
-            LOGGER.info("Bucket found " + bucketName);
+            LOGGER.info("Bucket found " + this.bucketName);
         } catch (NoSuchBucketException ex) {
-            LOGGER.error("Bucket not found " + bucketName);
-            throw new IllegalArgumentException("S3 Bucket not found " + bucketName + "\n" + ex);
-
+            LOGGER.error("Bucket not found " + this.bucketName);
+            throw new IllegalArgumentException("S3 Bucket not found " + this.bucketName + "\n" + ex);
         } catch (S3Exception ex) {
-            LOGGER.error("Cannot check access " + bucketName);
-            throw new IllegalArgumentException("S3 Bucket not found " + bucketName + "\n" + ex);
+            LOGGER.error("Cannot check access " + this.bucketName);
+            throw new IllegalArgumentException("S3 Bucket not found " + this.bucketName + "\n" + ex);
         } catch (Exception ex) {
             LOGGER.error("Cannot check access", ex);
             throw ex;
@@ -69,7 +68,6 @@ public class S3 implements BlobStorage {
             LOGGER.error("Failed to read local file {}", filePath);
             throw new BlobStorageException("file_io_error", "File Read failed", e);
         }
-
     }
 
     @Override
@@ -80,11 +78,10 @@ public class S3 implements BlobStorage {
                     .key(objectName)
                     .build();
             this.s3Client.putObject(putObject, RequestBody.fromBytes(content));
-            LOGGER.info("Created object in GCS {}", objectName);
+            LOGGER.info("Created object in S3 {}", objectName);
         } catch (SdkServiceException | SdkClientException ase) {
-            LOGGER.error("Failed to create object in GCS {}", objectName);
-            throw new BlobStorageException(ase.getMessage(),ase.getMessage(),ase);
+            LOGGER.error("Failed to create object in S3 {}", objectName);
+            throw new BlobStorageException(ase.getMessage(), ase.getMessage(), ase);
         }
-
     }
 }

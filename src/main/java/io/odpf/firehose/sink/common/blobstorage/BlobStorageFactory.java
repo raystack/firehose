@@ -12,20 +12,19 @@ import java.util.Map;
 public class BlobStorageFactory {
 
     public static BlobStorage createObjectStorage(BlobStorageType storageType, Map<String, String> config) {
-        switch (storageType){
+        switch (storageType) {
             case GCS:
                 try {
                     GCSConfig gcsConfig = ConfigFactory.create(GCSConfig.class, config);
                     return new GoogleCloudStorage(gcsConfig);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    throw new IllegalArgumentException("Exception while creating GCS Storage", e);
                 }
             case S3:
                 try {
-                    S3Config s3Config= ConfigFactory.create(S3Config.class, config);
+                    S3Config s3Config = ConfigFactory.create(S3Config.class, config);
                     return new S3(s3Config);
-                }
-                catch (Exception e) {
+                 } catch (Exception e) {
                     throw new IllegalArgumentException("Exception while creating S3 Storage", e);
                 }
 

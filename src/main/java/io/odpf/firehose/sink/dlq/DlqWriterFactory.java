@@ -31,7 +31,7 @@ public class DlqWriterFactory {
                 return new KafkaDlqWriter(tracingProducer, dlqKafkaProducerConfig.getDlqKafkaTopic(), new Instrumentation(client, KafkaDlqWriter.class));
 
             case BLOB_STORAGE:
-                switch (dlqConfig.getBlobStorageType()){
+                switch (dlqConfig.getBlobStorageType()) {
                     case GCS:
                         configuration.put("GCS_TYPE", "DLQ");
                         break;
