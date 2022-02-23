@@ -67,13 +67,14 @@ public class BlobSinkFactory {
         switch (sinkConfig.getBlobStorageType()) {
             case GCS:
                 configuration.put("GCS_TYPE", "SINK_BLOB");
-                return BlobStorageFactory.createObjectStorage(sinkConfig.getBlobStorageType(), configuration);
+                break;
             case S3:
                 configuration.put("S3_TYPE", "SINK_BLOB");
-                return BlobStorageFactory.createObjectStorage(sinkConfig.getBlobStorageType(), configuration);
+                break;
             default:
                 throw new IllegalArgumentException("Sink Blob Storage type " + sinkConfig.getBlobStorageType() + "is not supported");
         }
+        return BlobStorageFactory.createObjectStorage(sinkConfig.getBlobStorageType(), configuration);
 
     }
 }
