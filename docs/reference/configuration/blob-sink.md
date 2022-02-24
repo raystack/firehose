@@ -4,9 +4,9 @@ A Blob sink Firehose \(`SINK_TYPE`=`blob`\) requires the following variables to 
 
 ## `SINK_BLOB_STORAGE_TYPE`
 
-Defines the types of blob storage the destination remote file system the file will be uploaded. Currently, the only supported blob storage is `GCS` (google cloud storage).
+Defines the types of blob storage the destination remote file system the file will be uploaded. Currently, the only supported blob storages are `GCS` (google cloud storage) and `S3` (Amazon S3) .
 
-* Example value: `GCS`
+* Example value: `GCS` or `S3`
 * Type: `required`
 
 ## `SINK_BLOB_LOCAL_FILE_WRITER_TYPE`
@@ -194,3 +194,140 @@ Multiplier of google cloud storage client RPC call timeout. When this config is 
 * Example value: `1`
 * Type: `optional`
 * Default value: `1`
+
+## `SINK_BLOB_S3_REGION"`
+
+Amazon S3 creates buckets in a Region that you specify. 
+
+* Example value: `ap-south-1`
+* Type: `required`
+
+## `SINK_BLOB_S3_BUCKET_NAME"`
+
+The Name of  Amazon S3 bucket .Here is further documentation of s3 [bucket name](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingBucket.html).
+
+* Example value: `sink_bucket`
+* Type: `required`
+
+## `SINK_BLOB_S3_ACCESS_KEY"`
+
+Access Key to access the bucket. This key can also be set through env using `AWS_ACCESS_KEY_ID` key or by creating credentials file in `${HOME}/.aws/credentials` folder . Here is further documentation on how to set through [credentials file](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) or [environment varialbes](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html) 
+
+* Example value: `AKIAIOSFODNN7EXAMPLE`
+* Type: `required`
+
+## `SINK_BLOB_S3_SECRET_KEY"`
+
+Secret Key to access the bucket. This key can also be set through env using `AWS_SECRET_ACCESS_KEY` key or by creating credentials file in `${HOME}/.aws/credentials` folder . Here is further documentation on how to set through [credentials file](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) or [environment varialbes](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html)
+
+* Example value: `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY`
+* Type: `required`
+
+## `SINK_BLOB_S3_RETRY_MAX_ATTEMPTS`
+
+Number of retry of the s3 upload request when the request failed.
+
+* Example value: `10`
+* Type: `optional`
+* Default value : `10`
+
+## `SINK_BLOB_S3_BASE_DELAY_MS"`
+
+Initial delay for first retry in milliseconds.
+
+* Example value: `1000`
+* Type: `optional`
+* Default value : `1000`
+
+## `SINK_BLOB_S3_MAX_BACKOFF_MS"`
+
+Max backoff time for retry in milliseconds
+
+* Example value: `30000`
+* Type: `optional`
+* Default value : `30000`
+
+## `SINK_BLOB_S3_API_ATTEMPT_TIMEOUT_MS"`
+
+The amount of time to wait for the http request to complete before giving up and timing out in milliseconds.
+
+* Example value: `10000`
+* Type: `optional`
+* Default value : `10000`
+
+## `SINK_BLOB_S3_API_TIMEOUT_MS"`
+
+The amount of time to allow the client to complete the execution of an API call. This timeout covers the entire client execution except for marshalling. Unit is in milliseconds.
+
+* Example value: `40000`
+* Type: `optional`
+* Default value : `40000`
+
+
+## `DLQ_S3_REGION"`
+
+Amazon S3 creates buckets in a Region that you specify. 
+
+* Example value: `ap-south-1`
+* Type: `required`
+
+## `DLQ_S3_BUCKET_NAME"`
+
+The Name of  Amazon S3 bucket .Here is further documentation of s3 [bucket name](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingBucket.html).
+
+* Example value: `sink_bucket`
+* Type: `required`
+
+## `DLQ_S3_ACCESS_KEY"`
+
+Access Key to access the bucket. This key can also be set through env using `AWS_ACCESS_KEY_ID` key or by creating credentials file in `${HOME}/.aws/credentials` folder . Here is further documentation on how to set through [credentials file](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) or [environment varialbes](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html)
+
+* Example value: `AKIAIOSFODNN7EXAMPLE`
+* Type: `required`
+
+## `DLQ_S3_SECRET_KEY"`
+
+Secret Key to access the bucket. This key can also be set through env using `AWS_SECRET_ACCESS_KEY` key or by creating credentials file in `${HOME}/.aws/credentials` folder . Here is further documentation on how to set through [credentials file](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) or [environment varialbes](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html)
+
+* Example value: `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY`
+* Type: `required`
+
+## `DLQ_S3_RETRY_MAX_ATTEMPTS`
+
+Number of retry of the s3 upload request when the request failed.
+
+* Example value: `10`
+* Type: `optional`
+* Default value : `10`
+
+## `DLQ_S3_BASE_DELAY_MS"`
+
+Initial delay for first retry in milliseconds.
+
+* Example value: `1000`
+* Type: `optional`
+* Default value : `1000`
+
+## `DLQ_S3_MAX_BACKOFF_MS"`
+
+Max backoff time for retry in milliseconds
+
+* Example value: `30000`
+* Type: `optional`
+* Default value : `30000`
+
+## `DLQ_S3_API_ATTEMPT_TIMEOUT_MS"`
+
+The amount of time to wait for the http request to complete before giving up and timing out in milliseconds.
+
+* Example value: `10000`
+* Type: `optional`
+* Default value : `10000`
+
+## `DLQ_S3_API_TIMEOUT_MS"`
+
+The amount of time to allow the client to complete the execution of an API call. This timeout covers the entire client execution except for marshalling. Unit is in milliseconds.
+
+* Example value: `40000`
+* Type: `optional`
+* Default value : `40000`

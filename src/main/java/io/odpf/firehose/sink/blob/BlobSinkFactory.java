@@ -5,9 +5,6 @@ import io.odpf.firehose.config.BlobSinkConfig;
 import io.odpf.firehose.consumer.kafka.OffsetManager;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
-import io.odpf.firehose.sink.common.blobstorage.BlobStorage;
-import io.odpf.firehose.sink.common.blobstorage.BlobStorageFactory;
-import io.odpf.firehose.sink.common.blobstorage.BlobStorageType;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.blob.message.MessageDeSerializer;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessage;
@@ -18,6 +15,8 @@ import io.odpf.firehose.sink.blob.writer.local.LocalStorage;
 import io.odpf.firehose.sink.blob.writer.local.policy.SizeBasedRotatingPolicy;
 import io.odpf.firehose.sink.blob.writer.local.policy.TimeBasedRotatingPolicy;
 import io.odpf.firehose.sink.blob.writer.local.policy.WriterPolicy;
+import io.odpf.firehose.sink.common.blobstorage.BlobStorage;
+import io.odpf.firehose.sink.common.blobstorage.BlobStorageFactory;
 import io.odpf.stencil.client.StencilClient;
 import org.aeonbits.owner.ConfigFactory;
 
@@ -65,10 +64,17 @@ public class BlobSinkFactory {
     }
 
     public static BlobStorage createSinkObjectStorage(BlobSinkConfig sinkConfig, Map<String, String> configuration) {
-        if (sinkConfig.getBlobStorageType() == BlobStorageType.GCS) {
-            configuration.put("GCS_TYPE", "SINK_BLOB");
-            return BlobStorageFactory.createObjectStorage(sinkConfig.getBlobStorageType(), configuration);
+        switch (sinkConfig.getBlobStorageType()) {
+            case GCS:
+                configuration.put("GCS_TYPE", "SINK_BLOB");
+                break;
+            case S3:
+                configuration.put("S3_TYPE", "SINK_BLOB");
+                break;
+            default:
+                throw new IllegalArgumentException("Sink Blob Storage type " + sinkConfig.getBlobStorageType() + "is not supported");
         }
-        throw new IllegalArgumentException("Sink Blob Storage type " + sinkConfig.getBlobStorageType() + "is not supported");
+        return BlobStorageFactory.createObjectStorage(sinkConfig.getBlobStorageType(), configuration);
+
     }
 }
