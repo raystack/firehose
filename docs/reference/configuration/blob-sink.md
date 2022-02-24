@@ -231,7 +231,7 @@ Number of retry of the s3 upload request when the request failed.
 * Type: `optional`
 * Default value : `10`
 
-## `SINK_BLOB_S3_BASE_DELAY"`
+## `SINK_BLOB_S3_BASE_DELAY_MS"`
 
 Initial delay for first retry in milliseconds.
 
@@ -239,7 +239,7 @@ Initial delay for first retry in milliseconds.
 * Type: `optional`
 * Default value : `1000`
 
-## `SINK_BLOB_S3_MAX_BACKOFF"`
+## `SINK_BLOB_S3_MAX_BACKOFF_MS"`
 
 Max backoff time for retry in milliseconds
 
@@ -247,7 +247,7 @@ Max backoff time for retry in milliseconds
 * Type: `optional`
 * Default value : `30000`
 
-## `SINK_BLOB_S3_API_ATTEMPT_TIMEOUT"`
+## `SINK_BLOB_S3_API_ATTEMPT_TIMEOUT_MS"`
 
 The amount of time to wait for the http request to complete before giving up and timing out in milliseconds.
 
@@ -255,7 +255,7 @@ The amount of time to wait for the http request to complete before giving up and
 * Type: `optional`
 * Default value : `10000`
 
-## `SINK_BLOB_S3_API_TIMEOUT"`
+## `SINK_BLOB_S3_API_TIMEOUT_MS"`
 
 The amount of time to allow the client to complete the execution of an API call. This timeout covers the entire client execution except for marshalling. Unit is in milliseconds.
 
@@ -300,7 +300,7 @@ Number of retry of the s3 upload request when the request failed.
 * Type: `optional`
 * Default value : `10`
 
-## `DLQ_S3_BASE_DELAY"`
+## `DLQ_S3_BASE_DELAY_MS"`
 
 Initial delay for first retry in milliseconds.
 
@@ -308,7 +308,7 @@ Initial delay for first retry in milliseconds.
 * Type: `optional`
 * Default value : `1000`
 
-## `DLQ_S3_MAX_BACKOFF"`
+## `DLQ_S3_MAX_BACKOFF_MS"`
 
 Max backoff time for retry in milliseconds
 
@@ -316,7 +316,7 @@ Max backoff time for retry in milliseconds
 * Type: `optional`
 * Default value : `30000`
 
-## `DLQ_S3_API_ATTEMPT_TIMEOUT"`
+## `DLQ_S3_API_ATTEMPT_TIMEOUT_MS"`
 
 The amount of time to wait for the http request to complete before giving up and timing out in milliseconds.
 
@@ -324,7 +324,7 @@ The amount of time to wait for the http request to complete before giving up and
 * Type: `optional`
 * Default value : `10000`
 
-## `DLQ_S3_API_TIMEOUT"`
+## `DLQ_S3_API_TIMEOUT_MS"`
 
 The amount of time to allow the client to complete the execution of an API call. This timeout covers the entire client execution except for marshalling. Unit is in milliseconds.
 
