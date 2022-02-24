@@ -10,6 +10,7 @@ import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.exception.SdkServiceException;
 import software.amazon.awssdk.core.retry.RetryPolicy;
+import software.amazon.awssdk.core.retry.backoff.FullJitterBackoffStrategy;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -20,6 +21,7 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
 
 public class S3 implements BlobStorage {
     private static final Logger LOGGER = LoggerFactory.getLogger(S3.class);
@@ -27,11 +29,19 @@ public class S3 implements BlobStorage {
     private final String bucketName;
 
     public S3(S3Config s3Config) {
+        FullJitterBackoffStrategy backoffStrategy = FullJitterBackoffStrategy.builder()
+                .baseDelay(Duration.ofMillis(s3Config.getS3BaseDelay()))
+                .maxBackoffTime(Duration.ofMillis(s3Config.getS3MaxBackoff()))
+                .build();
         RetryPolicy retryPolicy = RetryPolicy.builder()
                 .numRetries(s3Config.getS3RetryMaxAttempts())
+                .backoffStrategy(backoffStrategy)
                 .build();
         ClientOverrideConfiguration overrideConfiguration = ClientOverrideConfiguration.builder()
-                .retryPolicy(retryPolicy).build();
+                .retryPolicy(retryPolicy)
+                .apiCallTimeout(Duration.ofMillis(s3Config.getS3ApiTimeout()))
+                .apiCallAttemptTimeout(Duration.ofMillis(s3Config.getS3ApiAttemptTimeout()))
+                .build();
 
         this.s3Client = S3Client.builder()
                 .region(Region.of(s3Config.getS3Region()))

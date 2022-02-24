@@ -231,6 +231,38 @@ Number of retry of the s3 upload request when the request failed.
 * Type: `optional`
 * Default value : `10`
 
+## `SINK_BLOB_S3_BASE_DELAY"`
+
+Initial delay for first retry in milliseconds.
+
+* Example value: `1000`
+* Type: `optional`
+* Default value : `1000`
+
+## `SINK_BLOB_S3_MAX_BACKOFF"`
+
+Max backoff time for retry in milliseconds
+
+* Example value: `30000`
+* Type: `optional`
+* Default value : `30000`
+
+## `SINK_BLOB_S3_API_ATTEMPT_TIMEOUT"`
+
+The amount of time to wait for the http request to complete before giving up and timing out in milliseconds.
+
+* Example value: `10000`
+* Type: `optional`
+* Default value : `10000`
+
+## `SINK_BLOB_S3_API_TIMEOUT"`
+
+The amount of time to allow the client to complete the execution of an API call. This timeout covers the entire client execution except for marshalling. Unit is in milliseconds.
+
+* Example value: `40000`
+* Type: `optional`
+* Default value : `40000`
+
 
 ## `DLQ_S3_REGION"`
 
@@ -267,3 +299,35 @@ Number of retry of the s3 upload request when the request failed.
 * Example value: `10`
 * Type: `optional`
 * Default value : `10`
+
+## `DLQ_S3_BASE_DELAY"`
+
+Initial delay for first retry in milliseconds.
+
+* Example value: `1000`
+* Type: `optional`
+* Default value : `1000`
+
+## `DLQ_S3_MAX_BACKOFF"`
+
+Max backoff time for retry in milliseconds
+
+* Example value: `30000`
+* Type: `optional`
+* Default value : `30000`
+
+## `DLQ_S3_API_ATTEMPT_TIMEOUT"`
+
+The amount of time to wait for the http request to complete before giving up and timing out in milliseconds.
+
+* Example value: `10000`
+* Type: `optional`
+* Default value : `10000`
+
+## `DLQ_S3_API_TIMEOUT"`
+
+The amount of time to allow the client to complete the execution of an API call. This timeout covers the entire client execution except for marshalling. Unit is in milliseconds.
+
+* Example value: `40000`
+* Type: `optional`
+* Default value : `40000`
