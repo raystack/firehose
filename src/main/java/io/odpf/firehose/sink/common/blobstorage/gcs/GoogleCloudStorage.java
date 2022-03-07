@@ -29,25 +29,31 @@ public class GoogleCloudStorage implements BlobStorage {
     private final Storage storage;
 
     public GoogleCloudStorage(GCSConfig gcsConfig) throws IOException {
-        this.gcsConfig = gcsConfig;
-        RetrySettings retrySettings = RetrySettings.newBuilder()
-                .setMaxAttempts(gcsConfig.getGCSRetryMaxAttempts())
-                .setInitialRetryDelay(Duration.ofMillis(gcsConfig.getGCSRetryInitialDelayMS()))
-                .setMaxRetryDelay(Duration.ofMillis(gcsConfig.getGCSRetryMaxDelayMS()))
-                .setRetryDelayMultiplier(gcsConfig.getGCSRetryDelayMultiplier())
-                .setTotalTimeout(Duration.ofMillis(gcsConfig.getGCSRetryTotalTimeoutMS()))
-                .setInitialRpcTimeout(Duration.ofMillis(gcsConfig.getGCSRetryInitialRPCTimeoutMS()))
-                .setRpcTimeoutMultiplier(gcsConfig.getGCSRetryRPCTimeoutMultiplier())
-                .setMaxRpcTimeout(Duration.ofMillis(gcsConfig.getGCSRetryRPCMaxTimeoutMS()))
-                .build();
-        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(gcsConfig.getGCSCredentialPath()));
-        this.storage = StorageOptions.newBuilder()
-                .setProjectId(gcsConfig.getGCloudProjectID())
-                .setCredentials(credentials)
-                .setRetrySettings(retrySettings)
-                .build().getService();
+        this(gcsConfig, GoogleCredentials.fromStream(new FileInputStream(gcsConfig.getGCSCredentialPath())));
         checkBucket();
         logRetentionPolicy();
+    }
+
+    public GoogleCloudStorage(GCSConfig gcsConfig, GoogleCredentials credentials) {
+        this(gcsConfig, StorageOptions.newBuilder()
+                .setProjectId(gcsConfig.getGCloudProjectID())
+                .setCredentials(credentials)
+                .setRetrySettings(RetrySettings.newBuilder()
+                        .setMaxAttempts(gcsConfig.getGCSRetryMaxAttempts())
+                        .setInitialRetryDelay(Duration.ofMillis(gcsConfig.getGCSRetryInitialDelayMS()))
+                        .setMaxRetryDelay(Duration.ofMillis(gcsConfig.getGCSRetryMaxDelayMS()))
+                        .setRetryDelayMultiplier(gcsConfig.getGCSRetryDelayMultiplier())
+                        .setTotalTimeout(Duration.ofMillis(gcsConfig.getGCSRetryTotalTimeoutMS()))
+                        .setInitialRpcTimeout(Duration.ofMillis(gcsConfig.getGCSRetryInitialRPCTimeoutMS()))
+                        .setRpcTimeoutMultiplier(gcsConfig.getGCSRetryRPCTimeoutMultiplier())
+                        .setMaxRpcTimeout(Duration.ofMillis(gcsConfig.getGCSRetryRPCMaxTimeoutMS()))
+                        .build())
+                .build().getService());
+    }
+
+    public GoogleCloudStorage(GCSConfig gcsConfig, Storage storage) {
+        this.gcsConfig = gcsConfig;
+        this.storage = storage;
     }
 
     private void checkBucket() {

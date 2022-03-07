@@ -1,11 +1,13 @@
 package io.odpf.firehose.sink.common.blobstorage;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**
  * Should be thrown when there is exception thrown by blob storage client.
  */
 @Getter
+@EqualsAndHashCode
 public class BlobStorageException extends Exception {
     private final String errorType;
     private final String message;
