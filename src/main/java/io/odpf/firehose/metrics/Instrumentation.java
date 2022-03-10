@@ -129,9 +129,14 @@ public class Instrumentation {
         captureNonFatalError(e);
     }
 
-    public void captureFatalError(Exception e) {
+    public void captureFatalError(Throwable e) {
         logger.error(e.getMessage(), e);
         statsDReporter.recordEvent(ERROR_EVENT, FATAL_ERROR, errorTag(e, FATAL_ERROR));
+    }
+
+    public void captureFatalError(Throwable e, String message) {
+        logger.error(message);
+        this.captureFatalError(e);
     }
 
     public void captureFatalError(Exception e, String message) {
@@ -144,7 +149,7 @@ public class Instrumentation {
         this.captureFatalError(e);
     }
 
-    private String errorTag(Exception e, String errorType) {
+    private String errorTag(Throwable e, String errorType) {
         return ERROR_MESSAGE_CLASS_TAG + "=" + e.getClass().getName() + ",type=" + errorType;
     }
 

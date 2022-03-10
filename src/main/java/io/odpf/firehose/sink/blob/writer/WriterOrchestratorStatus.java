@@ -2,11 +2,13 @@ package io.odpf.firehose.sink.blob.writer;
 
 import lombok.Data;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 
 @Data
-public class WriterOrchestratorStatus {
+public class WriterOrchestratorStatus implements Closeable {
     private boolean isClosed;
     private ScheduledFuture<?> localFileWriterFuture;
     private ScheduledFuture<?> objectStorageWriterFuture;
@@ -44,5 +46,11 @@ public class WriterOrchestratorStatus {
         });
         localFileWriterCompletionChecker.start();
         objectStorageWriterCompletionChecker.start();
+    }
+
+    @Override
+    public void close() throws IOException {
+        localFileWriterCompletionChecker.interrupt();
+        objectStorageWriterCompletionChecker.interrupt();
     }
 }
