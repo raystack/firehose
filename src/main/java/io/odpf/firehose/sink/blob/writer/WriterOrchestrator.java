@@ -134,6 +134,7 @@ public class WriterOrchestrator implements Closeable {
         objectStorageCheckerScheduler.shutdown();
         remoteUploadScheduler.shutdown();
         writerOrchestratorStatus.setClosed(true);
+        writerOrchestratorStatus.close();
         for (LocalFileWriter writer : timePartitionWriterMap.values()) {
             writer.close();
         }

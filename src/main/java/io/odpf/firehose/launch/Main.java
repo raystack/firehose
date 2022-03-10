@@ -50,8 +50,8 @@ public class Main {
                             }
                             firehoseConsumer.process();
                         }
-                    } catch (Exception e) {
-                        instrumentation.captureFatalError(e, "Exception on creating the consumer, exiting the application");
+                    } catch (Exception | Error e) {
+                        instrumentation.captureFatalError(e, "Caught exception or error, exiting the application");
                         System.exit(1);
                     } finally {
                         ensureThreadInterruptStateIsClearedAndClose(firehoseConsumer, instrumentation);
