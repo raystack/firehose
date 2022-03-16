@@ -199,6 +199,10 @@ public class Instrumentation {
         statsDReporter.captureCount(GLOBAL_MESSAGES_TOTAL, counter, String.format(MESSAGE_SCOPE_TAG, scope.name()));
     }
 
+    public void captureGlobalMessageMetrics(Metrics.MessageScope scope, int counter, String... tags) {
+        statsDReporter.captureCount(GLOBAL_MESSAGES_TOTAL, counter, String.format(MESSAGE_SCOPE_TAG, scope.name()));
+    }
+
     public void captureMessageMetrics(String metric, MessageType type, int counter) {
         captureMessageMetrics(metric, type, null, counter);
     }
