@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
+import static io.odpf.firehose.metrics.Metrics.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -126,6 +127,19 @@ public class InstrumentationTest {
     }
 
     @Test
+    public void shouldCaptureGlobalMetricsWithoutTags() {
+        instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.CONSUMER, 1);
+        verify(statsDReporter, times(1)).captureCount(GLOBAL_MESSAGES_TOTAL, 1, String.format(MESSAGE_SCOPE_TAG, MessageScope.CONSUMER));
+    }
+
+    @Test
+    public void shouldCaptureGlobalMetricsWithTags() {
+        String consumerGroupId = "consumer-group-001";
+        instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.CONSUMER, 1, tag(CONSUMER_GROUP_ID_TAG, consumerGroupId));
+        verify(statsDReporter, times(1)).captureCount(GLOBAL_MESSAGES_TOTAL, 1, String.format(MESSAGE_SCOPE_TAG, MessageScope.CONSUMER), tag(CONSUMER_GROUP_ID_TAG, consumerGroupId));
+    }
+
+    @Test
     public void shouldCaptureLatencyAcrossFirehose() {
         List<Message> messages = Collections.singletonList(message);
         instrumentation.capturePreExecutionLatencies(messages);
@@ -146,6 +160,7 @@ public class InstrumentationTest {
         instrumentation.captureSleepTime(metric, sleepTime);
         verify(statsDReporter, times(1)).gauge(metric, sleepTime);
     }
+
     @Test
     public void shouldCaptureCountWithTags() {
         String metric = "test_metric";

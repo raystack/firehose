@@ -69,6 +69,9 @@ public class Metrics {
     public static final String ERROR_EVENT = APPLICATION_PREFIX + ERROR_PREFIX + "event";
     public static final String ERROR_MESSAGES_TOTAL = APPLICATION_PREFIX + ERROR_PREFIX + "messages_total";
 
+    // CONSUMER TAGS
+    public static final String CONSUMER_GROUP_ID_TAG = "consumer_group_id";
+
     // EXECUTION TAGS
     public static final String SUCCESS_TAG = "success=true";
     public static final String FAILURE_TAG = "success=false";
