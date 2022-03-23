@@ -5,11 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static io.odpf.firehose.sink.prometheus.PromSinkConstants.CONTENT_ENCODING;
-import static io.odpf.firehose.sink.prometheus.PromSinkConstants.CONTENT_ENCODING_DEFAULT;
-import static io.odpf.firehose.sink.prometheus.PromSinkConstants.PROMETHEUS_REMOTE_WRITE_VERSION;
-import static io.odpf.firehose.sink.prometheus.PromSinkConstants.PROMETHEUS_REMOTE_WRITE_VERSION_DEFAULT;
-
+import static io.odpf.firehose.sink.prometheus.PromSinkConstants.*;
 
 /**
  * Builder for prometheus request header.

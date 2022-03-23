@@ -12,9 +12,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static io.odpf.firehose.sink.prometheus.PromSinkConstants.FIELD_NAME_MAPPING_ERROR_MESSAGE;
-import static io.odpf.firehose.sink.prometheus.PromSinkConstants.PROMETHEUS_LABEL_FOR_METRIC_NAME;
-
+import static io.odpf.firehose.sink.prometheus.PromSinkConstants.*;
 
 /**
  * Builder for Cortex TimeSeries.

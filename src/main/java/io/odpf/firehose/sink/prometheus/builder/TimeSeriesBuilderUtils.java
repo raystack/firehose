@@ -11,10 +11,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import static io.odpf.firehose.sink.prometheus.PromSinkConstants.KAFKA_PARTITION;
-import static io.odpf.firehose.sink.prometheus.PromSinkConstants.MILLIS_SCALED_TO_NANOS;
-import static io.odpf.firehose.sink.prometheus.PromSinkConstants.SECONDS_SCALED_TO_MILLI;
-
+import static io.odpf.firehose.sink.prometheus.PromSinkConstants.*;
 
 public class TimeSeriesBuilderUtils {
 

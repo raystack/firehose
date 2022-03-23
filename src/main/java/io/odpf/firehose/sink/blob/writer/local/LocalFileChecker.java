@@ -9,13 +9,9 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
-import static io.odpf.firehose.metrics.BlobStorageMetrics.LOCAL_FILE_CLOSE_TOTAL;
-import static io.odpf.firehose.metrics.BlobStorageMetrics.LOCAL_FILE_CLOSING_TIME_MILLISECONDS;
-import static io.odpf.firehose.metrics.BlobStorageMetrics.LOCAL_FILE_OPEN_TOTAL;
-import static io.odpf.firehose.metrics.BlobStorageMetrics.LOCAL_FILE_RECORDS_TOTAL;
-import static io.odpf.firehose.metrics.BlobStorageMetrics.LOCAL_FILE_SIZE_BYTES;
 import static io.odpf.firehose.metrics.Metrics.FAILURE_TAG;
 import static io.odpf.firehose.metrics.Metrics.SUCCESS_TAG;
+import static io.odpf.firehose.metrics.BlobStorageMetrics.*;
 
 public class LocalFileChecker implements Runnable {
     private final Queue<LocalFileMetadata> toBeFlushedToRemotePaths;
