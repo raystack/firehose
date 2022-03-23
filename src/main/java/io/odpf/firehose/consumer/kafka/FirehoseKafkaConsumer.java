@@ -17,7 +17,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static io.odpf.firehose.metrics.Metrics.*;
+import static io.odpf.firehose.metrics.Metrics.CONSUMER_GROUP_ID_TAG;
+import static io.odpf.firehose.metrics.Metrics.FAILURE_TAG;
+import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.SUCCESS_TAG;
+import static io.odpf.firehose.metrics.Metrics.tag;
 
 /**
  * A class responsible for consuming and committing kafka records.

@@ -11,7 +11,21 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static io.odpf.firehose.metrics.Metrics.*;
+import static io.odpf.firehose.metrics.Metrics.ERROR_EVENT;
+import static io.odpf.firehose.metrics.Metrics.ERROR_MESSAGES_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.ERROR_MESSAGE_CLASS_TAG;
+import static io.odpf.firehose.metrics.Metrics.ERROR_TYPE_TAG;
+import static io.odpf.firehose.metrics.Metrics.FATAL_ERROR;
+import static io.odpf.firehose.metrics.Metrics.GLOBAL_MESSAGES_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.MESSAGE_SCOPE_TAG;
+import static io.odpf.firehose.metrics.Metrics.MESSAGE_TYPE_TAG;
+import static io.odpf.firehose.metrics.Metrics.NON_FATAL_ERROR;
+import static io.odpf.firehose.metrics.Metrics.PIPELINE_END_LATENCY_MILLISECONDS;
+import static io.odpf.firehose.metrics.Metrics.PIPELINE_EXECUTION_LIFETIME_MILLISECONDS;
+import static io.odpf.firehose.metrics.Metrics.SINK_PUSH_BATCH_SIZE_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.SINK_RESPONSE_TIME_MILLISECONDS;
+import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_MESSAGES_FILTER_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_PULL_BATCH_SIZE_TOTAL;
 
 /**
  * Instrumentation.
@@ -174,16 +188,12 @@ public class Instrumentation {
 
     // =================== Retry and DLQ Telemetry ======================
 
-    public void captureMessageMetrics(String metric, MessageType type, ErrorType errorType, int counter) {
+    public void captureMessageMetrics(String metric, Metrics.MessageType type, ErrorType errorType, int counter) {
         if (errorType != null) {
             statsDReporter.captureCount(metric, counter, String.format(MESSAGE_TYPE_TAG, type.name()), String.format(ERROR_TYPE_TAG, errorType.name()));
         } else {
             statsDReporter.captureCount(metric, counter, String.format(MESSAGE_TYPE_TAG, type.name()));
         }
-    }
-
-    public void captureGlobalMessageMetrics(Metrics.MessageScope scope, int counter) {
-        statsDReporter.captureCount(GLOBAL_MESSAGES_TOTAL, counter, String.format(MESSAGE_SCOPE_TAG, scope.name()));
     }
 
     public void captureGlobalMessageMetrics(Metrics.MessageScope scope, int counter, String... tags) {
@@ -192,7 +202,7 @@ public class Instrumentation {
         statsDReporter.captureCount(GLOBAL_MESSAGES_TOTAL, counter, tagArr);
     }
 
-    public void captureMessageMetrics(String metric, MessageType type, int counter) {
+    public void captureMessageMetrics(String metric, Metrics.MessageType type, int counter) {
         captureMessageMetrics(metric, type, null, counter);
     }
 
