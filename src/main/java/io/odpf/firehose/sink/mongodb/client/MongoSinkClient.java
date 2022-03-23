@@ -19,7 +19,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static io.odpf.firehose.metrics.Metrics.*;
+import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_DROP_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.SINK_MONGO_INSERTED_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.SINK_MONGO_MODIFIED_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.SINK_MONGO_UPDATED_TOTAL;
 
 /**
  * The Mongo Sink Client.

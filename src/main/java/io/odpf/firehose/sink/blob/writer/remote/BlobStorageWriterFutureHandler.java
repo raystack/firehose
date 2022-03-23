@@ -9,9 +9,14 @@ import lombok.Data;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static io.odpf.firehose.metrics.Metrics.*;
+import static io.odpf.firehose.metrics.BlobStorageMetrics.BLOB_STORAGE_ERROR_TYPE_TAG;
+import static io.odpf.firehose.metrics.BlobStorageMetrics.FILE_UPLOAD_BYTES;
+import static io.odpf.firehose.metrics.BlobStorageMetrics.FILE_UPLOAD_RECORDS_TOTAL;
+import static io.odpf.firehose.metrics.BlobStorageMetrics.FILE_UPLOAD_TIME_MILLISECONDS;
+import static io.odpf.firehose.metrics.BlobStorageMetrics.FILE_UPLOAD_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.FAILURE_TAG;
+import static io.odpf.firehose.metrics.Metrics.SUCCESS_TAG;
 import static io.odpf.firehose.metrics.Metrics.tag;
-import static io.odpf.firehose.metrics.BlobStorageMetrics.*;
 
 @AllArgsConstructor
 @Data
