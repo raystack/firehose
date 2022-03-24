@@ -26,11 +26,19 @@ public class StatsDReporterFactory {
         LOGGER.debug("\n\tStatsd Host: {}\n\tStatsd Port: {}\n\tStatsd Tags: {}", this.statsDHost, this.statsDPort, this.globalTags);
     }
 
+    private static <T> T[] append(T[] arr, T lastElement) {
+        final int length = arr.length;
+        arr = java.util.Arrays.copyOf(arr, length + 1);
+        arr[length] = lastElement;
+        return arr;
+    }
+
     public static StatsDReporterFactory fromKafkaConsumerConfig(KafkaConsumerConfig kafkaConsumerConfig) {
         return new StatsDReporterFactory(
                 kafkaConsumerConfig.getMetricStatsDHost(),
                 kafkaConsumerConfig.getMetricStatsDPort(),
-                kafkaConsumerConfig.getMetricStatsDTags().split(","));
+                append(kafkaConsumerConfig.getMetricStatsDTags().split(","),
+                        Metrics.tag(Metrics.CONSUMER_GROUP_ID_TAG, kafkaConsumerConfig.getSourceKafkaConsumerGroupId())));
     }
 
     public StatsDReporter buildReporter() {

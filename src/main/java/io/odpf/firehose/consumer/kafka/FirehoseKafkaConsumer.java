@@ -17,11 +17,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static io.odpf.firehose.metrics.Metrics.CONSUMER_GROUP_ID_TAG;
 import static io.odpf.firehose.metrics.Metrics.FAILURE_TAG;
 import static io.odpf.firehose.metrics.Metrics.SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL;
 import static io.odpf.firehose.metrics.Metrics.SUCCESS_TAG;
-import static io.odpf.firehose.metrics.Metrics.tag;
 
 /**
  * A class responsible for consuming and committing kafka records.
@@ -55,7 +53,7 @@ public class FirehoseKafkaConsumer implements AutoCloseable {
         ConsumerRecords<byte[], byte[]> records = kafkaConsumer.poll(Duration.ofMillis(consumerConfig.getSourceKafkaPollTimeoutMs()));
         instrumentation.logInfo("Pulled {} messages", records.count());
         instrumentation.capturePulledMessageHistogram(records.count());
-        instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.CONSUMER, records.count(), tag(CONSUMER_GROUP_ID_TAG, consumerConfig.getSourceKafkaConsumerGroupId()));
+        instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.CONSUMER, records.count());
         List<Message> messages = new ArrayList<>();
 
         for (ConsumerRecord<byte[], byte[]> record : records) {

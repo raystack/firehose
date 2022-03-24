@@ -120,7 +120,7 @@ public class FirehoseKafkaConsumerTest {
         verify(instrumentation, times(1)).capturePulledMessageHistogram(2);
         verify(instrumentation, times(1)).logDebug("Pulled record: {}", record1);
         verify(instrumentation, times(1)).logDebug("Pulled record: {}", record2);
-        verify(instrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.CONSUMER, 2, Metrics.tag(Metrics.CONSUMER_GROUP_ID_TAG, consumerGroupId));
+        verify(instrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.CONSUMER, 2);
     }
 
     @Test

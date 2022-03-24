@@ -7,9 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static io.odpf.firehose.metrics.Metrics.ERROR_EVENT;
 import static io.odpf.firehose.metrics.Metrics.ERROR_MESSAGES_TOTAL;
@@ -19,7 +17,6 @@ import static io.odpf.firehose.metrics.Metrics.FATAL_ERROR;
 import static io.odpf.firehose.metrics.Metrics.GLOBAL_MESSAGES_TOTAL;
 import static io.odpf.firehose.metrics.Metrics.MESSAGE_SCOPE_TAG;
 import static io.odpf.firehose.metrics.Metrics.MESSAGE_TYPE_TAG;
-import static io.odpf.firehose.metrics.Metrics.MessageScope;
 import static io.odpf.firehose.metrics.Metrics.MessageType;
 import static io.odpf.firehose.metrics.Metrics.NON_FATAL_ERROR;
 import static io.odpf.firehose.metrics.Metrics.PIPELINE_END_LATENCY_MILLISECONDS;
@@ -198,10 +195,8 @@ public class Instrumentation {
         }
     }
 
-    public void captureGlobalMessageMetrics(MessageScope scope, int counter, String... tags) {
-        String scopeTag = String.format(MESSAGE_SCOPE_TAG, scope.name());
-        String[] tagArr = Stream.concat(Stream.of(scopeTag), Arrays.stream(tags)).toArray(String[]::new);
-        statsDReporter.captureCount(GLOBAL_MESSAGES_TOTAL, counter, tagArr);
+    public void captureGlobalMessageMetrics(Metrics.MessageScope scope, int counter) {
+        statsDReporter.captureCount(GLOBAL_MESSAGES_TOTAL, counter, String.format(MESSAGE_SCOPE_TAG, scope.name()));
     }
 
     public void captureMessageMetrics(String metric, MessageType type, int counter) {

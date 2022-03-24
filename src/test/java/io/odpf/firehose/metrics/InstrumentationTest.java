@@ -15,10 +15,8 @@ import java.util.Collections;
 import java.util.List;
 
 
-import static io.odpf.firehose.metrics.Metrics.CONSUMER_GROUP_ID_TAG;
 import static io.odpf.firehose.metrics.Metrics.GLOBAL_MESSAGES_TOTAL;
 import static io.odpf.firehose.metrics.Metrics.MESSAGE_SCOPE_TAG;
-import static io.odpf.firehose.metrics.Metrics.tag;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -131,16 +129,9 @@ public class InstrumentationTest {
     }
 
     @Test
-    public void shouldCaptureGlobalMetricsWithoutTags() {
+    public void shouldCaptureGlobalMetrics() {
         instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.CONSUMER, 1);
         verify(statsDReporter, times(1)).captureCount(GLOBAL_MESSAGES_TOTAL, 1, String.format(MESSAGE_SCOPE_TAG, Metrics.MessageScope.CONSUMER));
-    }
-
-    @Test
-    public void shouldCaptureGlobalMetricsWithTags() {
-        String consumerGroupId = "consumer-group-001";
-        instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.CONSUMER, 1, tag(CONSUMER_GROUP_ID_TAG, consumerGroupId));
-        verify(statsDReporter, times(1)).captureCount(GLOBAL_MESSAGES_TOTAL, 1, String.format(MESSAGE_SCOPE_TAG, Metrics.MessageScope.CONSUMER), tag(CONSUMER_GROUP_ID_TAG, consumerGroupId));
     }
 
     @Test
