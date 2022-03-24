@@ -5,6 +5,7 @@ import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.Metrics;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
@@ -54,6 +55,7 @@ public class FirehoseKafkaConsumerTest {
     private TestMessage message;
     private TestKey key;
     private FirehoseKafkaConsumer firehoseKafkaConsumer;
+    private final String consumerGroupId = "consumer-group-01";
 
     @Before
     public void setUp() {
@@ -62,6 +64,7 @@ public class FirehoseKafkaConsumerTest {
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
         firehoseKafkaConsumer = new FirehoseKafkaConsumer(kafkaConsumer, consumerConfig, instrumentation);
         when(consumerConfig.getSourceKafkaPollTimeoutMs()).thenReturn(500L);
+        when(consumerConfig.getSourceKafkaConsumerGroupId()).thenReturn(consumerGroupId);
         when(kafkaConsumer.poll(Duration.ofMillis(500L))).thenReturn(consumerRecords);
     }
 
@@ -117,6 +120,7 @@ public class FirehoseKafkaConsumerTest {
         verify(instrumentation, times(1)).capturePulledMessageHistogram(2);
         verify(instrumentation, times(1)).logDebug("Pulled record: {}", record1);
         verify(instrumentation, times(1)).logDebug("Pulled record: {}", record2);
+        verify(instrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.CONSUMER, 2);
     }
 
     @Test

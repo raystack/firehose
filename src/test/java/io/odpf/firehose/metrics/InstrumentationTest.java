@@ -14,6 +14,9 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
+
+import static io.odpf.firehose.metrics.Metrics.GLOBAL_MESSAGES_TOTAL;
+import static io.odpf.firehose.metrics.Metrics.MESSAGE_SCOPE_TAG;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -126,6 +129,12 @@ public class InstrumentationTest {
     }
 
     @Test
+    public void shouldCaptureGlobalMetrics() {
+        instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.CONSUMER, 1);
+        verify(statsDReporter, times(1)).captureCount(GLOBAL_MESSAGES_TOTAL, 1, String.format(MESSAGE_SCOPE_TAG, Metrics.MessageScope.CONSUMER));
+    }
+
+    @Test
     public void shouldCaptureLatencyAcrossFirehose() {
         List<Message> messages = Collections.singletonList(message);
         instrumentation.capturePreExecutionLatencies(messages);
@@ -146,6 +155,7 @@ public class InstrumentationTest {
         instrumentation.captureSleepTime(metric, sleepTime);
         verify(statsDReporter, times(1)).gauge(metric, sleepTime);
     }
+
     @Test
     public void shouldCaptureCountWithTags() {
         String metric = "test_metric";
