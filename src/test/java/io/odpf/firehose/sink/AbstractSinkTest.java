@@ -13,8 +13,12 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 public class AbstractSinkTest {
     private static class TestSink extends AbstractSink {
@@ -57,6 +61,7 @@ public class AbstractSinkTest {
 
     @Test
     public void shouldProcessMessages() {
+        when(instrumentation.startExecution()).thenReturn(Instant.now());
         TestSink sink = new TestSink(instrumentation, "TestSink");
         Message m1 = createMessage("test", "test", "test1");
         Message m2 = createMessage("test", "test", "test2");
@@ -87,6 +92,7 @@ public class AbstractSinkTest {
 
     @Test
     public void shouldProcessFailedMessages() {
+        when(instrumentation.startExecution()).thenReturn(Instant.now());
         TestSink sink = new TestSink(instrumentation, "TestSink");
         Message m1 = createMessage("test", "test", "test1");
         Message m2 = createMessage("test", "test", "test2");
@@ -129,6 +135,7 @@ public class AbstractSinkTest {
 
     @Test
     public void shouldProcessException() {
+        when(instrumentation.startExecution()).thenReturn(Instant.now());
         TestSink sink = new TestSink(instrumentation, "TestSink");
         Message m1 = createMessage("test", "test", "test1");
         Message m2 = createMessage("test", "test", "test2");
@@ -173,6 +180,26 @@ public class AbstractSinkTest {
             add(m3);
             add(m4);
         }});
+    }
+
+    @Test
+    public void shouldNotCaptureSinkExecutionTelemetry() {
+        TestSink sink = new TestSink(instrumentation, "TestSink");
+        Message m1 = createMessage("test", "test", "test1");
+        Message m2 = createMessage("test", "test", "test2");
+        Message m3 = createMessage("test", "test", "test3");
+        Message m4 = createMessage("test", "test", "test4");
+        sink.shouldThrowException = true;
+        try {
+            sink.pushMessage(new ArrayList<Message>() {{
+            add(m1);
+            add(m2);
+            add(m3);
+            add(m4);
+        }});
+        } catch (Exception e) {
+            Mockito.verify(instrumentation, Mockito.times(0)).captureSinkExecutionTelemetry(any(), any());
+        }
     }
 
 }
