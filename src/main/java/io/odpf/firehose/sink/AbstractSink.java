@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.List;
 
 import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_TOTAL;
@@ -34,13 +35,14 @@ public abstract class AbstractSink implements Closeable, Sink {
      */
     public List<Message> pushMessage(List<Message> messages) {
         List<Message> failedMessages = messages;
+        Instant executionStartTime = null;
         try {
             instrumentation.logInfo("Preparing {} messages", messages.size());
             instrumentation.captureMessageBatchSize(messages.size());
             instrumentation.captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, messages.size());
             prepare(messages);
             instrumentation.capturePreExecutionLatencies(messages);
-            instrumentation.startExecution();
+            executionStartTime = instrumentation.startExecution();
             failedMessages = execute();
             instrumentation.logInfo("Pushed {} messages", messages.size() - failedMessages.size());
         } catch (DeserializerException | ConfigurationException | NullPointerException | SinkException e) {
@@ -53,7 +55,9 @@ public abstract class AbstractSink implements Closeable, Sink {
             failedMessages = messages;
         } finally {
             // Process success,failure and error metrics
-            instrumentation.captureSinkExecutionTelemetry(sinkType, messages.size());
+            if (executionStartTime != null) {
+                instrumentation.captureSinkExecutionTelemetry(sinkType, messages.size());
+            }
             instrumentation.captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, messages.size() - failedMessages.size());
             instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.SINK, messages.size() - failedMessages.size());
             processFailedMessages(failedMessages);

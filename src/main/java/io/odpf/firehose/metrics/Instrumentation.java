@@ -155,8 +155,9 @@ public class Instrumentation {
 
     // ================ SinkExecutionTelemetry ================
 
-    public void startExecution() {
+    public Instant startExecution() {
         startExecutionTime = Instant.now();
+        return startExecutionTime;
     }
 
     /**

@@ -11,6 +11,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import static org.mockito.Mockito.*;
 
@@ -24,6 +25,7 @@ public class RedisSinkTest {
 
     @Before
     public void setup() {
+        when(instrumentation.startExecution()).thenReturn(Instant.now());
         redis = new RedisSink(instrumentation, "redis", redisClient);
     }
 

@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,6 +50,7 @@ public class JdbcSinkTest {
     public void setUp() throws SQLException {
         when(jdbcConnectionPool.getConnection()).thenReturn(connection);
         when(connection.createStatement()).thenReturn(statement);
+        when(instrumentation.startExecution()).thenReturn(Instant.now());
         jdbcSink = new JdbcSink(instrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient);
     }
 

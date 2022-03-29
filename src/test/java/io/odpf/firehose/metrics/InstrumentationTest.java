@@ -122,6 +122,12 @@ public class InstrumentationTest {
     }
 
     @Test
+    public void shouldReturnStartExecutionTime() {
+        Instant time = instrumentation.startExecution();
+        Assert.assertEquals(instrumentation.getStartExecutionTime().getEpochSecond(), time.getEpochSecond());
+    }
+
+    @Test
     public void shouldCaptureLifetimeTillSink() {
         List<Message> messages = Collections.singletonList(message);
         instrumentation.capturePreExecutionLatencies(messages);
