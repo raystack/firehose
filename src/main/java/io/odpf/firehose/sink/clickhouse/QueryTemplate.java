@@ -108,8 +108,9 @@ public class QueryTemplate {
             /*
             Value seperator is not needed if it's the last row to be added.
              */
-            if (count != messages.size())
+            if (count != messages.size()) {
                 insertValues = insertValues + VALUES_SEPERATOR;
+            }
         }
         scopes.put("insertValues", insertValues);
         return template.execute(scopes);
