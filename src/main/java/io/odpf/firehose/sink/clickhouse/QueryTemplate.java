@@ -7,8 +7,14 @@ import io.odpf.firehose.config.ClickhouseSinkConfig;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
 
-import java.util.*;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Properties;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Map;
 import java.util.stream.Collectors;
+
 /**
  * Query template for clickhouse.
  */
@@ -36,7 +42,7 @@ public class QueryTemplate {
     }
 
     private void initialize(ClickhouseSinkConfig clickhouseSinkConfig) {
-        scopes.put("table",clickhouseSinkConfig.getClickhouseTableName());
+        scopes.put("table", clickhouseSinkConfig.getClickhouseTableName());
 
         Properties messageProtoToDBColumnsMapping = clickhouseSinkConfig.getInputSchemaProtoToColumnMapping();
         insertColumns = getInsertColumns(messageProtoToDBColumnsMapping);
@@ -88,8 +94,8 @@ public class QueryTemplate {
         byte[] value;
         String insertValues = "";
 
-        long count=0; //counter to maintain number of rows in the query.
-        for(Message message: messages) {
+        long count = 0; //counter to maintain number of rows in the query.
+        for (Message message : messages) {
             if ("message".equals(kafkaRecordParserMode)) {
                 value = message.getLogMessage();
             } else {
@@ -97,12 +103,12 @@ public class QueryTemplate {
             }
             count++;
             Map<String, Object> columnToValue = protoToFieldMapper.getFields(value);
-            insertValues = insertValues + stringifyColumnValues(columnToValue, insertColumns) ;
+            insertValues = insertValues + stringifyColumnValues(columnToValue, insertColumns);
 
             /*
             Value seperator is not needed if it's the last row to be added.
              */
-            if(count!=messages.size())
+            if (count != messages.size())
                 insertValues = insertValues + VALUES_SEPERATOR;
         }
         scopes.put("insertValues", insertValues);

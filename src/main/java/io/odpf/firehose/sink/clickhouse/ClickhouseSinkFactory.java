@@ -1,6 +1,12 @@
 package io.odpf.firehose.sink.clickhouse;
 
-import com.clickhouse.client.*;
+import com.clickhouse.client.ClickHouseCompression;
+import com.clickhouse.client.ClickHouseCredentials;
+import com.clickhouse.client.ClickHouseNode;
+import com.clickhouse.client.ClickHouseClient;
+import com.clickhouse.client.ClickHouseNodeSelector;
+import com.clickhouse.client.ClickHouseRequest;
+import com.clickhouse.client.ClickHouseProtocol;
 import com.clickhouse.client.config.ClickHouseClientOption;
 import io.odpf.firehose.config.ClickhouseSinkConfig;
 import io.odpf.firehose.metrics.Instrumentation;
@@ -22,6 +28,7 @@ import java.util.Map;
  */
 public class ClickhouseSinkFactory {
     /**
+     * x
      * Create Clickhouse sink.
      *
      * @param configuration  the configuration
@@ -43,24 +50,24 @@ public class ClickhouseSinkFactory {
 
         ClickHouseCompression clickHouseCompression = null;
 
-        if(clickhouseSinkConfig.getClickhouseCompressionAlgorithm().equals("lz4")){
+        if (clickhouseSinkConfig.getClickhouseCompressionAlgorithm().equals("lz4")) {
             clickHouseCompression = ClickHouseCompression.LZ4;
-        } else if(clickhouseSinkConfig.getClickhouseCompressionAlgorithm().equals("gzip")){
+        } else if (clickhouseSinkConfig.getClickhouseCompressionAlgorithm().equals("gzip")) {
             clickHouseCompression = ClickHouseCompression.GZIP;
         }
 
         ClickHouseClient client = ClickHouseClient.builder()
                 .nodeSelector(ClickHouseNodeSelector.of(server.getProtocol()))
                 .option(ClickHouseClientOption.ASYNC, clickhouseSinkConfig.getClickhouseAsyncMode())
-                .option(ClickHouseClientOption.COMPRESS_ALGORITHM,clickHouseCompression).option(ClickHouseClientOption.COMPRESS,clickhouseSinkConfig.isClickhouseCompressEnabled())
-                .option(ClickHouseClientOption.DECOMPRESS_ALGORITHM,clickHouseCompression).option(ClickHouseClientOption.DECOMPRESS,clickhouseSinkConfig.isClickhouseDecompressEnabled())
+                .option(ClickHouseClientOption.COMPRESS_ALGORITHM, clickHouseCompression).option(ClickHouseClientOption.COMPRESS, clickhouseSinkConfig.isClickhouseCompressEnabled())
+                .option(ClickHouseClientOption.DECOMPRESS_ALGORITHM, clickHouseCompression).option(ClickHouseClientOption.DECOMPRESS, clickhouseSinkConfig.isClickhouseDecompressEnabled())
                 .build();
 
         instrumentation.logInfo("Clickhouse connection established");
 
         ClickHouseRequest request = client.connect(server);
         QueryTemplate queryTemplate = createQueryTemplate(clickhouseSinkConfig, stencilClient);
-        ClickhouseSink clickhouseSink = new ClickhouseSink(new Instrumentation(statsDReporter, ClickhouseSink.class),request,queryTemplate);
+        ClickhouseSink clickhouseSink = new ClickhouseSink(new Instrumentation(statsDReporter, ClickhouseSink.class), request, queryTemplate);
         return clickhouseSink;
     }
 

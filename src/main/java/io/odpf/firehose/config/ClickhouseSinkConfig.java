@@ -1,8 +1,6 @@
 package io.odpf.firehose.config;
 
-import com.clickhouse.client.ClickHouseCompression;
-
-public interface ClickhouseSinkConfig extends AppConfig{
+public interface ClickhouseSinkConfig extends AppConfig {
     @Key("CLICKHOUSE_HOST")
     String getClickhouseHost();
 
@@ -10,6 +8,7 @@ public interface ClickhouseSinkConfig extends AppConfig{
     String getClickhousePort();
 
     @Key("CLICKHOUSE_DATABASE")
+    @DefaultValue("default")
     String getClickhouseDatabase();
 
     @Key("CLICKHOUSE_USERNAME")

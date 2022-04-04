@@ -16,12 +16,12 @@ import java.util.concurrent.ExecutionException;
 
 public class ClickhouseSink extends AbstractSink {
     private final Instrumentation instrumentation;
-    private final ClickHouseRequest request;
-    private String queries ="";
+    private ClickHouseRequest request;
+    private String queries = "";
     private QueryTemplate queryTemplate;
 
 
-    public ClickhouseSink(Instrumentation instrumentation,ClickHouseRequest request,QueryTemplate queryTemplate) {
+    public ClickhouseSink(Instrumentation instrumentation, ClickHouseRequest request, QueryTemplate queryTemplate) {
         super(instrumentation, "clickhouse");
         this.instrumentation = instrumentation;
         this.queryTemplate = queryTemplate;
@@ -30,7 +30,6 @@ public class ClickhouseSink extends AbstractSink {
 
     @Override
     protected List<Message> execute() throws Exception {
-
         CompletableFuture<ClickHouseResponse> future =  request.query(queries).execute();
         try (ClickHouseResponse response = future.get()) {
             instrumentation.logInfo(String.valueOf(response.getSummary().getWrittenRows()));

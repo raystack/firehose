@@ -71,7 +71,7 @@ public class SinkFactory {
         instrumentation.logInfo("Sink Type: {}", kafkaConsumerConfig.getSinkType().toString());
         switch (kafkaConsumerConfig.getSinkType()) {
             case CLICKHOUSE:
-                return ClickhouseSinkFactory.create(config,statsDReporter,stencilClient);
+                return ClickhouseSinkFactory.create(config, statsDReporter, stencilClient);
             case JDBC:
                 return JdbcSinkFactory.create(config, statsDReporter, stencilClient);
             case HTTP:
