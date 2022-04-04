@@ -12,5 +12,6 @@ public enum SinkType {
     PROMETHEUS,
     BLOB,
     BIGQUERY,
-    MONGODB
+    MONGODB,
+    CLICKHOUSE
 }
