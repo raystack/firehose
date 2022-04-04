@@ -9,11 +9,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
-import static java.util.Arrays.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -54,22 +51,24 @@ public class QueryTemplateTest {
         assertEquals("INSERT INTO table ( feedback_rating,event_timestamp,order_number ) values ( '5', 'ts1', 'order_1' ) ",
                 actualGeneratedString);
 
-
     }
 
 
     @Test
     public void testToQueryStringForMultipleMessages() {
         when(clickhouseSinkConfig.getKafkaRecordParserMode()).thenReturn("message");
-
         when(clickhouseSinkConfig.getClickhouseTableName()).thenReturn("table");
         QueryTemplate queryTemplate = new QueryTemplate(clickhouseSinkConfig, protoToFieldMapper);
-        Message message = new Message("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
+        Message message1 = new Message("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
+        Message message2 = new Message("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
 
-        String actualGeneratedString = queryTemplate.toQueryStringForMultipleMessages(asList(message));
-        assertEquals("INSERT INTO table ( feedback_rating,event_timestamp,order_number ) values ( '5', 'ts1', 'order_1' ) ",
+        List<Message> messageList = new ArrayList<>();
+        messageList.add(message1);
+        messageList.add(message2);
+
+        String actualGeneratedString = queryTemplate.toQueryStringForMultipleMessages(messageList);
+        assertEquals("INSERT INTO table ( feedback_rating,event_timestamp,order_number ) values ( '5', 'ts1', 'order_1' ),( '5', 'ts1', 'order_1' ) ",
                 actualGeneratedString);
-
 
     }
 }

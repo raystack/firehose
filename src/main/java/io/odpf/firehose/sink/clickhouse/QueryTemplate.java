@@ -9,9 +9,12 @@ import io.odpf.firehose.proto.ProtoToFieldMapper;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
+/**
+ * Query template for clickhouse.
+ */
 public class QueryTemplate {
     private static final String INSERT_QUERY = "INSERT INTO {{table}} ( {{insertColumns}} ) values ( {{insertValues}} ) ";
+    private static final String VALUES_SEPERATOR = " ),( "; // used for multiple values in a single query.
     private Template template;
     private ProtoToFieldMapper protoToFieldMapper;
     private List<String> insertColumns;
@@ -82,6 +85,27 @@ public class QueryTemplate {
     }
 
     public String toQueryStringForMultipleMessages(List<Message> messages) {
-        return null;
+        byte[] value;
+        String insertValues = "";
+
+        long count=0; //counter to maintain number of rows in the query.
+        for(Message message: messages) {
+            if ("message".equals(kafkaRecordParserMode)) {
+                value = message.getLogMessage();
+            } else {
+                value = message.getLogKey();
+            }
+            count++;
+            Map<String, Object> columnToValue = protoToFieldMapper.getFields(value);
+            insertValues = insertValues + stringifyColumnValues(columnToValue, insertColumns) ;
+
+            /*
+            Value seperator is not needed if it's the last row to be added.
+             */
+            if(count!=messages.size())
+                insertValues = insertValues + VALUES_SEPERATOR;
+        }
+        scopes.put("insertValues", insertValues);
+        return template.execute(scopes);
     }
 }

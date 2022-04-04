@@ -6,15 +6,30 @@ import io.odpf.firehose.config.ClickhouseSinkConfig;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
-import io.odpf.firehose.sink.Sink;
+import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.stencil.Parser;
 import io.odpf.stencil.client.StencilClient;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.util.Map;
 
+/**
+ * Factory class to create the ClickhouseSink.
+ * <p>
+ * The consumer framework would reflectively instantiate this factory
+ * using the configurations supplied and invoke {@see #create(Map < String, String > configuration, StatsDReporter statsDReporter, StencilClient client)}
+ * to obtain the Clickhouse sink implementation.
+ */
 public class ClickhouseSinkFactory {
-    public static Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
+    /**
+     * Create Clickhouse sink.
+     *
+     * @param configuration  the configuration
+     * @param statsDReporter the statsd reporter
+     * @param stencilClient  the client
+     * @return the abstract sink
+     */
+    public static AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         ClickhouseSinkConfig clickhouseSinkConfig = ConfigFactory.create(ClickhouseSinkConfig.class, configuration);
 
         Instrumentation instrumentation = new Instrumentation(statsDReporter, ClickhouseSinkFactory.class);
