@@ -53,10 +53,42 @@ public class QueryTemplateTest {
 
     }
 
+    @Test
+    public void testToQueryStringForKeyMessage() {
+        when(clickhouseSinkConfig.getKafkaRecordParserMode()).thenReturn("key");
+
+        when(clickhouseSinkConfig.getClickhouseTableName()).thenReturn("table");
+        QueryTemplate queryTemplate = new QueryTemplate(clickhouseSinkConfig, protoToFieldMapper);
+        Message message = new Message("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
+
+        String actualGeneratedString = queryTemplate.toQueryStringForSingleMessage(message);
+        assertEquals("INSERT INTO table ( feedback_rating,event_timestamp,order_number ) values ( '5', 'ts1', 'order_1' ) ",
+                actualGeneratedString);
+
+    }
+
 
     @Test
     public void testToQueryStringForMultipleMessages() {
         when(clickhouseSinkConfig.getKafkaRecordParserMode()).thenReturn("message");
+        when(clickhouseSinkConfig.getClickhouseTableName()).thenReturn("table");
+        QueryTemplate queryTemplate = new QueryTemplate(clickhouseSinkConfig, protoToFieldMapper);
+        Message message1 = new Message("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
+        Message message2 = new Message("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
+
+        List<Message> messageList = new ArrayList<>();
+        messageList.add(message1);
+        messageList.add(message2);
+
+        String actualGeneratedString = queryTemplate.toQueryStringForMultipleMessages(messageList);
+        assertEquals("INSERT INTO table ( feedback_rating,event_timestamp,order_number ) values ( '5', 'ts1', 'order_1' ),( '5', 'ts1', 'order_1' ) ",
+                actualGeneratedString);
+
+    }
+
+    @Test
+    public void testToQueryStringForMultipleMessagesForKeyMessage() {
+        when(clickhouseSinkConfig.getKafkaRecordParserMode()).thenReturn("key");
         when(clickhouseSinkConfig.getClickhouseTableName()).thenReturn("table");
         QueryTemplate queryTemplate = new QueryTemplate(clickhouseSinkConfig, protoToFieldMapper);
         Message message1 = new Message("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
