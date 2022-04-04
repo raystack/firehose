@@ -158,3 +158,4 @@ public class QueryTemplateTest {
         verify(mockMessage, times(1)).getLogMessage();
     }
 }
+
