@@ -2,13 +2,14 @@ package io.odpf.firehose.sink.clickhouse;
 
 import com.clickhouse.client.ClickHouseRequest;
 import com.clickhouse.client.ClickHouseResponse;
-import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.error.ErrorInfo;
+import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 
 import java.io.IOException;
-import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -19,6 +20,7 @@ public class ClickhouseSink extends AbstractSink {
     private ClickHouseRequest request;
     private String queries = "";
     private QueryTemplate queryTemplate;
+    private final List<Message> messageList = new ArrayList<>();
 
 
     public ClickhouseSink(Instrumentation instrumentation, ClickHouseRequest request, QueryTemplate queryTemplate) {
@@ -33,22 +35,21 @@ public class ClickhouseSink extends AbstractSink {
         CompletableFuture<ClickHouseResponse> future =  request.query(queries).execute();
         try (ClickHouseResponse response = future.get()) {
             instrumentation.logInfo(String.valueOf(response.getSummary().getWrittenRows()));
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (ExecutionException | InterruptedException e) {
+            for(Message message:messageList){
+                message.setErrorInfo(new ErrorInfo(e, ErrorType.DEFAULT_ERROR));
+            }
+            return messageList;
         }
-
         return Collections.emptyList();
+
     }
 
     @Override
-    protected void prepare(List<Message> messages) throws DeserializerException, IOException, SQLException {
-        queries = createQueries(messages);
-    }
-
-    protected String createQueries(List<Message> messages) {
-        return queryTemplate.toQueryStringForMultipleMessages(messages);
+    protected void prepare(List<Message> messages) {
+        messageList.clear();
+        messageList.addAll(messages);
+        queries = queryTemplate.toQueryStringForMultipleMessages(messages);
     }
 
     @Override
