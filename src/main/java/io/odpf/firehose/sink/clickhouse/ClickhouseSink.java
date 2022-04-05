@@ -36,13 +36,12 @@ public class ClickhouseSink extends AbstractSink {
         try (ClickHouseResponse response = future.get()) {
             instrumentation.logInfo(String.valueOf(response.getSummary().getWrittenRows()));
         } catch (ExecutionException | InterruptedException e) {
-            for(Message message:messageList){
+            for (Message message:messageList) {
                 message.setErrorInfo(new ErrorInfo(e, ErrorType.DEFAULT_ERROR));
             }
             return messageList;
         }
         return Collections.emptyList();
-
     }
 
     @Override
