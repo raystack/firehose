@@ -16,7 +16,7 @@ import java.util.Map;
 @RunWith(MockitoJUnitRunner.class)
 public class ClickhouseSinkFactoryTest {
 
-    Map<String, String> configuration = new HashMap<>();
+    private Map<String, String> configuration = new HashMap<>();
 
     @Mock
     private StencilClient stencilClient;

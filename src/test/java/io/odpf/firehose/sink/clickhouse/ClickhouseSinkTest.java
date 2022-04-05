@@ -68,7 +68,7 @@ public class ClickhouseSinkTest {
         when(future.get()).thenReturn(clickHouseResponse);
         when(clickHouseResponse.getSummary()).thenReturn(clickHouseResponseSummary);
         when(request.query(anyString())).thenReturn(request);
-        when(clickHouseResponseSummary.getWrittenRows()).thenReturn(2l);
+        when(clickHouseResponseSummary.getWrittenRows()).thenReturn(2L);
 
         clickhouseSink.pushMessage(Arrays.asList(message));
         verify(queryTemplate, times(1)).toQueryStringForMultipleMessages(any(List.class));
