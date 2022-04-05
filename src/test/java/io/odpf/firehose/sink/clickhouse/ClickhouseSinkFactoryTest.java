@@ -26,21 +26,21 @@ public class ClickhouseSinkFactoryTest {
 
     @Before
     public void setUp() {
-        configuration.put("SINK_CLICKHOUSE_HOST","localhost");
-        configuration.put("SINK_CLICKHOUSE_PORT","8090");
-        configuration.put("SINK_CLICKHOUSE_DATABASE","localhost");
-        configuration.put("SINK_CLICKHOUSE_USERNAME","localhost");
-        configuration.put("SINK_CLICKHOUSE_PASSWORD","localhost");
-        configuration.put("SINK_CLICKHOUSE_TABLE_NAME","localhost");
-        configuration.put("SINK_CLICKHOUSE_ASYNC_MODE_ENABLE","true");
-        configuration.put("INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING","{\"1\":\"order_number\",\"2\":\"order_url\",\"3\":\"order_details\",\"4\":\"order_name\",\"5\":\"order_quantity\"}");
-        configuration.put("INPUT_SCHEMA_PROTO_CLASS","protoclass");
+        configuration.put("SINK_CLICKHOUSE_HOST", "localhost");
+        configuration.put("SINK_CLICKHOUSE_PORT", "8090");
+        configuration.put("SINK_CLICKHOUSE_DATABASE", "localhost");
+        configuration.put("SINK_CLICKHOUSE_USERNAME", "localhost");
+        configuration.put("SINK_CLICKHOUSE_PASSWORD", "localhost");
+        configuration.put("SINK_CLICKHOUSE_TABLE_NAME", "localhost");
+        configuration.put("SINK_CLICKHOUSE_ASYNC_MODE_ENABLE", "true");
+        configuration.put("INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING", "{\"1\":\"order_number\",\"2\":\"order_url\",\"3\":\"order_details\",\"4\":\"order_name\",\"5\":\"order_quantity\"}");
+        configuration.put("INPUT_SCHEMA_PROTO_CLASS", "protoclass");
     }
 
     @Test
     public void testCreateSink() {
         Mockito.when(stencilClient.getParser(Mockito.anyString())).thenReturn(protoParser);
 
-        Assert.assertNotNull(ClickhouseSinkFactory.create(configuration,null,stencilClient));
+        Assert.assertNotNull(ClickhouseSinkFactory.create(configuration, null, stencilClient));
     }
 }

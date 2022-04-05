@@ -37,10 +37,12 @@ public class ClickhouseSink extends AbstractSink {
     @Override
     protected List<Message> execute() throws Exception {
         request = request.query(queries);
-        CompletableFuture<ClickHouseResponse> future =  request.execute();
+        CompletableFuture<ClickHouseResponse> future = request.execute();
         try (ClickHouseResponse response = future.get()) {
             ClickHouseResponseSummary clickHouseResponseSummary = response.getSummary();
-            instrumentation.logInfo(String.valueOf(clickHouseResponseSummary.getWrittenRows()));
+            if (instrumentation.isDebugEnabled()) {
+                instrumentation.logDebug("Written Rows %s", String.valueOf(clickHouseResponseSummary.getWrittenRows()));
+            }
         } catch (ExecutionException | InterruptedException e) {
             messageList.forEach(message -> message.setErrorInfo(new ErrorInfo(e, ErrorType.DEFAULT_ERROR)));
             return messageList;

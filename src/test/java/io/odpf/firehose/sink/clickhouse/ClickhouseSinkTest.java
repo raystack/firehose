@@ -12,12 +12,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -54,7 +56,7 @@ public class ClickhouseSinkTest {
     @Before
     public void setUp() {
         when(instrumentation.startExecution()).thenReturn(Instant.now());
-        clickhouseSink = new ClickhouseSink(instrumentation, request, queryTemplate,clickHouseClient);
+        clickhouseSink = new ClickhouseSink(instrumentation, request, queryTemplate, clickHouseClient);
     }
 
     @Test
@@ -82,7 +84,7 @@ public class ClickhouseSinkTest {
         Throwable t = new IOException("test");
         when(future.get()).thenThrow(new ExecutionException(t));
         clickhouseSink.prepare(Arrays.asList(message));
-        Assert.assertEquals(Arrays.asList(message),clickhouseSink.execute());
+        Assert.assertEquals(Arrays.asList(message), clickhouseSink.execute());
         clickhouseSink.close();
     }
 }

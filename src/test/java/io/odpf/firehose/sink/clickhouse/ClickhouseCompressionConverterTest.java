@@ -13,7 +13,7 @@ public class ClickhouseCompressionConverterTest {
     @Test
     public void shouldReturnCorrectCompression() throws DeserializerException {
         ClickhouseCompressionConverter clickhouseCompressionConverter = new ClickhouseCompressionConverter();
-        Assert.assertEquals(ClickHouseCompression.LZ4,clickhouseCompressionConverter.convert(null,"lz4"));
-        Assert.assertEquals(ClickHouseCompression.GZIP,clickhouseCompressionConverter.convert(null,"gzip"));
+        Assert.assertEquals(ClickHouseCompression.LZ4, clickhouseCompressionConverter.convert(null, "lz4"));
+        Assert.assertEquals(ClickHouseCompression.GZIP, clickhouseCompressionConverter.convert(null, "gzip"));
     }
 }
