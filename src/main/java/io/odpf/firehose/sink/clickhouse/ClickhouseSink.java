@@ -26,7 +26,7 @@ public class ClickhouseSink extends AbstractSink {
     private ClickHouseClient clickHouseClient;
 
 
-    public ClickhouseSink(Instrumentation instrumentation, ClickHouseRequest request, QueryTemplate queryTemplate,ClickHouseClient clickHouseClient) {
+    public ClickhouseSink(Instrumentation instrumentation, ClickHouseRequest request, QueryTemplate queryTemplate, ClickHouseClient clickHouseClient) {
         super(instrumentation, "clickhouse");
         this.instrumentation = instrumentation;
         this.queryTemplate = queryTemplate;
@@ -42,7 +42,7 @@ public class ClickhouseSink extends AbstractSink {
             ClickHouseResponseSummary clickHouseResponseSummary = response.getSummary();
             instrumentation.logInfo(String.valueOf(clickHouseResponseSummary.getWrittenRows()));
         } catch (ExecutionException | InterruptedException e) {
-            messageList.forEach(message -> message.setErrorInfo(new ErrorInfo(e,ErrorType.DEFAULT_ERROR)));
+            messageList.forEach(message -> message.setErrorInfo(new ErrorInfo(e, ErrorType.DEFAULT_ERROR)));
             return messageList;
         }
         return Collections.emptyList();
