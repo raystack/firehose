@@ -13,40 +13,35 @@ import java.util.Properties;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
  * Query template for clickhouse.
  */
 public class QueryTemplate {
-    private static final String INSERT_QUERY = "INSERT INTO {{table}} ( {{insertColumns}} ) values ( {{insertValues}} ) ";
-    private static final String VALUES_SEPERATOR = " ),( "; // used for multiple values in a single query.
+    private static final String INSERT_QUERY_TEMPLATE_STRING = "INSERT INTO {{table}} ( {{insertColumns}} ) values ( {{insertValues}} ) ";
+    private static final String DELIMITER_FOR_MULTIPLE_VALUES = " ),( "; // used for multiple values in a single query.
     private Template template;
     private ProtoToFieldMapper protoToFieldMapper;
     private List<String> insertColumns;
-    private HashMap<String, Object> scopes;
+    private HashMap<String, Object> templateContexts;
     private String kafkaRecordParserMode;
 
     public QueryTemplate(ClickhouseSinkConfig clickhouseSinkConfig, ProtoToFieldMapper protoToFieldMapper) {
         this.protoToFieldMapper = protoToFieldMapper;
         this.insertColumns = new ArrayList<>();
-        this.scopes = new HashMap<>();
+        this.templateContexts = new HashMap<>();
         this.kafkaRecordParserMode = clickhouseSinkConfig.getKafkaRecordParserMode();
-        initialize(clickhouseSinkConfig);
-        buildQuery();
+        template = Mustache.compiler().withEscaper(Escapers.simple()).compile(INSERT_QUERY_TEMPLATE_STRING);
     }
 
-    private void buildQuery() {
-        String query = INSERT_QUERY;
-        template = Mustache.compiler().withEscaper(Escapers.simple()).compile(query);
-    }
-
-    private void initialize(ClickhouseSinkConfig clickhouseSinkConfig) {
-        scopes.put("table", clickhouseSinkConfig.getClickhouseTableName());
+    public void initialize(ClickhouseSinkConfig clickhouseSinkConfig) {
+        templateContexts.put("table", clickhouseSinkConfig.getClickhouseTableName());
 
         Properties messageProtoToDBColumnsMapping = clickhouseSinkConfig.getInputSchemaProtoToColumnMapping();
         insertColumns = getInsertColumns(messageProtoToDBColumnsMapping);
-        scopes.put("insertColumns", String.join(",", insertColumns));
+        templateContexts.put("insertColumns", String.join(",", insertColumns));
     }
 
     private List<String> getInsertColumns(Properties messageProtoToDBColumnsMapping) {
@@ -64,22 +59,16 @@ public class QueryTemplate {
     }
 
     public String toQueryStringForSingleMessage(Message message) {
-
         byte[] value;
-
         if ("message".equals(kafkaRecordParserMode)) {
             value = message.getLogMessage();
         } else {
             value = message.getLogKey();
         }
-
         Map<String, Object> columnToValue = protoToFieldMapper.getFields(value);
-
         String insertValues = stringifyColumnValues(columnToValue, insertColumns);
-
-        scopes.put("insertValues", insertValues);
-
-        return template.execute(scopes);
+        templateContexts.put("insertValues", insertValues);
+        return template.execute(templateContexts);
     }
 
     private String stringifyColumnValues(Map<String, Object> columnToValue, List<String> columns) {
@@ -91,28 +80,18 @@ public class QueryTemplate {
     }
 
     public String toQueryStringForMultipleMessages(List<Message> messages) {
-        byte[] value;
-        String insertValues = "";
-
-        long count = 0; //counter to maintain number of rows in the query.
-        for (Message message : messages) {
+        List<String> insertValues = new ArrayList<>();
+        messages.stream().forEach((message) -> {
+            byte[] value;
             if ("message".equals(kafkaRecordParserMode)) {
                 value = message.getLogMessage();
             } else {
                 value = message.getLogKey();
             }
-            count++;
             Map<String, Object> columnToValue = protoToFieldMapper.getFields(value);
-            insertValues = insertValues + stringifyColumnValues(columnToValue, insertColumns);
-
-            /*
-            Value seperator is not needed if it's the last row to be added.
-             */
-            if (count != messages.size()) {
-                insertValues = insertValues + VALUES_SEPERATOR;
-            }
-        }
-        scopes.put("insertValues", insertValues);
-        return template.execute(scopes);
+            insertValues.add(stringifyColumnValues(columnToValue,insertColumns));
+        });
+        templateContexts.put("insertValues", String.join(DELIMITER_FOR_MULTIPLE_VALUES,insertValues));
+        return template.execute(templateContexts);
     }
 }

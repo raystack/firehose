@@ -48,32 +48,23 @@ public class ClickhouseSinkFactory {
                         clickhouseSinkConfig.getClickhouseUsername(), clickhouseSinkConfig.getClickhousePassword()))
                 .build();
 
-        ClickHouseCompression clickHouseCompression = null;
-
-        if (clickhouseSinkConfig.getClickhouseCompressionAlgorithm().equals("lz4")) {
-            clickHouseCompression = ClickHouseCompression.LZ4;
-        } else if (clickhouseSinkConfig.getClickhouseCompressionAlgorithm().equals("gzip")) {
-            clickHouseCompression = ClickHouseCompression.GZIP;
-        }
 
         ClickHouseClient client = ClickHouseClient.builder()
                 .nodeSelector(ClickHouseNodeSelector.of(server.getProtocol()))
-                .option(ClickHouseClientOption.ASYNC, clickhouseSinkConfig.getClickhouseAsyncMode())
-                .option(ClickHouseClientOption.COMPRESS_ALGORITHM, clickHouseCompression).option(ClickHouseClientOption.COMPRESS, clickhouseSinkConfig.isClickhouseCompressEnabled())
-                .option(ClickHouseClientOption.DECOMPRESS_ALGORITHM, clickHouseCompression).option(ClickHouseClientOption.DECOMPRESS, clickhouseSinkConfig.isClickhouseDecompressEnabled())
+                .option(ClickHouseClientOption.ASYNC, clickhouseSinkConfig.isClickhouseAsyncModeEnabled())
+                .option(ClickHouseClientOption.COMPRESS_ALGORITHM, clickhouseSinkConfig.getClickhouseCompressionAlgorithm()).option(ClickHouseClientOption.COMPRESS, clickhouseSinkConfig.isClickhouseCompressEnabled())
+                .option(ClickHouseClientOption.DECOMPRESS_ALGORITHM, clickhouseSinkConfig.getClickhouseCompressionAlgorithm()).option(ClickHouseClientOption.DECOMPRESS, clickhouseSinkConfig.isClickhouseDecompressEnabled())
                 .build();
 
         instrumentation.logInfo("Clickhouse connection established");
 
         ClickHouseRequest request = client.connect(server);
-        QueryTemplate queryTemplate = createQueryTemplate(clickhouseSinkConfig, stencilClient);
-        ClickhouseSink clickhouseSink = new ClickhouseSink(new Instrumentation(statsDReporter, ClickhouseSink.class), request, queryTemplate);
-        return clickhouseSink;
-    }
 
-    private static QueryTemplate createQueryTemplate(ClickhouseSinkConfig clickhouseSinkConfig, StencilClient stencilClient) {
         Parser protoParser = stencilClient.getParser(clickhouseSinkConfig.getInputSchemaProtoClass());
         ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, clickhouseSinkConfig.getInputSchemaProtoToColumnMapping());
-        return new QueryTemplate(clickhouseSinkConfig, protoToFieldMapper);
+        QueryTemplate queryTemplate = new QueryTemplate(clickhouseSinkConfig, protoToFieldMapper);
+        queryTemplate.initialize(clickhouseSinkConfig);
+        ClickhouseSink clickhouseSink = new ClickhouseSink(new Instrumentation(statsDReporter, ClickhouseSink.class), request, queryTemplate);
+        return clickhouseSink;
     }
 }

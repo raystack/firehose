@@ -9,7 +9,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,6 +49,7 @@ public class QueryTemplateTest {
 
         when(clickhouseSinkConfig.getClickhouseTableName()).thenReturn("table");
         QueryTemplate queryTemplate = new QueryTemplate(clickhouseSinkConfig, protoToFieldMapper);
+        queryTemplate.initialize(clickhouseSinkConfig);
         Message message = new Message("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
 
         String actualGeneratedString = queryTemplate.toQueryStringForSingleMessage(message);
@@ -59,6 +64,7 @@ public class QueryTemplateTest {
 
         when(clickhouseSinkConfig.getClickhouseTableName()).thenReturn("table");
         QueryTemplate queryTemplate = new QueryTemplate(clickhouseSinkConfig, protoToFieldMapper);
+        queryTemplate.initialize(clickhouseSinkConfig);
         Message message = new Message("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
 
         String actualGeneratedString = queryTemplate.toQueryStringForSingleMessage(message);
@@ -73,6 +79,7 @@ public class QueryTemplateTest {
         when(clickhouseSinkConfig.getKafkaRecordParserMode()).thenReturn("message");
         when(clickhouseSinkConfig.getClickhouseTableName()).thenReturn("table");
         QueryTemplate queryTemplate = new QueryTemplate(clickhouseSinkConfig, protoToFieldMapper);
+        queryTemplate.initialize(clickhouseSinkConfig);
         Message message1 = new Message("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
         Message message2 = new Message("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
 
@@ -91,6 +98,7 @@ public class QueryTemplateTest {
         when(clickhouseSinkConfig.getKafkaRecordParserMode()).thenReturn("key");
         when(clickhouseSinkConfig.getClickhouseTableName()).thenReturn("table");
         QueryTemplate queryTemplate = new QueryTemplate(clickhouseSinkConfig, protoToFieldMapper);
+        queryTemplate.initialize(clickhouseSinkConfig);
         Message message1 = new Message("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
         Message message2 = new Message("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
 

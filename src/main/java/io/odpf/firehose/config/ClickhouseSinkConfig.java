@@ -1,39 +1,43 @@
 package io.odpf.firehose.config;
 
+import com.clickhouse.client.ClickHouseCompression;
+import io.odpf.firehose.sink.clickhouse.ClickhouseCompressionConverter;
+
 public interface ClickhouseSinkConfig extends AppConfig {
-    @Key("CLICKHOUSE_HOST")
+    @Key("SINK_CLICKHOUSE_HOST")
     String getClickhouseHost();
 
-    @Key("CLICKHOUSE_PORT")
+    @Key("SINK_CLICKHOUSE_PORT")
     String getClickhousePort();
 
-    @Key("CLICKHOUSE_DATABASE")
+    @Key("SINK_CLICKHOUSE_DATABASE")
     @DefaultValue("default")
     String getClickhouseDatabase();
 
-    @Key("CLICKHOUSE_USERNAME")
+    @Key("SINK_CLICKHOUSE_USERNAME")
     String getClickhouseUsername();
 
-    @Key("CLICKHOUSE_PASSWORD")
+    @Key("SINK_CLICKHOUSE_PASSWORD")
     String getClickhousePassword();
 
-    @Key("CLICKHOUSE_TABLE_NAME")
+    @Key("SINK_CLICKHOUSE_TABLE_NAME")
     String getClickhouseTableName();
 
-    @Key("CLICKHOUSE_ASYNC_MODE")
+    @Key("SINK_CLICKHOUSE_ASYNC_MODE_ENABLE")
     @DefaultValue("true")
-    Boolean getClickhouseAsyncMode();
+    Boolean isClickhouseAsyncModeEnabled();
 
-    @Key("CLICKHOUSE_COMPRESS_ENABLE")
+    @Key("SINK_CLICKHOUSE_COMPRESS_ENABLE")
     @DefaultValue("true")
     Boolean isClickhouseCompressEnabled();
 
-    @Key("CLICKHOUSE_DECOMPRESS_ENABLE")
+    @Key("SINK_CLICKHOUSE_DECOMPRESS_ENABLE")
     @DefaultValue("true")
     Boolean isClickhouseDecompressEnabled();
 
-    @Key("CLICKHOUSE_COMPRESSION_ALGORITHM")
+    @Key("SINK_CLICKHOUSE_COMPRESSION_ALGORITHM")
     @DefaultValue("lz4")
-    String getClickhouseCompressionAlgorithm();
+    @ConverterClass(ClickhouseCompressionConverter.class)
+    ClickHouseCompression getClickhouseCompressionAlgorithm();
 
 }
