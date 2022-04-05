@@ -63,7 +63,7 @@ public class ClickhouseSinkFactory {
         ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, clickhouseSinkConfig.getInputSchemaProtoToColumnMapping());
         QueryTemplate queryTemplate = new QueryTemplate(clickhouseSinkConfig, protoToFieldMapper);
         queryTemplate.initialize(clickhouseSinkConfig);
-        ClickhouseSink clickhouseSink = new ClickhouseSink(new Instrumentation(statsDReporter, ClickhouseSink.class), request, queryTemplate);
+        ClickhouseSink clickhouseSink = new ClickhouseSink(new Instrumentation(statsDReporter, ClickhouseSink.class), request, queryTemplate,client);
         return clickhouseSink;
     }
 }

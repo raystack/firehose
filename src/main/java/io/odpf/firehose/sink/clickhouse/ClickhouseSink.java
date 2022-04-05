@@ -1,7 +1,9 @@
 package io.odpf.firehose.sink.clickhouse;
 
+import com.clickhouse.client.ClickHouseClient;
 import com.clickhouse.client.ClickHouseRequest;
 import com.clickhouse.client.ClickHouseResponse;
+import com.clickhouse.client.ClickHouseResponseSummary;
 import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.message.Message;
@@ -20,25 +22,27 @@ public class ClickhouseSink extends AbstractSink {
     private ClickHouseRequest request;
     private String queries = "";
     private QueryTemplate queryTemplate;
-    private final List<Message> messageList = new ArrayList<>();
+    private List<Message> messageList = new ArrayList<>();
+    private ClickHouseClient clickHouseClient;
 
 
-    public ClickhouseSink(Instrumentation instrumentation, ClickHouseRequest request, QueryTemplate queryTemplate) {
+    public ClickhouseSink(Instrumentation instrumentation, ClickHouseRequest request, QueryTemplate queryTemplate,ClickHouseClient clickHouseClient) {
         super(instrumentation, "clickhouse");
         this.instrumentation = instrumentation;
         this.queryTemplate = queryTemplate;
         this.request = request;
+        this.clickHouseClient = clickHouseClient;
     }
 
     @Override
     protected List<Message> execute() throws Exception {
-        CompletableFuture<ClickHouseResponse> future =  request.query(queries).execute();
+        request = request.query(queries);
+        CompletableFuture<ClickHouseResponse> future =  request.execute();
         try (ClickHouseResponse response = future.get()) {
-            instrumentation.logInfo(String.valueOf(response.getSummary().getWrittenRows()));
+            ClickHouseResponseSummary clickHouseResponseSummary = response.getSummary();
+            instrumentation.logInfo(String.valueOf(clickHouseResponseSummary.getWrittenRows()));
         } catch (ExecutionException | InterruptedException e) {
-            for (Message message:messageList) {
-                message.setErrorInfo(new ErrorInfo(e, ErrorType.DEFAULT_ERROR));
-            }
+            messageList.forEach(message -> message.setErrorInfo(new ErrorInfo(e,ErrorType.DEFAULT_ERROR)));
             return messageList;
         }
         return Collections.emptyList();
@@ -53,6 +57,6 @@ public class ClickhouseSink extends AbstractSink {
 
     @Override
     public void close() throws IOException {
-
+        clickHouseClient.close();
     }
 }
