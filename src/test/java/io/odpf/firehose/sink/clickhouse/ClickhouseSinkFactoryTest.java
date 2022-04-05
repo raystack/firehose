@@ -1,14 +1,11 @@
 package io.odpf.firehose.sink.clickhouse;
 
 import io.odpf.firehose.proto.ProtoToFieldMapper;
-import io.odpf.stencil.Parser;
-import io.odpf.stencil.client.StencilClient;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.HashMap;
