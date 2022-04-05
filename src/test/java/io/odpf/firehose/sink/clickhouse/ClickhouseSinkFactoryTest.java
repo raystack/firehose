@@ -1,5 +1,6 @@
 package io.odpf.firehose.sink.clickhouse;
 
+import io.odpf.firehose.proto.ProtoToFieldMapper;
 import io.odpf.stencil.Parser;
 import io.odpf.stencil.client.StencilClient;
 import org.junit.Assert;
@@ -19,10 +20,7 @@ public class ClickhouseSinkFactoryTest {
     private Map<String, String> configuration = new HashMap<>();
 
     @Mock
-    private StencilClient stencilClient;
-
-    @Mock
-    private Parser protoParser;
+    private ProtoToFieldMapper protoToFieldMapper;
 
     @Before
     public void setUp() {
@@ -39,8 +37,7 @@ public class ClickhouseSinkFactoryTest {
 
     @Test
     public void testCreateSink() {
-        Mockito.when(stencilClient.getParser(Mockito.anyString())).thenReturn(protoParser);
 
-        Assert.assertNotNull(ClickhouseSinkFactory.create(configuration, null, stencilClient));
+        Assert.assertNotNull(ClickhouseSinkFactory.create(configuration, null, protoToFieldMapper));
     }
 }

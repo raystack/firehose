@@ -12,8 +12,6 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
 import io.odpf.firehose.sink.AbstractSink;
-import io.odpf.stencil.Parser;
-import io.odpf.stencil.client.StencilClient;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.util.Map;
@@ -22,7 +20,7 @@ import java.util.Map;
  * Factory class to create the ClickhouseSink.
  * <p>
  * The consumer framework would reflectively instantiate this factory
- * using the configurations supplied and invoke {@see #create(Map < String, String > configuration, StatsDReporter statsDReporter, StencilClient client)}
+ * using the configurations supplied and invoke {@see #create(Map < String, String > configuration, StatsDReporter statsDReporter, ProtoToFieldMapper protoToFieldMapper)}
  * to obtain the Clickhouse sink implementation.
  */
 public class ClickhouseSinkFactory {
@@ -32,10 +30,10 @@ public class ClickhouseSinkFactory {
      *
      * @param configuration  the configuration
      * @param statsDReporter the statsd reporter
-     * @param stencilClient  the client
+     * @param protoToFieldMapper  the protoToFieldMapper
      * @return the abstract sink
      */
-    public static AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
+    public static AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, ProtoToFieldMapper protoToFieldMapper) {
         ClickhouseSinkConfig clickhouseSinkConfig = ConfigFactory.create(ClickhouseSinkConfig.class, configuration);
 
         Instrumentation instrumentation = new Instrumentation(statsDReporter, ClickhouseSinkFactory.class);
@@ -59,8 +57,6 @@ public class ClickhouseSinkFactory {
 
         ClickHouseRequest request = client.connect(server);
 
-        Parser protoParser = stencilClient.getParser(clickhouseSinkConfig.getInputSchemaProtoClass());
-        ProtoToFieldMapper protoToFieldMapper = new ProtoToFieldMapper(protoParser, clickhouseSinkConfig.getInputSchemaProtoToColumnMapping());
         QueryTemplate queryTemplate = new QueryTemplate(clickhouseSinkConfig, protoToFieldMapper);
         queryTemplate.initialize(clickhouseSinkConfig);
         ClickhouseSink clickhouseSink = new ClickhouseSink(new Instrumentation(statsDReporter, ClickhouseSink.class), request, queryTemplate, client);
