@@ -13,7 +13,6 @@ import java.util.Properties;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -89,9 +88,9 @@ public class QueryTemplate {
                 value = message.getLogKey();
             }
             Map<String, Object> columnToValue = protoToFieldMapper.getFields(value);
-            insertValues.add(stringifyColumnValues(columnToValue,insertColumns));
+            insertValues.add(stringifyColumnValues(columnToValue, insertColumns));
         });
-        templateContexts.put("insertValues", String.join(DELIMITER_FOR_MULTIPLE_VALUES,insertValues));
+        templateContexts.put("insertValues", String.join(DELIMITER_FOR_MULTIPLE_VALUES, insertValues));
         return template.execute(templateContexts);
     }
 }

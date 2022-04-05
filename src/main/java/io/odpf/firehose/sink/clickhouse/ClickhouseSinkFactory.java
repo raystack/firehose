@@ -1,6 +1,5 @@
 package io.odpf.firehose.sink.clickhouse;
 
-import com.clickhouse.client.ClickHouseCompression;
 import com.clickhouse.client.ClickHouseCredentials;
 import com.clickhouse.client.ClickHouseNode;
 import com.clickhouse.client.ClickHouseClient;
