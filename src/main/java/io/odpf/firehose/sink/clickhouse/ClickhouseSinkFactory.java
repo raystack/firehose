@@ -26,15 +26,7 @@ import java.util.Map;
  * to obtain the Clickhouse sink implementation.
  */
 public class ClickhouseSinkFactory {
-    /**
-     * x
-     * Create Clickhouse sink.
-     *
-     * @param configuration  the configuration
-     * @param statsDReporter the statsd reporter
-     * @param stencilClient  the client
-     * @return the abstract sink
-     */
+
     private final Map<String, String> config;
     private final StatsDReporter statsDReporter;
     private final StencilClient stencilClient;
@@ -42,6 +34,14 @@ public class ClickhouseSinkFactory {
     private ClickHouseClient client;
     private ClickHouseNode server;
     private ClickHouseRequest request;
+
+    /**
+     * Parameterised Constructor to create Clickhouse sink factory object.
+     *
+     * @param config         the configuration
+     * @param statsDReporter the statsd reporter
+     * @param stencilClient  the client
+     */
 
     public ClickhouseSinkFactory(Map<String, String> config, StatsDReporter statsDReporter, StencilClient stencilClient) {
         this.config = config;
