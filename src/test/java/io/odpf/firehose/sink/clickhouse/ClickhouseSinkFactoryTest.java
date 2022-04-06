@@ -1,6 +1,7 @@
 package io.odpf.firehose.sink.clickhouse;
 
-import io.odpf.firehose.proto.ProtoToFieldMapper;
+import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.stencil.client.StencilClient;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +18,10 @@ public class ClickhouseSinkFactoryTest {
     private Map<String, String> configuration = new HashMap<>();
 
     @Mock
-    private ProtoToFieldMapper protoToFieldMapper;
+    private StatsDReporter statsDReporter;
+
+    @Mock
+    private StencilClient stencilClient;
 
     @Before
     public void setUp() {
@@ -34,7 +38,8 @@ public class ClickhouseSinkFactoryTest {
 
     @Test
     public void testCreateSink() {
-
-        Assert.assertNotNull(ClickhouseSinkFactory.create(configuration, null, protoToFieldMapper));
+        ClickhouseSinkFactory clickhouseSinkFactory = new ClickhouseSinkFactory(configuration, statsDReporter, stencilClient);
+        clickhouseSinkFactory.init();
+        Assert.assertNotNull(clickhouseSinkFactory.create());
     }
 }

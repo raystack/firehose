@@ -44,7 +44,7 @@ public class ClickhouseSink extends AbstractSink {
                 instrumentation.logDebug("Written Rows %s", String.valueOf(clickHouseResponseSummary.getWrittenRows()));
             }
         } catch (ExecutionException | InterruptedException e) {
-            messageList.forEach(message -> message.setErrorInfo(new ErrorInfo(e, ErrorType.DEFAULT_ERROR)));
+            messageList.forEach(message -> message.setErrorInfo(new ErrorInfo(e, ErrorType.SINK_4XX_ERROR)));
             return messageList;
         }
         return Collections.emptyList();
