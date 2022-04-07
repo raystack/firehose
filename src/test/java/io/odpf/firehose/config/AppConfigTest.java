@@ -1,6 +1,6 @@
 package io.odpf.firehose.config;
 
-import io.odpf.firehose.config.enums.InputDataType;
+import io.odpf.firehose.config.enums.InputSchemaDataType;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Test;
 
@@ -13,26 +13,26 @@ import static org.junit.Assert.assertEquals;
 public class AppConfigTest {
 
     @Test
-    public void getInputDataTypeProtoBuf() {
+    public void getInputSchemaDataTypeProtoBuf() {
         // when default
         AppConfig appConfig = ConfigFactory.create(AppConfig.class, Collections.emptyMap());
-        InputDataType defaultDataType = appConfig.getInputDataTye();
-        assertEquals(InputDataType.PROTOBUF, defaultDataType);
+        InputSchemaDataType defaultDataType = appConfig.getInputSchemaDataTye();
+        assertEquals(InputSchemaDataType.PROTOBUF, defaultDataType);
 
         //when explicitly set as protobuf
         Map<Object, Object> configMap = new HashMap<>();
-        configMap.put("INPUT_DATA_TYPE", "protobuf");
+        configMap.put("INPUT_SCHEMA_DATA_TYPE", "protobuf");
         AppConfig appConfigExplicit = ConfigFactory.create(AppConfig.class, configMap);
-        InputDataType protobufDataType = appConfigExplicit.getInputDataTye();
-        assertEquals(InputDataType.PROTOBUF, protobufDataType);
+        InputSchemaDataType protobufDataType = appConfigExplicit.getInputSchemaDataTye();
+        assertEquals(InputSchemaDataType.PROTOBUF, protobufDataType);
     }
 
     @Test
-    public void getInputDataTypeJson() {
+    public void getInpuSchematDataTypeJson() {
         Map<Object, Object> configMap = new HashMap<>();
-        configMap.put("INPUT_DATA_TYPE", "json");
+        configMap.put("INPUT_SCHEMA_DATA_TYPE", "json");
         AppConfig appConfig = ConfigFactory.create(AppConfig.class, configMap);
-        InputDataType defaultDataType = appConfig.getInputDataTye();
-        assertEquals(InputDataType.JSON, defaultDataType);
+        InputSchemaDataType defaultDataType = appConfig.getInputSchemaDataTye();
+        assertEquals(InputSchemaDataType.JSON, defaultDataType);
     }
 }

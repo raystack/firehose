@@ -1,11 +1,11 @@
 package io.odpf.firehose.config;
 
-import io.odpf.firehose.config.converter.InputDataTypeConverter;
+import io.odpf.firehose.config.converter.InputSchemaDataTypeConverter;
 import io.odpf.firehose.config.converter.ProtoIndexToFieldMapConverter;
 import io.odpf.firehose.config.converter.SchemaRegistryHeadersConverter;
 import io.odpf.firehose.config.converter.SchemaRegistryRefreshConverter;
 import io.odpf.firehose.config.converter.SinkTypeConverter;
-import io.odpf.firehose.config.enums.InputDataType;
+import io.odpf.firehose.config.enums.InputSchemaDataType;
 import io.odpf.firehose.config.enums.SinkType;
 import io.odpf.stencil.cache.SchemaRefreshStrategy;
 
@@ -33,10 +33,10 @@ public interface AppConfig extends Config {
     @ConverterClass(SinkTypeConverter.class)
     SinkType getSinkType();
 
-    @Key("INPUT_DATA_TYPE")
-    @ConverterClass(InputDataTypeConverter.class)
+    @Key("INPUT_SCHEMA_DATA_TYPE")
+    @ConverterClass(InputSchemaDataTypeConverter.class)
     @DefaultValue("PROTOBUF")
-    InputDataType getInputDataTye();
+    InputSchemaDataType getInputSchemaDataTye();
 
     @Key("APPLICATION_THREAD_COUNT")
     @DefaultValue("1")

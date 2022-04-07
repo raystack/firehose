@@ -1,6 +1,6 @@
 package io.odpf.firehose.config.enums;
 
-public enum InputDataType {
+public enum InputSchemaDataType {
     PROTOBUF,
     JSON
 }
