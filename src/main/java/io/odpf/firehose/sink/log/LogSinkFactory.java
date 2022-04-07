@@ -2,6 +2,7 @@ package io.odpf.firehose.sink.log;
 
 
 import io.odpf.firehose.config.AppConfig;
+import io.odpf.firehose.config.enums.InputSchemaDataType;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
@@ -29,7 +30,14 @@ public class LogSinkFactory {
      */
     public static Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         AppConfig appConfig = ConfigFactory.create(AppConfig.class, configuration);
-        KeyOrMessageParser parser = new KeyOrMessageParser(stencilClient.getParser(appConfig.getInputSchemaProtoClass()), appConfig);
-        return new LogSink(parser, new Instrumentation(statsDReporter, LogSink.class));
+        InputSchemaDataType inputSchemaDataTye = appConfig.getInputSchemaDataTye();
+        switch (inputSchemaDataTye) {
+            case JSON:
+                return new LogSinkforJson(new Instrumentation(statsDReporter, LogSinkforJson.class));
+            case PROTOBUF:
+            default:
+                KeyOrMessageParser parser = new KeyOrMessageParser(stencilClient.getParser(appConfig.getInputSchemaProtoClass()), appConfig);
+                return new LogSink(parser, new Instrumentation(statsDReporter, LogSink.class));
+        }
     }
 }
