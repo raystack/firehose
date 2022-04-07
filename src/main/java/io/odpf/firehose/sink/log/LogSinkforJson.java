@@ -1,11 +1,12 @@
 package io.odpf.firehose.sink.log;
 
-import io.odpf.firehose.exception.DeserializerException;
+import io.odpf.firehose.error.ErrorInfo;
+import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.sink.AbstractSink;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -14,19 +15,22 @@ import java.util.List;
 
 public class LogSinkforJson extends AbstractSink {
     private List<Message> messageList;
+    private Instrumentation instrumentation;
 
     public LogSinkforJson(Instrumentation instrumentation) {
         super(instrumentation, "LOG");
+        this.instrumentation = instrumentation;
     }
 
     @Override
     protected List<Message> execute() throws Exception {
         ArrayList<Message> invalidMessages = new ArrayList<>();
-        JSONParser jsonParser = new JSONParser();
-        for(Message m: messageList) {
+        for (Message m : messageList) {
             try {
-                jsonParser.parse(new String(m.getLogMessage()));
-            } catch (ParseException e) {
+                JSONObject jsonObject = new JSONObject(new String(m.getLogMessage()));
+                instrumentation.logInfo("\n================= DATA =======================\n{}", jsonObject);
+            } catch (JSONException ex) {
+                m.setErrorInfo(new ErrorInfo(ex, ErrorType.DESERIALIZATION_ERROR));
                 invalidMessages.add(m);
             }
         }
@@ -34,7 +38,7 @@ public class LogSinkforJson extends AbstractSink {
     }
 
     @Override
-    protected void prepare(List<Message> messages) throws DeserializerException, IOException, SQLException {
+    protected void prepare(List<Message> messages) throws IOException, SQLException {
         this.messageList = messages;
 
     }
