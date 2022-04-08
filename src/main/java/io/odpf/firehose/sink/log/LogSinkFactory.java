@@ -5,6 +5,7 @@ import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.config.enums.InputSchemaDataType;
 import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.parser.json.JsonMessageParser;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.stencil.client.StencilClient;
 import org.aeonbits.owner.ConfigFactory;
@@ -33,7 +34,7 @@ public class LogSinkFactory {
         InputSchemaDataType inputSchemaDataTye = appConfig.getInputSchemaDataTye();
         switch (inputSchemaDataTye) {
             case JSON:
-                return new LogSinkforJson(new Instrumentation(statsDReporter, LogSinkforJson.class));
+                return new LogSinkforJson(new Instrumentation(statsDReporter, LogSinkforJson.class), new JsonMessageParser(appConfig));
             case PROTOBUF:
             default:
                 KeyOrMessageParser parser = new KeyOrMessageParser(stencilClient.getParser(appConfig.getInputSchemaProtoClass()), appConfig);

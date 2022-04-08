@@ -4,6 +4,7 @@ import io.odpf.firehose.error.ErrorInfo;
 import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.parser.MessageParser;
 import io.odpf.firehose.sink.AbstractSink;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,10 +17,12 @@ import java.util.List;
 public class LogSinkforJson extends AbstractSink {
     private List<Message> messageList;
     private Instrumentation instrumentation;
+    private final MessageParser jsonParser;
 
-    public LogSinkforJson(Instrumentation instrumentation) {
+    public LogSinkforJson(Instrumentation instrumentation, MessageParser jsonParser) {
         super(instrumentation, "LOG");
         this.instrumentation = instrumentation;
+        this.jsonParser = jsonParser;
     }
 
     @Override
@@ -27,7 +30,7 @@ public class LogSinkforJson extends AbstractSink {
         ArrayList<Message> invalidMessages = new ArrayList<>();
         for (Message m : messageList) {
             try {
-                JSONObject jsonObject = new JSONObject(new String(m.getLogMessage()));
+                JSONObject jsonObject = (JSONObject) jsonParser.parse(m);
                 instrumentation.logInfo("\n================= DATA =======================\n{}", jsonObject);
             } catch (JSONException ex) {
                 m.setErrorInfo(new ErrorInfo(ex, ErrorType.DESERIALIZATION_ERROR));
