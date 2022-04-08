@@ -7,6 +7,7 @@ import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.bigquery.BigQuerySinkFactory;
 import io.odpf.firehose.sink.blob.BlobSinkFactory;
+import io.odpf.firehose.sink.clickhouse.ClickhouseSinkFactory;
 import io.odpf.firehose.sink.elasticsearch.EsSinkFactory;
 import io.odpf.firehose.sink.grpc.GrpcSinkFactory;
 import io.odpf.firehose.sink.http.HttpSinkFactory;
@@ -27,6 +28,7 @@ public class SinkFactory {
     private final StencilClient stencilClient;
     private final OffsetManager offsetManager;
     private BigQuerySinkFactory bigQuerySinkFactory;
+    private ClickhouseSinkFactory clickhouseSinkFactory;
     private final Map<String, String> config = System.getenv();
 
     public SinkFactory(KafkaConsumerConfig kafkaConsumerConfig,
@@ -45,6 +47,10 @@ public class SinkFactory {
      */
     public void init() {
         switch (this.kafkaConsumerConfig.getSinkType()) {
+            case CLICKHOUSE:
+                clickhouseSinkFactory = new ClickhouseSinkFactory(config, statsDReporter, stencilClient);
+                clickhouseSinkFactory.init();
+                return;
             case JDBC:
             case HTTP:
             case INFLUXDB:
@@ -68,6 +74,8 @@ public class SinkFactory {
     public Sink getSink() {
         instrumentation.logInfo("Sink Type: {}", kafkaConsumerConfig.getSinkType().toString());
         switch (kafkaConsumerConfig.getSinkType()) {
+            case CLICKHOUSE:
+                return clickhouseSinkFactory.create();
             case JDBC:
                 return JdbcSinkFactory.create(config, statsDReporter, stencilClient);
             case HTTP:
