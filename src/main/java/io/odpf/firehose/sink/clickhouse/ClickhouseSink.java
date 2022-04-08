@@ -43,11 +43,11 @@ public class ClickhouseSink extends AbstractSink {
             if (instrumentation.isDebugEnabled()) {
                 instrumentation.logDebug("Written Rows %s", String.valueOf(clickHouseResponseSummary.getWrittenRows()));
             }
+            return Collections.emptyList();
         } catch (ExecutionException | InterruptedException e) {
             messageList.forEach(message -> message.setErrorInfo(new ErrorInfo(e, ErrorType.SINK_4XX_ERROR)));
             return messageList;
         }
-        return Collections.emptyList();
     }
 
     @Override

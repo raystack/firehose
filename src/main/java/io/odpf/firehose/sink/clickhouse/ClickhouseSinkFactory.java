@@ -32,7 +32,6 @@ public class ClickhouseSinkFactory {
     private final StencilClient stencilClient;
     private ClickHouseClient client;
     private ClickHouseNode server;
-    private ClickHouseRequest request;
     private ProtoToFieldMapper protoToFieldMapper;
 
     /**
@@ -66,13 +65,13 @@ public class ClickhouseSinkFactory {
         Instrumentation instrumentation = new Instrumentation(statsDReporter, ClickhouseSinkFactory.class);
         instrumentation.logInfo("Clickhouse connection established");
 
-        request = client.connect(server);
         Parser protoParser = stencilClient.getParser(clickhouseSinkConfig.getInputSchemaProtoClass());
         protoToFieldMapper = new ProtoToFieldMapper(protoParser, clickhouseSinkConfig.getInputSchemaProtoToColumnMapping());
     }
 
     public AbstractSink create() {
         ClickhouseSinkConfig clickhouseSinkConfig = ConfigFactory.create(ClickhouseSinkConfig.class, config);
+        ClickHouseRequest request = client.connect(server);
         QueryTemplate queryTemplate = new QueryTemplate(clickhouseSinkConfig, protoToFieldMapper);
         queryTemplate.initialize(clickhouseSinkConfig);
         return new ClickhouseSink(new Instrumentation(statsDReporter, ClickhouseSink.class), request, queryTemplate, client);
