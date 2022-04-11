@@ -691,7 +691,7 @@ Protocol buffers are Google's language-neutral, platform-neutral, extensible mec
 Data streams on Kafka topics are bound to a Protobuf schema. Protobuf is much more lightweight that other schema formats
 like JSON, since it encodes the keys in the message to integers.
 
-ElasticSearch and MongoDB sink support both JSON and Protobuf as the input schema. For other sinks, Firehose currently
+ElasticSearch, MongoDB and LogSink sink support both JSON and Protobuf as the input schema. For other sinks, Firehose currently
 supports only Protobuf. Support for JSON and Avro is planned and incorporated in the future roadmap.
 
 #### Does firehose have support for SSL on Kafka?

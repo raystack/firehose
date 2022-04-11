@@ -25,6 +25,7 @@
 
 ## Sink
 * [Bigquery](sink/bigquery.md)
+* [LogSink](sink/logsink.md)
 
 ## Reference
 
