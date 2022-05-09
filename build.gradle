@@ -46,8 +46,16 @@ repositories {
     maven {
         url "https://packages.confluent.io/maven"
     }
-}
 
+    maven {
+        name = "GitHubPackages"
+        url = "https://maven.pkg.github.com/odpf/depot"
+        credentials {
+            username = System.getenv("GITHUB_ACTOR")
+            password = System.getenv("GITHUB_TOKEN")
+        }
+    }
+}
 
 private Properties loadEnv() {
     Properties properties = new Properties()
