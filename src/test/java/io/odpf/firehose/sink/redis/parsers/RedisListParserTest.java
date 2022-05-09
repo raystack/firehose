@@ -1,14 +1,12 @@
 package io.odpf.firehose.sink.redis.parsers;
 
-
-
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.RedisSinkConfig;
 import io.odpf.firehose.config.enums.RedisSinkDataType;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestBookingLogMessage;
 import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;
-import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.redis.dataentry.RedisListEntry;
 import io.odpf.stencil.client.ClassLoadStencilClient;
 import io.odpf.stencil.Parser;
@@ -18,7 +16,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.mockito.Mockito.when;

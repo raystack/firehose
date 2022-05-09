@@ -1,9 +1,9 @@
 package io.odpf.firehose.sink.http;
 
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.HttpSinkConfig;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.http.auth.OAuth2Credential;
 import io.odpf.firehose.sink.http.request.types.Request;
@@ -38,16 +38,16 @@ public class HttpSinkFactory {
     public static AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         HttpSinkConfig httpSinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
-        Instrumentation instrumentation = new Instrumentation(statsDReporter, HttpSinkFactory.class);
+        FirehoseInstrumentation firehoseInstrumentation = new FirehoseInstrumentation(statsDReporter, HttpSinkFactory.class);
 
         CloseableHttpClient closeableHttpClient = newHttpClient(httpSinkConfig, statsDReporter);
-        instrumentation.logInfo("HTTP connection established");
+        firehoseInstrumentation.logInfo("HTTP connection established");
 
         UriParser uriParser = new UriParser(stencilClient.getParser(httpSinkConfig.getInputSchemaProtoClass()), httpSinkConfig.getKafkaRecordParserMode());
 
         Request request = new RequestFactory(statsDReporter, httpSinkConfig, stencilClient, uriParser).createRequest();
 
-        return new HttpSink(new Instrumentation(statsDReporter, HttpSink.class), request, closeableHttpClient, stencilClient, httpSinkConfig.getSinkHttpRetryStatusCodeRanges(), httpSinkConfig.getSinkHttpRequestLogStatusCodeRanges());
+        return new HttpSink(new FirehoseInstrumentation(statsDReporter, HttpSink.class), request, closeableHttpClient, stencilClient, httpSinkConfig.getSinkHttpRetryStatusCodeRanges(), httpSinkConfig.getSinkHttpRequestLogStatusCodeRanges());
     }
 
     private static CloseableHttpClient newHttpClient(HttpSinkConfig httpSinkConfig, StatsDReporter statsDReporter) {
@@ -61,7 +61,7 @@ public class HttpSinkFactory {
         HttpClientBuilder builder = HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig);
         if (httpSinkConfig.isSinkHttpOAuth2Enable()) {
             OAuth2Credential oauth2 = new OAuth2Credential(
-                    new Instrumentation(statsDReporter, OAuth2Credential.class),
+                    new FirehoseInstrumentation(statsDReporter, OAuth2Credential.class),
                     httpSinkConfig.getSinkHttpOAuth2ClientName(),
                     httpSinkConfig.getSinkHttpOAuth2ClientSecret(),
                     httpSinkConfig.getSinkHttpOAuth2Scope(),

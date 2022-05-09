@@ -6,7 +6,7 @@ import io.odpf.firehose.config.converter.RangeToHashMapConverter;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.NeedToRetry;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.prometheus.request.PromRequest;
 import io.odpf.stencil.client.StencilClient;
 import org.apache.http.Header;
@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.xerial.snappy.Snappy;
 
 import java.io.ByteArrayInputStream;
@@ -42,7 +42,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 @RunWith(MockitoJUnitRunner.class)
 public class PromSinkTest {
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
     @Mock
     private PromRequest request;
     @Mock
@@ -92,7 +92,7 @@ public class PromSinkTest {
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
 
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
+        PromSink promSink = new PromSink(firehoseInstrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         promSink.prepare(messages);
         promSink.execute();
 
@@ -108,7 +108,7 @@ public class PromSinkTest {
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
 
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
+        PromSink promSink = new PromSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-505"), requestLogStatusCodeRanges);
         promSink.prepare(messages);
         promSink.execute();
@@ -123,7 +123,7 @@ public class PromSinkTest {
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(null);
 
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
+        PromSink promSink = new PromSink(firehoseInstrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         promSink.prepare(messages);
         promSink.execute();
     }
@@ -132,13 +132,13 @@ public class PromSinkTest {
     public void shouldCatchURISyntaxExceptionAndThrowIOException() throws URISyntaxException, DeserializerException, IOException {
         when(request.build(messages)).thenThrow(new URISyntaxException("", ""));
 
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
+        PromSink promSink = new PromSink(firehoseInstrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         promSink.prepare(messages);
     }
 
     @Test
     public void shouldCloseStencilClient() throws IOException {
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
+        PromSink promSink = new PromSink(firehoseInstrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
 
         promSink.close();
         verify(stencilClient, times(1)).close();
@@ -146,10 +146,10 @@ public class PromSinkTest {
 
     @Test
     public void shouldLogConnectionClosing() throws IOException {
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
+        PromSink promSink = new PromSink(firehoseInstrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
 
         promSink.close();
-        verify(instrumentation, times(1)).logInfo("HTTP connection closing");
+        verify(firehoseInstrumentation, times(1)).logInfo("HTTP connection closing");
     }
 
     @Test
@@ -165,17 +165,17 @@ public class PromSinkTest {
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
 
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
+        PromSink promSink = new PromSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-505"));
         promSink.prepare(messages);
         promSink.execute();
-        verify(instrumentation, times(1)).logInfo(
+        verify(firehoseInstrumentation, times(1)).logInfo(
                 "\nRequest Method: POST"
                         + "\nRequest Url: http://dummy.com"
                         + "\nRequest Headers: [Accept: text/plain]"
                         + "\nRequest Body: " + body);
-        verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 1, "cause= 500");
+        verify(firehoseInstrumentation, times(1)).logInfo("Message dropped because of status code: 500");
+        verify(firehoseInstrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 1L, "cause= 500");
     }
 
     @Test
@@ -190,11 +190,11 @@ public class PromSinkTest {
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
 
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
+        PromSink promSink = new PromSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-499"));
         promSink.prepare(messages);
         promSink.execute();
-        verify(instrumentation, times(0)).logInfo(
+        verify(firehoseInstrumentation, times(0)).logInfo(
                 "\nRequest Method: POST"
                         + "\nRequest Url: http://dummy.com"
                         + "\nRequest Headers: [Accept: text/plain]"
@@ -211,12 +211,12 @@ public class PromSinkTest {
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
 
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
+        PromSink promSink = new PromSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-499"), requestLogStatusCodeRanges);
         promSink.prepare(messages);
         promSink.execute();
-        verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 1, "cause= 500");
+        verify(firehoseInstrumentation, times(1)).logInfo("Message dropped because of status code: 500");
+        verify(firehoseInstrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 1L, "cause= 500");
     }
 
     @Test(expected = NeedToRetry.class)
@@ -227,11 +227,11 @@ public class PromSinkTest {
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
 
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
+        PromSink promSink = new PromSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-600"), requestLogStatusCodeRanges);
         promSink.prepare(messages);
         promSink.execute();
-        verify(instrumentation, times(0)).logInfo("Message dropped because of status code: 500");
+        verify(firehoseInstrumentation, times(0)).logInfo("Message dropped because of status code: 500");
     }
 
     @Test
@@ -242,12 +242,12 @@ public class PromSinkTest {
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
 
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
+        PromSink promSink = new PromSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
         promSink.prepare(messages);
         promSink.execute();
-        verify(instrumentation, times(0)).logInfo("Message dropped because of status code: 200");
-        verify(instrumentation, times(0)).captureCount("firehose_sink_messages_drop_total", 1, "200");
+        verify(firehoseInstrumentation, times(0)).logInfo("Message dropped because of status code: 200");
+        verify(firehoseInstrumentation, times(0)).captureCount("firehose_sink_messages_drop_total", 1L, "200");
     }
 
     @Test
@@ -258,12 +258,12 @@ public class PromSinkTest {
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
 
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
+        PromSink promSink = new PromSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
         promSink.prepare(messages);
         promSink.execute();
-        verify(instrumentation, times(0)).logInfo("Message dropped because of status code: 201");
-        verify(instrumentation, times(0)).captureCount("firehose_sink_messages_drop_total", 1, "201");
+        verify(firehoseInstrumentation, times(0)).logInfo("Message dropped because of status code: 201");
+        verify(firehoseInstrumentation, times(0)).captureCount("firehose_sink_messages_drop_total", 1L, "201");
     }
 
     @Test
@@ -275,12 +275,12 @@ public class PromSinkTest {
         when(request.build(messages)).thenReturn(httpPostList);
         when(httpClient.execute(httpPost)).thenReturn(response);
 
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
+        PromSink promSink = new PromSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
         promSink.prepare(messages);
         promSink.execute();
 
-        verify(instrumentation, times(1)).captureCount("firehose_sink_http_response_code_total", 1, "status_code=" + statusLine.getStatusCode());
+        verify(firehoseInstrumentation, times(1)).captureCount("firehose_sink_http_response_code_total", 1L, "status_code=" + statusLine.getStatusCode());
     }
 
     @Test
@@ -290,7 +290,7 @@ public class PromSinkTest {
         when(httpPost.getEntity()).thenReturn(httpEntity);
         when(httpEntity.getContent()).thenReturn(inputStream);
 
-        PromSink promSink = new PromSink(instrumentation, request, httpClient, stencilClient,
+        PromSink promSink = new PromSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
 
         List<String> requestBody = promSink.readContent(httpPost);

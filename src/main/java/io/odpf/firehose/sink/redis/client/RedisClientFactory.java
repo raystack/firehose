@@ -1,12 +1,10 @@
 package io.odpf.firehose.sink.redis.client;
 
-
-
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.RedisSinkConfig;
 import io.odpf.firehose.config.enums.RedisSinkDeploymentType;
 import io.odpf.firehose.exception.ConfigurationException;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
 import io.odpf.firehose.sink.redis.parsers.RedisParser;
 import io.odpf.firehose.sink.redis.parsers.RedisParserFactory;
@@ -62,7 +60,7 @@ public class RedisClientFactory {
         } catch (IllegalArgumentException e) {
             throw new ConfigurationException(String.format("Invalid url for redis standalone: %s", redisSinkConfig.getSinkRedisUrls()));
         }
-        return new RedisStandaloneClient(new Instrumentation(statsDReporter, RedisStandaloneClient.class), redisParser, redisTTL, jedis);
+        return new RedisStandaloneClient(new FirehoseInstrumentation(statsDReporter, RedisStandaloneClient.class), redisParser, redisTTL, jedis);
     }
 
     private RedisClusterClient getRedisClusterClient(RedisParser redisParser, RedisTtl redisTTL) {
@@ -76,6 +74,6 @@ public class RedisClientFactory {
             throw new ConfigurationException(String.format("Invalid url(s) for redis cluster: %s", redisSinkConfig.getSinkRedisUrls()));
         }
         JedisCluster jedisCluster = new JedisCluster(nodes);
-        return new RedisClusterClient(new Instrumentation(statsDReporter, RedisClusterClient.class), redisParser, redisTTL, jedisCluster);
+        return new RedisClusterClient(new FirehoseInstrumentation(statsDReporter, RedisClusterClient.class), redisParser, redisTTL, jedisCluster);
     }
 }

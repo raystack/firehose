@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.grpc.client;
 
 
 import io.odpf.firehose.config.GrpcSinkConfig;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import com.google.protobuf.DynamicMessage;
 
 import io.grpc.ManagedChannel;
@@ -29,13 +29,13 @@ import java.io.InputStream;
  */
 public class GrpcClient {
 
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
     private final GrpcSinkConfig grpcSinkConfig;
     private StencilClient stencilClient;
     private ManagedChannel managedChannel;
 
-    public GrpcClient(Instrumentation instrumentation, GrpcSinkConfig grpcSinkConfig, ManagedChannel managedChannel, StencilClient stencilClient) {
-        this.instrumentation = instrumentation;
+    public GrpcClient(FirehoseInstrumentation firehoseInstrumentation, GrpcSinkConfig grpcSinkConfig, ManagedChannel managedChannel, StencilClient stencilClient) {
+        this.firehoseInstrumentation = firehoseInstrumentation;
         this.grpcSinkConfig = grpcSinkConfig;
         this.stencilClient = stencilClient;
         this.managedChannel = managedChannel;
@@ -68,7 +68,7 @@ public class GrpcClient {
             dynamicMessage = stencilClient.parse(grpcSinkConfig.getSinkGrpcResponseSchemaProtoClass(), response);
 
         } catch (Exception e) {
-            instrumentation.logWarn(e.getMessage());
+            firehoseInstrumentation.logWarn(e.getMessage());
             dynamicMessage = DynamicMessage.newBuilder(this.stencilClient.get(this.grpcSinkConfig.getSinkGrpcResponseSchemaProtoClass())).build();
 
         }

@@ -1,5 +1,7 @@
 package io.odpf.firehose.error;
 
+import io.odpf.depot.error.ErrorInfo;
+import io.odpf.depot.error.ErrorType;
 import io.odpf.firehose.config.ErrorConfig;
 import io.odpf.firehose.message.Message;
 import org.aeonbits.owner.ConfigFactory;

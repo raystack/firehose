@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.common;
 
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.NeedToRetry;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.stencil.client.StencilClient;
 import joptsimple.internal.Strings;
@@ -35,8 +35,8 @@ public abstract class AbstractHttpSink extends AbstractSink {
     private final Map<Integer, Boolean> requestLogStatusCodeRanges;
     protected static final String SUCCESS_CODE_PATTERN = "^2.*";
 
-    public AbstractHttpSink(Instrumentation instrumentation, String sinkType, HttpClient httpClient, StencilClient stencilClient, Map<Integer, Boolean> retryStatusCodeRanges, Map<Integer, Boolean> requestLogStatusCodeRanges) {
-        super(instrumentation, sinkType);
+    public AbstractHttpSink(FirehoseInstrumentation firehoseInstrumentation, String sinkType, HttpClient httpClient, StencilClient stencilClient, Map<Integer, Boolean> retryStatusCodeRanges, Map<Integer, Boolean> requestLogStatusCodeRanges) {
+        super(firehoseInstrumentation, sinkType);
         this.httpClient = httpClient;
         this.stencilClient = stencilClient;
         this.retryStatusCodeRanges = retryStatusCodeRanges;
@@ -50,7 +50,7 @@ public abstract class AbstractHttpSink extends AbstractSink {
             try {
                 response = httpClient.execute(httpRequest);
                 List<String> contentStringList = null;
-                getInstrumentation().logInfo("Response Status: {}", statusCode(response));
+                getFirehoseInstrumentation().logInfo("Response Status: {}", statusCode(response));
                 if (shouldLogResponse(response)) {
                     printResponse(response);
                 }
@@ -74,7 +74,7 @@ public abstract class AbstractHttpSink extends AbstractSink {
 
     @Override
     public void close() throws IOException {
-        getInstrumentation().logInfo("HTTP connection closing");
+        getFirehoseInstrumentation().logInfo("HTTP connection closing");
         getHttpRequests().clear();
         getStencilClient().close();
     }
@@ -92,7 +92,7 @@ public abstract class AbstractHttpSink extends AbstractSink {
     }
 
     private boolean shouldLogResponse(HttpResponse response) {
-        return getInstrumentation().isDebugEnabled() && response != null && response.getEntity() != null;
+        return getFirehoseInstrumentation().isDebugEnabled() && response != null && response.getEntity() != null;
     }
 
     private boolean shouldRetry(HttpResponse response) {
@@ -111,7 +111,7 @@ public abstract class AbstractHttpSink extends AbstractSink {
     private void captureHttpStatusCount(HttpResponse response) {
         String statusCode = statusCode(response);
         String httpCodeTag = statusCode.equals("null") ? "status_code=" : "status_code=" + statusCode;
-        getInstrumentation().captureCount(SINK_HTTP_RESPONSE_CODE_TOTAL, 1, httpCodeTag);
+        getFirehoseInstrumentation().captureCount(SINK_HTTP_RESPONSE_CODE_TOTAL, 1L, httpCodeTag);
     }
 
     private void printRequest(HttpEntityEnclosingRequestBase httpRequest, List<String> contentStringList) throws IOException {
@@ -120,7 +120,7 @@ public abstract class AbstractHttpSink extends AbstractSink {
                 httpRequest.getURI(),
                 Arrays.asList(httpRequest.getAllHeaders()),
                 Strings.join(contentStringList, "\n"));
-        getInstrumentation().logInfo(entireRequest);
+        getFirehoseInstrumentation().logInfo(entireRequest);
     }
 
     private void printResponse(HttpResponse httpResponse) throws IOException {
@@ -129,7 +129,7 @@ public abstract class AbstractHttpSink extends AbstractSink {
                     Strings.join(new BufferedReader(new InputStreamReader(
                             inputStream,
                             StandardCharsets.UTF_8)).lines().collect(Collectors.toList()), "\n"));
-            getInstrumentation().logDebug(responseBody);
+            getFirehoseInstrumentation().logDebug(responseBody);
         }
     }
 

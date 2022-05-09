@@ -3,7 +3,7 @@ package io.odpf.firehose.filter.json;
 import io.odpf.firehose.config.FilterConfig;
 import io.odpf.firehose.config.enums.FilterDataSourceType;
 import io.odpf.firehose.consumer.TestMessage;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,7 +25,7 @@ public class JsonFilterUtilTest {
     public ExpectedException thrown = ExpectedException.none();
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     private FilterConfig filterConfig;
 
@@ -42,11 +42,11 @@ public class JsonFilterUtilTest {
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        JsonFilterUtil.logConfigs(filterConfig, instrumentation);
-        verify(instrumentation, times(1)).logInfo("\n\tFilter data source type: {}", FilterDataSourceType.MESSAGE);
-        verify(instrumentation, times(1)).logInfo("\n\tMessage Proto class: {}", TestMessage.class.getName());
-        verify(instrumentation, times(1)).logInfo("\n\tFilter JSON Schema: {}", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
-        verify(instrumentation, times(1)).logInfo("\n\tFilter ESB message format: {}", PROTOBUF);
+        JsonFilterUtil.logConfigs(filterConfig, firehoseInstrumentation);
+        verify(firehoseInstrumentation, times(1)).logInfo("\n\tFilter data source type: {}", FilterDataSourceType.MESSAGE);
+        verify(firehoseInstrumentation, times(1)).logInfo("\n\tMessage Proto class: {}", TestMessage.class.getName());
+        verify(firehoseInstrumentation, times(1)).logInfo("\n\tFilter JSON Schema: {}", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
+        verify(firehoseInstrumentation, times(1)).logInfo("\n\tFilter ESB message format: {}", PROTOBUF);
     }
 
     @Test
@@ -56,10 +56,10 @@ public class JsonFilterUtilTest {
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        JsonFilterUtil.logConfigs(filterConfig, instrumentation);
-        verify(instrumentation, times(1)).logInfo("\n\tFilter data source type: {}", FilterDataSourceType.MESSAGE);
-        verify(instrumentation, times(1)).logInfo("\n\tFilter JSON Schema: {}", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
-        verify(instrumentation, times(1)).logInfo("\n\tFilter ESB message format: {}", (Object) null);
+        JsonFilterUtil.logConfigs(filterConfig, firehoseInstrumentation);
+        verify(firehoseInstrumentation, times(1)).logInfo("\n\tFilter data source type: {}", FilterDataSourceType.MESSAGE);
+        verify(firehoseInstrumentation, times(1)).logInfo("\n\tFilter JSON Schema: {}", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
+        verify(firehoseInstrumentation, times(1)).logInfo("\n\tFilter ESB message format: {}", (Object) null);
     }
 
     @Test
@@ -70,8 +70,8 @@ public class JsonFilterUtilTest {
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         thrown.expect(IllegalArgumentException.class);
-        JsonFilterUtil.validateConfigs(filterConfig, instrumentation);
-        verify(instrumentation, times(1)).logError("Failed to create filter due to invalid config");
+        JsonFilterUtil.validateConfigs(filterConfig, firehoseInstrumentation);
+        verify(firehoseInstrumentation, times(1)).logError("Failed to create filter due to invalid config");
     }
 
     @Test
@@ -82,8 +82,8 @@ public class JsonFilterUtilTest {
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         thrown.expect(IllegalArgumentException.class);
-        JsonFilterUtil.validateConfigs(filterConfig, instrumentation);
-        verify(instrumentation, times(1)).logError("Failed to create filter due to invalid config");
+        JsonFilterUtil.validateConfigs(filterConfig, firehoseInstrumentation);
+        verify(firehoseInstrumentation, times(1)).logError("Failed to create filter due to invalid config");
     }
 
     @Test
@@ -94,8 +94,8 @@ public class JsonFilterUtilTest {
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
         thrown.expect(IllegalArgumentException.class);
-        JsonFilterUtil.validateConfigs(filterConfig, instrumentation);
-        verify(instrumentation, times(1)).logError("Failed to create filter due to invalid config");
+        JsonFilterUtil.validateConfigs(filterConfig, firehoseInstrumentation);
+        verify(firehoseInstrumentation, times(1)).logError("Failed to create filter due to invalid config");
     }
 
     @Test
@@ -106,6 +106,6 @@ public class JsonFilterUtilTest {
         filterConfigs.put("FILTER_JSON_SCHEMA", "{\"properties\":{\"order_number\":{\"const\":\"123\"}}}");
         filterConfigs.put("FILTER_SCHEMA_PROTO_CLASS", TestMessage.class.getName());
         filterConfig = ConfigFactory.create(FilterConfig.class, filterConfigs);
-        JsonFilterUtil.validateConfigs(filterConfig, instrumentation);
+        JsonFilterUtil.validateConfigs(filterConfig, firehoseInstrumentation);
     }
 }

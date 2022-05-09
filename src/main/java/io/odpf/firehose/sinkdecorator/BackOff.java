@@ -1,20 +1,20 @@
 package io.odpf.firehose.sinkdecorator;
 
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class BackOff {
 
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     public void inMilliSeconds(long milliseconds) {
         try {
             Thread.sleep(milliseconds);
         } catch (InterruptedException e) {
-            instrumentation.captureNonFatalError(e, "Backoff thread sleep for {} milliseconds interrupted : {} {}",
-            milliseconds, e.getClass(), e.getMessage());
+            firehoseInstrumentation.captureNonFatalError("firehose_error_event", e, "Backoff thread sleep for {} milliseconds interrupted : {} {}",
+                    milliseconds, e.getClass(), e.getMessage());
         }
     }
 }

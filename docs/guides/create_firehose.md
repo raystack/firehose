@@ -26,7 +26,7 @@ Sample output of a Firehose log sink:
 ```text
 2021-03-29T08:43:05,998Z [pool-2-thread-1] INFO  i.o.firehose.Consumer- Execution successful for 1 records
 2021-03-29T08:43:06,246Z [pool-2-thread-1] INFO  i.o.firehose.Consumer - Pulled 1 messages
-2021-03-29T08:43:06,246Z [pool-2-thread-1] INFO  io.odpf.firehose.sink.log.LogSink - 
+2021-03-29T08:43:06,246Z [pool-2-thread-1] INFO  io.odpf.firehose.sink.log.FirehoseLogSink - 
 ================= DATA =======================
 sample_field: 81179979
 sample_field_2: 9897987987

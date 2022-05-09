@@ -1,8 +1,8 @@
 package io.odpf.firehose.sink.prometheus.request;
 
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.PromSinkConfig;
-import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.stencil.Parser;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;

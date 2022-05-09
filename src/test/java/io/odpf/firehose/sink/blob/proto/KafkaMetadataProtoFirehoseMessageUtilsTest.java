@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class KafkaMetadataProtoMessageUtilsTest {
+public class KafkaMetadataProtoFirehoseMessageUtilsTest {
 
     @Test
     public void shouldCreateDescriptors() {

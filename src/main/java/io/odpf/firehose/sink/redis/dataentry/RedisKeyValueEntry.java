@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.redis.dataentry;
 
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.redis.ttl.RedisTtl;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -10,23 +10,23 @@ import redis.clients.jedis.Pipeline;
 
 @AllArgsConstructor
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = "firehoseInstrumentation")
 public class RedisKeyValueEntry implements RedisDataEntry {
 
     private String key;
     private String value;
-    @EqualsAndHashCode.Exclude  private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Override
     public void pushMessage(Pipeline jedisPipelined, RedisTtl redisTTL) {
-        instrumentation.logDebug("key: {}, value: {}", key, value);
+        firehoseInstrumentation.logDebug("key: {}, value: {}", key, value);
         jedisPipelined.set(key, value);
         redisTTL.setTtl(jedisPipelined, key);
     }
 
     @Override
     public void pushMessage(JedisCluster jedisCluster, RedisTtl redisTTL) {
-        instrumentation.logDebug("key: {}, value: {}", key, value);
+        firehoseInstrumentation.logDebug("key: {}, value: {}", key, value);
         jedisCluster.set(key, value);
         redisTTL.setTtl(jedisCluster, key);
 

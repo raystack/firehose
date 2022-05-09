@@ -1,12 +1,12 @@
 package io.odpf.firehose.sink.http.request.types;
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.HttpSinkConfig;
 import io.odpf.firehose.config.enums.HttpSinkRequestMethodType;
 import io.odpf.firehose.config.enums.HttpSinkDataFormatType;
 import io.odpf.firehose.config.enums.HttpSinkParameterPlacementType;
 import io.odpf.firehose.config.enums.HttpSinkParameterSourceType;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
 import io.odpf.firehose.sink.http.request.body.JsonBody;
 import io.odpf.firehose.sink.http.request.entity.RequestEntityBuilder;
@@ -23,10 +23,7 @@ import java.util.List;
 
 import static org.gradle.internal.impldep.org.junit.Assert.assertFalse;
 import static org.gradle.internal.impldep.org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class ParameterizedUriRequestTest {

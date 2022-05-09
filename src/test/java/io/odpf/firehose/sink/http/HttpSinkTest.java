@@ -5,7 +5,7 @@ import io.odpf.firehose.config.converter.RangeToHashMapConverter;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.NeedToRetry;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.http.request.types.Request;
 import io.odpf.stencil.client.StencilClient;
 import org.apache.http.Header;
@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.net.URI;
@@ -35,7 +35,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 @RunWith(MockitoJUnitRunner.class)
 public class HttpSinkTest {
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
     @Mock
     private Request request;
     @Mock
@@ -89,7 +89,7 @@ public class HttpSinkTest {
         when(response.getEntity()).thenReturn(httpEntity, httpEntity);
         when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value1\"}, {\"key\":\"value2\"}]"));
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.prepare(messages);
         httpSink.execute();
 
@@ -112,7 +112,7 @@ public class HttpSinkTest {
         when(response.getEntity()).thenReturn(httpEntity);
         when(httpEntity.getContent()).thenReturn(new StringInputStream("{\"key\":\"value\"}"));
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-505"), requestLogStatusCodeRanges);
         httpSink.prepare(messages);
         httpSink.execute();
@@ -130,7 +130,7 @@ public class HttpSinkTest {
         when(request.build(messages)).thenReturn(httpRequests);
         when(httpClient.execute(httpPut)).thenReturn(null);
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.prepare(messages);
         httpSink.execute();
     }
@@ -149,7 +149,7 @@ public class HttpSinkTest {
         when(response.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(0);
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.prepare(messages);
         httpSink.execute();
     }
@@ -158,13 +158,13 @@ public class HttpSinkTest {
     public void shouldCatchURISyntaxExceptionAndThrowIOException() throws URISyntaxException, DeserializerException, IOException {
         when(request.build(messages)).thenThrow(new URISyntaxException("", ""));
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.prepare(messages);
     }
 
     @Test
     public void shouldCloseStencilClient() throws IOException {
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
 
         httpSink.close();
         verify(stencilClient, times(1)).close();
@@ -172,10 +172,10 @@ public class HttpSinkTest {
 
     @Test
     public void shouldLogConnectionClosing() throws IOException {
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
 
         httpSink.close();
-        verify(instrumentation, times(1)).logInfo("HTTP connection closing");
+        verify(firehoseInstrumentation, times(1)).logInfo("HTTP connection closing");
     }
 
     @Test
@@ -195,17 +195,17 @@ public class HttpSinkTest {
         when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
         when(response.getEntity()).thenReturn(httpEntity);
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-505"));
         httpSink.prepare(messages);
         httpSink.execute();
-        verify(instrumentation, times(1)).logInfo(
+        verify(firehoseInstrumentation, times(1)).logInfo(
                     "\nRequest Method: PUT"
                     + "\nRequest Url: http://dummy.com"
                     + "\nRequest Headers: [Accept: text/plain]"
                     + "\nRequest Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]");
-        verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 2, "cause= 500");
+        verify(firehoseInstrumentation, times(1)).logInfo("Message dropped because of status code: 500");
+        verify(firehoseInstrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 2L, "cause= 500");
     }
 
     @Test
@@ -226,17 +226,17 @@ public class HttpSinkTest {
         when(response.getEntity()).thenReturn(httpEntity);
         when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value\"}]"));
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-505"));
         httpSink.prepare(messages);
         httpSink.execute();
-        verify(instrumentation, times(1)).logInfo(
+        verify(firehoseInstrumentation, times(1)).logInfo(
                         "\nRequest Method: PUT"
                         + "\nRequest Url: http://dummy.com"
                         + "\nRequest Headers: [Accept: text/plain]"
                         + "\nRequest Body: [{\"key\":\"value\"}]");
-        verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 1, "cause= 500");
+        verify(firehoseInstrumentation, times(1)).logInfo("Message dropped because of status code: 500");
+        verify(firehoseInstrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 1L, "cause= 500");
     }
 
     @Test
@@ -257,17 +257,17 @@ public class HttpSinkTest {
         when(response.getEntity()).thenReturn(httpEntity);
         when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value\"}]"));
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-505"));
         httpSink.prepare(messages);
         httpSink.execute();
-        verify(instrumentation, times(1)).logInfo(
+        verify(firehoseInstrumentation, times(1)).logInfo(
                         "\nRequest Method: PUT"
                         + "\nRequest Url: http://dummy.com"
                         + "\nRequest Headers: [Accept: text/plain]"
                         + "\nRequest Body: [{\"key\":\"value\"}]");
-        verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 1, "cause= 500");
+        verify(firehoseInstrumentation, times(1)).logInfo("Message dropped because of status code: 500");
+        verify(firehoseInstrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 1L, "cause= 500");
     }
 
     @Test
@@ -286,11 +286,11 @@ public class HttpSinkTest {
         when(response.getEntity()).thenReturn(httpEntity);
         when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value1\"},{\"key\":\"value2\"}]"));
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, new RangeToHashMapConverter().convert(null, "400-499"));
         httpSink.prepare(messages);
         httpSink.execute();
-        verify(instrumentation, times(0)).logInfo(
+        verify(firehoseInstrumentation, times(0)).logInfo(
                         "\nRequest Method: PUT"
                         + "\nRequest Url: http://dummy.com"
                         + "\nRequest Headers: [Accept: text/plain]"
@@ -313,12 +313,12 @@ public class HttpSinkTest {
         when(response.getEntity()).thenReturn(httpEntity);
         when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value1\"},{\"key\":\"value2\"}]"));
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-499"), requestLogStatusCodeRanges);
         httpSink.prepare(messages);
         httpSink.execute();
-        verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 2, "cause= 500");
+        verify(firehoseInstrumentation, times(1)).logInfo("Message dropped because of status code: 500");
+        verify(firehoseInstrumentation, times(1)).captureCount("firehose_sink_messages_drop_total", 2L, "cause= 500");
     }
 
     @Test(expected = NeedToRetry.class)
@@ -335,14 +335,14 @@ public class HttpSinkTest {
         when(response.getEntity()).thenReturn(httpEntity);
         when(httpEntity.getContent()).thenReturn(new StringInputStream("{\"key\":\"value\"}"));
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-600"), requestLogStatusCodeRanges);
         httpSink.prepare(messages);
         try {
             httpSink.execute();
         } finally {
-            verify(instrumentation, times(0)).logInfo("Message dropped because of status code: 500");
-            verify(instrumentation, times(0)).captureCount("messages.dropped.count", 1, "500");
+            verify(firehoseInstrumentation, times(0)).logInfo("Message dropped because of status code: 500");
+            verify(firehoseInstrumentation, times(0)).captureCount("messages.dropped.count", 1L, "500");
         }
     }
 
@@ -360,12 +360,12 @@ public class HttpSinkTest {
         when(response.getEntity()).thenReturn(httpEntity);
         when(httpEntity.getContent()).thenReturn(new StringInputStream("{\"key\":\"value\"}"));
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.prepare(messages);
         httpSink.execute();
-        verify(instrumentation, times(0)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(0)).captureCount("messages.dropped.count", 1, "200");
+        verify(firehoseInstrumentation, times(0)).logInfo("Message dropped because of status code: 500");
+        verify(firehoseInstrumentation, times(0)).captureCount("messages.dropped.count", 1L, "200");
     }
 
     @Test
@@ -382,12 +382,12 @@ public class HttpSinkTest {
         when(response.getEntity()).thenReturn(httpEntity);
         when(httpEntity.getContent()).thenReturn(new StringInputStream("{\"key\":\"value\"}"));
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.prepare(messages);
         httpSink.execute();
-        verify(instrumentation, times(0)).logInfo("Message dropped because of status code: 500");
-        verify(instrumentation, times(0)).captureCount("messages.dropped.count", 1, "201");
+        verify(firehoseInstrumentation, times(0)).logInfo("Message dropped because of status code: 500");
+        verify(firehoseInstrumentation, times(0)).captureCount("messages.dropped.count", 1L, "201");
     }
 
     @Test
@@ -405,12 +405,12 @@ public class HttpSinkTest {
         when(response.getEntity()).thenReturn(httpEntity);
         when(httpEntity.getContent()).thenReturn(new StringInputStream("{\"key\":\"value\"}"));
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.prepare(messages);
         httpSink.execute();
 
-        verify(instrumentation, times(1)).captureCount("firehose_sink_http_response_code_total", 1, "status_code=" + statusLine.getStatusCode());
+        verify(firehoseInstrumentation, times(1)).captureCount("firehose_sink_http_response_code_total", 1L, "status_code=" + statusLine.getStatusCode());
     }
 
     @Test
@@ -426,13 +426,13 @@ public class HttpSinkTest {
         when(response.getEntity()).thenReturn(httpEntity);
         when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value1\"},{\"key\":\"value2\"}]"));
         when(request.build(messages)).thenReturn(httpRequests);
-        when(instrumentation.isDebugEnabled()).thenReturn(true);
+        when(firehoseInstrumentation.isDebugEnabled()).thenReturn(true);
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.prepare(messages);
         httpSink.execute();
-        verify(instrumentation, times(1)).logDebug("Response Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]");
+        verify(firehoseInstrumentation, times(1)).logDebug("Response Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]");
     }
 
     @Test
@@ -447,12 +447,12 @@ public class HttpSinkTest {
         when(httpClient.execute(httpPut)).thenReturn(response);
         when(response.getEntity()).thenReturn(null);
         when(request.build(messages)).thenReturn(httpRequests);
-        when(instrumentation.isDebugEnabled()).thenReturn(true);
+        when(firehoseInstrumentation.isDebugEnabled()).thenReturn(true);
 
-        HttpSink httpSink = new HttpSink(instrumentation, request, httpClient, stencilClient,
+        HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.prepare(messages);
         httpSink.execute();
-        verify(instrumentation, times(0)).logDebug(any());
+        verify(firehoseInstrumentation, times(0)).logDebug(any());
     }
 }

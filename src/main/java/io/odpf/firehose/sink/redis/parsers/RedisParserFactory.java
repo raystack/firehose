@@ -1,8 +1,7 @@
 package io.odpf.firehose.sink.redis.parsers;
 
-
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.RedisSinkConfig;
-import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
 import io.odpf.stencil.Parser;
 

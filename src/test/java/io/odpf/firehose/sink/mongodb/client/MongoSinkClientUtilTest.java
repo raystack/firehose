@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.mongodb.client;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -18,7 +18,7 @@ public class MongoSinkClientUtilTest {
     public ExpectedException thrown = ExpectedException.none();
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Mock
     private MongoClient mongoClient;
@@ -83,12 +83,12 @@ public class MongoSinkClientUtilTest {
     @Test
     public void shouldThrowExceptionWhenNullDatabaseName() {
         thrown.expect(IllegalArgumentException.class);
-        MongoSinkClientUtil.checkDatabaseExists(null, mongoClient, instrumentation);
+        MongoSinkClientUtil.checkDatabaseExists(null, mongoClient, firehoseInstrumentation);
     }
 
     @Test
     public void shouldThrowExceptionWhenNullCollectionName() {
         thrown.expect(IllegalArgumentException.class);
-        MongoSinkClientUtil.checkCollectionExists(null, mongoDatabase, instrumentation);
+        MongoSinkClientUtil.checkCollectionExists(null, mongoDatabase, firehoseInstrumentation);
     }
 }

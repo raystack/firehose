@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.redis.client;
 
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.redis.dataentry.RedisDataEntry;
 import io.odpf.firehose.sink.redis.parsers.RedisParser;
 import io.odpf.firehose.sink.redis.ttl.RedisTtl;
@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class RedisClusterClient implements RedisClient {
 
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
     private RedisParser redisParser;
     private RedisTtl redisTTL;
     private JedisCluster jedisCluster;
@@ -24,13 +24,13 @@ public class RedisClusterClient implements RedisClient {
     /**
      * Instantiates a new Redis cluster client.
      *
-     * @param instrumentation the instrumentation
+     * @param firehoseInstrumentation the instrumentation
      * @param redisParser     the redis parser
      * @param redisTTL        the redis ttl
      * @param jedisCluster    the jedis cluster
      */
-    public RedisClusterClient(Instrumentation instrumentation, RedisParser redisParser, RedisTtl redisTTL, JedisCluster jedisCluster) {
-        this.instrumentation = instrumentation;
+    public RedisClusterClient(FirehoseInstrumentation firehoseInstrumentation, RedisParser redisParser, RedisTtl redisTTL, JedisCluster jedisCluster) {
+        this.firehoseInstrumentation = firehoseInstrumentation;
         this.redisParser = redisParser;
         this.redisTTL = redisTTL;
         this.jedisCluster = jedisCluster;
@@ -49,7 +49,7 @@ public class RedisClusterClient implements RedisClient {
 
     @Override
     public void close() {
-        instrumentation.logInfo("Closing Jedis client");
+        firehoseInstrumentation.logInfo("Closing Jedis client");
         jedisCluster.close();
     }
 }

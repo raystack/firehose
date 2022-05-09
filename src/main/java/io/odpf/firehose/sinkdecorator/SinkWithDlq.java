@@ -5,7 +5,7 @@ import io.odpf.firehose.message.Message;
 import io.odpf.firehose.error.ErrorHandler;
 import io.odpf.firehose.error.ErrorScope;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.metrics.Metrics;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.dlq.DlqWriter;
@@ -30,14 +30,14 @@ public class SinkWithDlq extends SinkDecorator {
     private final DlqConfig dlqConfig;
     private final ErrorHandler errorHandler;
 
-    private final Instrumentation instrumentation;
+    private final FirehoseInstrumentation firehoseInstrumentation;
 
-    public SinkWithDlq(Sink sink, DlqWriter writer, BackOffProvider backOffProvider, DlqConfig dlqConfig, ErrorHandler errorHandler, Instrumentation instrumentation) {
+    public SinkWithDlq(Sink sink, DlqWriter writer, BackOffProvider backOffProvider, DlqConfig dlqConfig, ErrorHandler errorHandler, FirehoseInstrumentation firehoseInstrumentation) {
         super(sink);
         this.writer = writer;
         this.backOffProvider = backOffProvider;
         this.errorHandler = errorHandler;
-        this.instrumentation = instrumentation;
+        this.firehoseInstrumentation = firehoseInstrumentation;
         this.dlqConfig = dlqConfig;
     }
 
@@ -78,24 +78,24 @@ public class SinkWithDlq extends SinkDecorator {
         List<Message> retryQueueMessages = new LinkedList<>(messages);
         retryQueueMessages.forEach(m -> {
             m.setDefaultErrorIfNotPresent();
-            instrumentation.captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, m.getErrorInfo().getErrorType(), 1);
+            firehoseInstrumentation.captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, m.getErrorInfo().getErrorType(), 1);
         });
         int attemptCount = 1;
         while (attemptCount <= this.dlqConfig.getDlqRetryMaxAttempts() && !retryQueueMessages.isEmpty()) {
-            instrumentation.incrementCounter(DLQ_RETRY_ATTEMPTS_TOTAL);
+            firehoseInstrumentation.incrementCounter(DLQ_RETRY_ATTEMPTS_TOTAL);
             retryQueueMessages = writer.write(retryQueueMessages);
             retryQueueMessages.forEach(message -> Optional.ofNullable(message.getErrorInfo())
                     .flatMap(errorInfo -> Optional.ofNullable(errorInfo.getException()))
-                    .ifPresent(e -> instrumentation.captureDLQErrors(message, e)));
+                    .ifPresent(e -> firehoseInstrumentation.captureDLQErrors(message, e)));
             backOff(retryQueueMessages, attemptCount);
             attemptCount++;
         }
         if (!retryQueueMessages.isEmpty()) {
-            instrumentation.logInfo("failed to be processed by DLQ messages: {}", retryQueueMessages.size());
+            firehoseInstrumentation.logInfo("failed to be processed by DLQ messages: {}", retryQueueMessages.size());
         }
-        instrumentation.captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, messages.size() - retryQueueMessages.size());
-        retryQueueMessages.forEach(m -> instrumentation.captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, m.getErrorInfo().getErrorType(), 1));
-        instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.DLQ, messages.size() - retryQueueMessages.size());
+        firehoseInstrumentation.captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, messages.size() - retryQueueMessages.size());
+        retryQueueMessages.forEach(m -> firehoseInstrumentation.captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, m.getErrorInfo().getErrorType(), 1));
+        firehoseInstrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.DLQ, messages.size() - retryQueueMessages.size());
         return retryQueueMessages;
     }
 

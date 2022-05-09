@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.blob.writer.local;
 
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,7 +35,7 @@ public class LocalFileCheckerTest {
     private LocalStorage localStorage;
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -52,7 +52,7 @@ public class LocalFileCheckerTest {
         initMocks(this);
         toBeFlushedToRemotePaths.clear();
         writerMap.clear();
-        worker = new LocalFileChecker(toBeFlushedToRemotePaths, writerMap, localStorage, instrumentation);
+        worker = new LocalFileChecker(toBeFlushedToRemotePaths, writerMap, localStorage, firehoseInstrumentation);
     }
 
     @Test
@@ -147,7 +147,7 @@ public class LocalFileCheckerTest {
         when(writer1.getMetadata()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
         when(writer1.closeAndFetchMetaData()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
         worker.run();
-        verify(instrumentation).incrementCounter(LOCAL_FILE_CLOSE_TOTAL, SUCCESS_TAG);
+        verify(firehoseInstrumentation).incrementCounter(LOCAL_FILE_CLOSE_TOTAL, SUCCESS_TAG);
     }
 
     @Test
@@ -159,7 +159,7 @@ public class LocalFileCheckerTest {
         when(writer1.closeAndFetchMetaData()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
         worker.run();
 
-        verify(instrumentation, times(1)).captureDurationSince(eq(LOCAL_FILE_CLOSING_TIME_MILLISECONDS), any(Instant.class));
+        verify(firehoseInstrumentation, times(1)).captureDurationSince(eq(LOCAL_FILE_CLOSING_TIME_MILLISECONDS), any(Instant.class));
     }
 
     @Test
@@ -171,7 +171,7 @@ public class LocalFileCheckerTest {
         when(writer1.closeAndFetchMetaData()).thenReturn(new LocalFileMetadata("/tmp", "/tmp/a/random-file-name-1", 1L, recordCount, fileSize));
         worker.run();
 
-        verify(instrumentation, times(1)).captureCount(LOCAL_FILE_SIZE_BYTES, fileSize);
+        verify(firehoseInstrumentation, times(1)).captureCount(LOCAL_FILE_SIZE_BYTES, fileSize);
     }
 
     @Test
@@ -187,7 +187,7 @@ public class LocalFileCheckerTest {
         } catch (LocalFileWriterFailedException ignored) {
         }
 
-        verify(instrumentation, times(1)).incrementCounter(LOCAL_FILE_CLOSE_TOTAL, FAILURE_TAG);
+        verify(firehoseInstrumentation, times(1)).incrementCounter(LOCAL_FILE_CLOSE_TOTAL, FAILURE_TAG);
     }
 
     @Test
@@ -211,7 +211,7 @@ public class LocalFileCheckerTest {
         verify(writer2, times(1)).closeAndFetchMetaData();
         Assert.assertEquals(2, toBeFlushedToRemotePaths.size());
         Assert.assertEquals(0, writerMap.size());
-        verify(instrumentation, times(3)).captureValue(LOCAL_FILE_OPEN_TOTAL, 2);
-        verify(instrumentation, times(3)).captureValue(LOCAL_FILE_OPEN_TOTAL, 0);
+        verify(firehoseInstrumentation, times(3)).captureValue(LOCAL_FILE_OPEN_TOTAL, 2);
+        verify(firehoseInstrumentation, times(3)).captureValue(LOCAL_FILE_OPEN_TOTAL, 0);
     }
 }

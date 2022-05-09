@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.blob.writer.local;
 import com.google.protobuf.Descriptors;
 import io.odpf.firehose.config.BlobSinkConfig;
 import io.odpf.firehose.exception.ConfigurationException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.blob.writer.local.policy.WriterPolicy;
 import lombok.AllArgsConstructor;
 
@@ -21,7 +21,7 @@ public class LocalStorage {
     private final Descriptors.Descriptor messageDescriptor;
     private final List<Descriptors.FieldDescriptor> metadataFieldDescriptor;
     private final List<WriterPolicy> policies;
-    private final Instrumentation instrumentation;
+    private final FirehoseInstrumentation firehoseInstrumentation;
 
     public LocalFileWriter createLocalFileWriter(Path partitionPath) {
         Path basePath = Paths.get(sinkConfig.getLocalDirectory());
@@ -35,7 +35,7 @@ public class LocalStorage {
         switch (sinkConfig.getLocalFileWriterType()) {
             case PARQUET:
                 try {
-                    instrumentation.logInfo("Creating Local File " + fullPath);
+                    firehoseInstrumentation.logInfo("Creating Local File " + fullPath);
                     return new LocalParquetFileWriter(
                             System.currentTimeMillis(),
                             basePath.toString(),
@@ -57,8 +57,8 @@ public class LocalStorage {
                 try {
                     Path filePath = Paths.get(pathString);
                     Path crcFilePath = filePath.getParent().resolve("." + filePath.getFileName() + ".crc");
-                    instrumentation.logInfo("Deleting Local File {}", filePath);
-                    instrumentation.logInfo("Deleting Local File {}", crcFilePath);
+                    firehoseInstrumentation.logInfo("Deleting Local File {}", filePath);
+                    firehoseInstrumentation.logInfo("Deleting Local File {}", crcFilePath);
                     deleteLocalFile(filePath, crcFilePath);
                 } catch (IOException e) {
                     throw new LocalFileWriterFailedException(e);

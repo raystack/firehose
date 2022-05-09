@@ -1,10 +1,10 @@
 package io.odpf.firehose.sink.redis.parsers;
 
 import com.google.protobuf.DynamicMessage;
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.RedisSinkConfig;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.redis.dataentry.RedisDataEntry;
 import io.odpf.firehose.sink.redis.dataentry.RedisKeyValueEntry;
 import io.odpf.stencil.Parser;
@@ -30,8 +30,8 @@ public class RedisKeyValueParser extends RedisParser {
         if (protoIndex == null) {
             throw new IllegalArgumentException("Please provide SINK_REDIS_KEY_VALUE_DATA_PROTO_INDEX in key value sink");
         }
-        Instrumentation instrumentation = new Instrumentation(statsDReporter, RedisKeyValueEntry.class);
-        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(redisKey, getDataByFieldNumber(parsedMessage, protoIndex).toString(), instrumentation);
+        FirehoseInstrumentation firehoseInstrumentation = new FirehoseInstrumentation(statsDReporter, RedisKeyValueEntry.class);
+        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(redisKey, getDataByFieldNumber(parsedMessage, protoIndex).toString(), firehoseInstrumentation);
         return Collections.singletonList(redisKeyValueEntry);
     }
 }

@@ -1,4 +1,4 @@
-package io.odpf.firehose.sink.log;
+package io.odpf.firehose.sink.common;
 
 
 import io.odpf.firehose.config.AppConfig;

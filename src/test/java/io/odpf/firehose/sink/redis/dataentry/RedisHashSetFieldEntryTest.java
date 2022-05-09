@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.redis.dataentry;
 
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.redis.ttl.DurationTtl;
 import io.odpf.firehose.sink.redis.ttl.ExactTimeTtl;
 import io.odpf.firehose.sink.redis.ttl.NoRedisTtl;
@@ -12,18 +12,16 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedisHashSetFieldEntryTest {
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Mock
     private Pipeline pipeline;
@@ -40,7 +38,7 @@ public class RedisHashSetFieldEntryTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         redisTTL = new NoRedisTtl();
-        redisHashSetFieldEntry = new RedisHashSetFieldEntry("test-key", "test-field", "test-value", instrumentation);
+        redisHashSetFieldEntry = new RedisHashSetFieldEntry("test-key", "test-field", "test-value", firehoseInstrumentation);
         inOrderPipeline = Mockito.inOrder(pipeline);
         inOrderJedis = Mockito.inOrder(jedisCluster);
     }
@@ -52,7 +50,7 @@ public class RedisHashSetFieldEntryTest {
         verify(pipeline, times(1)).hset("test-key", "test-field", "test-value");
         verify(pipeline, times(0)).expireAt(any(String.class), any(Long.class));
         verify(pipeline, times(0)).expireAt(any(String.class), any(Long.class));
-        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
+        verify(firehoseInstrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 
     @Test
@@ -62,7 +60,7 @@ public class RedisHashSetFieldEntryTest {
 
         inOrderPipeline.verify(pipeline, times(1)).hset("test-key", "test-field", "test-value");
         inOrderPipeline.verify(pipeline, times(1)).expireAt("test-key", 1000L);
-        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
+        verify(firehoseInstrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 
     @Test
@@ -72,7 +70,7 @@ public class RedisHashSetFieldEntryTest {
 
         inOrderPipeline.verify(pipeline, times(1)).hset("test-key", "test-field", "test-value");
         inOrderPipeline.verify(pipeline, times(1)).expire("test-key", 1000);
-        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
+        verify(firehoseInstrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 
     @Test
@@ -82,7 +80,7 @@ public class RedisHashSetFieldEntryTest {
         verify(jedisCluster, times(1)).hset("test-key", "test-field", "test-value");
         verify(jedisCluster, times(0)).expireAt(any(String.class), any(Long.class));
         verify(jedisCluster, times(0)).expireAt(any(String.class), any(Long.class));
-        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
+        verify(firehoseInstrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 
     @Test
@@ -92,7 +90,7 @@ public class RedisHashSetFieldEntryTest {
 
         inOrderJedis.verify(jedisCluster, times(1)).hset("test-key", "test-field", "test-value");
         inOrderJedis.verify(jedisCluster, times(1)).expireAt("test-key", 1000L);
-        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
+        verify(firehoseInstrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 
     @Test
@@ -102,6 +100,6 @@ public class RedisHashSetFieldEntryTest {
 
         inOrderJedis.verify(jedisCluster, times(1)).hset("test-key", "test-field", "test-value");
         inOrderJedis.verify(jedisCluster, times(1)).expire("test-key", 1000);
-        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
+        verify(firehoseInstrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
     }
 }

@@ -1,13 +1,13 @@
 package io.odpf.firehose.sink.prometheus;
 
 
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.common.AbstractHttpSink;
 import io.odpf.firehose.sink.prometheus.request.PromRequest;
 import com.google.protobuf.DynamicMessage;
 import cortexpb.Cortex;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.stencil.client.StencilClient;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
@@ -34,15 +34,15 @@ public class PromSink extends AbstractHttpSink {
     /**
      * Instantiates a new Prometheus sink.
      *
-     * @param instrumentation            the instrumentation
+     * @param firehoseInstrumentation            the instrumentation
      * @param request                    the request
      * @param httpClient                 the http client
      * @param stencilClient              the stencil client
      * @param retryStatusCodeRanges      the retry status code ranges
      * @param requestLogStatusCodeRanges the request log status code ranges
      */
-    public PromSink(Instrumentation instrumentation, PromRequest request, HttpClient httpClient, StencilClient stencilClient, Map<Integer, Boolean> retryStatusCodeRanges, Map<Integer, Boolean> requestLogStatusCodeRanges) {
-        super(instrumentation, "prometheus", httpClient, stencilClient, retryStatusCodeRanges, requestLogStatusCodeRanges);
+    public PromSink(FirehoseInstrumentation firehoseInstrumentation, PromRequest request, HttpClient httpClient, StencilClient stencilClient, Map<Integer, Boolean> retryStatusCodeRanges, Map<Integer, Boolean> requestLogStatusCodeRanges) {
+        super(firehoseInstrumentation, "prometheus", httpClient, stencilClient, retryStatusCodeRanges, requestLogStatusCodeRanges);
         this.request = request;
     }
 
@@ -63,8 +63,8 @@ public class PromSink extends AbstractHttpSink {
     }
 
     protected void captureMessageDropCount(HttpResponse response, List<String> contentStringList) {
-        getInstrumentation().captureCount(SINK_MESSAGES_DROP_TOTAL, contentStringList.size(), "cause= " + statusCode(response));
-        getInstrumentation().logInfo("Message dropped because of status code: " + statusCode(response));
+        getFirehoseInstrumentation().captureCount(SINK_MESSAGES_DROP_TOTAL, (long) contentStringList.size(), "cause= " + statusCode(response));
+        getFirehoseInstrumentation().logInfo("Message dropped because of status code: " + statusCode(response));
     }
 
     /**

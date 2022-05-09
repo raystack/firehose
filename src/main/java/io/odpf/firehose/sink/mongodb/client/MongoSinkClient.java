@@ -9,7 +9,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.WriteModel;
 import io.odpf.firehose.config.MongoSinkConfig;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import lombok.AllArgsConstructor;
 import org.bson.Document;
 
@@ -34,7 +34,7 @@ import static io.odpf.firehose.metrics.Metrics.*;
 public class MongoSinkClient implements Closeable {
 
     private MongoCollection<Document> mongoCollection;
-    private final Instrumentation instrumentation;
+    private final FirehoseInstrumentation firehoseInstrumentation;
     private final List<Integer> mongoRetryStatusCodeBlacklist;
     private final MongoClient mongoClient;
     private final MongoSinkConfig mongoSinkConfig;
@@ -43,12 +43,12 @@ public class MongoSinkClient implements Closeable {
      * Instantiates a new Mongo sink client.
      *
      * @param mongoSinkConfig the mongo sink config
-     * @param instrumentation the instrumentation
+     * @param firehoseInstrumentation the instrumentation
      * @since 0.1
      */
-    public MongoSinkClient(MongoSinkConfig mongoSinkConfig, Instrumentation instrumentation, MongoClient mongoClient) {
+    public MongoSinkClient(MongoSinkConfig mongoSinkConfig, FirehoseInstrumentation firehoseInstrumentation, MongoClient mongoClient) {
         this.mongoSinkConfig = mongoSinkConfig;
-        this.instrumentation = instrumentation;
+        this.firehoseInstrumentation = firehoseInstrumentation;
         this.mongoClient = mongoClient;
         mongoRetryStatusCodeBlacklist = MongoSinkClientUtil.getStatusCodesAsList(mongoSinkConfig.getSinkMongoRetryStatusCodeBlacklist());
 
@@ -62,27 +62,27 @@ public class MongoSinkClient implements Closeable {
         String databaseName = mongoSinkConfig.getSinkMongoDBName();
         String collectionName = mongoSinkConfig.getSinkMongoCollectionName();
 
-        boolean doesDBExist = MongoSinkClientUtil.checkDatabaseExists(databaseName, mongoClient, instrumentation);
+        boolean doesDBExist = MongoSinkClientUtil.checkDatabaseExists(databaseName, mongoClient, firehoseInstrumentation);
         MongoDatabase database = mongoClient.getDatabase(databaseName);
-        boolean doesCollectionExist = MongoSinkClientUtil.checkCollectionExists(collectionName, database, instrumentation);
+        boolean doesCollectionExist = MongoSinkClientUtil.checkCollectionExists(collectionName, database, firehoseInstrumentation);
         if (!doesCollectionExist) {
             try {
                 database.createCollection(collectionName);
             } catch (MongoCommandException e) {
                 if (!doesDBExist) {
-                    instrumentation.logError("Failed to create database");
+                    firehoseInstrumentation.logError("Failed to create database");
                 }
 
-                instrumentation.logError("Failed to create collection. Cause: " + e.getErrorMessage());
+                firehoseInstrumentation.logError("Failed to create collection. Cause: " + e.getErrorMessage());
                 throw e;
             }
             if (!doesDBExist) {
-                instrumentation.logInfo("Database: " + databaseName + " was successfully created");
+                firehoseInstrumentation.logInfo("Database: " + databaseName + " was successfully created");
             }
-            instrumentation.logInfo("Collection: " + collectionName + " was successfully created");
+            firehoseInstrumentation.logInfo("Collection: " + collectionName + " was successfully created");
         }
         mongoCollection = database.getCollection(collectionName);
-        instrumentation.logInfo("Successfully connected to Mongo namespace : " + mongoCollection.getNamespace().getFullName());
+        firehoseInstrumentation.logInfo("Successfully connected to Mongo namespace : " + mongoCollection.getNamespace().getFullName());
     }
 
     /**
@@ -103,7 +103,7 @@ public class MongoSinkClient implements Closeable {
             logResults(mongoCollection.bulkWrite(request), request.size());
             return Collections.emptyList();
         } catch (MongoBulkWriteException writeException) {
-            instrumentation.logWarn("Bulk request failed");
+            firehoseInstrumentation.logWarn("Bulk request failed");
             List<BulkWriteError> writeErrors = writeException.getWriteErrors();
 
             logErrors(writeErrors);
@@ -120,35 +120,35 @@ public class MongoSinkClient implements Closeable {
         int totalInsertedCount = writeResult.getInsertedCount() + writeResult.getUpserts().size();
 
         if (totalWriteCount == 0) {
-            instrumentation.logWarn("Bulk request failed");
+            firehoseInstrumentation.logWarn("Bulk request failed");
         } else if (totalWriteCount == messageCount) {
-            instrumentation.logInfo("Bulk request succeeded");
+            firehoseInstrumentation.logInfo("Bulk request succeeded");
         } else {
-            instrumentation.logWarn("Bulk request partially succeeded");
+            firehoseInstrumentation.logWarn("Bulk request partially succeeded");
         }
 
         if (totalWriteCount != messageCount) {
-            instrumentation.logWarn("Bulk request failures count: {}", failureCount);
+            firehoseInstrumentation.logWarn("Bulk request failures count: {}", failureCount);
             if (mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable()) {
 
                 for (int i = 0; i < failureCount; i++) {
-                    instrumentation.incrementCounter(SINK_MESSAGES_DROP_TOTAL, "cause=Primary Key value not found");
+                    firehoseInstrumentation.incrementCounter(SINK_MESSAGES_DROP_TOTAL, "cause=Primary Key value not found");
                 }
-                instrumentation.logWarn("Some Messages were dropped because their Primary Key values had no matches");
+                firehoseInstrumentation.logWarn("Some Messages were dropped because their Primary Key values had no matches");
             } else {
                 for (int i = 0; i < failureCount; i++) {
-                    instrumentation.incrementCounter(SINK_MESSAGES_DROP_TOTAL);
+                    firehoseInstrumentation.incrementCounter(SINK_MESSAGES_DROP_TOTAL);
                 }
             }
         }
 
         if (writeResult.wasAcknowledged()) {
-            instrumentation.logInfo("Bulk Write operation was successfully acknowledged");
+            firehoseInstrumentation.logInfo("Bulk Write operation was successfully acknowledged");
 
         } else {
-            instrumentation.logWarn("Bulk Write operation was not acknowledged");
+            firehoseInstrumentation.logWarn("Bulk Write operation was not acknowledged");
         }
-        instrumentation.logInfo(
+        firehoseInstrumentation.logInfo(
                 "Inserted Count = {}. Matched Count = {}. Deleted Count = {}. Updated Count = {}. Total Modified Count = {}",
                 totalInsertedCount,
                 writeResult.getMatchedCount(),
@@ -157,13 +157,13 @@ public class MongoSinkClient implements Closeable {
                 totalWriteCount);
 
         for (int i = 0; i < totalInsertedCount; i++) {
-            instrumentation.incrementCounter(SINK_MONGO_INSERTED_TOTAL);
+            firehoseInstrumentation.incrementCounter(SINK_MONGO_INSERTED_TOTAL);
         }
         for (int i = 0; i < writeResult.getModifiedCount(); i++) {
-            instrumentation.incrementCounter(SINK_MONGO_UPDATED_TOTAL);
+            firehoseInstrumentation.incrementCounter(SINK_MONGO_UPDATED_TOTAL);
         }
         for (int i = 0; i < totalWriteCount; i++) {
-            instrumentation.incrementCounter(SINK_MONGO_MODIFIED_TOTAL);
+            firehoseInstrumentation.incrementCounter(SINK_MONGO_MODIFIED_TOTAL);
         }
     }
 
@@ -182,12 +182,12 @@ public class MongoSinkClient implements Closeable {
         writeErrors.stream()
                 .filter(writeError -> mongoRetryStatusCodeBlacklist.contains(writeError.getCode()))
                 .forEach(writeError -> {
-                    instrumentation.logWarn("Non-retriable error due to response status: {} is under blacklisted status code", writeError.getCode());
-                    instrumentation.incrementCounter(SINK_MESSAGES_DROP_TOTAL, "cause=" + writeError.getMessage());
-                    instrumentation.logInfo("Message dropped because of status code: " + writeError.getCode());
+                    firehoseInstrumentation.logWarn("Non-retriable error due to response status: {} is under blacklisted status code", writeError.getCode());
+                    firehoseInstrumentation.incrementCounter(SINK_MESSAGES_DROP_TOTAL, "cause=" + writeError.getMessage());
+                    firehoseInstrumentation.logInfo("Message dropped because of status code: " + writeError.getCode());
                 });
 
-        instrumentation.logWarn("Bulk request failed count: {}", writeErrors.size());
+        firehoseInstrumentation.logWarn("Bulk request failed count: {}", writeErrors.size());
     }
 
     @Override

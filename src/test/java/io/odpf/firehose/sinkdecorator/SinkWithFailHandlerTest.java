@@ -1,8 +1,8 @@
 package io.odpf.firehose.sinkdecorator;
 
+import io.odpf.depot.error.ErrorInfo;
+import io.odpf.depot.error.ErrorType;
 import io.odpf.firehose.config.ErrorConfig;
-import io.odpf.firehose.error.ErrorInfo;
-import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.error.ErrorHandler;
 import io.odpf.firehose.exception.SinkException;
@@ -12,7 +12,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.HashMap;

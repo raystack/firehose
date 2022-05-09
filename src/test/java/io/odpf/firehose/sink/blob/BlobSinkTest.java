@@ -1,15 +1,15 @@
 package io.odpf.firehose.sink.blob;
 
 import com.google.protobuf.DynamicMessage;
+import io.odpf.depot.error.ErrorType;
 import io.odpf.firehose.TestMessageBQ;
 import io.odpf.firehose.consumer.kafka.OffsetManager;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.EmptyMessageException;
 import io.odpf.firehose.exception.UnknownFieldsException;
 import io.odpf.firehose.exception.SinkException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.blob.message.MessageDeSerializer;
 import io.odpf.firehose.sink.blob.message.Record;
 import io.odpf.firehose.sink.blob.writer.WriterOrchestrator;
@@ -19,7 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -40,7 +39,7 @@ public class BlobSinkTest {
     private WriterOrchestrator writerOrchestrator;
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Mock
     private MessageDeSerializer messageDeSerializer;
@@ -52,7 +51,7 @@ public class BlobSinkTest {
     @Before
     public void setUp() throws Exception {
         offsetManager = new OffsetManager();
-        blobSink = new BlobSink(instrumentation, "objectstorage", offsetManager, writerOrchestrator, messageDeSerializer);
+        blobSink = new BlobSink(firehoseInstrumentation, "objectstorage", offsetManager, writerOrchestrator, messageDeSerializer);
     }
 
     @Test
@@ -113,7 +112,7 @@ public class BlobSinkTest {
 
     @Test
     public void shouldReturnMessageThatCausedDeserializerException() throws Exception {
-        blobSink = new BlobSink(instrumentation, "objectstorage", new OffsetManager(), writerOrchestrator, messageDeSerializer);
+        blobSink = new BlobSink(firehoseInstrumentation, "objectstorage", new OffsetManager(), writerOrchestrator, messageDeSerializer);
 
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 1, 1);
         Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 1, 2);
@@ -170,7 +169,7 @@ public class BlobSinkTest {
 
     @Test
     public void shouldReturnMessagesWhenMessagesHasErrorCausedByEmptyMessageException() {
-        blobSink = new BlobSink(instrumentation, "objectstorage", new OffsetManager(), writerOrchestrator, messageDeSerializer);
+        blobSink = new BlobSink(firehoseInstrumentation, "objectstorage", new OffsetManager(), writerOrchestrator, messageDeSerializer);
 
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 2, 1);
         Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 2, 2);
@@ -186,7 +185,7 @@ public class BlobSinkTest {
 
     @Test
     public void shouldReturnMessagesWhenMessagesHasErrorCausedByUnknownFields() {
-        blobSink = new BlobSink(instrumentation, "objectstorage", new OffsetManager(), writerOrchestrator, messageDeSerializer);
+        blobSink = new BlobSink(firehoseInstrumentation, "objectstorage", new OffsetManager(), writerOrchestrator, messageDeSerializer);
 
         Message message1 = new Message("".getBytes(), "".getBytes(), "booking", 2, 1);
         Message message2 = new Message("".getBytes(), "".getBytes(), "booking", 2, 2);

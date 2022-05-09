@@ -15,7 +15,7 @@ import io.odpf.firehose.message.Message;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.stencil.client.StencilClient;
 import io.odpf.stencil.Parser;
 
@@ -32,7 +32,7 @@ import static io.odpf.firehose.config.enums.FilterDataSourceType.KEY;
 public class JsonFilter implements Filter {
 
     private final FilterConfig filterConfig;
-    private final Instrumentation instrumentation;
+    private final FirehoseInstrumentation firehoseInstrumentation;
     private final JsonSchema schema;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private JsonFormat.Printer jsonPrinter;
@@ -42,10 +42,10 @@ public class JsonFilter implements Filter {
      * Instantiates a new Json filter.
      *
      * @param filterConfig    the consumer config
-     * @param instrumentation the instrumentation
+     * @param firehoseInstrumentation the instrumentation
      */
-    public JsonFilter(StencilClient stencilClient, FilterConfig filterConfig, Instrumentation instrumentation) {
-        this.instrumentation = instrumentation;
+    public JsonFilter(StencilClient stencilClient, FilterConfig filterConfig, FirehoseInstrumentation firehoseInstrumentation) {
+        this.firehoseInstrumentation = firehoseInstrumentation;
         this.filterConfig = filterConfig;
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
         this.schema = schemaFactory.getSchema(filterConfig.getFilterJsonSchema());
@@ -80,12 +80,12 @@ public class JsonFilter implements Filter {
     private boolean evaluate(String jsonMessage) throws FilterException {
         try {
             JsonNode message = objectMapper.readTree(jsonMessage);
-            if (instrumentation.isDebugEnabled()) {
-                instrumentation.logDebug("Json Message: \n {}", message.toPrettyString());
+            if (firehoseInstrumentation.isDebugEnabled()) {
+                firehoseInstrumentation.logDebug("Json Message: \n {}", message.toPrettyString());
             }
             Set<ValidationMessage> validationErrors = schema.validate(message);
             validationErrors.forEach(error -> {
-                instrumentation.logDebug("Message filtered out due to: {}", error.getMessage());
+                firehoseInstrumentation.logDebug("Message filtered out due to: {}", error.getMessage());
             });
             return validationErrors.isEmpty();
         } catch (JsonProcessingException e) {

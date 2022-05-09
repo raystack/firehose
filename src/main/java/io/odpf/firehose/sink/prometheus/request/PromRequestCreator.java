@@ -1,9 +1,9 @@
 package io.odpf.firehose.sink.prometheus.request;
 
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.PromSinkConfig;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.prometheus.builder.HeaderBuilder;
 import io.odpf.firehose.sink.prometheus.builder.RequestEntityBuilder;
 import io.odpf.firehose.sink.prometheus.builder.TimeSeriesBuilder;
@@ -22,9 +22,9 @@ public class PromRequestCreator {
     /**
      * Instantiates a new Prometheus request creator.
      *
-     * @param statsDReporter        the statsd reporter
-     * @param promSinkConfig  the configuration for prometheus sink
-     * @param protoParser           the proto parser
+     * @param statsDReporter the statsd reporter
+     * @param promSinkConfig the configuration for prometheus sink
+     * @param protoParser    the proto parser
      */
     public PromRequestCreator(StatsDReporter statsDReporter, PromSinkConfig promSinkConfig, Parser protoParser) {
         this.statsDReporter = statsDReporter;
@@ -43,7 +43,7 @@ public class PromRequestCreator {
         String baseUrl = promSinkConfig.getSinkPromServiceUrl();
         RequestEntityBuilder requestEntityBuilder = new RequestEntityBuilder();
 
-        return new PromRequest(new Instrumentation(statsDReporter, PromRequest.class),
+        return new PromRequest(new FirehoseInstrumentation(statsDReporter, PromRequest.class),
                 headerBuilder, baseUrl, requestEntityBuilder, body);
     }
 
