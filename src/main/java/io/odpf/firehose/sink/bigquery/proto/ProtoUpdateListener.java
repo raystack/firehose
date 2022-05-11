@@ -19,15 +19,15 @@ import io.odpf.stencil.Parser;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jetty.util.ConcurrentHashSet;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -70,11 +70,11 @@ public class ProtoUpdateListener implements io.odpf.stencil.SchemaUpdateListener
                 .filter(distinctByFullName(t -> t.getValue().getFullName()))
                 .collect(Collectors.toMap(
                         (mapEntry) -> String.format(".%s", mapEntry.getValue().getFullName()),
-                        (mapEntry) -> mapEntry.getKey()));
+                        Map.Entry::getKey));
     }
 
     private <T> Predicate<T> distinctByFullName(Function<? super T, Object> keyExtractor) {
-        Set<Object> objects = new ConcurrentHashSet<>();
+        Set<Object> objects = new HashSet<>();
         return t -> objects.add(keyExtractor.apply(t));
     }
 
