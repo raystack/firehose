@@ -21,5 +21,3 @@ jobs:
         run: chmod +x gradlew
       - name: Build
         run: ./gradlew build
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
