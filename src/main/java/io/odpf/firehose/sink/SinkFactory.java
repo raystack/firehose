@@ -4,7 +4,7 @@ import io.odpf.depot.bigquery.BigQuerySink;
 import io.odpf.depot.bigquery.BigQuerySinkFactory;
 import io.odpf.depot.log.LogSink;
 import io.odpf.depot.log.LogSinkFactory;
-import io.odpf.depot.message.InputSchemaMessageMode;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.config.enums.SinkType;
@@ -50,9 +50,11 @@ public class SinkFactory {
     private Map<String, String> addAdditionalConfigs(Map<String, String> env) {
         Map<String, String> finalConfig = new HashMap<>(env);
         finalConfig.put("SINK_CONNECTOR_SCHEMA_MESSAGE_CLASS", env.getOrDefault("INPUT_SCHEMA_PROTO_CLASS", ""));
+        finalConfig.put("SINK_CONNECTOR_SCHEMA_KEY_CLASS", env.getOrDefault("INPUT_SCHEMA_PROTO_CLASS", ""));
         finalConfig.put("SINK_METRICS_APPLICATION_PREFIX", "firehose_");
+        finalConfig.put("SINK_CONNECTOR_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE", env.getOrDefault("INPUT_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE", "false"));
         finalConfig.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE",
-                env.getOrDefault("KAFKA_RECORD_PARSER_MODE", "").equals("key") ? InputSchemaMessageMode.LOG_KEY.name() : InputSchemaMessageMode.LOG_MESSAGE.name());
+                env.getOrDefault("KAFKA_RECORD_PARSER_MODE", "").equals("key") ? SinkConnectorSchemaMessageMode.LOG_KEY.name() : SinkConnectorSchemaMessageMode.LOG_MESSAGE.name());
         return finalConfig;
     }
 
