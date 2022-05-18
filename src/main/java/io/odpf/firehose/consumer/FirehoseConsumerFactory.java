@@ -1,9 +1,11 @@
 package io.odpf.firehose.consumer;
 
 import io.jaegertracing.Configuration;
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.consumer.kafka.ConsumerAndOffsetManager;
 import io.odpf.firehose.consumer.kafka.FirehoseKafkaConsumer;
 import io.odpf.firehose.consumer.kafka.OffsetManager;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.SinkFactory;
 import io.odpf.firehose.utils.KafkaUtils;
 import io.odpf.firehose.config.AppConfig;
@@ -19,10 +21,8 @@ import io.odpf.firehose.filter.NoOpFilter;
 import io.odpf.firehose.filter.jexl.JexlFilter;
 import io.odpf.firehose.filter.json.JsonFilter;
 import io.odpf.firehose.filter.json.JsonFilterUtil;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
-import io.odpf.firehose.sink.log.KeyOrMessageParser;
+import io.odpf.firehose.sink.common.KeyOrMessageParser;
 import io.odpf.firehose.sinkdecorator.BackOff;
 import io.odpf.firehose.sinkdecorator.BackOffProvider;
 import io.odpf.firehose.error.ErrorHandler;
@@ -58,7 +58,7 @@ public class FirehoseConsumerFactory {
     private final Map<String, String> config = System.getenv();
     private final StatsDReporter statsDReporter;
     private final StencilClient stencilClient;
-    private final Instrumentation instrumentation;
+    private final FirehoseInstrumentation firehoseInstrumentation;
     private final KeyOrMessageParser parser;
     private final OffsetManager offsetManager = new OffsetManager();
 
@@ -71,14 +71,14 @@ public class FirehoseConsumerFactory {
     public FirehoseConsumerFactory(KafkaConsumerConfig kafkaConsumerConfig, StatsDReporter statsDReporter) {
         this.kafkaConsumerConfig = kafkaConsumerConfig;
         this.statsDReporter = statsDReporter;
-        instrumentation = new Instrumentation(this.statsDReporter, FirehoseConsumerFactory.class);
+        firehoseInstrumentation = new FirehoseInstrumentation(this.statsDReporter, FirehoseConsumerFactory.class);
 
         String additionalConsumerConfig = String.format(""
                         + "\n\tEnable Async Commit: %s"
                         + "\n\tCommit Only Current Partition: %s",
                 this.kafkaConsumerConfig.isSourceKafkaAsyncCommitEnable(),
                 this.kafkaConsumerConfig.isSourceKafkaCommitOnlyCurrentPartitionsEnable());
-        instrumentation.logDebug(additionalConsumerConfig);
+        firehoseInstrumentation.logDebug(additionalConsumerConfig);
 
         String stencilUrl = this.kafkaConsumerConfig.getSchemaRegistryStencilUrls();
         stencilClient = this.kafkaConsumerConfig.isSchemaRegistryStencilEnable()
@@ -88,25 +88,25 @@ public class FirehoseConsumerFactory {
     }
 
     private FirehoseFilter buildFilter(FilterConfig filterConfig) {
-        instrumentation.logInfo("Filter Engine: {}", filterConfig.getFilterEngine());
+        firehoseInstrumentation.logInfo("Filter Engine: {}", filterConfig.getFilterEngine());
         Filter filter;
         switch (filterConfig.getFilterEngine()) {
             case JSON:
-                Instrumentation jsonFilterUtilInstrumentation = new Instrumentation(statsDReporter, JsonFilterUtil.class);
-                JsonFilterUtil.logConfigs(filterConfig, jsonFilterUtilInstrumentation);
-                JsonFilterUtil.validateConfigs(filterConfig, jsonFilterUtilInstrumentation);
-                filter = new JsonFilter(stencilClient, filterConfig, new Instrumentation(statsDReporter, JsonFilter.class));
+                FirehoseInstrumentation jsonFilterUtilFirehoseInstrumentation = new FirehoseInstrumentation(statsDReporter, JsonFilterUtil.class);
+                JsonFilterUtil.logConfigs(filterConfig, jsonFilterUtilFirehoseInstrumentation);
+                JsonFilterUtil.validateConfigs(filterConfig, jsonFilterUtilFirehoseInstrumentation);
+                filter = new JsonFilter(stencilClient, filterConfig, new FirehoseInstrumentation(statsDReporter, JsonFilter.class));
                 break;
             case JEXL:
-                filter = new JexlFilter(filterConfig, new Instrumentation(statsDReporter, JexlFilter.class));
+                filter = new JexlFilter(filterConfig, new FirehoseInstrumentation(statsDReporter, JexlFilter.class));
                 break;
             case NO_OP:
-                filter = new NoOpFilter(new Instrumentation(statsDReporter, NoOpFilter.class));
+                filter = new NoOpFilter(new FirehoseInstrumentation(statsDReporter, NoOpFilter.class));
                 break;
             default:
                 throw new IllegalArgumentException("Invalid filter engine type");
         }
-        return new FirehoseFilter(filter, new Instrumentation(statsDReporter, FirehoseFilter.class));
+        return new FirehoseFilter(filter, new FirehoseInstrumentation(statsDReporter, FirehoseFilter.class));
     }
 
     /**
@@ -128,13 +128,13 @@ public class FirehoseConsumerFactory {
         sinkFactory.init();
         if (kafkaConsumerConfig.getSourceKafkaConsumerMode().equals(KafkaConsumerMode.SYNC)) {
             Sink sink = createSink(tracer, sinkFactory);
-            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), offsetManager, firehoseKafkaConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
+            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), offsetManager, firehoseKafkaConsumer, kafkaConsumerConfig, new FirehoseInstrumentation(statsDReporter, ConsumerAndOffsetManager.class));
             return new FirehoseSyncConsumer(
                     sink,
                     firehoseTracer,
                     consumerAndOffsetManager,
                     firehoseFilter,
-                    new Instrumentation(statsDReporter, FirehoseSyncConsumer.class));
+                    new FirehoseInstrumentation(statsDReporter, FirehoseSyncConsumer.class));
         } else {
             SinkPoolConfig sinkPoolConfig = ConfigFactory.create(SinkPoolConfig.class, config);
             int nThreads = sinkPoolConfig.getSinkPoolNumThreads();
@@ -142,7 +142,7 @@ public class FirehoseConsumerFactory {
             for (int ii = 0; ii < nThreads; ii++) {
                 sinks.add(createSink(tracer, sinkFactory));
             }
-            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, offsetManager, firehoseKafkaConsumer, kafkaConsumerConfig, new Instrumentation(statsDReporter, ConsumerAndOffsetManager.class));
+            ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, offsetManager, firehoseKafkaConsumer, kafkaConsumerConfig, new FirehoseInstrumentation(statsDReporter, ConsumerAndOffsetManager.class));
             SinkPool sinkPool = new SinkPool(
                     new LinkedBlockingQueue<>(sinks),
                     Executors.newCachedThreadPool(),
@@ -152,7 +152,7 @@ public class FirehoseConsumerFactory {
                     firehoseTracer,
                     consumerAndOffsetManager,
                     firehoseFilter,
-                    new Instrumentation(statsDReporter, FirehoseAsyncConsumer.class));
+                    new FirehoseInstrumentation(statsDReporter, FirehoseAsyncConsumer.class));
         }
     }
 
@@ -162,7 +162,7 @@ public class FirehoseConsumerFactory {
         Sink sinkWithFailHandler = new SinkWithFailHandler(baseSink, errorHandler);
         Sink sinkWithRetry = withRetry(sinkWithFailHandler, errorHandler);
         Sink sinWithDLQ = withDlq(sinkWithRetry, tracer, errorHandler);
-        return new SinkFinal(sinWithDLQ, new Instrumentation(statsDReporter, SinkFinal.class));
+        return new SinkFinal(sinWithDLQ, new FirehoseInstrumentation(statsDReporter, SinkFinal.class));
     }
 
     public Sink withDlq(Sink sink, Tracer tracer, ErrorHandler errorHandler) {
@@ -178,7 +178,7 @@ public class FirehoseConsumerFactory {
                 backOffProvider,
                 dlqConfig,
                 errorHandler,
-                new Instrumentation(statsDReporter, SinkWithDlq.class));
+                new FirehoseInstrumentation(statsDReporter, SinkWithDlq.class));
     }
 
     /**
@@ -191,7 +191,7 @@ public class FirehoseConsumerFactory {
     private Sink withRetry(Sink sink, ErrorHandler errorHandler) {
         AppConfig appConfig = ConfigFactory.create(AppConfig.class, config);
         BackOffProvider backOffProvider = getBackOffProvider();
-        return new SinkWithRetry(sink, backOffProvider, new Instrumentation(statsDReporter, SinkWithRetry.class), appConfig, parser, errorHandler);
+        return new SinkWithRetry(sink, backOffProvider, new FirehoseInstrumentation(statsDReporter, SinkWithRetry.class), appConfig, parser, errorHandler);
     }
 
     private BackOffProvider getBackOffProvider() {
@@ -200,7 +200,7 @@ public class FirehoseConsumerFactory {
                 appConfig.getRetryExponentialBackoffInitialMs(),
                 appConfig.getRetryExponentialBackoffRate(),
                 appConfig.getRetryExponentialBackoffMaxMs(),
-                new Instrumentation(statsDReporter, ExponentialBackOffProvider.class),
-                new BackOff(new Instrumentation(statsDReporter, BackOff.class)));
+                new FirehoseInstrumentation(statsDReporter, ExponentialBackOffProvider.class),
+                new BackOff(new FirehoseInstrumentation(statsDReporter, BackOff.class)));
     }
 }

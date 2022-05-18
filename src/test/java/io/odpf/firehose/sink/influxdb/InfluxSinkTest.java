@@ -9,7 +9,7 @@ import io.odpf.firehose.consumer.TestBookingLogMessage;
 import io.odpf.firehose.consumer.TestFeedbackLogKey;
 import io.odpf.firehose.consumer.TestFeedbackLogMessage;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.Sink;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Timestamp;
@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -67,7 +67,7 @@ public class InfluxSinkTest {
     private Parser protoParser;
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Mock
     private StencilClient mockStencilClient;
@@ -101,7 +101,7 @@ public class InfluxSinkTest {
 
         DynamicMessage dynamicMessage = DynamicMessage.newBuilder(TestBookingLogMessage.getDescriptor()).build();
         when(protoParser.parse(any())).thenReturn(dynamicMessage);
-        InfluxSinkStub influx = new InfluxSinkStub(instrumentation, "influx", config, protoParser, client, stencilClient);
+        InfluxSinkStub influx = new InfluxSinkStub(firehoseInstrumentation, "influx", config, protoParser, client, stencilClient);
 
         influx.prepare(messages);
         verify(protoParser, times(1)).parse(message.getLogMessage());
@@ -114,7 +114,7 @@ public class InfluxSinkTest {
         setupTagNameIndexMappingProperties();
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
 
-        sink = new InfluxSink(instrumentation, "influx", config, stencilClient.getParser(config.getInputSchemaProtoClass()), client, stencilClient);
+        sink = new InfluxSink(firehoseInstrumentation, "influx", config, stencilClient.getParser(config.getInputSchemaProtoClass()), client, stencilClient);
 
         ArgumentCaptor<BatchPoints> batchPointsArgumentCaptor = ArgumentCaptor.forClass(BatchPoints.class);
 
@@ -130,7 +130,7 @@ public class InfluxSinkTest {
         props.setProperty("SINK_INFLUX_FIELD_NAME_PROTO_INDEX_MAPPING", emptyFieldNameIndex);
         props.setProperty("SINK_INFLUX_TAG_NAME_PROTO_INDEX_MAPPING", emptyTagNameIndexMapping);
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
-        sink = new InfluxSink(instrumentation, "influx", config, stencilClient.getParser(config.getInputSchemaProtoClass()), client, stencilClient);
+        sink = new InfluxSink(firehoseInstrumentation, "influx", config, stencilClient.getParser(config.getInputSchemaProtoClass()), client, stencilClient);
 
         try {
             sink.pushMessage(messages);
@@ -145,13 +145,13 @@ public class InfluxSinkTest {
         setupFieldNameIndexMappingProperties();
         props.setProperty("SINK_INFLUX_TAG_NAME_PROTO_INDEX_MAPPING", emptyTagNameIndexMapping);
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
-        sink = new InfluxSink(instrumentation, "influx", config, stencilClient.getParser(config.getInputSchemaProtoClass()), client, stencilClient);
+        sink = new InfluxSink(firehoseInstrumentation, "influx", config, stencilClient.getParser(config.getInputSchemaProtoClass()), client, stencilClient);
         ArgumentCaptor<BatchPoints> batchPointsArgumentCaptor = ArgumentCaptor.forClass(BatchPoints.class);
 
         sink.pushMessage(messages);
-        verify(instrumentation, times(1)).capturePreExecutionLatencies(messages);
-        verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).logInfo("Preparing {} messages", messages.size());
+        verify(firehoseInstrumentation, times(1)).capturePreExecutionLatencies(messages);
+        verify(firehoseInstrumentation, times(1)).startExecution();
+        verify(firehoseInstrumentation, times(1)).logInfo("Preparing {} messages", messages.size());
         verify(client, times(1)).write(batchPointsArgumentCaptor.capture());
         List<BatchPoints> batchPointsList = batchPointsArgumentCaptor.getAllValues();
 
@@ -162,7 +162,7 @@ public class InfluxSinkTest {
     public void shouldCloseStencilClient() throws IOException {
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
 
-        sink = new InfluxSink(instrumentation, "influx", config, mockStencilClient.getParser(config.getInputSchemaProtoClass()), client, mockStencilClient);
+        sink = new InfluxSink(firehoseInstrumentation, "influx", config, mockStencilClient.getParser(config.getInputSchemaProtoClass()), client, mockStencilClient);
         sink.close();
 
         verify(mockStencilClient, times(1)).close();
@@ -172,10 +172,10 @@ public class InfluxSinkTest {
     public void shouldLogWhenClosingConnection() throws IOException {
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
 
-        sink = new InfluxSink(instrumentation, "influx", config, mockStencilClient.getParser(config.getInputSchemaProtoClass()), client, mockStencilClient);
+        sink = new InfluxSink(firehoseInstrumentation, "influx", config, mockStencilClient.getParser(config.getInputSchemaProtoClass()), client, mockStencilClient);
         sink.close();
 
-        verify(instrumentation, times(1)).logInfo("InfluxDB connection closing");
+        verify(firehoseInstrumentation, times(1)).logInfo("InfluxDB connection closing");
     }
 
     @Test
@@ -184,16 +184,16 @@ public class InfluxSinkTest {
         setupTagNameIndexMappingProperties();
         config = ConfigFactory.create(InfluxSinkConfig.class, props);
 
-        sink = new InfluxSink(instrumentation, "influx", config, stencilClient.getParser(config.getInputSchemaProtoClass()), client, stencilClient);
+        sink = new InfluxSink(firehoseInstrumentation, "influx", config, stencilClient.getParser(config.getInputSchemaProtoClass()), client, stencilClient);
         ArgumentCaptor<BatchPoints> batchPointsArgumentCaptor = ArgumentCaptor.forClass(BatchPoints.class);
 
         sink.pushMessage(messages);
         verify(client, times(1)).write(batchPointsArgumentCaptor.capture());
         List<BatchPoints> batchPointsList = batchPointsArgumentCaptor.getAllValues();
 
-        verify(instrumentation, times(1)).logInfo("Preparing {} messages", messages.size());
-        verify(instrumentation, times(1)).logDebug("Data point: {}", batchPointsList.get(0).getPoints().get(0).toString());
-        verify(instrumentation, times(1)).logDebug("Batch points: {}", batchPointsList.get(0).toString());
+        verify(firehoseInstrumentation, times(1)).logInfo("Preparing {} messages", messages.size());
+        verify(firehoseInstrumentation, times(1)).logDebug("Data point: {}", batchPointsList.get(0).getPoints().get(0).toString());
+        verify(firehoseInstrumentation, times(1)).logDebug("Batch points: {}", batchPointsList.get(0).toString());
     }
 
     private void setupFieldNameIndexMappingProperties() {
@@ -205,8 +205,8 @@ public class InfluxSinkTest {
     }
 
     public class InfluxSinkStub extends InfluxSink {
-        public InfluxSinkStub(Instrumentation instrumentation, String sinkType, InfluxSinkConfig config, Parser protoParser, InfluxDB client, StencilClient stencilClient) {
-            super(instrumentation, sinkType, config, protoParser, client, stencilClient);
+        public InfluxSinkStub(FirehoseInstrumentation firehoseInstrumentation, String sinkType, InfluxSinkConfig config, Parser protoParser, InfluxDB client, StencilClient stencilClient) {
+            super(firehoseInstrumentation, sinkType, config, protoParser, client, stencilClient);
         }
 
         public void prepare(List<Message> messageList) throws IOException {

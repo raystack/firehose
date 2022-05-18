@@ -1,12 +1,12 @@
 package io.odpf.firehose.sinkdecorator;
 
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static java.lang.Math.toIntExact;
 import static org.mockito.Mockito.times;
@@ -16,7 +16,7 @@ import static org.mockito.Mockito.verify;
 public class ExponentialBackOffProviderTest {
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Mock
     private BackOff backOff;
@@ -32,7 +32,7 @@ public class ExponentialBackOffProviderTest {
     @Before
     public void setup() {
         exponentialBackOffProvider = new ExponentialBackOffProvider(initialExpiryTimeInMS, backOffRate,
-                maximumBackoffTimeInMS, instrumentation, backOff);
+                maximumBackoffTimeInMS, firehoseInstrumentation, backOff);
     }
 
     @Test
@@ -40,8 +40,8 @@ public class ExponentialBackOffProviderTest {
         exponentialBackOffProvider.backOff(100000000);
         verify(backOff).inMilliSeconds(maximumBackoffTimeInMS);
 
-        verify(instrumentation, times(1)).logWarn("backing off for {} milliseconds ", (long) maximumBackoffTimeInMS);
-        verify(instrumentation, times(1)).captureSleepTime("firehose_retry_backoff_sleep_milliseconds", toIntExact(maximumBackoffTimeInMS));
+        verify(firehoseInstrumentation, times(1)).logWarn("backing off for {} milliseconds ", (long) maximumBackoffTimeInMS);
+        verify(firehoseInstrumentation, times(1)).captureSleepTime("firehose_retry_backoff_sleep_milliseconds", toIntExact(maximumBackoffTimeInMS));
     }
 
     @Test
@@ -50,15 +50,15 @@ public class ExponentialBackOffProviderTest {
         long sleepTime1 = 20;
         verify(backOff).inMilliSeconds(sleepTime1);
 
-        verify(instrumentation, times(1)).logWarn("backing off for {} milliseconds ", sleepTime1);
-        verify(instrumentation, times(1)).captureSleepTime("firehose_retry_backoff_sleep_milliseconds", toIntExact(sleepTime1));
+        verify(firehoseInstrumentation, times(1)).logWarn("backing off for {} milliseconds ", sleepTime1);
+        verify(firehoseInstrumentation, times(1)).captureSleepTime("firehose_retry_backoff_sleep_milliseconds", toIntExact(sleepTime1));
 
         exponentialBackOffProvider.backOff(4);
         long sleepTime2 = 160;
         verify(backOff).inMilliSeconds(sleepTime2);
 
-        verify(instrumentation, times(1)).logWarn("backing off for {} milliseconds ", sleepTime2);
-        verify(instrumentation, times(1)).captureSleepTime("firehose_retry_backoff_sleep_milliseconds", toIntExact(sleepTime2));
+        verify(firehoseInstrumentation, times(1)).logWarn("backing off for {} milliseconds ", sleepTime2);
+        verify(firehoseInstrumentation, times(1)).captureSleepTime("firehose_retry_backoff_sleep_milliseconds", toIntExact(sleepTime2));
     }
 
     @Test
@@ -72,7 +72,7 @@ public class ExponentialBackOffProviderTest {
     public void shouldRecordStatsForBackOffTime() {
         exponentialBackOffProvider.backOff(0);
 
-        verify(instrumentation, times(1)).logWarn("backing off for {} milliseconds ", (long) initialExpiryTimeInMS);
-        verify(instrumentation).captureSleepTime("firehose_retry_backoff_sleep_milliseconds", initialExpiryTimeInMS);
+        verify(firehoseInstrumentation, times(1)).logWarn("backing off for {} milliseconds ", (long) initialExpiryTimeInMS);
+        verify(firehoseInstrumentation).captureSleepTime("firehose_retry_backoff_sleep_milliseconds", initialExpiryTimeInMS);
     }
 }

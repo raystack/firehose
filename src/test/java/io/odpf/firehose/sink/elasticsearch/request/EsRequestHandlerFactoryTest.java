@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.elasticsearch.request;
 
 import io.odpf.firehose.config.EsSinkConfig;
 import io.odpf.firehose.config.enums.EsSinkMessageType;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.serializer.MessageToJson;
 import io.odpf.firehose.config.enums.EsSinkRequestType;
 import org.junit.Before;
@@ -19,7 +19,7 @@ public class EsRequestHandlerFactoryTest {
     private EsSinkConfig esSinkConfig;
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     private MessageToJson jsonSerializer;
 
@@ -31,22 +31,22 @@ public class EsRequestHandlerFactoryTest {
     @Test
     public void shouldReturnInsertRequestHandler() {
         when(esSinkConfig.isSinkEsModeUpdateOnlyEnable()).thenReturn(false);
-        EsRequestHandlerFactory esRequestHandlerFactory = new EsRequestHandlerFactory(esSinkConfig, instrumentation, "id",
+        EsRequestHandlerFactory esRequestHandlerFactory = new EsRequestHandlerFactory(esSinkConfig, firehoseInstrumentation, "id",
                 EsSinkMessageType.JSON, jsonSerializer, "customer_id", "booking", "order_number");
         EsRequestHandler requestHandler = esRequestHandlerFactory.getRequestHandler();
 
-        verify(instrumentation, times(1)).logInfo("ES request mode: {}", EsSinkRequestType.INSERT_OR_UPDATE);
+        verify(firehoseInstrumentation, times(1)).logInfo("ES request mode: {}", EsSinkRequestType.INSERT_OR_UPDATE);
         assertEquals(EsUpsertRequestHandler.class, requestHandler.getClass());
     }
 
     @Test
     public void shouldReturnUpdateRequestHandler() {
         when(esSinkConfig.isSinkEsModeUpdateOnlyEnable()).thenReturn(true);
-        EsRequestHandlerFactory esRequestHandlerFactory = new EsRequestHandlerFactory(esSinkConfig, instrumentation, "id",
+        EsRequestHandlerFactory esRequestHandlerFactory = new EsRequestHandlerFactory(esSinkConfig, firehoseInstrumentation, "id",
                 EsSinkMessageType.JSON, jsonSerializer, "customer_id", "booking", "order_number");
         EsRequestHandler requestHandler = esRequestHandlerFactory.getRequestHandler();
 
-        verify(instrumentation, times(1)).logInfo("ES request mode: {}", EsSinkRequestType.UPDATE_ONLY);
+        verify(firehoseInstrumentation, times(1)).logInfo("ES request mode: {}", EsSinkRequestType.UPDATE_ONLY);
         assertEquals(EsUpdateRequestHandler.class, requestHandler.getClass());
     }
 }

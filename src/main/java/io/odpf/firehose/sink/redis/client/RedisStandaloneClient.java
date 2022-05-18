@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.redis.client;
 
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.redis.dataentry.RedisDataEntry;
 import io.odpf.firehose.sink.redis.exception.NoResponseException;
 import io.odpf.firehose.sink.redis.parsers.RedisParser;
@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class RedisStandaloneClient implements RedisClient {
 
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
     private RedisParser redisParser;
     private RedisTtl redisTTL;
     private Jedis jedis;
@@ -27,13 +27,13 @@ public class RedisStandaloneClient implements RedisClient {
     /**
      * Instantiates a new Redis standalone client.
      *
-     * @param instrumentation the instrumentation
+     * @param firehoseInstrumentation the instrumentation
      * @param redisParser     the redis parser
      * @param redisTTL        the redis ttl
      * @param jedis           the jedis
      */
-    public RedisStandaloneClient(Instrumentation instrumentation, RedisParser redisParser, RedisTtl redisTTL, Jedis jedis) {
-        this.instrumentation = instrumentation;
+    public RedisStandaloneClient(FirehoseInstrumentation firehoseInstrumentation, RedisParser redisParser, RedisTtl redisTTL, Jedis jedis) {
+        this.firehoseInstrumentation = firehoseInstrumentation;
         this.redisParser = redisParser;
         this.redisTTL = redisTTL;
         this.jedis = jedis;
@@ -51,7 +51,7 @@ public class RedisStandaloneClient implements RedisClient {
     @Override
     public List<Message> execute() {
         Response<List<Object>> responses = jedisPipelined.exec();
-        instrumentation.logDebug("jedis responses: {}", responses);
+        firehoseInstrumentation.logDebug("jedis responses: {}", responses);
         jedisPipelined.sync();
         if (responses.get() == null || responses.get().isEmpty()) {
             throw new NoResponseException();
@@ -61,7 +61,7 @@ public class RedisStandaloneClient implements RedisClient {
 
     @Override
     public void close() {
-        instrumentation.logInfo("Closing Jedis client");
+        firehoseInstrumentation.logInfo("Closing Jedis client");
         jedis.close();
     }
 }

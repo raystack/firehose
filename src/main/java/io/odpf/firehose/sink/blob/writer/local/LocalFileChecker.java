@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.blob.writer.local;
 
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -17,22 +17,22 @@ public class LocalFileChecker implements Runnable {
     private final Queue<LocalFileMetadata> toBeFlushedToRemotePaths;
     private final Map<Path, LocalFileWriter> timePartitionWriterMap;
     private final LocalStorage localStorage;
-    private final Instrumentation instrumentation;
+    private final FirehoseInstrumentation firehoseInstrumentation;
 
 
     public LocalFileChecker(Queue<LocalFileMetadata> toBeFlushedToRemotePaths,
                             Map<Path, LocalFileWriter> timePartitionWriterMap,
                             LocalStorage localStorage,
-                            Instrumentation instrumentation) {
+                            FirehoseInstrumentation firehoseInstrumentation) {
         this.toBeFlushedToRemotePaths = toBeFlushedToRemotePaths;
         this.timePartitionWriterMap = timePartitionWriterMap;
         this.localStorage = localStorage;
-        this.instrumentation = instrumentation;
+        this.firehoseInstrumentation = firehoseInstrumentation;
     }
 
     @Override
     public void run() {
-        instrumentation.captureValue(LOCAL_FILE_OPEN_TOTAL, timePartitionWriterMap.size());
+        firehoseInstrumentation.captureValue(LOCAL_FILE_OPEN_TOTAL, timePartitionWriterMap.size());
         Map<Path, LocalFileWriter> toBeRotated =
                 timePartitionWriterMap.entrySet().stream().filter(kv -> localStorage.shouldRotate(kv.getValue()))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -41,7 +41,7 @@ public class LocalFileChecker implements Runnable {
             try {
                 Instant startTime = Instant.now();
                 LocalFileMetadata metadata = writer.closeAndFetchMetaData();
-                instrumentation.logInfo("Closing Local File {} ", metadata.getFullPath());
+                firehoseInstrumentation.logInfo("Closing Local File {} ", metadata.getFullPath());
                 toBeFlushedToRemotePaths.add(metadata);
                 captureFileClosedSuccessMetric(startTime, metadata);
             } catch (IOException e) {
@@ -50,17 +50,17 @@ public class LocalFileChecker implements Runnable {
                 throw new LocalFileWriterFailedException(e);
             }
         });
-        instrumentation.captureValue(LOCAL_FILE_OPEN_TOTAL, timePartitionWriterMap.size());
+        firehoseInstrumentation.captureValue(LOCAL_FILE_OPEN_TOTAL, timePartitionWriterMap.size());
     }
 
     private void captureFileClosedSuccessMetric(Instant startTime, LocalFileMetadata localFileMetadata) {
-        instrumentation.incrementCounter(LOCAL_FILE_CLOSE_TOTAL, SUCCESS_TAG);
-        instrumentation.captureDurationSince(LOCAL_FILE_CLOSING_TIME_MILLISECONDS, startTime);
-        instrumentation.captureCount(LOCAL_FILE_SIZE_BYTES, localFileMetadata.getSize());
-        instrumentation.captureCount(LOCAL_FILE_RECORDS_TOTAL, localFileMetadata.getRecordCount());
+        firehoseInstrumentation.incrementCounter(LOCAL_FILE_CLOSE_TOTAL, SUCCESS_TAG);
+        firehoseInstrumentation.captureDurationSince(LOCAL_FILE_CLOSING_TIME_MILLISECONDS, startTime);
+        firehoseInstrumentation.captureCount(LOCAL_FILE_SIZE_BYTES, localFileMetadata.getSize());
+        firehoseInstrumentation.captureCount(LOCAL_FILE_RECORDS_TOTAL, localFileMetadata.getRecordCount());
     }
 
     private void captureFileCloseFailedMetric() {
-        instrumentation.incrementCounter(LOCAL_FILE_CLOSE_TOTAL, FAILURE_TAG);
+        firehoseInstrumentation.incrementCounter(LOCAL_FILE_CLOSE_TOTAL, FAILURE_TAG);
     }
 }

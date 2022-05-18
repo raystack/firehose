@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.http.auth;
 
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.depot.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import com.google.gson.JsonSyntaxException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -49,7 +49,7 @@ public class OAuth2CredentialTest {
         String clientSecret = "clientSecret";
         String scope = "order:read";
         String accessTokenEndpoint = "http://127.0.0.1:1080/oauth2/token";
-        oAuth2Credential = new OAuth2Credential(new Instrumentation(statsDReporter, OAuth2Credential.class), clientId, clientSecret, scope, accessTokenEndpoint);
+        oAuth2Credential = new OAuth2Credential(new FirehoseInstrumentation(statsDReporter, OAuth2Credential.class), clientId, clientSecret, scope, accessTokenEndpoint);
         httpClient = oAuth2Credential.initialize(HttpClients.custom()).build();
         okHttpClient = new OkHttpClient.Builder().addInterceptor(oAuth2Credential).build();
     }

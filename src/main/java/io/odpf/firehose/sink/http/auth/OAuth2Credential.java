@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.http.auth;
 
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -18,15 +18,15 @@ public class OAuth2Credential implements Interceptor {
 
     private final OAuth2Client client;
     private OAuth2AccessToken accessToken;
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
-    public OAuth2Credential(Instrumentation instrumentation, String clientId, String clientSecret, String scope, String accessTokenEndpoint) {
-        this.instrumentation = instrumentation;
+    public OAuth2Credential(FirehoseInstrumentation firehoseInstrumentation, String clientId, String clientSecret, String scope, String accessTokenEndpoint) {
+        this.firehoseInstrumentation = firehoseInstrumentation;
         this.client = new OAuth2Client(clientId, clientSecret, scope, accessTokenEndpoint);
     }
 
     public void requestAccessToken() throws IOException {
-        instrumentation.logInfo("Requesting Access Token, expires in: {0}",
+        firehoseInstrumentation.logInfo("Requesting Access Token, expires in: {0}",
                 (this.accessToken == null ? "<none>" : this.accessToken.getExpiresIn()));
         OAuth2AccessToken token = client.requestClientCredentialsGrantAccessToken();
         setAccessToken(token);
@@ -40,7 +40,7 @@ public class OAuth2Credential implements Interceptor {
                 }
                 request.addHeader("Authorization", "Bearer " + getAccessToken().toString());
             } catch (IOException e) {
-                instrumentation.logWarn("OAuth2 request access token failed: {0}", e.getMessage());
+                firehoseInstrumentation.logWarn("OAuth2 request access token failed: {0}", e.getMessage());
             }
         };
     }
@@ -75,7 +75,7 @@ public class OAuth2Credential implements Interceptor {
             }
             request = request.newBuilder().header("Authorization", "Bearer " + getAccessToken().toString()).build();
         } catch (IOException e) {
-            instrumentation.logWarn("OAuth2 request access token failed: {0}", e.getMessage());
+            firehoseInstrumentation.logWarn("OAuth2 request access token failed: {0}", e.getMessage());
         }
 
         Response response = chain.proceed(request);

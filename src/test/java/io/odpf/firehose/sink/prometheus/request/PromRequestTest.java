@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.prometheus.request;
 import com.google.protobuf.DynamicMessage;
 import cortexpb.Cortex;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.prometheus.builder.HeaderBuilder;
 import io.odpf.firehose.sink.prometheus.builder.RequestEntityBuilder;
 import io.odpf.firehose.sink.prometheus.builder.WriteRequestBuilder;
@@ -35,7 +35,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class PromRequestTest {
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Mock
     private HeaderBuilder headerBuilder;
@@ -81,7 +81,7 @@ public class PromRequestTest {
         when(writeRequestBuilder.buildWriteRequest(messages)).thenReturn(writeRequestBody);
         when(requestEntityBuilder.buildHttpEntity(writeRequestBody)).thenReturn(new ByteArrayEntity(compressedBody));
 
-        PromRequest promRequest = new PromRequest(instrumentation, headerBuilder, url, requestEntityBuilder, writeRequestBuilder);
+        PromRequest promRequest = new PromRequest(firehoseInstrumentation, headerBuilder, url, requestEntityBuilder, writeRequestBuilder);
         HttpEntityEnclosingRequestBase request = promRequest.build(messages).get(0);
 
         BasicHeader header1 = new BasicHeader(CONTENT_ENCODING, CONTENT_ENCODING_DEFAULT);

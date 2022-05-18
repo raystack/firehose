@@ -1,8 +1,8 @@
 package io.odpf.firehose.sink.dlq.log;
 
-import io.odpf.firehose.error.ErrorInfo;
+import io.odpf.depot.error.ErrorInfo;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.dlq.DlqWriter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -11,10 +11,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class LogDlqWriter implements DlqWriter {
-    private final Instrumentation instrumentation;
+    private final FirehoseInstrumentation firehoseInstrumentation;
 
-    public LogDlqWriter(Instrumentation instrumentation) {
-        this.instrumentation = instrumentation;
+    public LogDlqWriter(FirehoseInstrumentation firehoseInstrumentation) {
+        this.firehoseInstrumentation = firehoseInstrumentation;
     }
 
     @Override
@@ -31,7 +31,7 @@ public class LogDlqWriter implements DlqWriter {
                 }
             }
 
-            instrumentation.logInfo("key: {}\nvalue: {}\nerror: {}", key, value, error);
+            firehoseInstrumentation.logInfo("key: {}\nvalue: {}\nerror: {}", key, value, error);
         }
         return new LinkedList<>();
     }

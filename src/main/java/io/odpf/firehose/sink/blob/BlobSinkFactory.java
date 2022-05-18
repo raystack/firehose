@@ -1,10 +1,10 @@
 package io.odpf.firehose.sink.blob;
 
 import com.google.protobuf.Descriptors;
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.BlobSinkConfig;
 import io.odpf.firehose.consumer.kafka.OffsetManager;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.blob.message.MessageDeSerializer;
 import io.odpf.firehose.sink.blob.proto.KafkaMetadataProtoMessage;
@@ -34,7 +34,7 @@ public class BlobSinkFactory {
         WriterOrchestrator writerOrchestrator = new WriterOrchestrator(sinkConfig, localStorage, sinkBlobStorage, statsDReporter);
         MessageDeSerializer messageDeSerializer = new MessageDeSerializer(sinkConfig, stencilClient);
         return new BlobSink(
-                new Instrumentation(statsDReporter, BlobSink.class),
+                new FirehoseInstrumentation(statsDReporter, BlobSink.class),
                 sinkConfig.getSinkType().toString(),
                 offsetManager,
                 writerOrchestrator,
@@ -60,7 +60,7 @@ public class BlobSinkFactory {
                 outputMessageDescriptor,
                 metadataMessageDescriptor.getFields(),
                 writerPolicies,
-                new Instrumentation(statsDReporter, LocalStorage.class));
+                new FirehoseInstrumentation(statsDReporter, LocalStorage.class));
     }
 
     public static BlobStorage createSinkObjectStorage(BlobSinkConfig sinkConfig, Map<String, String> configuration) {

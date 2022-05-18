@@ -12,26 +12,23 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
 import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 
 import java.util.Base64;
 import java.util.HashMap;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class ESUpsertRequestHandlerTest {
 
-    @Mock
-    private StencilClient stencilClient;
+    private final StencilClient stencilClient = StencilClientFactory.getClient();
 
     private MessageToJson jsonSerializer;
     private Message messageWithJSON;
@@ -47,10 +44,7 @@ public class ESUpsertRequestHandlerTest {
         logMessage = "CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM\u003d";
         messageWithProto = new Message(null, Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
-        when(stencilClient.parse(Mockito.anyString(), Mockito.any())).thenCallRealMethod();
-        when(stencilClient.getParser(Mockito.anyString())).thenCallRealMethod();
         String protoClassName = TestAggregatedSupplyMessage.class.getName();
-        when(stencilClient.get(protoClassName)).thenReturn(TestAggregatedSupplyMessage.getDescriptor());
         jsonSerializer = new MessageToJson(stencilClient.getParser(protoClassName), true, false);
     }
 

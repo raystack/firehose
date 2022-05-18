@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.blob.writer.local;
 
 import com.google.protobuf.Descriptors;
 import io.odpf.firehose.config.BlobSinkConfig;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.blob.Constants;
 import io.odpf.firehose.sink.blob.writer.local.policy.WriterPolicy;
 import org.junit.Test;
@@ -20,14 +20,14 @@ public class LocalStorageTest {
         BlobSinkConfig sinkConfig = Mockito.mock(BlobSinkConfig.class);
         List<Descriptors.FieldDescriptor> metadataFieldDescriptor = new ArrayList<>();
         List<WriterPolicy> policies = new ArrayList<>();
-        Instrumentation instrumentation = Mockito.mock(Instrumentation.class);
-        LocalStorage storage = new LocalStorage(sinkConfig, null, metadataFieldDescriptor, policies, instrumentation);
+        FirehoseInstrumentation firehoseInstrumentation = Mockito.mock(FirehoseInstrumentation.class);
+        LocalStorage storage = new LocalStorage(sinkConfig, null, metadataFieldDescriptor, policies, firehoseInstrumentation);
         LocalStorage spy = Mockito.spy(storage);
         Mockito.doNothing().when(spy).deleteLocalFile(Paths.get("/tmp/a"), Paths.get("/tmp/.a.crc"));
         Mockito.when(sinkConfig.getLocalFileWriterType()).thenReturn(Constants.WriterType.PARQUET);
         spy.deleteLocalFile("/tmp/a");
         Mockito.verify(spy, Mockito.times(1)).deleteLocalFile(Paths.get("/tmp/a"), Paths.get("/tmp/.a.crc"));
-        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("Deleting Local File {}", Paths.get("/tmp/a"));
-        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("Deleting Local File {}", Paths.get("/tmp/.a.crc"));
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).logInfo("Deleting Local File {}", Paths.get("/tmp/a"));
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).logInfo("Deleting Local File {}", Paths.get("/tmp/.a.crc"));
     }
 }

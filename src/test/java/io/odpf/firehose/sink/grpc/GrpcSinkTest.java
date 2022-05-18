@@ -1,13 +1,11 @@
 package io.odpf.firehose.sink.grpc;
 
-
-
+import io.odpf.depot.error.ErrorInfo;
+import io.odpf.depot.error.ErrorType;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestGrpcResponse;
-import io.odpf.firehose.error.ErrorInfo;
-import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.grpc.client.GrpcClient;
 import com.google.protobuf.DynamicMessage;
 import io.odpf.stencil.client.StencilClient;
@@ -22,7 +20,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -41,12 +38,12 @@ public class GrpcSinkTest {
     private StencilClient stencilClient;
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Before
     public void setUp() {
         initMocks(this);
-        sink = new GrpcSink(instrumentation, grpcClient, stencilClient);
+        sink = new GrpcSink(firehoseInstrumentation, grpcClient, stencilClient);
     }
 
     @Test
@@ -61,10 +58,10 @@ public class GrpcSinkTest {
         sink.pushMessage(Collections.singletonList(message));
         verify(grpcClient, times(1)).execute(any(byte[].class), eq(headers));
 
-        verify(instrumentation, times(1)).logInfo("Preparing {} messages", 1);
-        verify(instrumentation, times(1)).logDebug("Response: {}", response);
-        verify(instrumentation, times(0)).logWarn("Grpc Service returned error");
-        verify(instrumentation, times(1)).logDebug("Failed messages count: {}", 0);
+        verify(firehoseInstrumentation, times(1)).logInfo("Preparing {} messages", 1);
+        verify(firehoseInstrumentation, times(1)).logDebug("Response: {}", response);
+        verify(firehoseInstrumentation, times(0)).logWarn("Grpc Service returned error");
+        verify(firehoseInstrumentation, times(1)).logDebug("Failed messages count: {}", 0);
     }
 
     @Test
@@ -80,15 +77,15 @@ public class GrpcSinkTest {
         assertFalse(failedMessages.isEmpty());
         assertEquals(1, failedMessages.size());
 
-        verify(instrumentation, times(1)).logInfo("Preparing {} messages", 1);
-        verify(instrumentation, times(1)).logDebug("Response: {}", response);
-        verify(instrumentation, times(1)).logWarn("Grpc Service returned error");
-        verify(instrumentation, times(1)).logDebug("Failed messages count: {}", 1);
+        verify(firehoseInstrumentation, times(1)).logInfo("Preparing {} messages", 1);
+        verify(firehoseInstrumentation, times(1)).logDebug("Response: {}", response);
+        verify(firehoseInstrumentation, times(1)).logWarn("Grpc Service returned error");
+        verify(firehoseInstrumentation, times(1)).logDebug("Failed messages count: {}", 1);
     }
 
     @Test
     public void shouldCloseStencilClient() throws IOException {
-        sink = new GrpcSink(instrumentation, grpcClient, stencilClient);
+        sink = new GrpcSink(firehoseInstrumentation, grpcClient, stencilClient);
 
         sink.close();
         verify(stencilClient, times(1)).close();
@@ -96,9 +93,9 @@ public class GrpcSinkTest {
 
     @Test
     public void shouldLogWhenClosingConnection() throws IOException {
-        sink = new GrpcSink(instrumentation, grpcClient, stencilClient);
+        sink = new GrpcSink(firehoseInstrumentation, grpcClient, stencilClient);
 
         sink.close();
-        verify(instrumentation, times(1)).logInfo("GRPC connection closing");
+        verify(firehoseInstrumentation, times(1)).logInfo("GRPC connection closing");
     }
 }

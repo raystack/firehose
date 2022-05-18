@@ -7,7 +7,7 @@ import io.odpf.firehose.consumer.kafka.OffsetManager;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.filter.NoOpFilter;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.metrics.Metrics;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.tracer.SinkTracer;
@@ -17,7 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -36,7 +35,7 @@ public class FirehoseSyncConsumerTest {
     @Mock
     private Sink sink;
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
     @Mock
     private SinkTracer tracer;
     private FirehoseSyncConsumer firehoseSyncConsumer;
@@ -49,9 +48,9 @@ public class FirehoseSyncConsumerTest {
         messages = Arrays.asList(msg1, msg2);
         OffsetManager offsetManger = new OffsetManager();
         KafkaConsumerConfig kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, System.getenv());
-        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), offsetManger, firehoseKafkaConsumer, kafkaConsumerConfig, instrumentation);
-        FirehoseFilter firehoseFilter = new FirehoseFilter(new NoOpFilter(instrumentation), instrumentation);
-        firehoseSyncConsumer = new FirehoseSyncConsumer(sink, tracer, consumerAndOffsetManager, firehoseFilter, instrumentation);
+        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), offsetManger, firehoseKafkaConsumer, kafkaConsumerConfig, firehoseInstrumentation);
+        FirehoseFilter firehoseFilter = new FirehoseFilter(new NoOpFilter(firehoseInstrumentation), firehoseInstrumentation);
+        firehoseSyncConsumer = new FirehoseSyncConsumer(sink, tracer, consumerAndOffsetManager, firehoseFilter, firehoseInstrumentation);
         when(firehoseKafkaConsumer.readMessages()).thenReturn(messages);
     }
 
@@ -65,13 +64,13 @@ public class FirehoseSyncConsumerTest {
     public void shouldProcessEmptyPartitions() throws IOException {
         when(firehoseKafkaConsumer.readMessages()).thenReturn(new ArrayList<>());
         firehoseSyncConsumer.process();
-        verify(sink, times(0)).pushMessage(anyList());
+        verify(sink, times(0)).pushMessage(new ArrayList<>());
     }
 
     @Test
     public void shouldSendNoOfMessagesReceivedCount() throws IOException {
         firehoseSyncConsumer.process();
-        verify(instrumentation).logInfo("Processed {} records in consumer", 2);
+        verify(firehoseInstrumentation).logInfo("Processed {} records in consumer", 2);
     }
 
     @Test
@@ -85,18 +84,18 @@ public class FirehoseSyncConsumerTest {
     @Test
     public void shouldCloseConsumerIfConsumerIsNotNull() throws IOException {
         firehoseSyncConsumer.close();
-        verify(instrumentation, times(1)).logInfo("closing consumer");
+        verify(firehoseInstrumentation, times(1)).logInfo("closing consumer");
         verify(tracer, times(1)).close();
         verify(firehoseKafkaConsumer, times(1)).close();
         verify(sink, times(1)).close();
-        verify(instrumentation, times(1)).close();
+        verify(firehoseInstrumentation, times(1)).close();
     }
 
     @Test
     public void shouldAddOffsetsForInvalidMessages() throws Exception {
         FirehoseFilter firehoseFilter = Mockito.mock(FirehoseFilter.class);
         ConsumerAndOffsetManager consumerAndOffsetManager = Mockito.mock(ConsumerAndOffsetManager.class);
-        firehoseSyncConsumer = new FirehoseSyncConsumer(sink, tracer, consumerAndOffsetManager, firehoseFilter, instrumentation);
+        firehoseSyncConsumer = new FirehoseSyncConsumer(sink, tracer, consumerAndOffsetManager, firehoseFilter, firehoseInstrumentation);
         Message msg1 = new Message(new byte[]{}, new byte[]{}, "topic", 0, 100);
         Message msg2 = new Message(new byte[]{}, new byte[]{}, "topic", 0, 100);
         Message msg3 = new Message(new byte[]{}, new byte[]{}, "topic", 0, 100);
@@ -123,23 +122,23 @@ public class FirehoseSyncConsumerTest {
         }});
         Mockito.verify(consumerAndOffsetManager, times(1)).commit();
 
-        verify(instrumentation, times(1)).logInfo("Processed {} records in consumer", 3);
+        verify(firehoseInstrumentation, times(1)).logInfo("Processed {} records in consumer", 3);
         verify(tracer, times(1)).startTrace(messages);
         verify(tracer, times(1)).finishTrace(new ArrayList<>());
-        verify(instrumentation, times(1)).captureDurationSince(eq(Metrics.SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS), any(Instant.class));
+        verify(firehoseInstrumentation, times(1)).captureDurationSince(eq(Metrics.SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS), any(Instant.class));
     }
 
     @Test
     public void shouldNotCloseConsumerIfConsumerIsNull() throws IOException {
         KafkaConsumerConfig kafkaConsumerConfig = ConfigFactory.create(KafkaConsumerConfig.class, System.getenv());
-        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), new OffsetManager(), null, kafkaConsumerConfig, instrumentation);
-        FirehoseFilter firehoseFilter = new FirehoseFilter(new NoOpFilter(instrumentation), instrumentation);
-        firehoseSyncConsumer = new FirehoseSyncConsumer(sink, tracer, consumerAndOffsetManager, firehoseFilter, instrumentation);
+        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(Collections.singletonList(sink), new OffsetManager(), null, kafkaConsumerConfig, firehoseInstrumentation);
+        FirehoseFilter firehoseFilter = new FirehoseFilter(new NoOpFilter(firehoseInstrumentation), firehoseInstrumentation);
+        firehoseSyncConsumer = new FirehoseSyncConsumer(sink, tracer, consumerAndOffsetManager, firehoseFilter, firehoseInstrumentation);
         firehoseSyncConsumer.close();
-        verify(instrumentation, times(0)).logInfo("closing consumer");
+        verify(firehoseInstrumentation, times(0)).logInfo("closing consumer");
         verify(tracer, times(1)).close();
         verify(firehoseKafkaConsumer, times(0)).close();
         verify(sink, times(1)).close();
-        verify(instrumentation, times(1)).close();
+        verify(firehoseInstrumentation, times(1)).close();
     }
 }

@@ -1,6 +1,6 @@
 package io.odpf.firehose.utils;
 
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import lombok.AllArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.common.TopicPartition;
@@ -14,7 +14,7 @@ import java.util.Collection;
 @AllArgsConstructor
 public class ConsumerRebalancer implements ConsumerRebalanceListener {
 
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     /**
      * Function to run On partitions revoked.
@@ -23,7 +23,7 @@ public class ConsumerRebalancer implements ConsumerRebalanceListener {
      */
     @Override
     public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
-        instrumentation.logWarn("Partitions Revoked {}", Arrays.toString(partitions.toArray()));
+        firehoseInstrumentation.logWarn("Partitions Revoked {}", Arrays.toString(partitions.toArray()));
     }
 
     /**
@@ -33,6 +33,6 @@ public class ConsumerRebalancer implements ConsumerRebalanceListener {
      */
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
-        instrumentation.logInfo("Partitions Assigned {}", Arrays.toString(partitions.toArray()));
+        firehoseInstrumentation.logInfo("Partitions Assigned {}", Arrays.toString(partitions.toArray()));
     }
 }

@@ -2,7 +2,7 @@ package io.odpf.firehose.consumer.kafka;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.Sink;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class ConsumerAndOffsetManager implements AutoCloseable {
     private final List<Sink> sinks;
     private final FirehoseKafkaConsumer firehoseKafkaConsumer;
     private final KafkaConsumerConfig kafkaConsumerConfig;
-    private final Instrumentation instrumentation;
+    private final FirehoseInstrumentation firehoseInstrumentation;
     private final boolean canSinkManageOffsets;
     private long lastCommitTimeStamp = 0;
 
@@ -43,12 +43,12 @@ public class ConsumerAndOffsetManager implements AutoCloseable {
             OffsetManager offsetManager,
             FirehoseKafkaConsumer firehoseKafkaConsumer,
             KafkaConsumerConfig kafkaConsumerConfig,
-            Instrumentation instrumentation) {
+            FirehoseInstrumentation firehoseInstrumentation) {
         this.sinks = sinks;
         this.offsetManager = offsetManager;
         this.firehoseKafkaConsumer = firehoseKafkaConsumer;
         this.kafkaConsumerConfig = kafkaConsumerConfig;
-        this.instrumentation = instrumentation;
+        this.firehoseInstrumentation = firehoseInstrumentation;
         this.canSinkManageOffsets = sinks.get(0).canManageOffsets();
     }
 
@@ -99,7 +99,7 @@ public class ConsumerAndOffsetManager implements AutoCloseable {
     @Override
     public void close() throws IOException {
         if (firehoseKafkaConsumer != null) {
-            instrumentation.logInfo("closing consumer");
+            firehoseInstrumentation.logInfo("closing consumer");
             firehoseKafkaConsumer.close();
         }
     }

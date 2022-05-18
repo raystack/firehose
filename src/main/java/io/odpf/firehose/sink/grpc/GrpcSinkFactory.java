@@ -1,9 +1,9 @@
 package io.odpf.firehose.sink.grpc;
 
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.GrpcSinkConfig;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.grpc.client.GrpcClient;
 import io.grpc.ManagedChannel;
@@ -24,17 +24,17 @@ public class GrpcSinkFactory {
 
     public static AbstractSink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         GrpcSinkConfig grpcConfig = ConfigFactory.create(GrpcSinkConfig.class, configuration);
-        Instrumentation instrumentation = new Instrumentation(statsDReporter, GrpcSinkFactory.class);
+        FirehoseInstrumentation firehoseInstrumentation = new FirehoseInstrumentation(statsDReporter, GrpcSinkFactory.class);
         String grpcSinkConfig = String.format("\n\tService host: %s\n\tService port: %s\n\tMethod url: %s\n\tResponse proto schema: %s",
                 grpcConfig.getSinkGrpcServiceHost(), grpcConfig.getSinkGrpcServicePort(), grpcConfig.getSinkGrpcMethodUrl(), grpcConfig.getSinkGrpcResponseSchemaProtoClass());
-        instrumentation.logDebug(grpcSinkConfig);
+        firehoseInstrumentation.logDebug(grpcSinkConfig);
 
         ManagedChannel managedChannel = ManagedChannelBuilder.forAddress(grpcConfig.getSinkGrpcServiceHost(), grpcConfig.getSinkGrpcServicePort()).usePlaintext().build();
 
-        GrpcClient grpcClient = new GrpcClient(new Instrumentation(statsDReporter, GrpcClient.class), grpcConfig, managedChannel, stencilClient);
-        instrumentation.logInfo("GRPC connection established");
+        GrpcClient grpcClient = new GrpcClient(new FirehoseInstrumentation(statsDReporter, GrpcClient.class), grpcConfig, managedChannel, stencilClient);
+        firehoseInstrumentation.logInfo("GRPC connection established");
 
-        return new GrpcSink(new Instrumentation(statsDReporter, GrpcSink.class), grpcClient, stencilClient);
+        return new GrpcSink(new FirehoseInstrumentation(statsDReporter, GrpcSink.class), grpcClient, stencilClient);
     }
 
 }

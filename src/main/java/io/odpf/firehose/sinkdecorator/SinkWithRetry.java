@@ -6,10 +6,10 @@ import io.odpf.firehose.message.Message;
 import io.odpf.firehose.error.ErrorHandler;
 import io.odpf.firehose.error.ErrorScope;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.metrics.Metrics;
 import io.odpf.firehose.sink.Sink;
-import io.odpf.firehose.sink.log.KeyOrMessageParser;
+import io.odpf.firehose.sink.common.KeyOrMessageParser;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,15 +26,15 @@ import static io.odpf.firehose.metrics.Metrics.RETRY_ATTEMPTS_TOTAL;
 public class SinkWithRetry extends SinkDecorator {
 
     private final BackOffProvider backOffProvider;
-    private final Instrumentation instrumentation;
+    private final FirehoseInstrumentation firehoseInstrumentation;
     private final AppConfig appConfig;
     private final KeyOrMessageParser parser;
     private final ErrorHandler errorHandler;
 
-    public SinkWithRetry(Sink sink, BackOffProvider backOffProvider, Instrumentation instrumentation, AppConfig appConfig, KeyOrMessageParser parser, ErrorHandler errorHandler) {
+    public SinkWithRetry(Sink sink, BackOffProvider backOffProvider, FirehoseInstrumentation firehoseInstrumentation, AppConfig appConfig, KeyOrMessageParser parser, ErrorHandler errorHandler) {
         super(sink);
         this.backOffProvider = backOffProvider;
-        this.instrumentation = instrumentation;
+        this.firehoseInstrumentation = firehoseInstrumentation;
         this.appConfig = appConfig;
         this.parser = parser;
         this.errorHandler = errorHandler;
@@ -64,12 +64,12 @@ public class SinkWithRetry extends SinkDecorator {
     }
 
     private void logDebug(List<Message> messageList) throws IOException {
-        if (instrumentation.isDebugEnabled()) {
+        if (firehoseInstrumentation.isDebugEnabled()) {
             List<DynamicMessage> serializedBody = new ArrayList<>();
             for (Message message : messageList) {
                 serializedBody.add(parser.parse(message));
             }
-            instrumentation.logDebug("Retry failed messages: \n{}", serializedBody.toString());
+            firehoseInstrumentation.logDebug("Retry failed messages: \n{}", serializedBody.toString());
         }
     }
 
@@ -82,24 +82,24 @@ public class SinkWithRetry extends SinkDecorator {
 
     private List<Message> doRetry(List<Message> messages) throws IOException {
         List<Message> retryMessages = new LinkedList<>(messages);
-        instrumentation.logInfo("Maximum retry attempts: {}", appConfig.getRetryMaxAttempts());
+        firehoseInstrumentation.logInfo("Maximum retry attempts: {}", appConfig.getRetryMaxAttempts());
         retryMessages.forEach(m -> {
             m.setDefaultErrorIfNotPresent();
-            instrumentation.captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, m.getErrorInfo().getErrorType(), 1);
+            firehoseInstrumentation.captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, m.getErrorInfo().getErrorType(), 1);
         });
 
         int attemptCount = 1;
         while ((attemptCount <= appConfig.getRetryMaxAttempts() && !retryMessages.isEmpty())
                 || (appConfig.getRetryMaxAttempts() == Integer.MAX_VALUE && !retryMessages.isEmpty())) {
-            instrumentation.incrementCounter(RETRY_ATTEMPTS_TOTAL);
-            instrumentation.logInfo("Retrying messages attempt count: {}, Number of messages: {}", attemptCount, messages.size());
+            firehoseInstrumentation.incrementCounter(RETRY_ATTEMPTS_TOTAL);
+            firehoseInstrumentation.logInfo("Retrying messages attempt count: {}, Number of messages: {}", attemptCount, messages.size());
             logDebug(retryMessages);
             retryMessages = super.pushMessage(retryMessages);
             backOff(retryMessages, attemptCount);
             attemptCount++;
         }
-        instrumentation.captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, messages.size() - retryMessages.size());
-        retryMessages.forEach(m -> instrumentation.captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, m.getErrorInfo().getErrorType(), 1));
+        firehoseInstrumentation.captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, messages.size() - retryMessages.size());
+        retryMessages.forEach(m -> firehoseInstrumentation.captureMessageMetrics(RETRY_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, m.getErrorInfo().getErrorType(), 1));
         return retryMessages;
     }
 

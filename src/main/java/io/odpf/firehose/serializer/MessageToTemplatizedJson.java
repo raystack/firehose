@@ -4,7 +4,7 @@ package io.odpf.firehose.serializer;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.ConfigurationException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import com.google.gson.Gson;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -32,10 +32,10 @@ public class MessageToTemplatizedJson implements MessageSerializer {
     private Parser protoParser;
     private HashSet<String> pathsToReplace;
     private JSONParser jsonParser;
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
-    public static MessageToTemplatizedJson create(Instrumentation instrumentation, String httpSinkJsonBodyTemplate, Parser protoParser) {
-        MessageToTemplatizedJson messageToTemplatizedJson = new MessageToTemplatizedJson(instrumentation, httpSinkJsonBodyTemplate, protoParser);
+    public static MessageToTemplatizedJson create(FirehoseInstrumentation firehoseInstrumentation, String httpSinkJsonBodyTemplate, Parser protoParser) {
+        MessageToTemplatizedJson messageToTemplatizedJson = new MessageToTemplatizedJson(firehoseInstrumentation, httpSinkJsonBodyTemplate, protoParser);
         if (messageToTemplatizedJson.isInvalidJson()) {
             throw new ConfigurationException("Given HTTPSink JSON body template :"
                     + httpSinkJsonBodyTemplate
@@ -45,12 +45,12 @@ public class MessageToTemplatizedJson implements MessageSerializer {
         return messageToTemplatizedJson;
     }
 
-    public MessageToTemplatizedJson(Instrumentation instrumentation, String httpSinkJsonBodyTemplate, Parser protoParser) {
+    public MessageToTemplatizedJson(FirehoseInstrumentation firehoseInstrumentation, String httpSinkJsonBodyTemplate, Parser protoParser) {
         this.httpSinkJsonBodyTemplate = httpSinkJsonBodyTemplate;
         this.protoParser = protoParser;
         this.jsonParser = new JSONParser();
         this.gson = new Gson();
-        this.instrumentation = instrumentation;
+        this.firehoseInstrumentation = firehoseInstrumentation;
     }
 
     private void setPathsFromTemplate() {
@@ -61,7 +61,7 @@ public class MessageToTemplatizedJson implements MessageSerializer {
             paths.add(matcher.group(0));
         }
         List<String> pathList = new ArrayList<>(paths);
-        instrumentation.logDebug("\nPaths: {}", pathList);
+        firehoseInstrumentation.logDebug("\nPaths: {}", pathList);
         this.pathsToReplace = paths;
     }
 

@@ -2,11 +2,11 @@ package io.odpf.firehose.sink.influxdb;
 
 
 
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.influxdb.builder.PointBuilder;
 import io.odpf.firehose.config.InfluxSinkConfig;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.sink.AbstractSink;
-import io.odpf.firehose.metrics.Instrumentation;
 import com.google.protobuf.DynamicMessage;
 import io.odpf.stencil.client.StencilClient;
 import io.odpf.stencil.Parser;
@@ -34,15 +34,15 @@ public class InfluxSink extends AbstractSink {
     /**
      * Instantiates a new Influx sink.
      *
-     * @param instrumentation the instrumentation
+     * @param firehoseInstrumentation the instrumentation
      * @param sinkType        the sink type
      * @param config          the config
      * @param protoParser     the proto parser
      * @param client          the client
      * @param stencilClient   the stencil client
      */
-    public InfluxSink(Instrumentation instrumentation, String sinkType, InfluxSinkConfig config, Parser protoParser, InfluxDB client, StencilClient stencilClient) {
-        super(instrumentation, sinkType);
+    public InfluxSink(FirehoseInstrumentation firehoseInstrumentation, String sinkType, InfluxSinkConfig config, Parser protoParser, InfluxDB client, StencilClient stencilClient) {
+        super(firehoseInstrumentation, sinkType);
         this.config = config;
         this.protoParser = protoParser;
         this.pointBuilder = new PointBuilder(config);
@@ -56,21 +56,21 @@ public class InfluxSink extends AbstractSink {
         for (Message message : messages) {
             DynamicMessage dynamicMessage = protoParser.parse(message.getLogMessage());
             Point point = pointBuilder.buildPoint(dynamicMessage);
-            getInstrumentation().logDebug("Data point: {}", point.toString());
+            getFirehoseInstrumentation().logDebug("Data point: {}", point.toString());
             batchPoints.point(point);
         }
     }
 
     @Override
     protected List<Message> execute() {
-        getInstrumentation().logDebug("Batch points: {}", batchPoints.toString());
+        getFirehoseInstrumentation().logDebug("Batch points: {}", batchPoints.toString());
         client.write(batchPoints);
         return new ArrayList<>();
     }
 
     @Override
     public void close() throws IOException {
-        getInstrumentation().logInfo("InfluxDB connection closing");
+        getFirehoseInstrumentation().logInfo("InfluxDB connection closing");
         stencilClient.close();
     }
 }

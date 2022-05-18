@@ -1,6 +1,6 @@
 package io.odpf.firehose.config.converter;
 
-import io.odpf.firehose.error.ErrorType;
+import io.odpf.depot.error.ErrorType;
 import org.aeonbits.owner.Converter;
 
 import java.lang.reflect.Method;

@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.mongodb;
 import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.model.WriteModel;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.mongodb.client.MongoSinkClient;
 import io.odpf.firehose.sink.mongodb.request.MongoRequestHandler;
@@ -31,14 +31,14 @@ public class MongoSink extends AbstractSink {
     /**
      * Instantiates a new Mongo sink.
      *
-     * @param instrumentation     the instrumentation
+     * @param firehoseInstrumentation     the instrumentation
      * @param sinkType            the sink type
      * @param mongoRequestHandler the mongo request handler
      * @since 0.1
      */
-    public MongoSink(Instrumentation instrumentation, String sinkType, MongoRequestHandler mongoRequestHandler,
+    public MongoSink(FirehoseInstrumentation firehoseInstrumentation, String sinkType, MongoRequestHandler mongoRequestHandler,
                      MongoSinkClient mongoSinkClient) {
-        super(instrumentation, sinkType);
+        super(firehoseInstrumentation, sinkType);
         this.mongoRequestHandler = mongoRequestHandler;
         this.mongoSinkClient = mongoSinkClient;
     }
@@ -88,7 +88,7 @@ public class MongoSink extends AbstractSink {
      */
     @Override
     public void close() throws IOException {
-        getInstrumentation().logInfo("MongoDB connection closing");
+        getFirehoseInstrumentation().logInfo("MongoDB connection closing");
         this.mongoSinkClient.close();
     }
 }

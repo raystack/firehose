@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.mongodb.util;
 
 import com.mongodb.ServerAddress;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import lombok.experimental.UtilityClass;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public class MongoSinkFactoryUtil {
      * of all the MongoDB servers into a list, which is returned.
      *
      * @param mongoConnectionUrls the mongo connection urls
-     * @param instrumentation     the instrumentation
+     * @param firehoseInstrumentation     the instrumentation
      * @return the list of server addresses
      * @throws IllegalArgumentException if the environment variable SINK_MONGO_CONNECTION_URLS
      *                                  is an empty string or not assigned any value by the user.
@@ -32,7 +32,7 @@ public class MongoSinkFactoryUtil {
      *                                  any or both of hostname/ IP address and the port
      * @since 0.1
      */
-    public static List<ServerAddress> getServerAddresses(String mongoConnectionUrls, Instrumentation instrumentation) {
+    public static List<ServerAddress> getServerAddresses(String mongoConnectionUrls, FirehoseInstrumentation firehoseInstrumentation) {
         if (mongoConnectionUrls != null && !mongoConnectionUrls.isEmpty()) {
             List<String> mongoNodes = Arrays.asList(mongoConnectionUrls.trim().split(","));
             List<ServerAddress> serverAddresses = new ArrayList<>(mongoNodes.size());
@@ -47,7 +47,7 @@ public class MongoSinkFactoryUtil {
             });
             return serverAddresses;
         } else {
-            instrumentation.logError("No connection URL found");
+            firehoseInstrumentation.logError("No connection URL found");
             throw new IllegalArgumentException("SINK_MONGO_CONNECTION_URLS is empty or null");
         }
     }

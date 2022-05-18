@@ -1,14 +1,11 @@
 package io.odpf.firehose.sink.grpc;
 
-
-
-
 import io.odpf.firehose.config.GrpcSinkConfig;
 import io.odpf.firehose.consumer.Error;
 import io.odpf.firehose.consumer.TestGrpcRequest;
 import io.odpf.firehose.consumer.TestGrpcResponse;
 import io.odpf.firehose.consumer.TestServerGrpc;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.grpc.client.GrpcClient;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.DynamicMessage;
@@ -22,8 +19,7 @@ import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.Mockito;
 import org.mockito.stubbing.Stubber;
 
 import java.io.IOException;
@@ -36,7 +32,6 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class GrpcClientTest {
@@ -44,21 +39,14 @@ public class GrpcClientTest {
     private Server server;
     private GrpcClient grpcClient;
     private TestServerGrpc.TestServerImplBase testGrpcService;
-    private GrpcSinkConfig grpcSinkConfig;
     private RecordHeaders headers;
     private static final List<String> HEADER_KEYS = Arrays.asList("test-header-key-1", "test-header-key-2");
     private HeaderTestInterceptor headerTestInterceptor;
-    private StencilClient stencilClient;
-    private ManagedChannel managedChannel;
-
-    @Mock
-    private Instrumentation instrumentation;
 
     @Before
     public void setup() throws IOException {
-        MockitoAnnotations.initMocks(this);
-        testGrpcService = mock(TestServerGrpc.TestServerImplBase.class);
-        when(testGrpcService.bindService()).thenCallRealMethod();
+        FirehoseInstrumentation firehoseInstrumentation = Mockito.mock(FirehoseInstrumentation.class);
+        testGrpcService = Mockito.mock(TestServerGrpc.TestServerImplBase.class, CALLS_REAL_METHODS);
         headerTestInterceptor = new HeaderTestInterceptor();
         headerTestInterceptor.setHeaderKeys(HEADER_KEYS);
         ServerServiceDefinition serviceDefinition = ServerInterceptors.intercept(testGrpcService.bindService(), Arrays.asList(headerTestInterceptor));
@@ -72,12 +60,13 @@ public class GrpcClientTest {
         config.put("SINK_GRPC_METHOD_URL", "io.odpf.firehose.consumer.TestServer/TestRpcMethod");
         config.put("SINK_GRPC_RESPONSE_SCHEMA_PROTO_CLASS", "io.odpf.firehose.consumer.TestGrpcResponse");
 
-        grpcSinkConfig = ConfigFactory.create(GrpcSinkConfig.class, config);
-        stencilClient = StencilClientFactory.getClient();
-        managedChannel = ManagedChannelBuilder.forAddress(grpcSinkConfig.getSinkGrpcServiceHost(), grpcSinkConfig.getSinkGrpcServicePort()).usePlaintext().build();
-        grpcClient = new GrpcClient(instrumentation, grpcSinkConfig, managedChannel, stencilClient);
+        GrpcSinkConfig grpcSinkConfig = ConfigFactory.create(GrpcSinkConfig.class, config);
+        StencilClient stencilClient = StencilClientFactory.getClient();
+        ManagedChannel managedChannel = ManagedChannelBuilder.forAddress(grpcSinkConfig.getSinkGrpcServiceHost(), grpcSinkConfig.getSinkGrpcServicePort()).usePlaintext().build();
+        grpcClient = new GrpcClient(firehoseInstrumentation, grpcSinkConfig, managedChannel, stencilClient);
         headers = new RecordHeaders();
     }
+
     @After
     public void tearDown() {
         if (server != null) {
@@ -176,7 +165,6 @@ public class GrpcClientTest {
         DynamicMessage response = grpcClient.execute(request.toByteArray(), headers);
         assertFalse(Boolean.parseBoolean(String.valueOf(response.getField(response.getDescriptorForType().findFieldByName("success")))));
     }
-
 
 
     private <T extends AbstractMessage> Stubber doAnswerProtoReponse(T response) {

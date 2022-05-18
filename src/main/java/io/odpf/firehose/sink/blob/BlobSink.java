@@ -1,14 +1,14 @@
 package io.odpf.firehose.sink.blob;
 
-import io.odpf.firehose.error.ErrorInfo;
-import io.odpf.firehose.error.ErrorType;
+import io.odpf.depot.error.ErrorInfo;
+import io.odpf.depot.error.ErrorType;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.kafka.OffsetManager;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.SinkException;
 import io.odpf.firehose.exception.UnknownFieldsException;
 import io.odpf.firehose.exception.EmptyMessageException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.blob.message.MessageDeSerializer;
 import io.odpf.firehose.sink.blob.message.Record;
@@ -30,8 +30,8 @@ public class BlobSink extends AbstractSink {
 
     private List<Message> messages;
 
-    public BlobSink(Instrumentation instrumentation, String sinkType, OffsetManager offsetManager, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer) {
-        super(instrumentation, sinkType);
+    public BlobSink(FirehoseInstrumentation firehoseInstrumentation, String sinkType, OffsetManager offsetManager, WriterOrchestrator writerOrchestrator, MessageDeSerializer messageDeSerializer) {
+        super(firehoseInstrumentation, sinkType);
         this.offsetManager = offsetManager;
         this.writerOrchestrator = writerOrchestrator;
         this.messageDeSerializer = messageDeSerializer;
@@ -47,16 +47,16 @@ public class BlobSink extends AbstractSink {
                 String filePath = writerOrchestrator.write(record);
                 fileToMessages.computeIfAbsent(filePath, key -> new ArrayList<>()).add(message);
             } catch (EmptyMessageException e) {
-                getInstrumentation().logWarn("empty message found on topic: {}, partition: {}, offset: {}",
+                getFirehoseInstrumentation().logWarn("empty message found on topic: {}, partition: {}, offset: {}",
                         message.getTopic(), message.getPartition(), message.getOffset());
                 message.setErrorInfo(new ErrorInfo(e, ErrorType.INVALID_MESSAGE_ERROR));
                 failedMessages.add(message);
             } catch (UnknownFieldsException e) {
-                getInstrumentation().logWarn(e.getMessage());
+                getFirehoseInstrumentation().logWarn(e.getMessage());
                 message.setErrorInfo(new ErrorInfo(e, ErrorType.UNKNOWN_FIELDS_ERROR));
                 failedMessages.add(message);
             } catch (DeserializerException e) {
-                getInstrumentation().logWarn("message deserialization failed on topic: {}, partition: {}, offset: {}, reason: {}",
+                getFirehoseInstrumentation().logWarn("message deserialization failed on topic: {}, partition: {}, offset: {}, reason: {}",
                         message.getTopic(), message.getPartition(), message.getOffset(), e.getMessage());
                 message.setErrorInfo(new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR));
                 failedMessages.add(message);

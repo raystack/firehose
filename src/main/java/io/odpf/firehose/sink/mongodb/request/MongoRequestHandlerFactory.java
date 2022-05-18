@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.mongodb.request;
 import io.odpf.firehose.config.MongoSinkConfig;
 import io.odpf.firehose.config.enums.MongoSinkMessageType;
 import io.odpf.firehose.config.enums.MongoSinkRequestType;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.serializer.MessageToJson;
 import lombok.AllArgsConstructor;
 
@@ -19,7 +19,7 @@ import static io.odpf.firehose.config.enums.MongoSinkRequestType.UPSERT;
 public class MongoRequestHandlerFactory {
 
     private final MongoSinkConfig mongoSinkConfig;
-    private final Instrumentation instrumentation;
+    private final FirehoseInstrumentation firehoseInstrumentation;
     private final String mongoPrimaryKey;
     private final MongoSinkMessageType messageType;
     private final MessageToJson jsonSerializer;
@@ -46,7 +46,7 @@ public class MongoRequestHandlerFactory {
             throw new IllegalArgumentException("KAFKA_RECORD_PARSER_MODE should be key/message");
         }
         MongoSinkRequestType mongoSinkRequestType = mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable() ? UPDATE_ONLY : UPSERT;
-        instrumentation.logInfo("Mongo request mode: {}", mongoSinkRequestType);
+        firehoseInstrumentation.logInfo("Mongo request mode: {}", mongoSinkRequestType);
         if (mongoSinkRequestType == UPDATE_ONLY && mongoPrimaryKey == null) {
             throw new IllegalArgumentException("Primary Key cannot be null in Update-Only mode");
         }

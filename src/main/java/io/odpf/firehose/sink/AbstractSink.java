@@ -4,7 +4,7 @@ import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.ConfigurationException;
 import io.odpf.firehose.exception.SinkException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.metrics.Metrics;
 import lombok.AllArgsConstructor;
 
@@ -23,7 +23,7 @@ import static io.odpf.firehose.metrics.Metrics.SINK_MESSAGES_TOTAL;
 @AllArgsConstructor
 public abstract class AbstractSink implements Closeable, Sink {
 
-    private final Instrumentation instrumentation;
+    private final FirehoseInstrumentation firehoseInstrumentation;
     private final String sinkType;
 
     /**
@@ -37,29 +37,29 @@ public abstract class AbstractSink implements Closeable, Sink {
         List<Message> failedMessages = messages;
         Instant executionStartTime = null;
         try {
-            instrumentation.logInfo("Preparing {} messages", messages.size());
-            instrumentation.captureMessageBatchSize(messages.size());
-            instrumentation.captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, messages.size());
+            firehoseInstrumentation.logInfo("Preparing {} messages", messages.size());
+            firehoseInstrumentation.captureMessageBatchSize(messages.size());
+            firehoseInstrumentation.captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, messages.size());
             prepare(messages);
-            instrumentation.capturePreExecutionLatencies(messages);
-            executionStartTime = instrumentation.startExecution();
+            firehoseInstrumentation.capturePreExecutionLatencies(messages);
+            executionStartTime = firehoseInstrumentation.startExecution();
             failedMessages = execute();
-            instrumentation.logInfo("Pushed {} messages", messages.size() - failedMessages.size());
+            firehoseInstrumentation.logInfo("Pushed {} messages", messages.size() - failedMessages.size());
         } catch (DeserializerException | ConfigurationException | NullPointerException | SinkException e) {
             throw e;
         } catch (Exception e) {
             if (!messages.isEmpty()) {
-                instrumentation.logWarn("Failed to push {} messages to sink", messages.size());
+                firehoseInstrumentation.logWarn("Failed to push {} messages to sink", messages.size());
             }
-            instrumentation.captureNonFatalError(e, "caught {} {}", e.getClass(), e.getMessage());
+            firehoseInstrumentation.captureNonFatalError("firehose_error_event", e, "caught {} {}", e.getClass(), e.getMessage());
             failedMessages = messages;
         } finally {
             // Process success,failure and error metrics
             if (executionStartTime != null) {
-                instrumentation.captureSinkExecutionTelemetry(sinkType, messages.size());
+                firehoseInstrumentation.captureSinkExecutionTelemetry(sinkType, messages.size());
             }
-            instrumentation.captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, messages.size() - failedMessages.size());
-            instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.SINK, messages.size() - failedMessages.size());
+            firehoseInstrumentation.captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, messages.size() - failedMessages.size());
+            firehoseInstrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.SINK, messages.size() - failedMessages.size());
             processFailedMessages(failedMessages);
         }
         return failedMessages;
@@ -67,12 +67,12 @@ public abstract class AbstractSink implements Closeable, Sink {
 
     private void processFailedMessages(List<Message> failedMessages) {
         if (failedMessages.size() > 0) {
-            instrumentation.logError("Failed to Push {} messages to sink ", failedMessages.size());
+            firehoseInstrumentation.logError("Failed to Push {} messages to sink ", failedMessages.size());
             failedMessages.forEach(m -> {
                 m.setDefaultErrorIfNotPresent();
-                instrumentation.captureMessageMetrics(SINK_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, m.getErrorInfo().getErrorType(), 1);
-                instrumentation.captureErrorMetrics(m.getErrorInfo().getErrorType());
-                instrumentation.logError("Failed to Push message. Error: {},Topic: {}, Partition: {},Offset: {}",
+                firehoseInstrumentation.captureMessageMetrics(SINK_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, m.getErrorInfo().getErrorType(), 1);
+                firehoseInstrumentation.captureErrorMetrics(m.getErrorInfo().getErrorType());
+                firehoseInstrumentation.logError("Failed to Push message. Error: {},Topic: {}, Partition: {},Offset: {}",
                         m.getErrorInfo().getErrorType(),
                         m.getTopic(),
                         m.getPartition(),
@@ -86,8 +86,8 @@ public abstract class AbstractSink implements Closeable, Sink {
      *
      * @return the instrumentation
      */
-    public Instrumentation getInstrumentation() {
-        return instrumentation;
+    public FirehoseInstrumentation getFirehoseInstrumentation() {
+        return firehoseInstrumentation;
     }
 
     /**

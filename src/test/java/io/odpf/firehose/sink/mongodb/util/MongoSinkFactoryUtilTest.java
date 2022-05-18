@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.mongodb.util;
 
 import com.mongodb.ServerAddress;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,7 +19,7 @@ public class MongoSinkFactoryUtilTest {
     public ExpectedException thrown = ExpectedException.none();
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Before
     public void setUp() {
@@ -31,7 +31,7 @@ public class MongoSinkFactoryUtilTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("SINK_MONGO_CONNECTION_URLS is empty or null");
 
-        MongoSinkFactoryUtil.getServerAddresses("", instrumentation);
+        MongoSinkFactoryUtil.getServerAddresses("", firehoseInstrumentation);
 
     }
 
@@ -39,7 +39,7 @@ public class MongoSinkFactoryUtilTest {
     public void shouldThrowIllegalArgumentExceptionWhenServerPortInvalid() {
         String mongoConnectionURLs = "localhost:qfb";
         thrown.expect(IllegalArgumentException.class);
-        MongoSinkFactoryUtil.getServerAddresses(mongoConnectionURLs, instrumentation);
+        MongoSinkFactoryUtil.getServerAddresses(mongoConnectionURLs, firehoseInstrumentation);
     }
 
     @Test
@@ -47,14 +47,14 @@ public class MongoSinkFactoryUtilTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("SINK_MONGO_CONNECTION_URLS is empty or null");
 
-        MongoSinkFactoryUtil.getServerAddresses(null, instrumentation);
+        MongoSinkFactoryUtil.getServerAddresses(null, firehoseInstrumentation);
     }
 
     @Test
     public void shouldThrowIllegalArgumentExceptionForEmptyHost() {
         String mongoConnectionURLs = ":1000";
         thrown.expect(IllegalArgumentException.class);
-        MongoSinkFactoryUtil.getServerAddresses(mongoConnectionURLs, instrumentation);
+        MongoSinkFactoryUtil.getServerAddresses(mongoConnectionURLs, firehoseInstrumentation);
     }
 
     @Test
@@ -62,13 +62,13 @@ public class MongoSinkFactoryUtilTest {
         String mongoConnectionURLs = "localhost:";
         thrown.expect(IllegalArgumentException.class);
 
-        MongoSinkFactoryUtil.getServerAddresses(mongoConnectionURLs, instrumentation);
+        MongoSinkFactoryUtil.getServerAddresses(mongoConnectionURLs, firehoseInstrumentation);
     }
 
     @Test
     public void shouldGetServerAddressesForValidMongoConnectionURLs() {
         String mongoConnectionURLs = "localhost_1:1000,localhost_2:1000";
-        List<ServerAddress> serverAddresses = MongoSinkFactoryUtil.getServerAddresses(mongoConnectionURLs, instrumentation);
+        List<ServerAddress> serverAddresses = MongoSinkFactoryUtil.getServerAddresses(mongoConnectionURLs, firehoseInstrumentation);
 
         assertEquals("localhost_1", serverAddresses.get(0).getHost());
         assertEquals(1000, serverAddresses.get(0).getPort());
@@ -79,7 +79,7 @@ public class MongoSinkFactoryUtilTest {
     @Test
     public void shouldGetServerAddressesForValidMongoConnectionURLsWithSpacesInBetween() {
         String mongoConnectionURLs = " localhost_1: 1000,  localhost_2:1000";
-        List<ServerAddress> serverAddresses = MongoSinkFactoryUtil.getServerAddresses(mongoConnectionURLs, instrumentation);
+        List<ServerAddress> serverAddresses = MongoSinkFactoryUtil.getServerAddresses(mongoConnectionURLs, firehoseInstrumentation);
 
         assertEquals("localhost_1", serverAddresses.get(0).getHost());
         assertEquals(1000, serverAddresses.get(0).getPort());
@@ -91,7 +91,7 @@ public class MongoSinkFactoryUtilTest {
     @Test
     public void shouldGetServerAddressForIPInMongoConnectionURLs() {
         String mongoConnectionURLs = "172.28.32.156:1000";
-        List<ServerAddress> serverAddresses = MongoSinkFactoryUtil.getServerAddresses(mongoConnectionURLs, instrumentation);
+        List<ServerAddress> serverAddresses = MongoSinkFactoryUtil.getServerAddresses(mongoConnectionURLs, firehoseInstrumentation);
 
         assertEquals("172.28.32.156", serverAddresses.get(0).getHost());
         assertEquals(1000, serverAddresses.get(0).getPort());
@@ -103,6 +103,6 @@ public class MongoSinkFactoryUtilTest {
         thrown.expect(IllegalArgumentException.class);
         thrown.expectMessage("SINK_MONGO_CONNECTION_URLS should contain host and port both");
 
-        MongoSinkFactoryUtil.getServerAddresses(mongoConnectionURLs, instrumentation);
+        MongoSinkFactoryUtil.getServerAddresses(mongoConnectionURLs, firehoseInstrumentation);
     }
 }

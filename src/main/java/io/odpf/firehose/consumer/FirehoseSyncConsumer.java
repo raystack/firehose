@@ -5,7 +5,7 @@ import io.odpf.firehose.exception.FirehoseConsumerFailedException;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.tracer.SinkTracer;
 import io.opentracing.Span;
@@ -27,7 +27,7 @@ public class FirehoseSyncConsumer implements FirehoseConsumer {
     private final SinkTracer tracer;
     private final ConsumerAndOffsetManager consumerAndOffsetManager;
     private final FirehoseFilter firehoseFilter;
-    private final Instrumentation instrumentation;
+    private final FirehoseInstrumentation firehoseInstrumentation;
 
     @Override
     public void process() throws IOException {
@@ -44,12 +44,12 @@ public class FirehoseSyncConsumer implements FirehoseConsumer {
                 consumerAndOffsetManager.addOffsetsAndSetCommittable(filteredMessages.getValidMessages());
             }
             consumerAndOffsetManager.commit();
-            instrumentation.logInfo("Processed {} records in consumer", messages.size());
+            firehoseInstrumentation.logInfo("Processed {} records in consumer", messages.size());
             tracer.finishTrace(spans);
         } catch (FilterException e) {
             throw new FirehoseConsumerFailedException(e);
         } finally {
-            instrumentation.captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS, beforeCall);
+            firehoseInstrumentation.captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS, beforeCall);
         }
     }
 
@@ -57,7 +57,7 @@ public class FirehoseSyncConsumer implements FirehoseConsumer {
     public void close() throws IOException {
         tracer.close();
         consumerAndOffsetManager.close();
-        instrumentation.close();
+        firehoseInstrumentation.close();
         sink.close();
     }
 }

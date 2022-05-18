@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.jdbc;
 
 
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.stencil.client.StencilClient;
 
@@ -29,21 +29,21 @@ public class JdbcSink extends AbstractSink {
     /**
      * Instantiates a new Jdbc sink.
      *
-     * @param instrumentation the instrumentation
+     * @param firehoseInstrumentation the instrumentation
      * @param sinkType        the sink type
      * @param pool            the pool
      * @param queryTemplate   the query template
      * @param stencilClient   the stencil client
      */
-    public JdbcSink(Instrumentation instrumentation, String sinkType, JdbcConnectionPool pool, QueryTemplate queryTemplate, StencilClient stencilClient) {
-        super(instrumentation, sinkType);
+    public JdbcSink(FirehoseInstrumentation firehoseInstrumentation, String sinkType, JdbcConnectionPool pool, QueryTemplate queryTemplate, StencilClient stencilClient) {
+        super(firehoseInstrumentation, sinkType);
         this.pool = pool;
         this.queryTemplate = queryTemplate;
         this.stencilClient = stencilClient;
     }
 
-    JdbcSink(Instrumentation instrumentation, String sinkType, JdbcConnectionPool pool, QueryTemplate queryTemplate, StencilClient stencilClient, Statement statement, Connection connection) {
-        this(instrumentation, sinkType, pool, queryTemplate, stencilClient);
+    JdbcSink(FirehoseInstrumentation firehoseInstrumentation, String sinkType, JdbcConnectionPool pool, QueryTemplate queryTemplate, StencilClient stencilClient, Statement statement, Connection connection) {
+        this(firehoseInstrumentation, sinkType, pool, queryTemplate, stencilClient);
         this.statement = statement;
         this.connection = connection;
     }
@@ -63,7 +63,7 @@ public class JdbcSink extends AbstractSink {
         List<String> queries = new ArrayList<>();
         for (Message message : messages) {
             String queryString = queryTemplate.toQueryString(message);
-            getInstrumentation().logDebug(queryString);
+            getFirehoseInstrumentation().logDebug(queryString);
             queries.add(queryString);
         }
         return queries;
@@ -73,7 +73,7 @@ public class JdbcSink extends AbstractSink {
     protected List<Message> execute() throws Exception {
         try {
             int[] updateCounts = statement.executeBatch();
-            getInstrumentation().logDebug("DB response: {}", Arrays.toString(updateCounts));
+            getFirehoseInstrumentation().logDebug("DB response: {}", Arrays.toString(updateCounts));
         } finally {
             if (connection != null) {
                 pool.release(connection);
@@ -85,7 +85,7 @@ public class JdbcSink extends AbstractSink {
     @Override
     public void close() throws IOException {
         try {
-            getInstrumentation().logInfo("Database connection closing");
+            getFirehoseInstrumentation().logInfo("Database connection closing");
             pool.shutdown();
             stencilClient.close();
         } catch (InterruptedException e) {

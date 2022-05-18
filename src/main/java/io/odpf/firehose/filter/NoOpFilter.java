@@ -1,14 +1,14 @@
 package io.odpf.firehose.filter;
 
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 
 import java.util.List;
 
 public class NoOpFilter implements Filter {
 
-    public NoOpFilter(Instrumentation instrumentation) {
-        instrumentation.logInfo("No filter is selected");
+    public NoOpFilter(FirehoseInstrumentation firehoseInstrumentation) {
+        firehoseInstrumentation.logInfo("No filter is selected");
     }
 
     /**

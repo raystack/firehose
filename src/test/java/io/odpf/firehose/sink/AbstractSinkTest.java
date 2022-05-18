@@ -1,10 +1,10 @@
 package io.odpf.firehose.sink;
 
+import io.odpf.depot.error.ErrorInfo;
+import io.odpf.depot.error.ErrorType;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.error.ErrorInfo;
-import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.metrics.Metrics;
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,13 +17,12 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class AbstractSinkTest {
     private static class TestSink extends AbstractSink {
-        TestSink(Instrumentation instrumentation, String sinkType) {
-            super(instrumentation, sinkType);
+        TestSink(FirehoseInstrumentation firehoseInstrumentation, String sinkType) {
+            super(firehoseInstrumentation, sinkType);
         }
 
         private final List<Message> failedMessages = new ArrayList<>();
@@ -53,7 +52,7 @@ public class AbstractSinkTest {
     }
 
     @Mock
-    private Instrumentation instrumentation = Mockito.mock(Instrumentation.class);
+    private FirehoseInstrumentation firehoseInstrumentation = Mockito.mock(FirehoseInstrumentation.class);
 
     private Message createMessage(String topic, String key, String value) {
         return new Message(key.getBytes(), value.getBytes(), topic, 0, 0);
@@ -61,8 +60,8 @@ public class AbstractSinkTest {
 
     @Test
     public void shouldProcessMessages() {
-        when(instrumentation.startExecution()).thenReturn(Instant.now());
-        TestSink sink = new TestSink(instrumentation, "TestSink");
+        when(firehoseInstrumentation.startExecution()).thenReturn(Instant.now());
+        TestSink sink = new TestSink(firehoseInstrumentation, "TestSink");
         Message m1 = createMessage("test", "test", "test1");
         Message m2 = createMessage("test", "test", "test2");
         Message m3 = createMessage("test", "test", "test3");
@@ -74,26 +73,26 @@ public class AbstractSinkTest {
             add(m4);
         }});
         Assert.assertEquals(0, failedMessages.size());
-        Mockito.verify(instrumentation, Mockito.times(1)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, 4);
-        Mockito.verify(instrumentation, Mockito.times(1)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 4);
-        Mockito.verify(instrumentation, Mockito.times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.SINK, 4);
-        Mockito.verify(instrumentation, Mockito.times(1)).captureMessageBatchSize(4);
-        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("Preparing {} messages", 4);
-        Mockito.verify(instrumentation, Mockito.times(1)).capturePreExecutionLatencies(new ArrayList<Message>() {{
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, 4);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 4);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.SINK, 4);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureMessageBatchSize(4);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).logInfo("Preparing {} messages", 4);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).capturePreExecutionLatencies(new ArrayList<Message>() {{
             add(m1);
             add(m2);
             add(m3);
             add(m4);
         }});
-        Mockito.verify(instrumentation, Mockito.times(1)).startExecution();
-        Mockito.verify(instrumentation, Mockito.times(1)).captureSinkExecutionTelemetry("TestSink", 4);
-        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("Pushed {} messages", 4);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).startExecution();
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureSinkExecutionTelemetry("TestSink", 4);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).logInfo("Pushed {} messages", 4);
     }
 
     @Test
     public void shouldProcessFailedMessages() {
-        when(instrumentation.startExecution()).thenReturn(Instant.now());
-        TestSink sink = new TestSink(instrumentation, "TestSink");
+        when(firehoseInstrumentation.startExecution()).thenReturn(Instant.now());
+        TestSink sink = new TestSink(firehoseInstrumentation, "TestSink");
         Message m1 = createMessage("test", "test", "test1");
         Message m2 = createMessage("test", "test", "test2");
         Message m3 = createMessage("test", "test", "test3");
@@ -111,32 +110,32 @@ public class AbstractSinkTest {
             add(m5);
         }});
         Assert.assertEquals(3, failedMessages.size());
-        Mockito.verify(instrumentation, Mockito.times(1)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, 5);
-        Mockito.verify(instrumentation, Mockito.times(1)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 2);
-        Mockito.verify(instrumentation, Mockito.times(2)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, ErrorType.DEFAULT_ERROR, 1);
-        Mockito.verify(instrumentation, Mockito.times(1)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, ErrorType.DESERIALIZATION_ERROR, 1);
-        Mockito.verify(instrumentation, Mockito.times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.SINK, 2);
-        Mockito.verify(instrumentation, Mockito.times(1)).captureMessageBatchSize(5);
-        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("Preparing {} messages", 5);
-        Mockito.verify(instrumentation, Mockito.times(1)).capturePreExecutionLatencies(new ArrayList<Message>() {{
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, 5);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 2);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(2)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, ErrorType.DEFAULT_ERROR, 1);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, ErrorType.DESERIALIZATION_ERROR, 1);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.SINK, 2);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureMessageBatchSize(5);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).logInfo("Preparing {} messages", 5);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).capturePreExecutionLatencies(new ArrayList<Message>() {{
             add(m1);
             add(m2);
             add(m3);
             add(m4);
             add(m5);
         }});
-        Mockito.verify(instrumentation, Mockito.times(1)).startExecution();
-        Mockito.verify(instrumentation, Mockito.times(1)).captureSinkExecutionTelemetry("TestSink", 5);
-        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("Pushed {} messages", 2);
-        Mockito.verify(instrumentation, Mockito.times(1)).logError("Failed to Push {} messages to sink ", 3);
-        Mockito.verify(instrumentation, Mockito.times(1)).captureErrorMetrics(ErrorType.DESERIALIZATION_ERROR);
-        Mockito.verify(instrumentation, Mockito.times(2)).captureErrorMetrics(ErrorType.DEFAULT_ERROR);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).startExecution();
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureSinkExecutionTelemetry("TestSink", 5);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).logInfo("Pushed {} messages", 2);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).logError("Failed to Push {} messages to sink ", 3);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureErrorMetrics(ErrorType.DESERIALIZATION_ERROR);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(2)).captureErrorMetrics(ErrorType.DEFAULT_ERROR);
     }
 
     @Test
     public void shouldProcessException() {
-        when(instrumentation.startExecution()).thenReturn(Instant.now());
-        TestSink sink = new TestSink(instrumentation, "TestSink");
+        when(firehoseInstrumentation.startExecution()).thenReturn(Instant.now());
+        TestSink sink = new TestSink(firehoseInstrumentation, "TestSink");
         Message m1 = createMessage("test", "test", "test1");
         Message m2 = createMessage("test", "test", "test2");
         Message m3 = createMessage("test", "test", "test3");
@@ -150,25 +149,25 @@ public class AbstractSinkTest {
         }});
         Assert.assertEquals(4, failedMessages.size());
 
-        Mockito.verify(instrumentation, Mockito.times(1)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, 4);
-        Mockito.verify(instrumentation, Mockito.times(4)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, ErrorType.DEFAULT_ERROR, 1);
-        Mockito.verify(instrumentation, Mockito.times(1)).captureMessageBatchSize(4);
-        Mockito.verify(instrumentation, Mockito.times(1)).logInfo("Preparing {} messages", 4);
-        Mockito.verify(instrumentation, Mockito.times(1)).capturePreExecutionLatencies(new ArrayList<Message>() {{
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, 4);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(4)).captureMessageMetrics(Metrics.SINK_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, ErrorType.DEFAULT_ERROR, 1);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureMessageBatchSize(4);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).logInfo("Preparing {} messages", 4);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).capturePreExecutionLatencies(new ArrayList<Message>() {{
             add(m1);
             add(m2);
             add(m3);
             add(m4);
         }});
-        Mockito.verify(instrumentation, Mockito.times(1)).startExecution();
-        Mockito.verify(instrumentation, Mockito.times(1)).captureSinkExecutionTelemetry("TestSink", 4);
-        Mockito.verify(instrumentation, Mockito.times(1)).logError("Failed to Push {} messages to sink ", 4);
-        Mockito.verify(instrumentation, Mockito.times(4)).captureErrorMetrics(ErrorType.DEFAULT_ERROR);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).startExecution();
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureSinkExecutionTelemetry("TestSink", 4);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).logError("Failed to Push {} messages to sink ", 4);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(4)).captureErrorMetrics(ErrorType.DEFAULT_ERROR);
     }
 
     @Test(expected = DeserializerException.class)
     public void shouldProcessExceptionInPrepare() {
-        TestSink sink = new TestSink(instrumentation, "TestSink");
+        TestSink sink = new TestSink(firehoseInstrumentation, "TestSink");
         Message m1 = createMessage("test", "test", "test1");
         Message m2 = createMessage("test", "test", "test2");
         Message m3 = createMessage("test", "test", "test3");
@@ -184,7 +183,7 @@ public class AbstractSinkTest {
 
     @Test
     public void shouldNotCaptureSinkExecutionTelemetry() {
-        TestSink sink = new TestSink(instrumentation, "TestSink");
+        TestSink sink = new TestSink(firehoseInstrumentation, "TestSink");
         Message m1 = createMessage("test", "test", "test1");
         Message m2 = createMessage("test", "test", "test2");
         Message m3 = createMessage("test", "test", "test3");
@@ -198,7 +197,7 @@ public class AbstractSinkTest {
             add(m4);
         }});
         } catch (Exception e) {
-            Mockito.verify(instrumentation, Mockito.times(0)).captureSinkExecutionTelemetry(any(), any());
+            Mockito.verify(firehoseInstrumentation, Mockito.times(0)).captureSinkExecutionTelemetry(any(), any());
         }
     }
 

@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.redis;
 
 
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.stencil.client.StencilClient;
 import org.junit.Before;

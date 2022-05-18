@@ -3,7 +3,7 @@ package io.odpf.firehose.filter;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.verify;
 public class NoOpFilterTest {
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Before
     public void setup() {
@@ -27,8 +27,8 @@ public class NoOpFilterTest {
 
     @Test
     public void shouldLogNoFilterSelected() {
-        new NoOpFilter(instrumentation);
-        verify(instrumentation, times(1)).logInfo("No filter is selected");
+        new NoOpFilter(firehoseInstrumentation);
+        verify(firehoseInstrumentation, times(1)).logInfo("No filter is selected");
     }
 
     @Test
@@ -39,7 +39,7 @@ public class NoOpFilterTest {
         TestMessage testMessageProto2 = TestMessage.newBuilder().setOrderNumber("92").setOrderUrl("pqr").setOrderDetails("details").build();
         Message message1 = new Message(testKeyProto1.toByteArray(), testMessageProto1.toByteArray(), "topic1", 0, 100);
         Message message2 = new Message(testKeyProto2.toByteArray(), testMessageProto2.toByteArray(), "topic1", 0, 101);
-        NoOpFilter noOpFilter = new NoOpFilter(instrumentation);
+        NoOpFilter noOpFilter = new NoOpFilter(firehoseInstrumentation);
         FilteredMessages expectedMessages = new FilteredMessages();
         expectedMessages.addToValidMessages(message1);
         expectedMessages.addToValidMessages(message2);
@@ -58,7 +58,7 @@ public class NoOpFilterTest {
         FilteredMessages expectedMessages = new FilteredMessages();
         expectedMessages.addToValidMessages(message1);
         expectedMessages.addToValidMessages(message2);
-        NoOpFilter noOpFilter = new NoOpFilter(instrumentation);
+        NoOpFilter noOpFilter = new NoOpFilter(firehoseInstrumentation);
         FilteredMessages filteredMessages = noOpFilter.filter(Arrays.asList(message1, message2));
         assertEquals(expectedMessages, filteredMessages);
     }

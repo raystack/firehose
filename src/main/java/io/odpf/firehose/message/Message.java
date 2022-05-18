@@ -1,8 +1,8 @@
 package io.odpf.firehose.message;
 
 
-import io.odpf.firehose.error.ErrorInfo;
-import io.odpf.firehose.error.ErrorType;
+import io.odpf.depot.error.ErrorInfo;
+import io.odpf.depot.error.ErrorType;
 import io.odpf.firehose.exception.DefaultException;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
