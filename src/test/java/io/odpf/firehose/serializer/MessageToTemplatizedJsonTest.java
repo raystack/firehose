@@ -7,7 +7,7 @@ import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestAggregatedSupplyMessage;
 import io.odpf.firehose.exception.DeserializerException;
 import io.odpf.firehose.exception.ConfigurationException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
 import io.odpf.stencil.Parser;
@@ -34,7 +34,7 @@ public class MessageToTemplatizedJsonTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Mock
     private Parser protoParser;
@@ -55,7 +55,7 @@ public class MessageToTemplatizedJsonTest {
         StencilClient stencilClient = StencilClientFactory.getClient();
         protoParser = stencilClient.getParser(TestAggregatedSupplyMessage.class.getName());
         MessageToTemplatizedJson messageToTemplatizedJson = MessageToTemplatizedJson
-                .create(instrumentation, template, protoParser);
+                .create(firehoseInstrumentation, template, protoParser);
         Message message = new Message(Base64.getDecoder().decode(logKey.getBytes()),
                 Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
@@ -70,7 +70,7 @@ public class MessageToTemplatizedJsonTest {
         StencilClient stencilClient = StencilClientFactory.getClient();
         protoParser = stencilClient.getParser(TestAggregatedSupplyMessage.class.getName());
         MessageToTemplatizedJson messageToTemplatizedJson = MessageToTemplatizedJson
-                .create(instrumentation, template, protoParser);
+                .create(firehoseInstrumentation, template, protoParser);
         Message message = new Message(Base64.getDecoder().decode(logKey.getBytes()),
                 Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
@@ -95,7 +95,7 @@ public class MessageToTemplatizedJsonTest {
         StencilClient stencilClient = StencilClientFactory.getClient();
         protoParser = stencilClient.getParser(TestAggregatedSupplyMessage.class.getName());
         MessageToTemplatizedJson messageToTemplatizedJson = MessageToTemplatizedJson
-                .create(instrumentation, template, protoParser);
+                .create(firehoseInstrumentation, template, protoParser);
         Message message = new Message(Base64.getDecoder().decode(logKey.getBytes()),
                 Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
@@ -108,7 +108,7 @@ public class MessageToTemplatizedJsonTest {
         expectedException.expectMessage("must be a valid JSON.");
 
         String template = "{\"test:\"$.routes[0]\", \"$.order_number\" : \"xxx\"}";
-        MessageToTemplatizedJson.create(instrumentation, template, protoParser);
+        MessageToTemplatizedJson.create(firehoseInstrumentation, template, protoParser);
     }
 
 
@@ -118,7 +118,7 @@ public class MessageToTemplatizedJsonTest {
         expectedException.expectMessage("must be a valid JSON.");
 
         String template = "{\"test:\"$.routes[0]\", \"$.order_number\" : \"xxx\"}";
-        MessageToTemplatizedJson.create(instrumentation, template, protoParser);
+        MessageToTemplatizedJson.create(firehoseInstrumentation, template, protoParser);
     }
 
     @Test
@@ -136,8 +136,8 @@ public class MessageToTemplatizedJsonTest {
 
         StencilClient stencilClient = StencilClientFactory.getClient();
         protoParser = stencilClient.getParser(TestAggregatedSupplyMessage.class.getName());
-        MessageToTemplatizedJson.create(instrumentation, template, protoParser);
+        MessageToTemplatizedJson.create(firehoseInstrumentation, template, protoParser);
 
-        Mockito.verify(instrumentation, Mockito.times(1)).logDebug("\nPaths: {}", pathList);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).logDebug("\nPaths: {}", pathList);
     }
 }

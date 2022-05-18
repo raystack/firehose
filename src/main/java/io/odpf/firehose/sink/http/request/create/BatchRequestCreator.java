@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.http.request.create;
 
 import io.odpf.firehose.config.enums.HttpSinkRequestMethodType;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.http.request.HttpRequestMethodFactory;
 import io.odpf.firehose.sink.http.request.body.JsonBody;
 import io.odpf.firehose.sink.http.request.entity.RequestEntityBuilder;
@@ -22,14 +22,14 @@ public class BatchRequestCreator implements RequestCreator {
     private HeaderBuilder headerBuilder;
     private HttpSinkRequestMethodType method;
     private JsonBody jsonBody;
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
-    public BatchRequestCreator(Instrumentation instrumentation, UriBuilder uriBuilder, HeaderBuilder headerBuilder, HttpSinkRequestMethodType method, JsonBody jsonBody) {
+    public BatchRequestCreator(FirehoseInstrumentation firehoseInstrumentation, UriBuilder uriBuilder, HeaderBuilder headerBuilder, HttpSinkRequestMethodType method, JsonBody jsonBody) {
         this.uriBuilder = uriBuilder;
         this.headerBuilder = headerBuilder;
         this.method = method;
         this.jsonBody = jsonBody;
-        this.instrumentation = instrumentation;
+        this.firehoseInstrumentation = firehoseInstrumentation;
     }
 
     @Override
@@ -43,7 +43,7 @@ public class BatchRequestCreator implements RequestCreator {
         String messagesString = jsonBody.serialize(messages).toString();
 
         request.setEntity(requestEntityBuilder.buildHttpEntity(messagesString));
-        instrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+        firehoseInstrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
                 uri, headerMap, jsonBody.serialize(messages), method);
         return Collections.singletonList(request);
     }

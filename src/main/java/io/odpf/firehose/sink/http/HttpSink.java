@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.http;
 
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.common.AbstractHttpSink;
 import io.odpf.firehose.sink.http.request.types.Request;
 import io.odpf.stencil.client.StencilClient;
@@ -35,15 +35,15 @@ public class HttpSink extends AbstractHttpSink {
     /**
      * Instantiates a new Http sink.
      *
-     * @param instrumentation            the instrumentation
+     * @param firehoseInstrumentation    the instrumentation
      * @param request                    the request
      * @param httpClient                 the http client
      * @param stencilClient              the stencil client
      * @param retryStatusCodeRanges      the retry status code ranges
      * @param requestLogStatusCodeRanges the request log status code ranges
      */
-    public HttpSink(Instrumentation instrumentation, Request request, HttpClient httpClient, StencilClient stencilClient, Map<Integer, Boolean> retryStatusCodeRanges, Map<Integer, Boolean> requestLogStatusCodeRanges) {
-        super(instrumentation, "http", httpClient, stencilClient, retryStatusCodeRanges, requestLogStatusCodeRanges);
+    public HttpSink(FirehoseInstrumentation firehoseInstrumentation, Request request, HttpClient httpClient, StencilClient stencilClient, Map<Integer, Boolean> retryStatusCodeRanges, Map<Integer, Boolean> requestLogStatusCodeRanges) {
+        super(firehoseInstrumentation, "http", httpClient, stencilClient, retryStatusCodeRanges, requestLogStatusCodeRanges);
         this.request = request;
     }
 
@@ -68,7 +68,7 @@ public class HttpSink extends AbstractHttpSink {
 
         List<String> result = Arrays.asList(requestBody.replaceAll("^\\[|]$", "").split("},\\s*\\{"));
 
-        getInstrumentation().captureCount(SINK_MESSAGES_DROP_TOTAL, result.size(), "cause= " + statusCode(response));
-        getInstrumentation().logInfo("Message dropped because of status code: " + statusCode(response));
+        getFirehoseInstrumentation().captureCount(SINK_MESSAGES_DROP_TOTAL, (long) result.size(), "cause= " + statusCode(response));
+        getFirehoseInstrumentation().logInfo("Message dropped because of status code: " + statusCode(response));
     }
 }

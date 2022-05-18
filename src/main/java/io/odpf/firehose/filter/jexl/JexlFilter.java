@@ -6,7 +6,7 @@ import io.odpf.firehose.message.Message;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
 import org.apache.commons.jexl2.JexlEngine;
@@ -35,18 +35,18 @@ public class JexlFilter implements Filter {
      * Instantiates a new Message filter.
      *
      * @param filterConfig    the consumer config
-     * @param instrumentation the instrumentation
+     * @param firehoseInstrumentation the instrumentation
      */
-    public JexlFilter(FilterConfig filterConfig, Instrumentation instrumentation) {
+    public JexlFilter(FilterConfig filterConfig, FirehoseInstrumentation firehoseInstrumentation) {
         JexlEngine engine = new JexlEngine();
         engine.setSilent(false);
         engine.setStrict(true);
         this.filterDataSourceType = filterConfig.getFilterDataSource();
         this.protoSchema = filterConfig.getFilterSchemaProtoClass();
-        instrumentation.logInfo("\n\tFilter type: {}", this.filterDataSourceType);
+        firehoseInstrumentation.logInfo("\n\tFilter type: {}", this.filterDataSourceType);
         this.expression = engine.createExpression(filterConfig.getFilterJexlExpression());
-        instrumentation.logInfo("\n\tFilter schema: {}", this.protoSchema);
-        instrumentation.logInfo("\n\tFilter expression: {}", filterConfig.getFilterJexlExpression());
+        firehoseInstrumentation.logInfo("\n\tFilter schema: {}", this.protoSchema);
+        firehoseInstrumentation.logInfo("\n\tFilter expression: {}", filterConfig.getFilterJexlExpression());
     }
 
     /**

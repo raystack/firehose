@@ -7,7 +7,7 @@ import lombok.Getter;
  * Should be thrown when there is exception thrown by blob storage client.
  */
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 public class BlobStorageException extends Exception {
     private final String errorType;
     private final String message;

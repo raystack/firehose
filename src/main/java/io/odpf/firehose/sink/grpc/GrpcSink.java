@@ -4,7 +4,7 @@ package io.odpf.firehose.sink.grpc;
 
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.grpc.client.GrpcClient;
 import com.google.protobuf.DynamicMessage;
@@ -24,8 +24,8 @@ public class GrpcSink extends AbstractSink {
     private List<Message> messages;
     private StencilClient stencilClient;
 
-    public GrpcSink(Instrumentation instrumentation, GrpcClient grpcClient, StencilClient stencilClient) {
-        super(instrumentation, "grpc");
+    public GrpcSink(FirehoseInstrumentation firehoseInstrumentation, GrpcClient grpcClient, StencilClient stencilClient) {
+        super(firehoseInstrumentation, "grpc");
         this.grpcClient = grpcClient;
         this.stencilClient = stencilClient;
     }
@@ -36,16 +36,16 @@ public class GrpcSink extends AbstractSink {
 
         for (Message message : this.messages) {
             DynamicMessage response = grpcClient.execute(message.getLogMessage(), message.getHeaders());
-            getInstrumentation().logDebug("Response: {}", response);
+            getFirehoseInstrumentation().logDebug("Response: {}", response);
             Object m = response.getField(response.getDescriptorForType().findFieldByName("success"));
             boolean success = (m != null) ? Boolean.valueOf(String.valueOf(m)) : false;
 
             if (!success) {
-                getInstrumentation().logWarn("Grpc Service returned error");
+                getFirehoseInstrumentation().logWarn("Grpc Service returned error");
                 failedMessages.add(message);
             }
         }
-        getInstrumentation().logDebug("Failed messages count: {}", failedMessages.size());
+        getFirehoseInstrumentation().logDebug("Failed messages count: {}", failedMessages.size());
         return failedMessages;
     }
 
@@ -56,7 +56,7 @@ public class GrpcSink extends AbstractSink {
 
     @Override
     public void close() throws IOException {
-        getInstrumentation().logInfo("GRPC connection closing");
+        getFirehoseInstrumentation().logInfo("GRPC connection closing");
         this.messages = new ArrayList<>();
         stencilClient.close();
     }

@@ -1,10 +1,8 @@
 package io.odpf.firehose.sink.grpc;
 
-
-
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.consumer.TestServerGrpc;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.Sink;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;

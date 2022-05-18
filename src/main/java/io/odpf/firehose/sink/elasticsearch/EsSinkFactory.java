@@ -1,10 +1,10 @@
 package io.odpf.firehose.sink.elasticsearch;
 
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.EsSinkConfig;
 import io.odpf.firehose.config.enums.SinkType;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.serializer.MessageToJson;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.elasticsearch.request.EsRequestHandler;
@@ -36,7 +36,7 @@ public class EsSinkFactory {
     public static Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         EsSinkConfig esSinkConfig = ConfigFactory.create(EsSinkConfig.class, configuration);
 
-        Instrumentation instrumentation = new Instrumentation(statsDReporter, EsSinkFactory.class);
+        FirehoseInstrumentation firehoseInstrumentation = new FirehoseInstrumentation(statsDReporter, EsSinkFactory.class);
         String esConfig = String.format("\n\tES connection urls: %s\n\tES index name: %s\n\tES id field: %s\n\tES message type: %s"
                         + "\n\tES type name: %s\n\tES request timeout in ms: %s\n\tES retry status code blacklist: %s"
                         + "\n\tES routing key name: %s\n\tES wait for active shards count: %s\n\tES update only mode: %s"
@@ -45,8 +45,8 @@ public class EsSinkFactory {
                 esSinkConfig.getSinkEsTypeName(), esSinkConfig.getSinkEsRequestTimeoutMs(), esSinkConfig.getSinkEsRetryStatusCodeBlacklist(),
                 esSinkConfig.getSinkEsRoutingKeyName(), esSinkConfig.getSinkEsShardsActiveWaitCount(), esSinkConfig.isSinkEsModeUpdateOnlyEnable(),
                 esSinkConfig.isSinkEsPreserveProtoFieldNamesEnable());
-        instrumentation.logDebug(esConfig);
-        EsRequestHandler esRequestHandler = new EsRequestHandlerFactory(esSinkConfig, new Instrumentation(statsDReporter, EsRequestHandlerFactory.class),
+        firehoseInstrumentation.logDebug(esConfig);
+        EsRequestHandler esRequestHandler = new EsRequestHandlerFactory(esSinkConfig, new FirehoseInstrumentation(statsDReporter, EsRequestHandlerFactory.class),
                 esSinkConfig.getSinkEsIdField(), esSinkConfig.getSinkEsInputMessageType(),
                 new MessageToJson(stencilClient.getParser(esSinkConfig.getInputSchemaProtoClass()), esSinkConfig.isSinkEsPreserveProtoFieldNamesEnable(), false),
                 esSinkConfig.getSinkEsTypeName(),
@@ -54,14 +54,14 @@ public class EsSinkFactory {
                 esSinkConfig.getSinkEsRoutingKeyName())
                 .getRequestHandler();
 
-        HttpHost[] httpHosts = getHttpHosts(esSinkConfig.getSinkEsConnectionUrls(), instrumentation);
+        HttpHost[] httpHosts = getHttpHosts(esSinkConfig.getSinkEsConnectionUrls(), firehoseInstrumentation);
         RestHighLevelClient client = new RestHighLevelClient(RestClient.builder(httpHosts));
-        instrumentation.logInfo("ES connection established");
-        return new EsSink(new Instrumentation(statsDReporter, EsSink.class), SinkType.ELASTICSEARCH.name().toLowerCase(), client, esRequestHandler,
+        firehoseInstrumentation.logInfo("ES connection established");
+        return new EsSink(new FirehoseInstrumentation(statsDReporter, EsSink.class), SinkType.ELASTICSEARCH.name().toLowerCase(), client, esRequestHandler,
                 esSinkConfig.getSinkEsRequestTimeoutMs(), esSinkConfig.getSinkEsShardsActiveWaitCount(), getStatusCodesAsList(esSinkConfig.getSinkEsRetryStatusCodeBlacklist()));
     }
 
-    protected static HttpHost[] getHttpHosts(String esConnectionUrls, Instrumentation instrumentation) {
+    protected static HttpHost[] getHttpHosts(String esConnectionUrls, FirehoseInstrumentation firehoseInstrumentation) {
         if (esConnectionUrls != null && !esConnectionUrls.isEmpty()) {
             String[] esNodes = esConnectionUrls.trim().split(",");
             HttpHost[] httpHosts = new HttpHost[esNodes.length];
@@ -74,7 +74,7 @@ public class EsSinkFactory {
             }
             return httpHosts;
         } else {
-            instrumentation.logError("No connection URL found");
+            firehoseInstrumentation.logError("No connection URL found");
             throw new IllegalArgumentException("SINK_ES_CONNECTION_URLS is empty or null");
         }
     }

@@ -1,10 +1,10 @@
 package io.odpf.firehose.utils;
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.DlqKafkaProducerConfig;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.consumer.kafka.FirehoseKafkaConsumer;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.parser.KafkaEnvironmentVariables;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.kafka.TracingKafkaConsumer;
@@ -40,10 +40,10 @@ public class KafkaUtils {
      * @param statsdReporter the statsd reporter
      */
     public static void configureSubscription(KafkaConsumerConfig config, KafkaConsumer<byte[], byte[]> kafkaConsumer, StatsDReporter statsdReporter) {
-        Instrumentation instrumentation = new Instrumentation(statsdReporter, KafkaUtils.class);
+        FirehoseInstrumentation firehoseInstrumentation = new FirehoseInstrumentation(statsdReporter, KafkaUtils.class);
         Pattern subscriptionTopicPattern = Pattern.compile(config.getSourceKafkaTopic());
-        instrumentation.logInfo("consumer subscribed using pattern: {}", subscriptionTopicPattern);
-        kafkaConsumer.subscribe(subscriptionTopicPattern, new ConsumerRebalancer(new Instrumentation(statsdReporter, ConsumerRebalancer.class)));
+        firehoseInstrumentation.logInfo("consumer subscribed using pattern: {}", subscriptionTopicPattern);
+        kafkaConsumer.subscribe(subscriptionTopicPattern, new ConsumerRebalancer(new FirehoseInstrumentation(statsdReporter, ConsumerRebalancer.class)));
     }
 
     public static Map<String, Object> getConfig(KafkaConsumerConfig config, Map<String, String> extraParameters) {
@@ -83,7 +83,7 @@ public class KafkaUtils {
         return new FirehoseKafkaConsumer(
                 tracingKafkaConsumer,
                 config,
-                new Instrumentation(statsDReporter, FirehoseKafkaConsumer.class));
+                new FirehoseInstrumentation(statsDReporter, FirehoseKafkaConsumer.class));
     }
 
     /**

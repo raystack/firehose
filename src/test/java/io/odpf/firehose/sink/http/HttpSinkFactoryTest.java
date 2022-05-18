@@ -1,8 +1,8 @@
 package io.odpf.firehose.sink.http;
 
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.stencil.client.StencilClient;
 import org.gradle.internal.impldep.org.junit.Before;
@@ -11,7 +11,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.verify.VerificationTimes;
 

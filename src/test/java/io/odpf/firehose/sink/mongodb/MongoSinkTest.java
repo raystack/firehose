@@ -6,7 +6,7 @@ import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.WriteModel;
 import io.odpf.firehose.config.enums.SinkType;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.mongodb.client.MongoSinkClient;
 import io.odpf.firehose.sink.mongodb.request.MongoRequestHandler;
 import org.bson.BsonDocument;
@@ -33,7 +33,7 @@ public class MongoSinkTest {
     public ExpectedException thrown = ExpectedException.none();
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Mock
     private MongoRequestHandler mongoRequestHandler;
@@ -77,7 +77,7 @@ public class MongoSinkTest {
 
     @Test
     public void shouldGetRequestForEachMessageInEsbMessagesList() {
-        MongoSink mongoSink = new MongoSink(instrumentation, SinkType.MONGODB.name(), mongoRequestHandler,
+        MongoSink mongoSink = new MongoSink(firehoseInstrumentation, SinkType.MONGODB.name(), mongoRequestHandler,
                 mongoSinkClient);
 
         mongoSink.prepare(messages);
@@ -87,7 +87,7 @@ public class MongoSinkTest {
 
     @Test
     public void shouldGetCorrectRequestsForEachMessageInEsbMessagesList() throws IllegalAccessException, NoSuchFieldException {
-        MongoSink mongoSink = new MongoSink(instrumentation, SinkType.MONGODB.name(), mongoRequestHandler,
+        MongoSink mongoSink = new MongoSink(firehoseInstrumentation, SinkType.MONGODB.name(), mongoRequestHandler,
                 mongoSinkClient);
 
         Field requestsField = MongoSink.class.getDeclaredField("requests");
@@ -105,7 +105,7 @@ public class MongoSinkTest {
         BulkWriteError writeError2 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 1);
         List<BulkWriteError> writeErrors = Arrays.asList(writeError1, writeError2);
 
-        MongoSink mongoSink = new MongoSink(instrumentation, SinkType.MONGODB.name(), mongoRequestHandler,
+        MongoSink mongoSink = new MongoSink(firehoseInstrumentation, SinkType.MONGODB.name(), mongoRequestHandler,
                 mongoSinkClient);
         Field messagesField = MongoSink.class.getDeclaredField("messages");
         messagesField.setAccessible(true);
@@ -121,7 +121,7 @@ public class MongoSinkTest {
     @Test
     public void shouldReturnEmptyListWhenBulRequestSucceeds() throws NoSuchFieldException, IllegalAccessException {
         List<BulkWriteError> writeErrors = new ArrayList<>();
-        MongoSink mongoSink = new MongoSink(instrumentation, SinkType.MONGODB.name(), mongoRequestHandler,
+        MongoSink mongoSink = new MongoSink(firehoseInstrumentation, SinkType.MONGODB.name(), mongoRequestHandler,
                 mongoSinkClient);
 
         Field messagesField = MongoSink.class.getDeclaredField("messages");

@@ -1,9 +1,9 @@
 package io.odpf.firehose.sink.redis.client;
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.redis.dataentry.RedisDataEntry;
 import io.odpf.firehose.sink.redis.dataentry.RedisHashSetFieldEntry;
 import io.odpf.firehose.sink.redis.dataentry.RedisListEntry;
@@ -18,7 +18,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
@@ -35,12 +35,12 @@ public class RedisStandaloneClientTest {
     @Mock
     private StatsDReporter statsDReporter;
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
-    private final RedisHashSetFieldEntry firstRedisSetEntry = new RedisHashSetFieldEntry("key1", "field1", "value1", new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class));
-    private final RedisHashSetFieldEntry secondRedisSetEntry = new RedisHashSetFieldEntry("key2", "field2", "value2", new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class));
-    private final RedisListEntry firstRedisListEntry = new RedisListEntry("key1", "value1", new Instrumentation(statsDReporter, RedisListEntry.class));
-    private final RedisListEntry secondRedisListEntry = new RedisListEntry("key2", "value2", new Instrumentation(statsDReporter, RedisListEntry.class));
+    private final RedisHashSetFieldEntry firstRedisSetEntry = new RedisHashSetFieldEntry("key1", "field1", "value1", new FirehoseInstrumentation(statsDReporter, RedisHashSetFieldEntry.class));
+    private final RedisHashSetFieldEntry secondRedisSetEntry = new RedisHashSetFieldEntry("key2", "field2", "value2", new FirehoseInstrumentation(statsDReporter, RedisHashSetFieldEntry.class));
+    private final RedisListEntry firstRedisListEntry = new RedisListEntry("key1", "value1", new FirehoseInstrumentation(statsDReporter, RedisListEntry.class));
+    private final RedisListEntry secondRedisListEntry = new RedisListEntry("key2", "value2", new FirehoseInstrumentation(statsDReporter, RedisListEntry.class));
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
     private RedisClient redisClient;
@@ -68,7 +68,7 @@ public class RedisStandaloneClientTest {
         messages = Arrays.asList(new Message(new byte[0], new byte[0], "topic", 0, 100),
                 new Message(new byte[0], new byte[0], "topic", 0, 100));
 
-        redisClient = new RedisStandaloneClient(instrumentation, redisMessageParser, redisTTL, jedis);
+        redisClient = new RedisStandaloneClient(firehoseInstrumentation, redisMessageParser, redisTTL, jedis);
 
         redisDataEntries = new ArrayList<>();
 
@@ -128,7 +128,7 @@ public class RedisStandaloneClientTest {
         redisClient.execute();
 
         verify(jedisPipeline).exec();
-        verify(instrumentation, times(1)).logDebug("jedis responses: {}", responses);
+        verify(firehoseInstrumentation, times(1)).logDebug("jedis responses: {}", responses);
     }
 
     @Test
@@ -183,7 +183,7 @@ public class RedisStandaloneClientTest {
     public void shouldCloseTheClient() {
         redisClient.close();
 
-        verify(instrumentation, times(1)).logInfo("Closing Jedis client");
+        verify(firehoseInstrumentation, times(1)).logInfo("Closing Jedis client");
         verify(jedis, times(1)).close();
     }
 

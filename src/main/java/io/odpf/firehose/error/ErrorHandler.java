@@ -1,5 +1,6 @@
 package io.odpf.firehose.error;
 
+import io.odpf.depot.error.ErrorType;
 import io.odpf.firehose.config.ErrorConfig;
 import io.odpf.firehose.message.Message;
 import lombok.AllArgsConstructor;

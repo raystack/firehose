@@ -1,8 +1,8 @@
 package io.odpf.firehose.sink.redis.client;
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.redis.dataentry.RedisDataEntry;
 import io.odpf.firehose.sink.redis.dataentry.RedisHashSetFieldEntry;
 import io.odpf.firehose.sink.redis.dataentry.RedisListEntry;
@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import redis.clients.jedis.JedisCluster;
 
 import java.util.ArrayList;
@@ -29,12 +29,12 @@ public class RedisClusterClientTest {
     private StatsDReporter statsDReporter;
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
-    private final RedisHashSetFieldEntry firstRedisSetEntry = new RedisHashSetFieldEntry("key1", "field1", "value1", new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class));
-    private final RedisHashSetFieldEntry secondRedisSetEntry = new RedisHashSetFieldEntry("key2", "field2", "value2", new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class));
-    private final RedisListEntry firstRedisListEntry = new RedisListEntry("key1", "value1", new Instrumentation(statsDReporter, RedisListEntry.class));
-    private final RedisListEntry secondRedisListEntry = new RedisListEntry("key2", "value2", new Instrumentation(statsDReporter, RedisListEntry.class));
+    private final RedisHashSetFieldEntry firstRedisSetEntry = new RedisHashSetFieldEntry("key1", "field1", "value1", new FirehoseInstrumentation(statsDReporter, RedisHashSetFieldEntry.class));
+    private final RedisHashSetFieldEntry secondRedisSetEntry = new RedisHashSetFieldEntry("key2", "field2", "value2", new FirehoseInstrumentation(statsDReporter, RedisHashSetFieldEntry.class));
+    private final RedisListEntry firstRedisListEntry = new RedisListEntry("key1", "value1", new FirehoseInstrumentation(statsDReporter, RedisListEntry.class));
+    private final RedisListEntry secondRedisListEntry = new RedisListEntry("key2", "value2", new FirehoseInstrumentation(statsDReporter, RedisListEntry.class));
     @Mock
     private JedisCluster jedisCluster;
 
@@ -53,7 +53,7 @@ public class RedisClusterClientTest {
         messages = Arrays.asList(new Message(new byte[0], new byte[0], "topic", 0, 100),
                 new Message(new byte[0], new byte[0], "topic", 0, 100));
 
-        redisClusterClient = new RedisClusterClient(instrumentation, redisParser, redisTTL, jedisCluster);
+        redisClusterClient = new RedisClusterClient(firehoseInstrumentation, redisParser, redisTTL, jedisCluster);
 
         redisDataEntries = new ArrayList<>();
 
@@ -103,7 +103,7 @@ public class RedisClusterClientTest {
     public void shouldCloseTheJedisClient() {
         redisClusterClient.close();
 
-        verify(instrumentation, times(1)).logInfo("Closing Jedis client");
+        verify(firehoseInstrumentation, times(1)).logInfo("Closing Jedis client");
         verify(jedisCluster).close();
     }
 

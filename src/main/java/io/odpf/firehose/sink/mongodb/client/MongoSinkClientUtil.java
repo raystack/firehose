@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.mongodb.client;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoNamespace;
 import com.mongodb.client.MongoDatabase;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import lombok.experimental.UtilityClass;
 
 import java.util.ArrayList;
@@ -39,16 +39,16 @@ public class MongoSinkClientUtil {
      *
      * @param databaseName    the database name
      * @param mongoClient     the mongo client
-     * @param instrumentation the instrumentation
+     * @param firehoseInstrumentation the instrumentation
      * @return true if database already exists, otherwise false
      */
-    static boolean checkDatabaseExists(String databaseName, MongoClient mongoClient, Instrumentation instrumentation) {
+    static boolean checkDatabaseExists(String databaseName, MongoClient mongoClient, FirehoseInstrumentation firehoseInstrumentation) {
         MongoNamespace.checkDatabaseNameValidity(databaseName);
         boolean doesDBExist = true;
         if (!mongoClient.listDatabaseNames()
                 .into(new ArrayList<>())
                 .contains(databaseName)) {
-            instrumentation.logInfo("Database: " + databaseName + " does not exist. Attempting to create database");
+            firehoseInstrumentation.logInfo("Database: " + databaseName + " does not exist. Attempting to create database");
 
             doesDBExist = false;
         }
@@ -60,10 +60,10 @@ public class MongoSinkClientUtil {
      *
      * @param collectionName  the collection name
      * @param database        the database
-     * @param instrumentation the instrumentation
+     * @param firehoseInstrumentation the instrumentation
      * @return true if collection already exists, otherwise false
      */
-    static boolean checkCollectionExists(String collectionName, MongoDatabase database, Instrumentation instrumentation) {
+    static boolean checkCollectionExists(String collectionName, MongoDatabase database, FirehoseInstrumentation firehoseInstrumentation) {
         MongoNamespace.checkCollectionNameValidity(collectionName);
         boolean doesCollectionExist = true;
 
@@ -71,7 +71,7 @@ public class MongoSinkClientUtil {
                 .into(new ArrayList<>())
                 .contains(collectionName)) {
             doesCollectionExist = false;
-            instrumentation.logInfo("Collection: " + collectionName + " does not exist. Attempting to create collection");
+            firehoseInstrumentation.logInfo("Collection: " + collectionName + " does not exist. Attempting to create collection");
         }
         return doesCollectionExist;
     }

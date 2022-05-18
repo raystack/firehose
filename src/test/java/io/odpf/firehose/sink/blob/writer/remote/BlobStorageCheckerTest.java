@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.blob.writer.remote;
 
 import io.odpf.firehose.config.BlobSinkConfig;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.common.blobstorage.BlobStorage;
 import io.odpf.firehose.sink.blob.Constants;
 import io.odpf.firehose.sink.blob.writer.local.LocalFileMetadata;
@@ -13,7 +13,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,7 +24,6 @@ import java.util.concurrent.*;
 import static io.odpf.firehose.metrics.Metrics.*;
 import static io.odpf.firehose.metrics.BlobStorageMetrics.*;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -43,7 +42,7 @@ public class BlobStorageCheckerTest {
     @Mock
     private BlobSinkConfig sinkConfig = Mockito.mock(BlobSinkConfig.class);
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
     private LocalFileMetadata localFileMetadata;
     private String objectName;
 
@@ -59,7 +58,7 @@ public class BlobStorageCheckerTest {
                 remoteUploadFutures,
                 remoteUploadScheduler,
                 blobStorage,
-                instrumentation);
+                firehoseInstrumentation);
         toBeFlushedToRemotePaths.clear();
         flushedToRemotePaths.clear();
         remoteUploadFutures.clear();
@@ -114,7 +113,7 @@ public class BlobStorageCheckerTest {
         when(remoteUploadScheduler.submit(any(Callable.class))).thenReturn(f);
         worker.run();
 
-        verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL, SUCCESS_TAG);
+        verify(firehoseInstrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL, SUCCESS_TAG);
     }
 
     @Test
@@ -125,7 +124,7 @@ public class BlobStorageCheckerTest {
         when(f.get()).thenReturn(10L);
         when(remoteUploadScheduler.submit(any(Callable.class))).thenReturn(f);
         worker.run();
-        verify(instrumentation).captureCount(FILE_UPLOAD_BYTES, localFileMetadata.getSize());
+        verify(firehoseInstrumentation).captureCount(FILE_UPLOAD_BYTES, localFileMetadata.getSize());
     }
 
     @Test
@@ -138,7 +137,7 @@ public class BlobStorageCheckerTest {
         when(f.get()).thenReturn(totalTime);
         worker.run();
 
-        verify(instrumentation, (times(1))).captureDuration(FILE_UPLOAD_TIME_MILLISECONDS, totalTime);
+        verify(firehoseInstrumentation, (times(1))).captureDuration(FILE_UPLOAD_TIME_MILLISECONDS, totalTime);
     }
 
     @Test
@@ -156,7 +155,7 @@ public class BlobStorageCheckerTest {
         } catch (RuntimeException ignored) {
         }
 
-        verify(instrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL,
+        verify(firehoseInstrumentation, times(1)).incrementCounter(FILE_UPLOAD_TOTAL,
                 FAILURE_TAG,
                 tag(BLOB_STORAGE_ERROR_TYPE_TAG, ""));
     }

@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.redis;
 
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.redis.client.RedisClient;
 import io.odpf.firehose.sink.redis.exception.NoResponseException;
@@ -19,12 +19,12 @@ public class RedisSink extends AbstractSink {
     /**
      * Instantiates a new Redis sink.
      *
-     * @param instrumentation the instrumentation
+     * @param firehoseInstrumentation the instrumentation
      * @param sinkType        the sink type
      * @param redisClient     the redis client
      */
-    public RedisSink(Instrumentation instrumentation, String sinkType, RedisClient redisClient) {
-        super(instrumentation, sinkType);
+    public RedisSink(FirehoseInstrumentation firehoseInstrumentation, String sinkType, RedisClient redisClient) {
+        super(firehoseInstrumentation, sinkType);
         this.redisClient = redisClient;
     }
 
@@ -51,7 +51,7 @@ public class RedisSink extends AbstractSink {
 
     @Override
     public void close() {
-        getInstrumentation().logInfo("Redis connection closing");
+        getFirehoseInstrumentation().logInfo("Redis connection closing");
         redisClient.close();
     }
 }

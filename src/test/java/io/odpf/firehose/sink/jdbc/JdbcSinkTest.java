@@ -3,14 +3,14 @@ package io.odpf.firehose.sink.jdbc;
 
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.stencil.client.StencilClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -35,7 +35,7 @@ public class JdbcSinkTest {
     private StencilClient stencilClient;
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Mock
     private JdbcConnectionPool jdbcConnectionPool;
@@ -50,8 +50,8 @@ public class JdbcSinkTest {
     public void setUp() throws SQLException {
         when(jdbcConnectionPool.getConnection()).thenReturn(connection);
         when(connection.createStatement()).thenReturn(statement);
-        when(instrumentation.startExecution()).thenReturn(Instant.now());
-        jdbcSink = new JdbcSink(instrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient);
+        when(firehoseInstrumentation.startExecution()).thenReturn(Instant.now());
+        jdbcSink = new JdbcSink(firehoseInstrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient);
     }
 
     @Test
@@ -68,8 +68,8 @@ public class JdbcSinkTest {
                 new Message(new byte[0], new byte[0], "topic", 0, 100));
         jdbcSink.pushMessage(messages);
 
-        verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).captureSinkExecutionTelemetry("db", messages.size());
+        verify(firehoseInstrumentation, times(1)).startExecution();
+        verify(firehoseInstrumentation, times(1)).captureSinkExecutionTelemetry("db", messages.size());
     }
 
     @Test
@@ -78,11 +78,11 @@ public class JdbcSinkTest {
                 new Message(new byte[0], new byte[0], "topic", 0, 100));
         jdbcSink.pushMessage(messages);
 
-        verify(instrumentation, times(1)).startExecution();
-        verify(instrumentation, times(1)).captureSinkExecutionTelemetry("db", messages.size());
-        InOrder inOrder = inOrder(instrumentation);
-        inOrder.verify(instrumentation).startExecution();
-        inOrder.verify(instrumentation).captureSinkExecutionTelemetry("db", messages.size());
+        verify(firehoseInstrumentation, times(1)).startExecution();
+        verify(firehoseInstrumentation, times(1)).captureSinkExecutionTelemetry("db", messages.size());
+        InOrder inOrder = inOrder(firehoseInstrumentation);
+        inOrder.verify(firehoseInstrumentation).startExecution();
+        inOrder.verify(firehoseInstrumentation).captureSinkExecutionTelemetry("db", messages.size());
     }
 
     @Test
@@ -91,7 +91,7 @@ public class JdbcSinkTest {
                 new Message(new byte[0], new byte[0], "topic", 0, 100));
 
         assertEquals(jdbcSink.pushMessage(messages).size(), 0);
-        verify(instrumentation, times(1)).captureSinkExecutionTelemetry("db", messages.size());
+        verify(firehoseInstrumentation, times(1)).captureSinkExecutionTelemetry("db", messages.size());
     }
 
     @Test
@@ -100,7 +100,7 @@ public class JdbcSinkTest {
         List<Message> messages = Arrays.asList(new Message(new byte[0], new byte[0], "topic", 0, 100),
                 new Message(new byte[0], new byte[0], "topic", 0, 100));
 
-        JdbcSinkStub dbSinkStub = new JdbcSinkStub(instrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, queries);
+        JdbcSinkStub dbSinkStub = new JdbcSinkStub(firehoseInstrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, queries);
 
         dbSinkStub.prepare(messages);
         verify(statement, times(queries.size())).addBatch(anyString());
@@ -112,7 +112,7 @@ public class JdbcSinkTest {
         String sql = "select * from table";
         List<Message> messages = Arrays.asList(new Message(new byte[0], new byte[0], "topic", 0, 100),
                 new Message(new byte[0], new byte[0], "topic", 0, 100));
-        JdbcSinkStub dbSinkStub = new JdbcSinkStub(instrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, Arrays.asList(sql));
+        JdbcSinkStub dbSinkStub = new JdbcSinkStub(firehoseInstrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, Arrays.asList(sql));
 
         dbSinkStub.pushMessage(messages);
 
@@ -132,7 +132,7 @@ public class JdbcSinkTest {
     @Test
     public void shouldNotReleaseConnectionWhenNull() throws Exception {
         String sql = "select * from table";
-        JdbcSink sink = new JdbcSink(instrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, statement, null);
+        JdbcSink sink = new JdbcSink(firehoseInstrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, statement, null);
 
         sink.execute();
 
@@ -143,7 +143,7 @@ public class JdbcSinkTest {
     @Test
     public void shouldCloseConnectionPool() throws IOException, InterruptedException {
         String sql = "select * from table";
-        JdbcSinkStub dbSinkStub = new JdbcSinkStub(instrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, Arrays.asList(sql));
+        JdbcSinkStub dbSinkStub = new JdbcSinkStub(firehoseInstrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, Arrays.asList(sql));
         dbSinkStub.close();
 
         verify(jdbcConnectionPool, times(1)).shutdown();
@@ -152,7 +152,7 @@ public class JdbcSinkTest {
     @Test
     public void shouldCloseStencilClient() throws IOException {
         String sql = "select * from table";
-        JdbcSinkStub dbSinkStub = new JdbcSinkStub(instrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, Arrays.asList(sql));
+        JdbcSinkStub dbSinkStub = new JdbcSinkStub(firehoseInstrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, Arrays.asList(sql));
         dbSinkStub.close();
 
         verify(stencilClient, times(1)).close();
@@ -161,10 +161,10 @@ public class JdbcSinkTest {
     @Test
     public void shouldLogWhenClosingConnection() throws IOException {
         String sql = "select * from table";
-        JdbcSinkStub dbSinkStub = new JdbcSinkStub(instrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, Arrays.asList(sql));
+        JdbcSinkStub dbSinkStub = new JdbcSinkStub(firehoseInstrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, Arrays.asList(sql));
         dbSinkStub.close();
 
-        verify(instrumentation, times(1)).logInfo("Database connection closing");
+        verify(firehoseInstrumentation, times(1)).logInfo("Database connection closing");
     }
 
     @Test(expected = IOException.class)
@@ -172,7 +172,7 @@ public class JdbcSinkTest {
         doThrow(InterruptedException.class).when(jdbcConnectionPool).shutdown();
 
         List<String> queriesList = Arrays.asList("select * from table", "select * from table2");
-        JdbcSinkStub dbSinkStub = new JdbcSinkStub(instrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, queriesList);
+        JdbcSinkStub dbSinkStub = new JdbcSinkStub(firehoseInstrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, queriesList);
 
         dbSinkStub.close();
     }
@@ -182,7 +182,7 @@ public class JdbcSinkTest {
         Message message = new Message("key".getBytes(), "msg".getBytes(), "topic1", 0, 100);
         jdbcSink.createQueries(Arrays.asList(message));
 
-        verify(instrumentation, times(1)).logDebug(queryTemplate.toQueryString(message));
+        verify(firehoseInstrumentation, times(1)).logDebug(queryTemplate.toQueryString(message));
     }
 
     @Test
@@ -193,21 +193,21 @@ public class JdbcSinkTest {
         List<Message> messages = Arrays.asList(message);
 
         when(statement.executeBatch()).thenReturn(updateCounts);
-        JdbcSinkStub dbSinkStub = new JdbcSinkStub(instrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, queries);
+        JdbcSinkStub dbSinkStub = new JdbcSinkStub(firehoseInstrumentation, "db", jdbcConnectionPool, queryTemplate, stencilClient, queries);
 
         dbSinkStub.pushMessage(messages);
 
         verify(statement, times(1)).addBatch("select * from table");
-        verify(instrumentation, times(1)).logInfo("Preparing {} messages", 1);
-        verify(instrumentation, times(1)).logDebug("DB response: {}", Arrays.toString(updateCounts));
+        verify(firehoseInstrumentation, times(1)).logInfo("Preparing {} messages", 1);
+        verify(firehoseInstrumentation, times(1)).logDebug("DB response: {}", Arrays.toString(updateCounts));
     }
 
     public class JdbcSinkStub extends JdbcSink {
         private List<String> queries;
 
 
-        public JdbcSinkStub(Instrumentation instrumentation, String sinkType, JdbcConnectionPool pool, QueryTemplate queryTemplate, StencilClient stencilClient, List<String> queries) {
-            super(instrumentation, sinkType, pool, queryTemplate, stencilClient);
+        public JdbcSinkStub(FirehoseInstrumentation firehoseInstrumentation, String sinkType, JdbcConnectionPool pool, QueryTemplate queryTemplate, StencilClient stencilClient, List<String> queries) {
+            super(firehoseInstrumentation, sinkType, pool, queryTemplate, stencilClient);
             this.queries = queries;
         }
 

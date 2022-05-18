@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.redis.dataentry;
 
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.redis.ttl.RedisTtl;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,18 +17,18 @@ public class RedisHashSetFieldEntry implements RedisDataEntry {
     private String key;
     private String field;
     private String value;
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Override
     public void pushMessage(Pipeline jedisPipelined, RedisTtl redisTTL) {
-        getInstrumentation().logDebug("key: {}, field: {}, value: {}", getKey(), getField(), getValue());
+        getFirehoseInstrumentation().logDebug("key: {}, field: {}, value: {}", getKey(), getField(), getValue());
         jedisPipelined.hset(getKey(), getField(), getValue());
         redisTTL.setTtl(jedisPipelined, getKey());
     }
 
     @Override
     public void pushMessage(JedisCluster jedisCluster, RedisTtl redisTTL) {
-        getInstrumentation().logDebug("key: {}, field: {}, value: {}", getKey(), getField(), getValue());
+        getFirehoseInstrumentation().logDebug("key: {}, field: {}, value: {}", getKey(), getField(), getValue());
         jedisCluster.hset(getKey(), getField(), getValue());
         redisTTL.setTtl(jedisCluster, getKey());
     }

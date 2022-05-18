@@ -4,7 +4,7 @@ import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.metrics.Metrics;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -20,7 +20,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -30,17 +30,11 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import static org.mockito.ArgumentMatchers.eq;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FirehoseKafkaConsumerTest {
@@ -49,7 +43,7 @@ public class FirehoseKafkaConsumerTest {
     @Mock
     private ConsumerRecords<byte[], byte[]> consumerRecords;
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
     @Mock
     private KafkaConsumerConfig consumerConfig;
     private TestMessage message;
@@ -62,7 +56,7 @@ public class FirehoseKafkaConsumerTest {
         MockitoAnnotations.initMocks(this);
         message = TestMessage.newBuilder().setOrderNumber("123").setOrderUrl("abc").setOrderDetails("details").build();
         key = TestKey.newBuilder().setOrderNumber("123").setOrderUrl("abc").build();
-        firehoseKafkaConsumer = new FirehoseKafkaConsumer(kafkaConsumer, consumerConfig, instrumentation);
+        firehoseKafkaConsumer = new FirehoseKafkaConsumer(kafkaConsumer, consumerConfig, firehoseInstrumentation);
         when(consumerConfig.getSourceKafkaPollTimeoutMs()).thenReturn(500L);
         when(consumerConfig.getSourceKafkaConsumerGroupId()).thenReturn(consumerGroupId);
         when(kafkaConsumer.poll(Duration.ofMillis(500L))).thenReturn(consumerRecords);
@@ -116,11 +110,11 @@ public class FirehoseKafkaConsumerTest {
 
         firehoseKafkaConsumer.readMessages();
 
-        verify(instrumentation, times(1)).logInfo("Pulled {} messages", 2);
-        verify(instrumentation, times(1)).capturePulledMessageHistogram(2);
-        verify(instrumentation, times(1)).logDebug("Pulled record: {}", record1);
-        verify(instrumentation, times(1)).logDebug("Pulled record: {}", record2);
-        verify(instrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.CONSUMER, 2);
+        verify(firehoseInstrumentation, times(1)).logInfo("Pulled {} messages", 2);
+        verify(firehoseInstrumentation, times(1)).capturePulledMessageHistogram(2);
+        verify(firehoseInstrumentation, times(1)).logDebug("Pulled record: {}", record1);
+        verify(firehoseInstrumentation, times(1)).logDebug("Pulled record: {}", record2);
+        verify(firehoseInstrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.CONSUMER, 2);
     }
 
     @Test
@@ -151,7 +145,7 @@ public class FirehoseKafkaConsumerTest {
         firehoseKafkaConsumer.close();
 
         verify(kafkaConsumer).close();
-        verify(instrumentation).logInfo("Consumer is closing");
+        verify(firehoseInstrumentation).logInfo("Consumer is closing");
     }
 
     @Test
@@ -160,7 +154,7 @@ public class FirehoseKafkaConsumerTest {
 
         try {
             firehoseKafkaConsumer.close();
-            verify(instrumentation, times(1)).logInfo("Consumer is closing");
+            verify(firehoseInstrumentation, times(1)).logInfo("Consumer is closing");
         } catch (Exception kafkaConsumerException) {
             fail("Failed to supress exception on close");
         }
@@ -170,7 +164,7 @@ public class FirehoseKafkaConsumerTest {
     public void shouldCaptureNonFatalError() {
         doThrow(new RuntimeException()).when(kafkaConsumer).close();
         firehoseKafkaConsumer.close();
-        verify(instrumentation, times(1)).captureNonFatalError(any(), eq("Exception while closing consumer"));
+        verify(firehoseInstrumentation, times(1)).captureNonFatalError(any(), any(), eq("Exception while closing consumer"));
     }
 
     @Test

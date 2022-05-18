@@ -1,8 +1,8 @@
 package io.odpf.firehose.sink.blob.writer;
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.BlobSinkConfig;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.common.blobstorage.BlobStorage;
 import io.odpf.firehose.sink.blob.message.Record;
 import io.odpf.firehose.sink.blob.writer.local.LocalFileMetadata;
@@ -58,7 +58,7 @@ public class WriterOrchestrator implements Closeable {
                 new LocalFileChecker(
                         toBeFlushedToRemotePaths,
                         timePartitionWriterMap,
-                        localStorage, new Instrumentation(statsDReporter, LocalFileChecker.class)),
+                        localStorage, new FirehoseInstrumentation(statsDReporter, LocalFileChecker.class)),
                 FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS,
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
                 TimeUnit.SECONDS);
@@ -71,7 +71,7 @@ public class WriterOrchestrator implements Closeable {
                         remoteUploadFutures,
                         remoteUploadScheduler,
                         blobStorage,
-                        new Instrumentation(statsDReporter, BlobStorageChecker.class)),
+                        new FirehoseInstrumentation(statsDReporter, BlobStorageChecker.class)),
                 FILE_CHECKER_THREAD_INITIAL_DELAY_SECONDS,
                 FILE_CHECKER_THREAD_FREQUENCY_SECONDS,
                 TimeUnit.SECONDS);

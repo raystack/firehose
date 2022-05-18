@@ -1,7 +1,7 @@
 package io.odpf.firehose.config;
 
+import io.odpf.depot.error.ErrorType;
 import io.odpf.firehose.config.converter.SetErrorTypeConverter;
-import io.odpf.firehose.error.ErrorType;
 import org.aeonbits.owner.Config;
 import org.aeonbits.owner.Mutable;
 

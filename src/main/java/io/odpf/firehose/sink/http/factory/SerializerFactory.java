@@ -1,11 +1,9 @@
 package io.odpf.firehose.sink.http.factory;
 
-
-
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.HttpSinkConfig;
 import io.odpf.firehose.config.enums.HttpSinkDataFormatType;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.serializer.MessageSerializer;
 import io.odpf.firehose.serializer.MessageToJson;
 import io.odpf.firehose.serializer.MessageToTemplatizedJson;
@@ -25,9 +23,9 @@ public class SerializerFactory {
     private StatsDReporter statsDReporter;
 
     public MessageSerializer build() {
-        Instrumentation instrumentation = new Instrumentation(statsDReporter, SerializerFactory.class);
+        FirehoseInstrumentation firehoseInstrumentation = new FirehoseInstrumentation(statsDReporter, SerializerFactory.class);
         if (isProtoSchemaEmpty() || httpSinkConfig.getSinkHttpDataFormat() == HttpSinkDataFormatType.PROTO) {
-            instrumentation.logDebug("Serializer type: JsonWrappedProtoByte");
+            firehoseInstrumentation.logDebug("Serializer type: JsonWrappedProtoByte");
             // Fallback to json wrapped proto byte
             return new JsonWrappedProtoByte();
         }
@@ -35,18 +33,18 @@ public class SerializerFactory {
         if (httpSinkConfig.getSinkHttpDataFormat() == HttpSinkDataFormatType.JSON) {
             Parser protoParser = stencilClient.getParser(httpSinkConfig.getInputSchemaProtoClass());
             if (httpSinkConfig.getSinkHttpJsonBodyTemplate().isEmpty()) {
-                instrumentation.logDebug("Serializer type: EsbMessageToJson", HttpSinkDataFormatType.JSON);
+                firehoseInstrumentation.logDebug("Serializer type: EsbMessageToJson", HttpSinkDataFormatType.JSON);
                 return new MessageToJson(protoParser, false, true);
             } else {
-                instrumentation.logDebug("Serializer type: EsbMessageToTemplatizedJson");
-                return MessageToTemplatizedJson.create(new Instrumentation(statsDReporter, MessageToTemplatizedJson.class), httpSinkConfig.getSinkHttpJsonBodyTemplate(), protoParser);
+                firehoseInstrumentation.logDebug("Serializer type: EsbMessageToTemplatizedJson");
+                return MessageToTemplatizedJson.create(new FirehoseInstrumentation(statsDReporter, MessageToTemplatizedJson.class), httpSinkConfig.getSinkHttpJsonBodyTemplate(), protoParser);
             }
         }
 
         // Ideally this code will never be executed because getHttpSinkDataFormat() will return proto as default value.
         // This is required to satisfy compilation.
 
-        instrumentation.logDebug("Serializer type: JsonWrappedProtoByte");
+        firehoseInstrumentation.logDebug("Serializer type: JsonWrappedProtoByte");
         return new JsonWrappedProtoByte();
     }
 

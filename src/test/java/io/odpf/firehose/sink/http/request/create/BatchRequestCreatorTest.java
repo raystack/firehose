@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.http.request.create;
 import io.odpf.firehose.config.enums.HttpSinkRequestMethodType;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.http.request.body.JsonBody;
 import io.odpf.firehose.sink.http.request.entity.RequestEntityBuilder;
 import io.odpf.firehose.sink.http.request.header.HeaderBuilder;
@@ -27,10 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class BatchRequestCreatorTest {
@@ -48,7 +45,7 @@ public class BatchRequestCreatorTest {
     private JsonBody jsonBody;
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     private List<Message> messages;
 
@@ -61,21 +58,21 @@ public class BatchRequestCreatorTest {
 
     @Test
     public void shouldWrapMessageToASingleRequest() throws DeserializerException, URISyntaxException {
-        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody);
+        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody);
         List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(messages, requestEntityBuilder);
 
         assertEquals(1, requests.size());
-        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+        verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
                 uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages), HttpSinkRequestMethodType.PUT);
     }
 
     @Test
     public void shouldWrapMessageToASingleRequestWhenPostRequest() throws DeserializerException, URISyntaxException {
-        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.POST, jsonBody);
+        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.POST, jsonBody);
         List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(messages, requestEntityBuilder);
 
         assertEquals(1, requests.size());
-        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+        verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
                 uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages), HttpSinkRequestMethodType.POST);
     }
 
@@ -87,11 +84,11 @@ public class BatchRequestCreatorTest {
         messages.add(message1);
         messages.add(message2);
 
-        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody);
+        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody);
         List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(messages, requestEntityBuilder);
 
         assertEquals(1, requests.size());
-        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+        verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
                 uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages), HttpSinkRequestMethodType.PUT);
     }
 
@@ -103,13 +100,13 @@ public class BatchRequestCreatorTest {
         messages.add(message1);
         messages.add(message2);
 
-        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.POST, jsonBody);
+        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.POST, jsonBody);
         batchRequestCreator.create(messages, requestEntityBuilder);
 
         verify(uriBuilder, times(1)).build();
         verify(headerBuilder, times(1)).build();
         verify(requestEntityBuilder, times(1)).buildHttpEntity(any(String.class));
-        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+        verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
                 uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages), HttpSinkRequestMethodType.POST);
     }
 
@@ -134,7 +131,7 @@ public class BatchRequestCreatorTest {
         when(jsonBody.serialize(messages)).thenReturn(serializedMessages);
         when(requestEntityBuilder.buildHttpEntity(any())).thenReturn(new StringEntity("[\"dummyMessage1\", \"dummyMessage2\"]", ContentType.APPLICATION_JSON));
 
-        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(instrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.POST, jsonBody);
+        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.POST, jsonBody);
         List<HttpEntityEnclosingRequestBase> httpEntityEnclosingRequestBases = batchRequestCreator.create(messages, requestEntityBuilder);
 
         BasicHeader header1 = new BasicHeader("Authorization", "auth_token");
@@ -145,7 +142,7 @@ public class BatchRequestCreatorTest {
 
         assertEquals(new URI("dummyEndpoint"), httpEntityEnclosingRequestBases.get(0).getURI());
         Assert.assertTrue(new ReflectionEquals(httpEntityEnclosingRequestBases.get(0).getAllHeaders()).matches(headers));
-        verify(instrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+        verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
                 uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages), HttpSinkRequestMethodType.POST);
     }
 }

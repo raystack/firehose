@@ -1,8 +1,8 @@
 package io.odpf.firehose.sink.prometheus;
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.PromSinkConfig;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.prometheus.request.PromRequest;
 import io.odpf.firehose.sink.prometheus.request.PromRequestCreator;
@@ -39,16 +39,16 @@ public class PromSinkFactory {
         PromSinkConfig promSinkConfig = ConfigFactory.create(PromSinkConfig.class, configuration);
         String promSchemaProtoClass = promSinkConfig.getInputSchemaProtoClass();
 
-        Instrumentation instrumentation = new Instrumentation(statsDReporter, PromSinkFactory.class);
+        FirehoseInstrumentation firehoseInstrumentation = new FirehoseInstrumentation(statsDReporter, PromSinkFactory.class);
 
         CloseableHttpClient closeableHttpClient = newHttpClient(promSinkConfig);
-        instrumentation.logInfo("HTTP connection established");
+        firehoseInstrumentation.logInfo("HTTP connection established");
 
         Parser protoParser = stencilClient.getParser(promSchemaProtoClass);
 
         PromRequest request = new PromRequestCreator(statsDReporter, promSinkConfig, protoParser).createRequest();
 
-        return new PromSink(new Instrumentation(statsDReporter, PromSink.class),
+        return new PromSink(new FirehoseInstrumentation(statsDReporter, PromSink.class),
                 request,
                 closeableHttpClient,
                 stencilClient,

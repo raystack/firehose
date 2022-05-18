@@ -1,7 +1,7 @@
 package io.odpf.firehose.consumer.kafka;
 
 import io.odpf.firehose.config.KafkaConsumerConfig;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.metrics.Metrics;
 import io.odpf.firehose.message.Message;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -28,20 +28,20 @@ public class FirehoseKafkaConsumer implements AutoCloseable {
 
     private final Consumer<byte[], byte[]> kafkaConsumer;
     private final KafkaConsumerConfig consumerConfig;
-    private final Instrumentation instrumentation;
+    private final FirehoseInstrumentation firehoseInstrumentation;
     private final Map<TopicPartition, OffsetAndMetadata> committedOffsets = new ConcurrentHashMap<>();
 
     /**
      * A Constructor.
      *
-     * @param kafkaConsumer   {@see KafkaConsumer}
-     * @param config          Consumer configuration.
-     * @param instrumentation Contain logging and metrics collection
+     * @param kafkaConsumer           {@see KafkaConsumer}
+     * @param config                  Consumer configuration.
+     * @param firehoseInstrumentation Contain logging and metrics collection
      */
-    public FirehoseKafkaConsumer(Consumer<byte[], byte[]> kafkaConsumer, KafkaConsumerConfig config, Instrumentation instrumentation) {
+    public FirehoseKafkaConsumer(Consumer<byte[], byte[]> kafkaConsumer, KafkaConsumerConfig config, FirehoseInstrumentation firehoseInstrumentation) {
         this.kafkaConsumer = kafkaConsumer;
         this.consumerConfig = config;
-        this.instrumentation = instrumentation;
+        this.firehoseInstrumentation = firehoseInstrumentation;
     }
 
     /**
@@ -51,24 +51,24 @@ public class FirehoseKafkaConsumer implements AutoCloseable {
      */
     public List<Message> readMessages() {
         ConsumerRecords<byte[], byte[]> records = kafkaConsumer.poll(Duration.ofMillis(consumerConfig.getSourceKafkaPollTimeoutMs()));
-        instrumentation.logInfo("Pulled {} messages", records.count());
-        instrumentation.capturePulledMessageHistogram(records.count());
-        instrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.CONSUMER, records.count());
+        firehoseInstrumentation.logInfo("Pulled {} messages", records.count());
+        firehoseInstrumentation.capturePulledMessageHistogram(records.count());
+        firehoseInstrumentation.captureGlobalMessageMetrics(Metrics.MessageScope.CONSUMER, records.count());
         List<Message> messages = new ArrayList<>();
 
         for (ConsumerRecord<byte[], byte[]> record : records) {
             messages.add(new Message(record.key(), record.value(), record.topic(), record.partition(), record.offset(), record.headers(), record.timestamp(), System.currentTimeMillis()));
-            instrumentation.logDebug("Pulled record: {}", record);
+            firehoseInstrumentation.logDebug("Pulled record: {}", record);
         }
         return messages;
     }
 
     public void close() {
         try {
-            instrumentation.logInfo("Consumer is closing");
+            firehoseInstrumentation.logInfo("Consumer is closing");
             this.kafkaConsumer.close();
         } catch (Exception e) {
-            instrumentation.captureNonFatalError(e, "Exception while closing consumer");
+            firehoseInstrumentation.captureNonFatalError("firehose_error_event", e, "Exception while closing consumer");
         }
     }
 
@@ -76,9 +76,9 @@ public class FirehoseKafkaConsumer implements AutoCloseable {
         if (consumerConfig.isSourceKafkaAsyncCommitEnable()) {
             kafkaConsumer.commitAsync((offsets, exception) -> {
                 if (exception != null) {
-                    instrumentation.incrementCounter(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, FAILURE_TAG);
+                    firehoseInstrumentation.incrementCounter(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, FAILURE_TAG);
                 } else {
-                    instrumentation.incrementCounter(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, SUCCESS_TAG);
+                    firehoseInstrumentation.incrementCounter(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, SUCCESS_TAG);
                 }
             });
         } else {
@@ -97,7 +97,7 @@ public class FirehoseKafkaConsumer implements AutoCloseable {
             return;
         }
         latestOffsets.forEach((k, v) ->
-                instrumentation.logInfo("Committing Offsets " + k.topic() + ":" + k.partition() + "=>" + v.offset()));
+                firehoseInstrumentation.logInfo("Committing Offsets " + k.topic() + ":" + k.partition() + "=>" + v.offset()));
         if (consumerConfig.isSourceKafkaAsyncCommitEnable()) {
             commitAsync(latestOffsets);
         } else {
@@ -112,9 +112,9 @@ public class FirehoseKafkaConsumer implements AutoCloseable {
 
     private void onComplete(Map<TopicPartition, OffsetAndMetadata> offsets, Exception exception) {
         if (exception != null) {
-            instrumentation.incrementCounter(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, FAILURE_TAG);
+            firehoseInstrumentation.incrementCounter(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, FAILURE_TAG);
         } else {
-            instrumentation.incrementCounter(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, SUCCESS_TAG);
+            firehoseInstrumentation.incrementCounter(SOURCE_KAFKA_MESSAGES_COMMIT_TOTAL, SUCCESS_TAG);
         }
     }
 }

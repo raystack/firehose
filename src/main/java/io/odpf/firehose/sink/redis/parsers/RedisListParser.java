@@ -1,10 +1,10 @@
 package io.odpf.firehose.sink.redis.parsers;
 
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.RedisSinkConfig;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.redis.dataentry.RedisDataEntry;
 import io.odpf.firehose.sink.redis.dataentry.RedisListEntry;
 import com.google.protobuf.DynamicMessage;
@@ -42,7 +42,7 @@ public class RedisListParser extends RedisParser {
             throw new IllegalArgumentException("Please provide SINK_REDIS_LIST_DATA_PROTO_INDEX in list sink");
         }
         List<RedisDataEntry> messageEntries = new ArrayList<>();
-        messageEntries.add(new RedisListEntry(redisKey, getDataByFieldNumber(parsedMessage, protoIndex).toString(), new Instrumentation(statsDReporter, RedisListEntry.class)));
+        messageEntries.add(new RedisListEntry(redisKey, getDataByFieldNumber(parsedMessage, protoIndex).toString(), new FirehoseInstrumentation(statsDReporter, RedisListEntry.class)));
         return messageEntries;
     }
 }
