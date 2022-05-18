@@ -1,10 +1,10 @@
 package io.odpf.firehose.sink.influxdb;
 
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.InfluxSinkConfig;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.AbstractSink;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.stencil.client.StencilClient;
 import org.aeonbits.owner.ConfigFactory;
 import org.influxdb.InfluxDB;
@@ -27,12 +27,12 @@ public class InfluxSinkFactory {
     public static AbstractSink create(Map<String, String> configProperties, StatsDReporter statsDReporter, StencilClient stencilClient) {
         InfluxSinkConfig config = ConfigFactory.create(InfluxSinkConfig.class, configProperties);
 
-        Instrumentation instrumentation = new Instrumentation(statsDReporter, InfluxSinkFactory.class);
-        instrumentation.logDebug("\nInflux Url: {}\nInflux Username: {}", config.getSinkInfluxUrl(), config.getSinkInfluxUsername());
+        FirehoseInstrumentation firehoseInstrumentation = new FirehoseInstrumentation(statsDReporter, InfluxSinkFactory.class);
+        firehoseInstrumentation.logDebug("\nInflux Url: {}\nInflux Username: {}", config.getSinkInfluxUrl(), config.getSinkInfluxUsername());
 
         InfluxDB client = InfluxDBFactory.connect(config.getSinkInfluxUrl(), config.getSinkInfluxUsername(), config.getSinkInfluxPassword());
-        instrumentation.logInfo("InfluxDB connection established");
+        firehoseInstrumentation.logInfo("InfluxDB connection established");
 
-        return new InfluxSink(new Instrumentation(statsDReporter, InfluxSink.class), "influx.db", config, stencilClient.getParser(config.getInputSchemaProtoClass()), client, stencilClient);
+        return new InfluxSink(new FirehoseInstrumentation(statsDReporter, InfluxSink.class), "influx.db", config, stencilClient.getParser(config.getInputSchemaProtoClass()), client, stencilClient);
     }
 }

@@ -1,12 +1,12 @@
 package io.odpf.firehose.sink.redis.client;
 
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.RedisSinkConfig;
 import io.odpf.firehose.config.enums.RedisSinkDeploymentType;
 import io.odpf.firehose.config.enums.RedisSinkDataType;
 import io.odpf.firehose.config.enums.RedisSinkTtlType;
 import io.odpf.firehose.exception.ConfigurationException;
-import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.stencil.client.StencilClient;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.mockito.Mockito.when;
 

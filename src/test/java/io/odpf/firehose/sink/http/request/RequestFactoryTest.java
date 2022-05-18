@@ -1,8 +1,8 @@
 package io.odpf.firehose.sink.http.request;
 
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.HttpSinkConfig;
-import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.http.request.types.SimpleRequest;
 import io.odpf.firehose.sink.http.request.types.DynamicUrlRequest;
 import io.odpf.firehose.sink.http.request.types.ParameterizedHeaderRequest;

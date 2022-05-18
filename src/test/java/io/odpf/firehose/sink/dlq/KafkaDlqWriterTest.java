@@ -4,7 +4,7 @@ import io.odpf.firehose.message.Message;
 import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;
 import io.odpf.firehose.exception.DeserializerException;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.dlq.kafka.KafkaDlqWriter;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -17,7 +17,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,7 +28,6 @@ import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -40,13 +40,13 @@ public class KafkaDlqWriterTest {
     private KafkaProducer<byte[], byte[]> kafkaProducer;
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     private KafkaDlqWriter kafkaDlqWriter;
 
     @Before
     public void setUp() throws Exception {
-        kafkaDlqWriter = new KafkaDlqWriter(kafkaProducer, "test-topic", instrumentation);
+        kafkaDlqWriter = new KafkaDlqWriter(kafkaProducer, "test-topic", firehoseInstrumentation);
     }
 
     @Test
@@ -54,7 +54,7 @@ public class KafkaDlqWriterTest {
         ArrayList<Message> messages = new ArrayList<>();
         List<Message> messageList = kafkaDlqWriter.write(messages);
 
-        verifyZeroInteractions(kafkaProducer);
+        Mockito.verifyNoInteractions(kafkaProducer);
         assertTrue(messageList.isEmpty());
     }
 
@@ -180,8 +180,8 @@ public class KafkaDlqWriterTest {
         calls.get(0).onCompletion(null, null);
         calls.get(1).onCompletion(null, null);
         completedLatch.await();
-        verify(instrumentation, times(1)).logInfo("Pushing {} messages to retry queue topic : {}", 2, "test-topic");
-        verify(instrumentation, times(1)).logInfo("Successfully pushed {} messages to {}", 2, "test-topic");
+        verify(firehoseInstrumentation, times(1)).logInfo("Pushing {} messages to retry queue topic : {}", 2, "test-topic");
+        verify(firehoseInstrumentation, times(1)).logInfo("Successfully pushed {} messages to {}", 2, "test-topic");
     }
 
     @Test

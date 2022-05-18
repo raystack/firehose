@@ -48,7 +48,6 @@ repositories {
     }
 }
 
-
 private Properties loadEnv() {
     Properties properties = new Properties()
     properties.load(new FileInputStream(file("${projectDir}/env/local.properties")));
@@ -86,7 +85,7 @@ dependencies {
         exclude group: "log4j", module: "log4j"
     }
     implementation 'io.confluent:monitoring-interceptors:3.0.0'
-    implementation "io.grpc:grpc-all:1.18.0"
+    implementation "io.grpc:grpc-all:1.38.0"
     implementation group: 'org.jfrog.buildinfo', name: 'build-info-extractor', version: '2.6.3'
     implementation group: 'com.google.gradle', name: 'osdetector-gradle-plugin', version: '1.2.1'
     implementation group: 'org.apache.ivy', name: 'ivy', version: '2.2.0'
@@ -102,12 +101,12 @@ dependencies {
     implementation 'com.google.cloud:google-cloud-storage:1.114.0'
     implementation 'com.google.cloud:google-cloud-bigquery:1.115.0'
     implementation 'org.apache.logging.log4j:log4j-core:2.17.1'
-
+    implementation group: 'io.odpf', name: 'depot', version: '0.1.3'
     implementation group: 'com.networknt', name: 'json-schema-validator', version: '1.0.59' exclude group: 'org.slf4j'
 
     testImplementation group: 'junit', name: 'junit', version: '4.11'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
-    testImplementation 'org.mockito:mockito-core:2.0.99-beta'
+    testImplementation 'org.mockito:mockito-core:4.5.1'
     testImplementation "com.github.tomakehurst:wiremock:2.3.1"
     testImplementation group: 'io.opentracing', name: 'opentracing-mock', version: '0.33.0'
     testImplementation group: 'org.mock-server', name: 'mockserver-netty', version: '3.10.5'
@@ -133,7 +132,7 @@ protobuf {
             task.generateDescriptorSet = true
             task.descriptorSetOptions.includeSourceInfo = false
             task.descriptorSetOptions.includeImports = true
-	    task.descriptorSetOptions.path = "$projectDir/src/test/resources/__files/descriptors.bin"
+            task.descriptorSetOptions.path = "$projectDir/src/test/resources/__files/descriptors.bin"
         }
     }
 }
@@ -157,17 +156,17 @@ test {
 clean {
     delete "$projectDir/src/test/resources/__files"
 }
-
 jar {
-  manifest {
-     attributes 'Main-Class': 'io.odpf.firehose.launch.Main'
-     duplicatesStrategy = 'exclude'
-  }
-  from {
-    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-  }
+    manifest {
+        attributes 'Main-Class': 'io.odpf.firehose.launch.Main'
+        duplicatesStrategy = 'exclude'
+        zip64 = true
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    exclude('META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA')
 }
-
 publishing {
     publications {
         maven(MavenPublication) {

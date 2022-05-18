@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.blob.writer.remote;
 
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.common.blobstorage.BlobStorage;
 import io.odpf.firehose.sink.blob.writer.local.LocalFileMetadata;
 import lombok.AllArgsConstructor;
@@ -21,7 +21,7 @@ public class BlobStorageChecker implements Runnable {
     private final Set<BlobStorageWriterFutureHandler> remoteUploadFutures;
     private final ExecutorService remoteUploadScheduler;
     private final BlobStorage blobStorage;
-    private final Instrumentation instrumentation;
+    private final FirehoseInstrumentation firehoseInstrumentation;
 
     @Override
     public void run() {
@@ -36,7 +36,7 @@ public class BlobStorageChecker implements Runnable {
     private BlobStorageWriterFutureHandler submitTask(LocalFileMetadata localFileMetadata) {
         BlobStorageWorker worker = new BlobStorageWorker(blobStorage, localFileMetadata);
         Future<Long> f = remoteUploadScheduler.submit(worker);
-        return new BlobStorageWriterFutureHandler(f, localFileMetadata, instrumentation);
+        return new BlobStorageWriterFutureHandler(f, localFileMetadata, firehoseInstrumentation);
     }
 }
 

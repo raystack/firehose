@@ -1,11 +1,13 @@
 package io.odpf.firehose.launch;
 
+import io.odpf.depot.config.MetricsConfig;
+import io.odpf.depot.metrics.StatsDReporter;
+import io.odpf.depot.metrics.StatsDReporterBuilder;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.consumer.FirehoseConsumer;
 import io.odpf.firehose.consumer.FirehoseConsumerFactory;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
-import io.odpf.firehose.metrics.StatsDReporterFactory;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
+import io.odpf.firehose.metrics.Metrics;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.io.IOException;
@@ -27,17 +29,18 @@ public class Main {
     }
 
     private static void multiThreadedConsumers(KafkaConsumerConfig kafkaConsumerConfig) throws InterruptedException {
-        StatsDReporter statsDReporter = StatsDReporterFactory
-                .fromKafkaConsumerConfig(kafkaConsumerConfig)
-                .buildReporter();
-        Instrumentation instrumentation = new Instrumentation(statsDReporter, Main.class);
-        instrumentation.logInfo("Number of consumer threads: " + kafkaConsumerConfig.getApplicationThreadCount());
-        instrumentation.logInfo("Delay to clean up consumer threads in ms: " + kafkaConsumerConfig.getApplicationThreadCleanupDelay());
+        MetricsConfig config = ConfigFactory.create(MetricsConfig.class, System.getenv());
+        StatsDReporter statsDReporter = StatsDReporterBuilder.builder().withMetricConfig(config)
+                .withExtraTags(Metrics.tag(Metrics.CONSUMER_GROUP_ID_TAG, kafkaConsumerConfig.getSourceKafkaConsumerGroupId()))
+                .build();
+        FirehoseInstrumentation firehoseInstrumentation = new FirehoseInstrumentation(statsDReporter, Main.class);
+        firehoseInstrumentation.logInfo("Number of consumer threads: " + kafkaConsumerConfig.getApplicationThreadCount());
+        firehoseInstrumentation.logInfo("Delay to clean up consumer threads in ms: " + kafkaConsumerConfig.getApplicationThreadCleanupDelay());
 
         Task consumerTask = new Task(
                 kafkaConsumerConfig.getApplicationThreadCount(),
                 kafkaConsumerConfig.getApplicationThreadCleanupDelay(),
-                new Instrumentation(statsDReporter, Task.class),
+                new FirehoseInstrumentation(statsDReporter, Task.class),
                 taskFinished -> {
 
                     FirehoseConsumer firehoseConsumer = null;
@@ -45,36 +48,36 @@ public class Main {
                         firehoseConsumer = new FirehoseConsumerFactory(kafkaConsumerConfig, statsDReporter).buildConsumer();
                         while (true) {
                             if (Thread.interrupted()) {
-                                instrumentation.logWarn("Consumer Thread interrupted, leaving the loop!");
+                                firehoseInstrumentation.logWarn("Consumer Thread interrupted, leaving the loop!");
                                 break;
                             }
                             firehoseConsumer.process();
                         }
                     } catch (Exception | Error e) {
-                        instrumentation.captureFatalError(e, "Caught exception or error, exiting the application");
+                        firehoseInstrumentation.captureFatalError("firehose_error_event", e, "Caught exception or error, exiting the application");
                         System.exit(1);
                     } finally {
-                        ensureThreadInterruptStateIsClearedAndClose(firehoseConsumer, instrumentation);
+                        ensureThreadInterruptStateIsClearedAndClose(firehoseConsumer, firehoseInstrumentation);
                         taskFinished.run();
                     }
                 });
-        instrumentation.logInfo("Consumer Task Created");
+        firehoseInstrumentation.logInfo("Consumer Task Created");
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            instrumentation.logInfo("Program is going to exit. Have started execution of shutdownHook before this");
+            firehoseInstrumentation.logInfo("Program is going to exit. Have started execution of shutdownHook before this");
             consumerTask.stop();
         }));
 
         consumerTask.run().waitForCompletion();
-        instrumentation.logInfo("Exiting main thread");
+        firehoseInstrumentation.logInfo("Exiting main thread");
     }
 
-    private static void ensureThreadInterruptStateIsClearedAndClose(FirehoseConsumer firehoseConsumer, Instrumentation instrumentation) {
+    private static void ensureThreadInterruptStateIsClearedAndClose(FirehoseConsumer firehoseConsumer, FirehoseInstrumentation firehoseInstrumentation) {
         Thread.interrupted();
         try {
             firehoseConsumer.close();
         } catch (IOException e) {
-            instrumentation.captureFatalError(e, "Exception on closing firehose consumer");
+            firehoseInstrumentation.captureFatalError("firehose_error_event", e, "Exception on closing firehose consumer");
         }
     }
 }

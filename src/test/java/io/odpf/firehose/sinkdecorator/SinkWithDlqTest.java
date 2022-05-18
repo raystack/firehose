@@ -1,16 +1,15 @@
 package io.odpf.firehose.sinkdecorator;
 
+import io.odpf.depot.error.ErrorInfo;
+import io.odpf.depot.error.ErrorType;
 import io.odpf.firehose.config.DlqConfig;
 import io.odpf.firehose.config.ErrorConfig;
-import io.odpf.firehose.error.ErrorInfo;
-import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.error.ErrorHandler;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.metrics.Metrics;
 import io.odpf.firehose.sink.dlq.DlqWriter;
 import org.aeonbits.owner.ConfigFactory;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -26,8 +25,6 @@ import java.util.List;
 import static io.odpf.firehose.metrics.Metrics.DLQ_MESSAGES_TOTAL;
 import static io.odpf.firehose.metrics.Metrics.DLQ_RETRY_ATTEMPTS_TOTAL;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -43,7 +40,7 @@ public class SinkWithDlqTest {
     private Message message;
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Mock
     private DlqWriter dlqWriter;
@@ -72,15 +69,15 @@ public class SinkWithDlqTest {
         when(message.getErrorInfo()).thenReturn(new ErrorInfo(new RuntimeException(), ErrorType.DESERIALIZATION_ERROR));
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, firehoseInstrumentation);
 
         List<Message> pushResult = sinkWithDlq.pushMessage(messages);
         verify(dlqWriter, times(1)).write(messages);
         assertEquals(0, pushResult.size());
-        verify(instrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, ErrorType.DESERIALIZATION_ERROR, 1);
-        verify(instrumentation, times(1)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 2);
-        verify(instrumentation, times(1)).incrementCounter(DLQ_RETRY_ATTEMPTS_TOTAL);
-        verify(instrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.DLQ, 2);
+        verify(firehoseInstrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, ErrorType.DESERIALIZATION_ERROR, 1);
+        verify(firehoseInstrumentation, times(1)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 2);
+        verify(firehoseInstrumentation, times(1)).incrementCounter(DLQ_RETRY_ATTEMPTS_TOTAL);
+        verify(firehoseInstrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.DLQ, 2);
     }
 
     @Test
@@ -88,7 +85,7 @@ public class SinkWithDlqTest {
         ArrayList<Message> messages = new ArrayList<>();
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, firehoseInstrumentation);
 
         sinkWithDlq.pushMessage(messages);
         verify(dlqWriter, never()).write(messages);
@@ -103,7 +100,7 @@ public class SinkWithDlqTest {
         when(message.getErrorInfo()).thenReturn(new ErrorInfo(new RuntimeException(), ErrorType.DESERIALIZATION_ERROR));
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, firehoseInstrumentation);
 
         sinkWithDlq.pushMessage(messages);
     }
@@ -122,18 +119,18 @@ public class SinkWithDlqTest {
         when(dlqWriter.write(messages)).thenReturn(dlqRetryMessages);
         when(dlqWriter.write(dlqRetryMessages)).thenReturn(new ArrayList<>());
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, firehoseInstrumentation);
 
         sinkWithDlq.pushMessage(messages);
 
         verify(dlqWriter, times(1)).write(messages);
         verify(dlqWriter, times(1)).write(dlqRetryMessages);
-        verify(instrumentation, times(1)).captureDLQErrors(any(), any());
+        verify(firehoseInstrumentation, times(1)).captureDLQErrors(any(), any());
 
-        verify(instrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, ErrorType.DESERIALIZATION_ERROR, 1);
-        verify(instrumentation, times(1)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 2);
-        verify(instrumentation, times(2)).incrementCounter(DLQ_RETRY_ATTEMPTS_TOTAL);
-        verify(instrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.DLQ, 2);
+        verify(firehoseInstrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, ErrorType.DESERIALIZATION_ERROR, 1);
+        verify(firehoseInstrumentation, times(1)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 2);
+        verify(firehoseInstrumentation, times(2)).incrementCounter(DLQ_RETRY_ATTEMPTS_TOTAL);
+        verify(firehoseInstrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.DLQ, 2);
     }
 
     @Test(expected = IOException.class)
@@ -156,7 +153,7 @@ public class SinkWithDlqTest {
         when(dlqWriter.write(dlqRetryMessages)).thenReturn(dlqRetryMessages);
         when(dlqWriter.write(dlqRetryMessages)).thenReturn(dlqRetryMessages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, firehoseInstrumentation);
 
         sinkWithDlq.pushMessage(messages);
     }
@@ -178,7 +175,7 @@ public class SinkWithDlqTest {
         when(dlqWriter.write(dlqRetryMessages)).thenReturn(dlqRetryMessages);
         when(dlqWriter.write(dlqRetryMessages)).thenReturn(dlqRetryMessages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, firehoseInstrumentation);
         sinkWithDlq.pushMessage(messages);
     }
 
@@ -202,7 +199,7 @@ public class SinkWithDlqTest {
         when(sinkWithRetry.pushMessage(messages)).thenReturn(dlqProcessedMessages);
         when(dlqWriter.write(anyList())).thenReturn(new LinkedList<>());
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, firehoseInstrumentation);
         List<Message> pushResult = sinkWithDlq.pushMessage(messages);
 
         verify(sinkWithRetry, times(1)).addOffsetsAndSetCommittable(dlqProcessedMessages);
@@ -215,7 +212,7 @@ public class SinkWithDlqTest {
         ArrayList<Message> messages = new ArrayList<>();
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, firehoseInstrumentation);
 
         sinkWithDlq.pushMessage(messages);
         verify(sinkWithRetry, never()).addOffsetsAndSetCommittable(anyList());
@@ -229,13 +226,13 @@ public class SinkWithDlqTest {
         messages.add(messageWithError);
         messages.add(new Message(message, new ErrorInfo(null, ErrorType.SINK_UNKNOWN_ERROR)));
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, firehoseInstrumentation);
 
         List<Message> pushResult = sinkWithDlq.pushMessage(messages);
-        ArgumentCaptor<List<Message>> argumentCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<List> argumentCaptor = ArgumentCaptor.forClass(List.class);
         verify(dlqWriter, times(1)).write(argumentCaptor.capture());
         assertEquals(1, argumentCaptor.getValue().size());
-        assertThat(argumentCaptor.getValue(), Matchers.contains(messageWithError));
+        assertEquals(messageWithError, argumentCaptor.getValue().get(0));
         assertEquals(1, pushResult.size());
     }
 
@@ -249,15 +246,15 @@ public class SinkWithDlqTest {
         when(sinkWithRetry.pushMessage(anyList())).thenReturn(messages);
         when(dlqWriter.write(anyList())).thenReturn(messages);
 
-        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, instrumentation);
+        SinkWithDlq sinkWithDlq = new SinkWithDlq(sinkWithRetry, dlqWriter, backOffProvider, dlqConfig, errorHandler, firehoseInstrumentation);
 
         List<Message> pushResult = sinkWithDlq.pushMessage(messages);
         verify(dlqWriter, times(10)).write(messages);
         assertEquals(2, pushResult.size());
-        verify(instrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, ErrorType.DESERIALIZATION_ERROR, 1);
-        verify(instrumentation, times(1)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 0);
-        verify(instrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, ErrorType.DESERIALIZATION_ERROR, 1);
-        verify(instrumentation, times(10)).incrementCounter(DLQ_RETRY_ATTEMPTS_TOTAL);
-        verify(instrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.DLQ, 0);
+        verify(firehoseInstrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.TOTAL, ErrorType.DESERIALIZATION_ERROR, 1);
+        verify(firehoseInstrumentation, times(1)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.SUCCESS, 0);
+        verify(firehoseInstrumentation, times(2)).captureMessageMetrics(DLQ_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, ErrorType.DESERIALIZATION_ERROR, 1);
+        verify(firehoseInstrumentation, times(10)).incrementCounter(DLQ_RETRY_ATTEMPTS_TOTAL);
+        verify(firehoseInstrumentation, times(1)).captureGlobalMessageMetrics(Metrics.MessageScope.DLQ, 0);
     }
 }

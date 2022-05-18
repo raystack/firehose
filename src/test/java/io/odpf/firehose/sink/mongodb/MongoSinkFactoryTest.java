@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.mongodb;
 
 import com.mongodb.MongoClient;
 import io.odpf.firehose.config.MongoSinkConfig;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,7 +27,7 @@ public class MongoSinkFactoryTest {
     private Map<String, String> configuration;
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     private Method buildMongoClientMethod;
 
@@ -35,7 +35,7 @@ public class MongoSinkFactoryTest {
     public void setUp() {
 
         try {
-            buildMongoClientMethod = MongoSinkFactory.class.getDeclaredMethod("buildMongoClient", MongoSinkConfig.class, Instrumentation.class);
+            buildMongoClientMethod = MongoSinkFactory.class.getDeclaredMethod("buildMongoClient", MongoSinkConfig.class, FirehoseInstrumentation.class);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         }
@@ -66,7 +66,7 @@ public class MongoSinkFactoryTest {
         MongoSinkConfig mongoSinkConfig = ConfigFactory.create(MongoSinkConfig.class, configuration);
         MongoClient mongoClient = null;
         try {
-            mongoClient = (MongoClient) buildMongoClientMethod.invoke(mongoSinkFactory, mongoSinkConfig, instrumentation);
+            mongoClient = (MongoClient) buildMongoClientMethod.invoke(mongoSinkFactory, mongoSinkConfig, firehoseInstrumentation);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
@@ -81,7 +81,7 @@ public class MongoSinkFactoryTest {
         MongoSinkConfig mongoSinkConfig = ConfigFactory.create(MongoSinkConfig.class, configuration);
         MongoClient mongoClient = null;
         try {
-            mongoClient = (MongoClient) buildMongoClientMethod.invoke(mongoSinkFactory, mongoSinkConfig, instrumentation);
+            mongoClient = (MongoClient) buildMongoClientMethod.invoke(mongoSinkFactory, mongoSinkConfig, firehoseInstrumentation);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
@@ -99,7 +99,7 @@ public class MongoSinkFactoryTest {
 
         MongoSinkConfig mongoSinkConfig = ConfigFactory.create(MongoSinkConfig.class, configuration);
         try {
-            buildMongoClientMethod.invoke(mongoSinkFactory, mongoSinkConfig, instrumentation);
+            buildMongoClientMethod.invoke(mongoSinkFactory, mongoSinkConfig, firehoseInstrumentation);
         } catch (InvocationTargetException e) {
             throw (IllegalArgumentException) e.getTargetException();
         } catch (IllegalAccessException e) {
@@ -117,7 +117,7 @@ public class MongoSinkFactoryTest {
         thrown.expect(IllegalArgumentException.class);
         MongoSinkConfig mongoSinkConfig = ConfigFactory.create(MongoSinkConfig.class, configuration);
         try {
-            buildMongoClientMethod.invoke(mongoSinkFactory, mongoSinkConfig, instrumentation);
+            buildMongoClientMethod.invoke(mongoSinkFactory, mongoSinkConfig, firehoseInstrumentation);
         } catch (InvocationTargetException e) {
             throw (IllegalArgumentException) e.getTargetException();
         } catch (IllegalAccessException e) {
@@ -136,7 +136,7 @@ public class MongoSinkFactoryTest {
 
         MongoSinkConfig mongoSinkConfig = ConfigFactory.create(MongoSinkConfig.class, configuration);
         try {
-            buildMongoClientMethod.invoke(mongoSinkFactory, mongoSinkConfig, instrumentation);
+            buildMongoClientMethod.invoke(mongoSinkFactory, mongoSinkConfig, firehoseInstrumentation);
         } catch (InvocationTargetException e) {
             throw (IllegalArgumentException) e.getTargetException();
         } catch (IllegalAccessException e) {

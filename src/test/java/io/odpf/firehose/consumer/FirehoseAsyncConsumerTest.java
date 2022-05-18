@@ -2,12 +2,12 @@ package io.odpf.firehose.consumer;
 
 import io.odpf.firehose.consumer.kafka.ConsumerAndOffsetManager;
 import io.odpf.firehose.message.Message;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.SinkPool;
 import io.odpf.firehose.exception.SinkTaskFailedException;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
 import io.odpf.firehose.filter.NoOpFilter;
-import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.metrics.Metrics;
 import io.odpf.firehose.tracer.SinkTracer;
 import org.junit.Before;
@@ -33,7 +33,7 @@ public class FirehoseAsyncConsumerTest {
     @Mock
     private SinkTracer tracer;
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
     @Mock
     private Future<List<Message>> future1;
     @Mock
@@ -45,8 +45,8 @@ public class FirehoseAsyncConsumerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        FirehoseFilter firehoseFilter = new FirehoseFilter(new NoOpFilter(instrumentation), instrumentation);
-        this.asyncConsumer = new FirehoseAsyncConsumer(sinkPool, tracer, consumerAndOffsetManager, firehoseFilter, instrumentation);
+        FirehoseFilter firehoseFilter = new FirehoseFilter(new NoOpFilter(firehoseInstrumentation), firehoseInstrumentation);
+        this.asyncConsumer = new FirehoseAsyncConsumer(sinkPool, tracer, consumerAndOffsetManager, firehoseFilter, firehoseInstrumentation);
     }
 
     @Test
@@ -114,7 +114,7 @@ public class FirehoseAsyncConsumerTest {
     @Test
     public void shouldAddOffsetsForFilteredMessages() throws Exception {
         FirehoseFilter firehoseFilter = Mockito.mock(FirehoseFilter.class);
-        this.asyncConsumer = new FirehoseAsyncConsumer(sinkPool, tracer, consumerAndOffsetManager, firehoseFilter, instrumentation);
+        this.asyncConsumer = new FirehoseAsyncConsumer(sinkPool, tracer, consumerAndOffsetManager, firehoseFilter, firehoseInstrumentation);
 
         List<Message> messages = new ArrayList<Message>() {{
             add(new Message(new byte[0], new byte[0], "topic1", 1, 10));
@@ -145,6 +145,6 @@ public class FirehoseAsyncConsumerTest {
         }});
         Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).setCommittable(future1);
         Mockito.verify(consumerAndOffsetManager, Mockito.times(1)).commit();
-        Mockito.verify(instrumentation, Mockito.times(1)).captureDurationSince(Mockito.eq(Metrics.SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS), Mockito.any(Instant.class));
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureDurationSince(Mockito.eq(Metrics.SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS), Mockito.any(Instant.class));
     }
 }

@@ -1,5 +1,6 @@
 package io.odpf.firehose.sink.mongodb.request;
 
+import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -17,14 +18,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 
 import java.util.Base64;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class MongoUpdateRequestHandlerTest {
@@ -32,8 +30,7 @@ public class MongoUpdateRequestHandlerTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    @Mock
-    private StencilClient stencilClient;
+    private final StencilClient stencilClient = StencilClientFactory.getClient();
 
     private MessageToJson jsonSerializer;
     private Message messageWithJSON;
@@ -49,10 +46,7 @@ public class MongoUpdateRequestHandlerTest {
         logMessage = "CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM\u003d";
         messageWithProto = new Message(null, Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
 
-        when(stencilClient.parse(Mockito.anyString(), Mockito.any())).thenCallRealMethod();
-        when(stencilClient.getParser(Mockito.anyString())).thenCallRealMethod();
         String protoClassName = TestAggregatedSupplyMessage.class.getName();
-        when(stencilClient.get(protoClassName)).thenReturn(TestAggregatedSupplyMessage.getDescriptor());
         jsonSerializer = new MessageToJson(stencilClient.getParser(protoClassName), true, false);
 
     }

@@ -1,5 +1,7 @@
 package io.odpf.firehose.sink.mongodb;
 
+import io.odpf.depot.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.stencil.client.StencilClient;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
@@ -7,8 +9,6 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import io.odpf.firehose.config.MongoSinkConfig;
 import io.odpf.firehose.config.enums.SinkType;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.serializer.MessageToJson;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.firehose.sink.mongodb.client.MongoSinkClient;
@@ -39,20 +39,20 @@ public class MongoSinkFactory {
      */
     public static Sink create(Map<String, String> configuration, StatsDReporter statsDReporter, StencilClient stencilClient) {
         MongoSinkConfig mongoSinkConfig = ConfigFactory.create(MongoSinkConfig.class, configuration);
-        Instrumentation instrumentation = new Instrumentation(statsDReporter, MongoSinkFactory.class);
+        FirehoseInstrumentation firehoseInstrumentation = new FirehoseInstrumentation(statsDReporter, MongoSinkFactory.class);
 
-        logMongoConfig(mongoSinkConfig, instrumentation);
-        MongoRequestHandler mongoRequestHandler = new MongoRequestHandlerFactory(mongoSinkConfig, new Instrumentation(statsDReporter, MongoRequestHandlerFactory.class),
+        logMongoConfig(mongoSinkConfig, firehoseInstrumentation);
+        MongoRequestHandler mongoRequestHandler = new MongoRequestHandlerFactory(mongoSinkConfig, new FirehoseInstrumentation(statsDReporter, MongoRequestHandlerFactory.class),
                 mongoSinkConfig.getSinkMongoPrimaryKey(), mongoSinkConfig.getSinkMongoInputMessageType(),
                 new MessageToJson(stencilClient.getParser(mongoSinkConfig.getInputSchemaProtoClass()), mongoSinkConfig.isSinkMongoPreserveProtoFieldNamesEnable(), false)
         ).getRequestHandler();
 
-        MongoClient mongoClient = buildMongoClient(mongoSinkConfig, instrumentation);
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoSinkConfig, new Instrumentation(statsDReporter, MongoSinkClient.class), mongoClient);
+        MongoClient mongoClient = buildMongoClient(mongoSinkConfig, firehoseInstrumentation);
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoSinkConfig, new FirehoseInstrumentation(statsDReporter, MongoSinkClient.class), mongoClient);
         mongoSinkClient.prepare();
-        instrumentation.logInfo("MONGO connection established");
+        firehoseInstrumentation.logInfo("MONGO connection established");
 
-        return new MongoSink(new Instrumentation(statsDReporter, MongoSink.class), SinkType.MONGODB.name().toLowerCase(), mongoRequestHandler,
+        return new MongoSink(new FirehoseInstrumentation(statsDReporter, MongoSink.class), SinkType.MONGODB.name().toLowerCase(), mongoRequestHandler,
                 mongoSinkClient);
     }
 
@@ -71,8 +71,8 @@ public class MongoSinkFactory {
      * @return the mongo client
      * @since 0.1
      */
-    private static MongoClient buildMongoClient(MongoSinkConfig mongoSinkConfig, Instrumentation instrumentation) {
-        List<ServerAddress> serverAddresses = MongoSinkFactoryUtil.getServerAddresses(mongoSinkConfig.getSinkMongoConnectionUrls(), instrumentation);
+    private static MongoClient buildMongoClient(MongoSinkConfig mongoSinkConfig, FirehoseInstrumentation firehoseInstrumentation) {
+        List<ServerAddress> serverAddresses = MongoSinkFactoryUtil.getServerAddresses(mongoSinkConfig.getSinkMongoConnectionUrls(), firehoseInstrumentation);
         MongoClientOptions options = MongoClientOptions.builder()
                 .connectTimeout(mongoSinkConfig.getSinkMongoConnectTimeoutMs())
                 .serverSelectionTimeout(mongoSinkConfig.getSinkMongoServerSelectTimeoutMs())
@@ -105,7 +105,7 @@ public class MongoSinkFactory {
      *
      * @since 0.1
      */
-    private static void logMongoConfig(MongoSinkConfig mongoSinkConfig, Instrumentation instrumentation) {
+    private static void logMongoConfig(MongoSinkConfig mongoSinkConfig, FirehoseInstrumentation firehoseInstrumentation) {
         String mongoConfig = String.format("\n\tMONGO connection urls: %s"
                         + "\n\tMONGO Database name: %s"
                         + "\n\tMONGO Primary Key: %s"
@@ -130,6 +130,6 @@ public class MongoSinkFactory {
                 mongoSinkConfig.getSinkMongoAuthUsername(),
                 mongoSinkConfig.getSinkMongoAuthDB());
 
-        instrumentation.logDebug(mongoConfig);
+        firehoseInstrumentation.logDebug(mongoConfig);
     }
 }

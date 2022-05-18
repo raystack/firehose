@@ -4,7 +4,7 @@ import io.odpf.firehose.message.Message;
 import io.odpf.firehose.filter.Filter;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -34,9 +34,9 @@ public class FirehoseFilterTest {
             add(message3);
         }};
         Filter filter = Mockito.mock(Filter.class);
-        Instrumentation instrumentation = Mockito.mock(Instrumentation.class);
+        FirehoseInstrumentation firehoseInstrumentation = Mockito.mock(FirehoseInstrumentation.class);
 
-        FirehoseFilter firehoseFilter = new FirehoseFilter(filter, instrumentation);
+        FirehoseFilter firehoseFilter = new FirehoseFilter(filter, firehoseInstrumentation);
         Mockito.when(filter.filter(messages)).thenReturn(new FilteredMessages() {{
             addToValidMessages(message1);
             addToValidMessages(message2);
@@ -47,7 +47,7 @@ public class FirehoseFilterTest {
         Assert.assertEquals(messages, actualFilteredMessage.getValidMessages());
         Assert.assertEquals(new ArrayList<>(), actualFilteredMessage.getInvalidMessages());
         Mockito.verify(filter, Mockito.times(1)).filter(messages);
-        Mockito.verify(instrumentation, Mockito.times(0)).captureFilteredMessageCount(Mockito.anyInt());
+        Mockito.verify(firehoseInstrumentation, Mockito.times(0)).captureFilteredMessageCount(Mockito.anyInt());
     }
 
 
@@ -72,8 +72,8 @@ public class FirehoseFilterTest {
         }};
 
         Filter filter = Mockito.mock(Filter.class);
-        Instrumentation instrumentation = Mockito.mock(Instrumentation.class);
-        FirehoseFilter firehoseFilter = new FirehoseFilter(filter, instrumentation);
+        FirehoseInstrumentation firehoseInstrumentation = Mockito.mock(FirehoseInstrumentation.class);
+        FirehoseFilter firehoseFilter = new FirehoseFilter(filter, firehoseInstrumentation);
         Mockito.when(filter.filter(messages)).thenReturn(new FilteredMessages() {{
             addToValidMessages(message1);
             addToInvalidMessages(message2);
@@ -89,6 +89,6 @@ public class FirehoseFilterTest {
             add(message3);
         }}, actualFilteredMessage.getInvalidMessages());
         Mockito.verify(filter, Mockito.times(1)).filter(messages);
-        Mockito.verify(instrumentation, Mockito.times(1)).captureFilteredMessageCount(2);
+        Mockito.verify(firehoseInstrumentation, Mockito.times(1)).captureFilteredMessageCount(2);
     }
 }

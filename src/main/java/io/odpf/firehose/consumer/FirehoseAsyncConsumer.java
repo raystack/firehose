@@ -3,10 +3,10 @@ package io.odpf.firehose.consumer;
 import io.odpf.firehose.consumer.kafka.ConsumerAndOffsetManager;
 import io.odpf.firehose.exception.FirehoseConsumerFailedException;
 import io.odpf.firehose.message.Message;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.SinkPool;
 import io.odpf.firehose.filter.FilterException;
 import io.odpf.firehose.filter.FilteredMessages;
-import io.odpf.firehose.metrics.Instrumentation;
 import io.odpf.firehose.tracer.SinkTracer;
 import io.opentracing.Span;
 import lombok.AllArgsConstructor;
@@ -24,7 +24,7 @@ public class FirehoseAsyncConsumer implements FirehoseConsumer {
     private final SinkTracer tracer;
     private final ConsumerAndOffsetManager consumerAndOffsetManager;
     private final FirehoseFilter firehoseFilter;
-    private final Instrumentation instrumentation;
+    private final FirehoseInstrumentation firehoseInstrumentation;
 
     @Override
     public void process() {
@@ -47,7 +47,7 @@ public class FirehoseAsyncConsumer implements FirehoseConsumer {
         } catch (FilterException e) {
             throw new FirehoseConsumerFailedException(e);
         } finally {
-            instrumentation.captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS, beforeCall);
+            firehoseInstrumentation.captureDurationSince(SOURCE_KAFKA_PARTITIONS_PROCESS_TIME_MILLISECONDS, beforeCall);
         }
     }
 
@@ -55,10 +55,10 @@ public class FirehoseAsyncConsumer implements FirehoseConsumer {
         while (true) {
             Future<List<Message>> scheduledTask = sinkPool.submitTask(messages);
             if (scheduledTask == null) {
-                instrumentation.logInfo("The Queue is full");
+                firehoseInstrumentation.logInfo("The Queue is full");
                 sinkPool.fetchFinishedSinkTasks().forEach(consumerAndOffsetManager::setCommittable);
             } else {
-                instrumentation.logInfo("Adding sink task");
+                firehoseInstrumentation.logInfo("Adding sink task");
                 return scheduledTask;
             }
         }
@@ -69,6 +69,6 @@ public class FirehoseAsyncConsumer implements FirehoseConsumer {
         consumerAndOffsetManager.close();
         tracer.close();
         sinkPool.close();
-        instrumentation.close();
+        firehoseInstrumentation.close();
     }
 }

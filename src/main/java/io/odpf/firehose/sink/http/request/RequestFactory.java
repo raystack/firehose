@@ -1,11 +1,10 @@
 package io.odpf.firehose.sink.http.request;
 
 
-
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.HttpSinkConfig;
 import io.odpf.firehose.config.enums.HttpSinkRequestMethodType;
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.proto.ProtoToFieldMapper;
 import io.odpf.firehose.serializer.MessageSerializer;
 import io.odpf.firehose.sink.http.factory.SerializerFactory;
@@ -34,7 +33,7 @@ public class RequestFactory {
     private UriParser uriParser;
     private StencilClient stencilClient;
     private StatsDReporter statsDReporter;
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     /**
      * Instantiates a new Request factory.
@@ -49,7 +48,7 @@ public class RequestFactory {
         this.stencilClient = stencilClient;
         this.httpSinkConfig = httpSinkConfig;
         this.uriParser = uriParser;
-        instrumentation = new Instrumentation(this.statsDReporter, RequestFactory.class);
+        firehoseInstrumentation = new FirehoseInstrumentation(this.statsDReporter, RequestFactory.class);
     }
 
     public Request createRequest() {
@@ -69,7 +68,7 @@ public class RequestFactory {
                 .filter(Request::canProcess)
                 .findFirst()
                 .orElse(new SimpleRequest(statsDReporter, httpSinkConfig, body, httpSinkRequestMethodType));
-        instrumentation.logInfo("Request type: {}", request.getClass());
+        firehoseInstrumentation.logInfo("Request type: {}", request.getClass());
 
         return request.setRequestStrategy(headerBuilder, uriBuilder, requestEntityBuilder);
     }

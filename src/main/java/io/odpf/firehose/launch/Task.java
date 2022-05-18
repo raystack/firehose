@@ -8,7 +8,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 
 /**
  * The Task with parallelism.
@@ -22,17 +22,17 @@ public class Task {
     private Runnable taskFinishCallback;
     private final CountDownLatch countDownLatch;
     private final List<Future<?>> fnFutures;
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     /**
      * Instantiates a new Task.
      *
-     * @param parallelism        the parallelism
-     * @param threadCleanupDelay the thread cleanup delay
-     * @param instrumentation    the instrumentation
-     * @param task               the task
+     * @param parallelism             the parallelism
+     * @param threadCleanupDelay      the thread cleanup delay
+     * @param firehoseInstrumentation the instrumentation
+     * @param task                    the task
      */
-    public Task(int parallelism, int threadCleanupDelay, Instrumentation instrumentation, Consumer<Runnable> task) {
+    public Task(int parallelism, int threadCleanupDelay, FirehoseInstrumentation firehoseInstrumentation, Consumer<Runnable> task) {
         executorService = Executors.newFixedThreadPool(parallelism);
         this.parallelism = parallelism;
         this.threadCleanupDelay = threadCleanupDelay;
@@ -40,7 +40,7 @@ public class Task {
         this.countDownLatch = new CountDownLatch(parallelism);
         this.fnFutures = new ArrayList<>(parallelism);
         taskFinishCallback = countDownLatch::countDown;
-        this.instrumentation = instrumentation;
+        this.firehoseInstrumentation = firehoseInstrumentation;
     }
 
     public Task run() {
@@ -53,18 +53,18 @@ public class Task {
     }
 
     public void waitForCompletion() throws InterruptedException {
-        instrumentation.logInfo("waiting for completion");
+        firehoseInstrumentation.logInfo("waiting for completion");
         countDownLatch.await();
     }
 
     public Task stop() {
         try {
-            instrumentation.logInfo("Stopping task thread");
+            firehoseInstrumentation.logInfo("Stopping task thread");
             fnFutures.forEach(consumerThread -> consumerThread.cancel(true));
-            instrumentation.logInfo("Sleeping thread during clean up for {} duration", threadCleanupDelay);
+            firehoseInstrumentation.logInfo("Sleeping thread during clean up for {} duration", threadCleanupDelay);
             Thread.sleep(threadCleanupDelay);
         } catch (InterruptedException e) {
-            instrumentation.captureNonFatalError(e, "error stopping tasks");
+            firehoseInstrumentation.captureNonFatalError("firehose_error_event", e, "error stopping tasks");
         }
         return this;
     }

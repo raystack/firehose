@@ -1,6 +1,6 @@
 package io.odpf.firehose.sink.blob.writer.remote;
 
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.common.blobstorage.BlobStorageException;
 import io.odpf.firehose.sink.blob.writer.local.LocalFileMetadata;
 import lombok.AllArgsConstructor;
@@ -18,7 +18,7 @@ import static io.odpf.firehose.metrics.BlobStorageMetrics.*;
 public class BlobStorageWriterFutureHandler {
     private Future<Long> future;
     private LocalFileMetadata localFileMetadata;
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
     private static final String EMPTY = "";
 
     public String getFullPath() {
@@ -43,21 +43,21 @@ public class BlobStorageWriterFutureHandler {
     }
 
     private void captureFileUploadSuccessMetric(long totalTime) {
-        instrumentation.logInfo("Flushed to blob storage {}", localFileMetadata.getFullPath());
-        instrumentation.incrementCounter(FILE_UPLOAD_TOTAL, SUCCESS_TAG);
-        instrumentation.captureCount(FILE_UPLOAD_BYTES, localFileMetadata.getSize());
-        instrumentation.captureCount(FILE_UPLOAD_RECORDS_TOTAL, localFileMetadata.getRecordCount());
-        instrumentation.captureDuration(FILE_UPLOAD_TIME_MILLISECONDS, totalTime);
+        firehoseInstrumentation.logInfo("Flushed to blob storage {}", localFileMetadata.getFullPath());
+        firehoseInstrumentation.incrementCounter(FILE_UPLOAD_TOTAL, SUCCESS_TAG);
+        firehoseInstrumentation.captureCount(FILE_UPLOAD_BYTES, localFileMetadata.getSize());
+        firehoseInstrumentation.captureCount(FILE_UPLOAD_RECORDS_TOTAL, localFileMetadata.getRecordCount());
+        firehoseInstrumentation.captureDuration(FILE_UPLOAD_TIME_MILLISECONDS, totalTime);
     }
 
     private void captureUploadFailedMetric(Throwable e) {
-        instrumentation.logError("Failed to flush to blob storage {}", e.getMessage());
+        firehoseInstrumentation.logError("Failed to flush to blob storage {}", e.getMessage());
         String errorType;
         if (e instanceof BlobStorageException) {
             errorType = ((BlobStorageException) e).getErrorType();
         } else {
             errorType = "";
         }
-        instrumentation.incrementCounter(FILE_UPLOAD_TOTAL, FAILURE_TAG, tag(BLOB_STORAGE_ERROR_TYPE_TAG, errorType));
+        firehoseInstrumentation.incrementCounter(FILE_UPLOAD_TOTAL, FAILURE_TAG, tag(BLOB_STORAGE_ERROR_TYPE_TAG, errorType));
     }
 }

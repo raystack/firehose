@@ -11,7 +11,7 @@ import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.WriteModel;
 import io.odpf.firehose.config.MongoSinkConfig;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.junit.Assert;
@@ -36,7 +36,7 @@ public class MongoSinkClientTest {
     public ExpectedException thrown = ExpectedException.none();
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
     @Mock
     private MongoSinkConfig mongoSinkConfig;
 
@@ -70,7 +70,7 @@ public class MongoSinkClientTest {
 
     @Test
     public void shouldReturnEmptyArrayListWhenBulkResponseExecutedSuccessfully() {
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
         when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(true, 1, 1, 0));
         List<BulkWriteError> nonBlacklistedErrors = mongoSinkClient.processRequest(request);
@@ -83,7 +83,7 @@ public class MongoSinkClientTest {
         BulkWriteError writeError1 = new BulkWriteError(400, "DB not found", new BsonDocument(), 0);
         BulkWriteError writeError2 = new BulkWriteError(400, "DB not found", new BsonDocument(), 1);
         List<BulkWriteError> writeErrors = Arrays.asList(writeError1, writeError2);
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 new ArrayList<>(), mongoClient, mongoSinkConfig);
 
         when(mongoCollection.bulkWrite(request)).thenThrow(new MongoBulkWriteException(new BulkWriteResultMock(false, 0, 0, 0), writeErrors, null, new ServerAddress()));
@@ -97,7 +97,7 @@ public class MongoSinkClientTest {
         BulkWriteError writeError1 = new BulkWriteError(400, "DB not found", new BsonDocument(), 0);
         BulkWriteError writeError2 = new BulkWriteError(400, "DB not found", new BsonDocument(), 1);
         List<BulkWriteError> writeErrors = Arrays.asList(writeError1, writeError2);
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
 
         when(mongoCollection.bulkWrite(request)).thenThrow(new MongoBulkWriteException(new BulkWriteResultMock(false, 0, 0, 0), writeErrors, null, new ServerAddress()));
@@ -111,14 +111,14 @@ public class MongoSinkClientTest {
         BulkWriteError writeError1 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 0);
         BulkWriteError writeError2 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 1);
         List<BulkWriteError> writeErrors = Arrays.asList(writeError1, writeError2);
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
         when(mongoCollection.bulkWrite(request)).thenThrow(new MongoBulkWriteException(new BulkWriteResultMock(false, 0, 0, 0), writeErrors, null, new ServerAddress()));
         mongoSinkClient.processRequest(request);
 
-        verify(instrumentation, times(2)).logWarn("Non-retriable error due to response status: {} is under blacklisted status code", 11000);
-        verify(instrumentation, times(2)).logInfo("Message dropped because of status code: 11000");
-        verify(instrumentation, times(2)).incrementCounter("firehose_sink_messages_drop_total", "cause=Duplicate Key Error");
+        verify(firehoseInstrumentation, times(2)).logWarn("Non-retriable error due to response status: {} is under blacklisted status code", 11000);
+        verify(firehoseInstrumentation, times(2)).logInfo("Message dropped because of status code: 11000");
+        verify(firehoseInstrumentation, times(2)).incrementCounter("firehose_sink_messages_drop_total", "cause=Duplicate Key Error");
     }
 
     @Test
@@ -126,14 +126,14 @@ public class MongoSinkClientTest {
         BulkWriteError writeError1 = new BulkWriteError(400, "Duplicate Key Error", new BsonDocument(), 0);
         BulkWriteError writeError2 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 1);
         List<BulkWriteError> writeErrors = Arrays.asList(writeError1, writeError2);
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
         when(mongoCollection.bulkWrite(request)).thenThrow(new MongoBulkWriteException(new BulkWriteResultMock(false, 0, 0, 0), writeErrors, null, new ServerAddress()));
         mongoSinkClient.processRequest(request);
 
-        verify(instrumentation, times(1)).logWarn("Non-retriable error due to response status: {} is under blacklisted status code", 11000);
-        verify(instrumentation, times(1)).logInfo("Message dropped because of status code: 11000");
-        verify(instrumentation, times(1)).incrementCounter("firehose_sink_messages_drop_total", "cause=Duplicate Key Error");
+        verify(firehoseInstrumentation, times(1)).logWarn("Non-retriable error due to response status: {} is under blacklisted status code", 11000);
+        verify(firehoseInstrumentation, times(1)).logInfo("Message dropped because of status code: 11000");
+        verify(firehoseInstrumentation, times(1)).incrementCounter("firehose_sink_messages_drop_total", "cause=Duplicate Key Error");
     }
 
     @Test
@@ -143,7 +143,7 @@ public class MongoSinkClientTest {
         BulkWriteError writeError3 = new BulkWriteError(502, "Collection not found", new BsonDocument(), 2);
 
         List<BulkWriteError> writeErrors = Arrays.asList(writeError1, writeError2, writeError3);
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
 
         request.add(new ReplaceOneModel<>(
@@ -156,7 +156,7 @@ public class MongoSinkClientTest {
 
         List<BulkWriteError> nonBlacklistedErrors = mongoSinkClient.processRequest(request);
 
-        verify(instrumentation, times(2)).incrementCounter(any(String.class), any(String.class));
+        verify(firehoseInstrumentation, times(2)).incrementCounter(any(String.class), any(String.class));
         Assert.assertEquals(1, nonBlacklistedErrors.size());
         Assert.assertEquals(writeErrors.get(1), nonBlacklistedErrors.get(0));
 
@@ -167,108 +167,108 @@ public class MongoSinkClientTest {
         BulkWriteError writeError1 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 0);
         BulkWriteError writeError2 = new BulkWriteError(11000, "Duplicate Key Error", new BsonDocument(), 1);
         List<BulkWriteError> writeErrors = Arrays.asList(writeError1, writeError2);
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
         when(mongoCollection.bulkWrite(request)).thenThrow(new MongoBulkWriteException(new BulkWriteResultMock(false, 0, 0, 0), writeErrors, null, new ServerAddress()));
         mongoSinkClient.processRequest(request);
-        verify(instrumentation, times(1)).logWarn("Bulk request failed count: {}", 2);
+        verify(firehoseInstrumentation, times(1)).logWarn("Bulk request failed count: {}", 2);
     }
 
     @Test
     public void shouldNotLogBulkRequestFailedWhenBulkResponsesHasNoFailures() {
         List<BulkWriteError> writeErrors = new ArrayList<>();
 
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
         when(mongoCollection.bulkWrite(request)).thenThrow(new MongoBulkWriteException(new BulkWriteResultMock(false, 0, 0, 0), writeErrors, null, new ServerAddress()));
         mongoSinkClient.processRequest(request);
 
-        verify(instrumentation, times(0)).logWarn("Bulk request failed count: {}", 2);
+        verify(firehoseInstrumentation, times(0)).logWarn("Bulk request failed count: {}", 2);
     }
 
     @Test
     public void shouldLogBulkRequestFailedWhenPrimaryKeyNotFoundForAllMessages() {
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
 
         when(mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable()).thenReturn(true);
         when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(true, 0, 0, 0));
         mongoSinkClient.processRequest(request);
 
-        verify(instrumentation, times(1)).logWarn("Bulk request failed");
-        verify(instrumentation, times(1)).logWarn("Bulk request failures count: {}", 2);
-        verify(instrumentation, times(1)).logWarn("Some Messages were dropped because their Primary Key values had no matches");
+        verify(firehoseInstrumentation, times(1)).logWarn("Bulk request failed");
+        verify(firehoseInstrumentation, times(1)).logWarn("Bulk request failures count: {}", 2);
+        verify(firehoseInstrumentation, times(1)).logWarn("Some Messages were dropped because their Primary Key values had no matches");
     }
 
     @Test
     public void shouldLogBulkRequestPartiallySucceededWhenPrimaryKeyNotFoundForSomeMessages() {
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
 
         when(mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable()).thenReturn(true);
         when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(true, 0, 1, 0));
         mongoSinkClient.processRequest(request);
 
-        verify(instrumentation, times(1)).logWarn("Bulk request partially succeeded");
-        verify(instrumentation, times(1)).logWarn("Bulk request failures count: {}", 1);
-        verify(instrumentation, times(1)).logWarn("Some Messages were dropped because their Primary Key values had no matches");
+        verify(firehoseInstrumentation, times(1)).logWarn("Bulk request partially succeeded");
+        verify(firehoseInstrumentation, times(1)).logWarn("Bulk request failures count: {}", 1);
+        verify(firehoseInstrumentation, times(1)).logWarn("Some Messages were dropped because their Primary Key values had no matches");
     }
 
     @Test
     public void shouldLogBulkRequestsNotAcknowledgedWhenNoAcknowledgementReceived() {
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
 
         when(mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable()).thenReturn(true);
         when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(false, 0, 1, 0));
         mongoSinkClient.processRequest(request);
 
-        verify(instrumentation, times(1)).logWarn("Bulk Write operation was not acknowledged");
+        verify(firehoseInstrumentation, times(1)).logWarn("Bulk Write operation was not acknowledged");
     }
 
     @Test
     public void shouldLogBulkRequestsSucceededWhenNoFailuresForUpdateOnly() {
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
 
         when(mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable()).thenReturn(true);
         when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(true, 0, 2, 0));
         mongoSinkClient.processRequest(request);
 
-        verify(instrumentation, times(1)).logInfo("Bulk request succeeded");
-        verify(instrumentation, times(1)).logInfo("Bulk Write operation was successfully acknowledged");
-        verify(instrumentation, times(1)).logInfo(
+        verify(firehoseInstrumentation, times(1)).logInfo("Bulk request succeeded");
+        verify(firehoseInstrumentation, times(1)).logInfo("Bulk Write operation was successfully acknowledged");
+        verify(firehoseInstrumentation, times(1)).logInfo(
                 "Inserted Count = {}. Matched Count = {}. Deleted Count = {}. Updated Count = {}. Total Modified Count = {}",
                 0, 2, 0, 2, 2);
     }
 
     @Test
     public void shouldLogBulkRequestsSucceededWhenNoFailuresForInsertOnly() {
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
 
         when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(true, 2, 0, 0));
         mongoSinkClient.processRequest(request);
 
-        verify(instrumentation, times(1)).logInfo("Bulk request succeeded");
-        verify(instrumentation, times(1)).logInfo("Bulk Write operation was successfully acknowledged");
+        verify(firehoseInstrumentation, times(1)).logInfo("Bulk request succeeded");
+        verify(firehoseInstrumentation, times(1)).logInfo("Bulk Write operation was successfully acknowledged");
 
-        verify(instrumentation, times(1)).logInfo(
+        verify(firehoseInstrumentation, times(1)).logInfo(
                 "Inserted Count = {}. Matched Count = {}. Deleted Count = {}. Updated Count = {}. Total Modified Count = {}",
                 2, 0, 0, 0, 2);
     }
 
     @Test
     public void shouldLogBulkRequestsSucceededWhenNoFailuresForBothUpdateAndInsert() {
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
 
         when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(true, 1, 1, 0));
         mongoSinkClient.processRequest(request);
 
-        verify(instrumentation, times(1)).logInfo("Bulk request succeeded");
-        verify(instrumentation, times(1)).logInfo("Bulk Write operation was successfully acknowledged");
-        verify(instrumentation, times(1)).logInfo(
+        verify(firehoseInstrumentation, times(1)).logInfo("Bulk request succeeded");
+        verify(firehoseInstrumentation, times(1)).logInfo("Bulk Write operation was successfully acknowledged");
+        verify(firehoseInstrumentation, times(1)).logInfo(
                 "Inserted Count = {}. Matched Count = {}. Deleted Count = {}. Updated Count = {}. Total Modified Count = {}",
                 1, 1, 0, 1, 2);
 
@@ -277,55 +277,55 @@ public class MongoSinkClientTest {
     @Test
     public void shouldIncrementFailureCounterTagWhenPrimaryKeyNotFoundInUpdateOnlyMode() {
 
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
         when(mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable()).thenReturn(true);
         when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(true, 0, 1, 0));
         mongoSinkClient.processRequest(request);
 
-        verify(instrumentation, times(1)).incrementCounter(SINK_MESSAGES_DROP_TOTAL, "cause=Primary Key value not found");
+        verify(firehoseInstrumentation, times(1)).incrementCounter(SINK_MESSAGES_DROP_TOTAL, "cause=Primary Key value not found");
     }
 
     @Test
     public void shouldIncrementInsertedCounterTagOnSuccessfulInsertion() {
 
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
 
         when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(true, 3, 0, 0));
         mongoSinkClient.processRequest(request);
 
-        verify(instrumentation, times(3)).incrementCounter(SINK_MONGO_INSERTED_TOTAL);
-        verify(instrumentation, times(3)).incrementCounter(SINK_MONGO_MODIFIED_TOTAL);
+        verify(firehoseInstrumentation, times(3)).incrementCounter(SINK_MONGO_INSERTED_TOTAL);
+        verify(firehoseInstrumentation, times(3)).incrementCounter(SINK_MONGO_MODIFIED_TOTAL);
 
     }
 
     @Test
     public void shouldIncrementUpdatedCounterTagOnSuccessfulUpdation() {
 
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
 
         when(mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable()).thenReturn(true);
         when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(true, 0, 3, 0));
         mongoSinkClient.processRequest(request);
 
-        verify(instrumentation, times(3)).incrementCounter(SINK_MONGO_UPDATED_TOTAL);
-        verify(instrumentation, times(3)).incrementCounter(SINK_MONGO_MODIFIED_TOTAL);
+        verify(firehoseInstrumentation, times(3)).incrementCounter(SINK_MONGO_UPDATED_TOTAL);
+        verify(firehoseInstrumentation, times(3)).incrementCounter(SINK_MONGO_MODIFIED_TOTAL);
     }
 
     @Test
     public void shouldIncrementInsertedCounterTagOnSuccessfulInsertionInUpsertMode() {
 
-        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, instrumentation,
+        MongoSinkClient mongoSinkClient = new MongoSinkClient(mongoCollection, firehoseInstrumentation,
                 mongoRetryStatusCodeBlacklist, mongoClient, mongoSinkConfig);
 
         when(mongoSinkConfig.isSinkMongoModeUpdateOnlyEnable()).thenReturn(true);
         when(mongoCollection.bulkWrite(request)).thenReturn(new BulkWriteResultMock(true, 0, 0, 3));
         mongoSinkClient.processRequest(request);
 
-        verify(instrumentation, times(3)).incrementCounter(SINK_MONGO_INSERTED_TOTAL);
-        verify(instrumentation, times(3)).incrementCounter(SINK_MONGO_MODIFIED_TOTAL);
+        verify(firehoseInstrumentation, times(3)).incrementCounter(SINK_MONGO_INSERTED_TOTAL);
+        verify(firehoseInstrumentation, times(3)).incrementCounter(SINK_MONGO_MODIFIED_TOTAL);
     }
 
 

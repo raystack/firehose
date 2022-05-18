@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.blob.writer;
 
+import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.firehose.config.BlobSinkConfig;
-import io.odpf.firehose.metrics.StatsDReporter;
 import io.odpf.firehose.sink.common.blobstorage.BlobStorage;
 import io.odpf.firehose.sink.blob.Constants;
 import io.odpf.firehose.sink.blob.TestProtoMessage;
@@ -17,7 +17,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.time.Instant;

@@ -1,8 +1,8 @@
 package io.odpf.firehose.sink.elasticsearch;
 
 
-import io.odpf.firehose.metrics.Instrumentation;
-import io.odpf.firehose.metrics.StatsDReporter;
+import io.odpf.depot.metrics.StatsDReporter;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.Sink;
 import io.odpf.stencil.client.StencilClient;
 import org.apache.http.HttpHost;
@@ -25,7 +25,7 @@ public class EsSinkFactoryTest {
     private StatsDReporter statsDReporter;
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
     @Mock
     private StencilClient stencilClient;
@@ -46,7 +46,7 @@ public class EsSinkFactoryTest {
     @Test
     public void shouldThrowIllegalArgumentExceptionForEmptyESConnectionURLs() {
         try {
-            EsSinkFactory.getHttpHosts("", instrumentation);
+            EsSinkFactory.getHttpHosts("", firehoseInstrumentation);
         } catch (Exception e) {
             assertEquals(IllegalArgumentException.class, e.getClass());
             assertEquals("SINK_ES_CONNECTION_URLS is empty or null", e.getMessage());
@@ -56,7 +56,7 @@ public class EsSinkFactoryTest {
     @Test
     public void shouldThrowIllegalArgumentExceptionForNullESConnectionURLs() {
         try {
-            EsSinkFactory.getHttpHosts(null, instrumentation);
+            EsSinkFactory.getHttpHosts(null, firehoseInstrumentation);
         } catch (Exception e) {
             assertEquals(IllegalArgumentException.class, e.getClass());
             assertEquals("SINK_ES_CONNECTION_URLS is empty or null", e.getMessage());
@@ -67,7 +67,7 @@ public class EsSinkFactoryTest {
     public void shouldThrowIllegalArgumentExceptionForEmptyHostName() {
         String esConnectionURLs = ":1000";
         try {
-            EsSinkFactory.getHttpHosts(esConnectionURLs, instrumentation);
+            EsSinkFactory.getHttpHosts(esConnectionURLs, firehoseInstrumentation);
         } catch (Exception e) {
             assertEquals(IllegalArgumentException.class, e.getClass());
         }
@@ -77,7 +77,7 @@ public class EsSinkFactoryTest {
     public void shouldThrowIllegalArgumentExceptionForEmptyPort() {
         String esConnectionURLs = "localhost:";
         try {
-            EsSinkFactory.getHttpHosts(esConnectionURLs, instrumentation);
+            EsSinkFactory.getHttpHosts(esConnectionURLs, firehoseInstrumentation);
         } catch (Exception e) {
             assertEquals(IllegalArgumentException.class, e.getClass());
         }
@@ -86,7 +86,7 @@ public class EsSinkFactoryTest {
     @Test
     public void shouldGetHttpHostsForValidESConnectionURLs() {
         String esConnectionURLs = "localhost_1:1000,localhost_2:1000";
-        HttpHost[] httpHosts = EsSinkFactory.getHttpHosts(esConnectionURLs, instrumentation);
+        HttpHost[] httpHosts = EsSinkFactory.getHttpHosts(esConnectionURLs, firehoseInstrumentation);
 
         assertEquals("localhost_1", httpHosts[0].getHostName());
         assertEquals(1000, httpHosts[0].getPort());
@@ -97,7 +97,7 @@ public class EsSinkFactoryTest {
     @Test
     public void shouldGetHttpHostsForValidESConnectionURLsWithSpacesInBetween() {
         String esConnectionURLs = " localhost_1: 1000,  localhost_2:1000";
-        HttpHost[] httpHosts = EsSinkFactory.getHttpHosts(esConnectionURLs, instrumentation);
+        HttpHost[] httpHosts = EsSinkFactory.getHttpHosts(esConnectionURLs, firehoseInstrumentation);
 
         assertEquals("localhost_1", httpHosts[0].getHostName());
         assertEquals(1000, httpHosts[0].getPort());
@@ -108,7 +108,7 @@ public class EsSinkFactoryTest {
     @Test
     public void shouldGetHttpHostsForIPInESConnectionURLs() {
         String esConnectionURLs = "172.28.32.156:1000";
-        HttpHost[] httpHosts = EsSinkFactory.getHttpHosts(esConnectionURLs, instrumentation);
+        HttpHost[] httpHosts = EsSinkFactory.getHttpHosts(esConnectionURLs, firehoseInstrumentation);
 
         assertEquals("172.28.32.156", httpHosts[0].getHostName());
         assertEquals(1000, httpHosts[0].getPort());
@@ -118,7 +118,7 @@ public class EsSinkFactoryTest {
     public void shouldThrowExceptionIfHostAndPortNotProvidedProperly() {
         String esConnectionURLs = "test";
         try {
-            EsSinkFactory.getHttpHosts(esConnectionURLs, instrumentation);
+            EsSinkFactory.getHttpHosts(esConnectionURLs, firehoseInstrumentation);
         } catch (Exception e) {
             assertEquals(IllegalArgumentException.class, e.getClass());
             assertEquals("SINK_ES_CONNECTION_URLS should contain host and port both", e.getMessage());

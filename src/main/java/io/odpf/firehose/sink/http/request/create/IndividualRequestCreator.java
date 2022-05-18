@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.http.request.create;
 
 import io.odpf.firehose.config.enums.HttpSinkRequestMethodType;
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.http.request.HttpRequestMethodFactory;
 import io.odpf.firehose.sink.http.request.body.JsonBody;
 import io.odpf.firehose.sink.http.request.entity.RequestEntityBuilder;
@@ -22,14 +22,14 @@ public class IndividualRequestCreator implements RequestCreator {
     private JsonBody jsonBody;
     private HttpSinkRequestMethodType method;
     private UriBuilder uriBuilder;
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
-    public IndividualRequestCreator(Instrumentation instrumentation, UriBuilder uriBuilder, HeaderBuilder headerBuilder, HttpSinkRequestMethodType method, JsonBody body) {
+    public IndividualRequestCreator(FirehoseInstrumentation firehoseInstrumentation, UriBuilder uriBuilder, HeaderBuilder headerBuilder, HttpSinkRequestMethodType method, JsonBody body) {
         this.uriBuilder = uriBuilder;
         this.headerBuilder = headerBuilder;
         this.jsonBody = body;
         this.method = method;
-        this.instrumentation = instrumentation;
+        this.firehoseInstrumentation = firehoseInstrumentation;
     }
 
     @Override
@@ -45,7 +45,7 @@ public class IndividualRequestCreator implements RequestCreator {
             headerMap.forEach(request::addHeader);
             request.setEntity(entity.buildHttpEntity(bodyContents.get(i)));
 
-            instrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+            firehoseInstrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
                     requestUrl, headerMap, bodyContents.get(i), method);
 
             requests.add(request);

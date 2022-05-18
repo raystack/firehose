@@ -1,7 +1,7 @@
 package io.odpf.firehose.sink.dlq.kafka;
 
 import io.odpf.firehose.message.Message;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.dlq.DlqWriter;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -17,12 +17,12 @@ public class KafkaDlqWriter implements DlqWriter {
 
     private Producer<byte[], byte[]> kafkaProducer;
     private final String topic;
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
 
-    public KafkaDlqWriter(Producer<byte[], byte[]> kafkaProducer, String topic, Instrumentation instrumentation) {
+    public KafkaDlqWriter(Producer<byte[], byte[]> kafkaProducer, String topic, FirehoseInstrumentation firehoseInstrumentation) {
         this.kafkaProducer = kafkaProducer;
         this.topic = topic;
-        this.instrumentation = instrumentation;
+        this.firehoseInstrumentation = firehoseInstrumentation;
     }
 
     @Override
@@ -34,7 +34,7 @@ public class KafkaDlqWriter implements DlqWriter {
         AtomicInteger recordsProcessed = new AtomicInteger();
         List<Message> failedMessages = new ArrayList<>();
 
-        instrumentation.logInfo("Pushing {} messages to retry queue topic : {}", messages.size(), topic);
+        firehoseInstrumentation.logInfo("Pushing {} messages to retry queue topic : {}", messages.size(), topic);
         for (Message message : messages) {
             kafkaProducer.send(new ProducerRecord<>(topic, null, null, message.getLogKey(), message.getLogMessage(),
                     message.getHeaders()), (metadata, e) -> {
@@ -53,10 +53,10 @@ public class KafkaDlqWriter implements DlqWriter {
         try {
             completedLatch.await();
         } catch (InterruptedException e) {
-            instrumentation.logWarn(e.getMessage());
-            instrumentation.captureNonFatalError(e);
+            firehoseInstrumentation.logWarn(e.getMessage());
+            firehoseInstrumentation.captureNonFatalError("firehose_error_event", e, "");
         }
-        instrumentation.logInfo("Successfully pushed {} messages to {}", messages.size() - failedMessages.size(), topic);
+        firehoseInstrumentation.logInfo("Successfully pushed {} messages to {}", messages.size() - failedMessages.size(), topic);
         return failedMessages;
     }
 }

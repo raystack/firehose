@@ -2,7 +2,7 @@ package io.odpf.firehose.sink.elasticsearch;
 
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.NeedToRetry;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.AbstractSink;
 import io.odpf.firehose.sink.elasticsearch.request.EsRequestHandler;
 import org.elasticsearch.action.bulk.BulkItemResponse;
@@ -31,7 +31,7 @@ public class EsSink extends AbstractSink {
     /**
      * Instantiates a new Es sink.
      *
-     * @param instrumentation            the instrumentation
+     * @param firehoseInstrumentation            the instrumentation
      * @param sinkType                   the sink type
      * @param client                     the client
      * @param esRequestHandler           the es request handler
@@ -39,9 +39,9 @@ public class EsSink extends AbstractSink {
      * @param esWaitForActiveShardsCount the es wait for active shards count
      * @param esRetryStatusCodeBlacklist the es retry status code blacklist
      */
-    public EsSink(Instrumentation instrumentation, String sinkType, RestHighLevelClient client, EsRequestHandler esRequestHandler,
+    public EsSink(FirehoseInstrumentation firehoseInstrumentation, String sinkType, RestHighLevelClient client, EsRequestHandler esRequestHandler,
                   long esRequestTimeoutInMs, Integer esWaitForActiveShardsCount, List<String> esRetryStatusCodeBlacklist) {
-        super(instrumentation, sinkType);
+        super(firehoseInstrumentation, sinkType);
         this.client = client;
         this.esRequestHandler = esRequestHandler;
         this.esRequestTimeoutInMs = esRequestTimeoutInMs;
@@ -61,7 +61,7 @@ public class EsSink extends AbstractSink {
     protected List<Message> execute() throws Exception {
         BulkResponse bulkResponse = getBulkResponse();
         if (bulkResponse.hasFailures()) {
-            getInstrumentation().logWarn("Bulk request failed");
+            getFirehoseInstrumentation().logWarn("Bulk request failed");
             handleResponse(bulkResponse);
         }
         return new ArrayList<>();
@@ -69,7 +69,7 @@ public class EsSink extends AbstractSink {
 
     @Override
     public void close() throws IOException {
-        getInstrumentation().logInfo("Elastic Search connection closing");
+        getFirehoseInstrumentation().logInfo("Elastic Search connection closing");
         this.client.close();
     }
 
@@ -84,14 +84,14 @@ public class EsSink extends AbstractSink {
                 failedResponseCount++;
                 String responseStatus = String.valueOf(response.status().getStatus());
                 if (esRetryStatusCodeBlacklist.contains(responseStatus)) {
-                    getInstrumentation().logInfo("Not retrying due to response status: {} is under blacklisted status code", responseStatus);
-                    getInstrumentation().incrementCounter(SINK_MESSAGES_DROP_TOTAL, "cause=" + response.status().name());
-                    getInstrumentation().logInfo("Message dropped because of status code: " + responseStatus);
+                    getFirehoseInstrumentation().logInfo("Not retrying due to response status: {} is under blacklisted status code", responseStatus);
+                    getFirehoseInstrumentation().incrementCounter(SINK_MESSAGES_DROP_TOTAL, "cause=" + response.status().name());
+                    getFirehoseInstrumentation().logInfo("Message dropped because of status code: " + responseStatus);
                 } else {
                     throw new NeedToRetry(bulkResponse.buildFailureMessage());
                 }
             }
         }
-        getInstrumentation().logWarn("Bulk request failed count: {}", failedResponseCount);
+        getFirehoseInstrumentation().logWarn("Bulk request failed count: {}", failedResponseCount);
     }
 }

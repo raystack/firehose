@@ -1,8 +1,8 @@
 package io.odpf.firehose.message;
 
+import io.odpf.depot.error.ErrorType;
 import io.odpf.firehose.consumer.TestKey;
 import io.odpf.firehose.consumer.TestMessage;
-import io.odpf.firehose.error.ErrorType;
 import io.odpf.firehose.exception.DefaultException;
 import org.junit.Assert;
 import org.junit.Before;

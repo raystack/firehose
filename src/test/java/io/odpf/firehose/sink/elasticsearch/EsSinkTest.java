@@ -3,7 +3,7 @@ package io.odpf.firehose.sink.elasticsearch;
 import io.odpf.firehose.config.enums.SinkType;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.NeedToRetry;
-import io.odpf.firehose.metrics.Instrumentation;
+import io.odpf.firehose.metrics.FirehoseInstrumentation;
 import io.odpf.firehose.sink.elasticsearch.request.EsRequestHandler;
 import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.DocWriteResponse;
@@ -30,7 +30,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class EsSinkTest {
 
     @Mock
-    private Instrumentation instrumentation;
+    private FirehoseInstrumentation firehoseInstrumentation;
     @Mock
     private RestHighLevelClient client;
     @Mock
@@ -68,7 +68,7 @@ public class EsSinkTest {
 
     @Test
     public void shouldGetRequestForEachMessageInEsbMessagesList() {
-        EsSink esSink = new EsSink(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler, 5000, 1, esRetryStatusCodeBlacklist);
+        EsSink esSink = new EsSink(firehoseInstrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler, 5000, 1, esRetryStatusCodeBlacklist);
 
         esSink.prepare(messages);
         verify(esRequestHandler, times(1)).getRequest(messages.get(0));
@@ -78,7 +78,7 @@ public class EsSinkTest {
     @Test
     public void shouldReturnEmptyArrayListWhenBulkResponseExecutedSuccessfully() throws IOException {
         when(bulkResponse.hasFailures()).thenReturn(false);
-        EsSinkMock esSinkMock = new EsSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
+        EsSinkMock esSinkMock = new EsSinkMock(firehoseInstrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
                 5000, 1, esRetryStatusCodeBlacklist);
         esSinkMock.setBulkResponse(bulkResponse);
 
@@ -94,7 +94,7 @@ public class EsSinkTest {
         BulkItemResponse[] bulkItemResponses = {bulkResponseItemMock1, bulkResponseItemMock2};
         when(bulkResponse.hasFailures()).thenReturn(true);
         when(bulkResponse.getItems()).thenReturn(bulkItemResponses);
-        EsSinkMock esSinkMock = new EsSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
+        EsSinkMock esSinkMock = new EsSinkMock(firehoseInstrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
                 5000, 1, esRetryStatusCodeBlacklist);
         esSinkMock.setBulkResponse(bulkResponse);
 
@@ -114,7 +114,7 @@ public class EsSinkTest {
         BulkItemResponse[] bulkItemResponses = {bulkResponseItemMock1, bulkResponseItemMock2};
         when(bulkResponse.hasFailures()).thenReturn(true);
         when(bulkResponse.getItems()).thenReturn(bulkItemResponses);
-        EsSinkMock esSinkMock = new EsSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
+        EsSinkMock esSinkMock = new EsSinkMock(firehoseInstrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
                 5000, 1, new ArrayList<>());
         esSinkMock.setBulkResponse(bulkResponse);
 
@@ -130,7 +130,7 @@ public class EsSinkTest {
         BulkItemResponse[] bulkItemResponses = {bulkResponseItemMock1, bulkResponseItemMock2};
         when(bulkResponse.hasFailures()).thenReturn(true);
         when(bulkResponse.getItems()).thenReturn(bulkItemResponses);
-        EsSinkMock esSinkMock = new EsSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
+        EsSinkMock esSinkMock = new EsSinkMock(firehoseInstrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
                 5000, 1, esRetryStatusCodeBlacklist);
         esSinkMock.setBulkResponse(bulkResponse);
 
@@ -146,7 +146,7 @@ public class EsSinkTest {
         BulkItemResponse[] bulkItemResponses = {bulkResponseItemMock1, bulkResponseItemMock2};
         when(bulkResponse.hasFailures()).thenReturn(true);
         when(bulkResponse.getItems()).thenReturn(bulkItemResponses);
-        EsSinkMock esSinkMock = new EsSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler, 5000,
+        EsSinkMock esSinkMock = new EsSinkMock(firehoseInstrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler, 5000,
                 1, esRetryStatusCodeBlacklist);
         esSinkMock.setBulkResponse(bulkResponse);
 
@@ -161,13 +161,13 @@ public class EsSinkTest {
         BulkItemResponse[] bulkItemResponses = {bulkResponseItemMock1, bulkResponseItemMock2};
         when(bulkResponse.hasFailures()).thenReturn(true);
         when(bulkResponse.getItems()).thenReturn(bulkItemResponses);
-        EsSinkMock esSinkMock = new EsSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler, 5000, 1, esRetryStatusCodeBlacklist);
+        EsSinkMock esSinkMock = new EsSinkMock(firehoseInstrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler, 5000, 1, esRetryStatusCodeBlacklist);
         esSinkMock.setBulkResponse(bulkResponse);
 
         esSinkMock.pushMessage(this.messages);
-        verify(instrumentation, times(2)).logInfo("Not retrying due to response status: {} is under blacklisted status code", "404");
-        verify(instrumentation, times(2)).logInfo("Message dropped because of status code: 404");
-        verify(instrumentation, times(2)).incrementCounter("firehose_sink_messages_drop_total", "cause=NOT_FOUND");
+        verify(firehoseInstrumentation, times(2)).logInfo("Not retrying due to response status: {} is under blacklisted status code", "404");
+        verify(firehoseInstrumentation, times(2)).logInfo("Message dropped because of status code: 404");
+        verify(firehoseInstrumentation, times(2)).incrementCounter("firehose_sink_messages_drop_total", "cause=NOT_FOUND");
     }
 
     @Test
@@ -178,14 +178,14 @@ public class EsSinkTest {
         BulkItemResponse[] bulkItemResponses = {bulkResponseItemMock1, bulkResponseItemMock2, bulkResponseItemMock3};
         when(bulkResponse.hasFailures()).thenReturn(true);
         when(bulkResponse.getItems()).thenReturn(bulkItemResponses);
-        EsSinkMock esSinkMock = new EsSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
+        EsSinkMock esSinkMock = new EsSinkMock(firehoseInstrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
                 5000, 1, esRetryStatusCodeBlacklist);
         esSinkMock.setBulkResponse(bulkResponse);
         String logMessage = "CgYIyOm+xgUSBgiE6r7GBRgNIICAgIDA9/y0LigCMAM\u003d";
         Message messageWithProto = new Message(null, Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
         messages.add(messageWithProto);
         List<Message> failedMessages = esSinkMock.pushMessage(this.messages);
-        verify(instrumentation, times(2)).incrementCounter(any(String.class), any(String.class));
+        verify(firehoseInstrumentation, times(2)).incrementCounter(any(String.class), any(String.class));
         Assert.assertEquals(3, failedMessages.size());
     }
 
@@ -196,13 +196,13 @@ public class EsSinkTest {
         BulkItemResponse[] bulkItemResponses = {bulkResponseItemMock1, bulkResponseItemMock2};
         when(bulkResponse.hasFailures()).thenReturn(true);
         when(bulkResponse.getItems()).thenReturn(bulkItemResponses);
-        EsSinkMock esSinkMock = new EsSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
+        EsSinkMock esSinkMock = new EsSinkMock(firehoseInstrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
                 5000, 1, esRetryStatusCodeBlacklist);
         esSinkMock.setBulkResponse(bulkResponse);
 
         esSinkMock.pushMessage(this.messages);
-        verify(instrumentation, times(1)).logWarn("Bulk request failed");
-        verify(instrumentation, times(1)).logWarn("Bulk request failed count: {}", 2);
+        verify(firehoseInstrumentation, times(1)).logWarn("Bulk request failed");
+        verify(firehoseInstrumentation, times(1)).logWarn("Bulk request failed count: {}", 2);
     }
 
     @Test
@@ -212,22 +212,22 @@ public class EsSinkTest {
         BulkItemResponse[] bulkItemResponses = {bulkResponseItemMock1, bulkResponseItemMock2};
         when(bulkResponse.hasFailures()).thenReturn(false);
         when(bulkResponse.getItems()).thenReturn(bulkItemResponses);
-        EsSinkMock esSinkMock = new EsSinkMock(instrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
+        EsSinkMock esSinkMock = new EsSinkMock(firehoseInstrumentation, SinkType.ELASTICSEARCH.name(), client, esRequestHandler,
                 5000, 1, esRetryStatusCodeBlacklist);
         esSinkMock.setBulkResponse(bulkResponse);
 
         esSinkMock.pushMessage(this.messages);
-        verify(instrumentation, times(0)).logWarn("Bulk request failed");
-        verify(instrumentation, times(0)).logWarn("Bulk request failed count: {}", 2);
+        verify(firehoseInstrumentation, times(0)).logWarn("Bulk request failed");
+        verify(firehoseInstrumentation, times(0)).logWarn("Bulk request failed count: {}", 2);
     }
 
     public static class EsSinkMock extends EsSink {
 
         private BulkResponse bulkResponse;
 
-        public EsSinkMock(Instrumentation instrumentation, String sinkType, RestHighLevelClient client, EsRequestHandler esRequestHandler,
+        public EsSinkMock(FirehoseInstrumentation firehoseInstrumentation, String sinkType, RestHighLevelClient client, EsRequestHandler esRequestHandler,
                           long esRequestTimeoutInMs, Integer esWaitForActiveShardsCount, List<String> esRetryStatusCodeBlacklist) {
-            super(instrumentation, sinkType, client, esRequestHandler, esRequestTimeoutInMs, esWaitForActiveShardsCount, esRetryStatusCodeBlacklist);
+            super(firehoseInstrumentation, sinkType, client, esRequestHandler, esRequestTimeoutInMs, esWaitForActiveShardsCount, esRetryStatusCodeBlacklist);
         }
 
         public void setBulkResponse(BulkResponse bulkResponse) {
