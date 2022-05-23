@@ -30,7 +30,7 @@ To help you get your feet wet and get you familiar with our contribution process
 We use RFCs and GitHub issues to communicate ideas.
 
 * You can report a bug or suggest a feature enhancement or can just ask questions. Reach out on Github discussions for this purpose.
-* You are also welcome to add a new sink, improve monitoring and logging and improve code quality.
+* You are also welcome to add a new common sink in [depot](https://github.com/odpf/depot), improve monitoring and logging and improve code quality.
 * You can help with documenting new features or improve existing documentation.
 * You can also review and accept other contributions if you are a maintainer.
 
