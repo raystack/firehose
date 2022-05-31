@@ -16,6 +16,7 @@ Service-level Indicators \(SLIs\) are the measurements used to calculate the per
 * [HTTP Sink](metrics.md#http-sink)
 * [Filter](metrics.md#filter)
 * [Blob Sink](metrics.md#blob-sink)
+* [Bigquery Sink](https://github.com/odpf/depot/blob/main/docs/reference/metrics.md#bigquery-sink)
 
 ## Type Details
 
@@ -368,20 +369,3 @@ Total Size of the uploaded file in bytes.
 ### `File Upload Records Total`
 
 Total number records inside files that successfully being uploaded to blob storage.
-
-## Bigquery Sink
-
-### `Biquery Operation Total`
-
-Total number of bigquery API operation performed
-
-### `Bigquery Operation Latency`
-
-Time taken for bigquery API operation performed
-
-### `Bigquery Errors Total`
-
-Total numbers of error occurred on bigquery insert operation.
-
-
-
