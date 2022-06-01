@@ -48,4 +48,8 @@ public interface KafkaConsumerConfig extends AppConfig {
     @ConverterClass(ConsumerModeConverter.class)
     @DefaultValue("SYNC")
     KafkaConsumerMode getSourceKafkaConsumerMode();
+
+    @Key("SOURCE_KAFKA_CONSUMER_COMMIT_DELAY_MS")
+    @DefaultValue("0")
+    long getSourceKafkaConsumerCommitDelayMs();
 }

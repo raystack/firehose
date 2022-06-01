@@ -101,4 +101,29 @@ public class ConsumerAndOffsetManagerTest {
             put(new TopicPartition("testing1", 1), new OffsetAndMetadata(2));
         }});
     }
+
+    @Test
+    public void shouldCommitAfterDelay() throws InterruptedException {
+        Sink s1 = Mockito.mock(Sink.class);
+        Sink s2 = Mockito.mock(Sink.class);
+        Sink s3 = Mockito.mock(Sink.class);
+        List<Sink> sinks = new ArrayList<Sink>() {{
+            add(s1);
+            add(s2);
+            add(s3);
+        }};
+        FirehoseKafkaConsumer consumer = Mockito.mock(FirehoseKafkaConsumer.class);
+        Instrumentation instrumentation = Mockito.mock(Instrumentation.class);
+        OffsetManager offsetManager = new OffsetManager();
+        KafkaConsumerConfig config = ConfigFactory.create(KafkaConsumerConfig.class, new HashMap<String, String>() {{
+            put("SOURCE_KAFKA_CONSUMER_COMMIT_DELAY_MS", "2000");
+        }});
+        ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, offsetManager, consumer, config, instrumentation);
+        consumerAndOffsetManager.commit();
+        consumerAndOffsetManager.commit();
+        Mockito.verify(consumer, Mockito.times(1)).commit(new HashMap<>());
+        Thread.sleep(2000L);
+        consumerAndOffsetManager.commit();
+        Mockito.verify(consumer, Mockito.times(2)).commit(new HashMap<>());
+    }
 }

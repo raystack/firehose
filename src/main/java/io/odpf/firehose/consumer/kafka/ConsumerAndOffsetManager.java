@@ -22,13 +22,12 @@ import java.util.List;
  * consumerOffsetManager.setCommittable(key);
  * consumerOffsetManager.commit();
  * <p>
- *
+ * <p>
  * OffsetManager is shared between consumer and the sink.
  * So the offsets added there will be available here to commit.
- *
+ * <p>
  * consumerOffsetManager.commit() calls the sink method to calculate committable offsets.
  * then it fetches the offsets from offsetManager.getCommittableOffsets() and uses kafka api to commit.
- *
  */
 public class ConsumerAndOffsetManager implements AutoCloseable {
     private final OffsetManager offsetManager;
@@ -37,6 +36,7 @@ public class ConsumerAndOffsetManager implements AutoCloseable {
     private final KafkaConsumerConfig kafkaConsumerConfig;
     private final Instrumentation instrumentation;
     private final boolean canSinkManageOffsets;
+    private long lastCommitTimeStamp = 0;
 
     public ConsumerAndOffsetManager(
             List<Sink> sinks,
@@ -72,6 +72,7 @@ public class ConsumerAndOffsetManager implements AutoCloseable {
 
     /**
      * Force-Update the offsets into offset manager regardless of sink managing the offsets.
+     *
      * @param messages list of messages set to be committable
      */
     public void forceAddOffsetsAndSetCommittable(List<Message> messages) {
@@ -83,11 +84,15 @@ public class ConsumerAndOffsetManager implements AutoCloseable {
     }
 
     public void commit() {
-        if (kafkaConsumerConfig.isSourceKafkaCommitOnlyCurrentPartitionsEnable()) {
-            sinks.forEach(Sink::calculateCommittableOffsets);
-            firehoseKafkaConsumer.commit(offsetManager.getCommittableOffset());
-        } else {
-            firehoseKafkaConsumer.commit();
+        long currentTimeStamp = System.currentTimeMillis();
+        if (currentTimeStamp - lastCommitTimeStamp > kafkaConsumerConfig.getSourceKafkaConsumerCommitDelayMs()) {
+            if (kafkaConsumerConfig.isSourceKafkaCommitOnlyCurrentPartitionsEnable()) {
+                sinks.forEach(Sink::calculateCommittableOffsets);
+                firehoseKafkaConsumer.commit(offsetManager.getCommittableOffset());
+            } else {
+                firehoseKafkaConsumer.commit();
+            }
+            lastCommitTimeStamp = currentTimeStamp;
         }
     }
 
