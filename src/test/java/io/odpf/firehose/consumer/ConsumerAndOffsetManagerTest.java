@@ -116,13 +116,13 @@ public class ConsumerAndOffsetManagerTest {
         Instrumentation instrumentation = Mockito.mock(Instrumentation.class);
         OffsetManager offsetManager = new OffsetManager();
         KafkaConsumerConfig config = ConfigFactory.create(KafkaConsumerConfig.class, new HashMap<String, String>() {{
-            put("SOURCE_KAFKA_CONSUMER_COMMIT_DELAY_MS", "2000");
+            put("SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_COMMIT_MIN_DELAY_MS", "500");
         }});
         ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, offsetManager, consumer, config, instrumentation);
         consumerAndOffsetManager.commit();
         consumerAndOffsetManager.commit();
         Mockito.verify(consumer, Mockito.times(1)).commit(new HashMap<>());
-        Thread.sleep(2000L);
+        Thread.sleep(500);
         consumerAndOffsetManager.commit();
         Mockito.verify(consumer, Mockito.times(2)).commit(new HashMap<>());
     }
