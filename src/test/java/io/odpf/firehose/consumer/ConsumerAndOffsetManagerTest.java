@@ -122,7 +122,7 @@ public class ConsumerAndOffsetManagerTest {
         consumerAndOffsetManager.commit();
         consumerAndOffsetManager.commit();
         Mockito.verify(consumer, Mockito.times(1)).commit(new HashMap<>());
-        Thread.sleep(500);
+        Thread.sleep(1000);
         consumerAndOffsetManager.commit();
         Mockito.verify(consumer, Mockito.times(2)).commit(new HashMap<>());
     }
@@ -147,6 +147,10 @@ public class ConsumerAndOffsetManagerTest {
         consumerAndOffsetManager.commit();
         consumerAndOffsetManager.commit();
         consumerAndOffsetManager.commit();
-        Mockito.verify(consumer, Mockito.times(3)).commit(new HashMap<>());
+        consumerAndOffsetManager.commit();
+        consumerAndOffsetManager.commit();
+        consumerAndOffsetManager.commit();
+        consumerAndOffsetManager.commit();
+        Mockito.verify(consumer, Mockito.times(7)).commit(new HashMap<>());
     }
 }

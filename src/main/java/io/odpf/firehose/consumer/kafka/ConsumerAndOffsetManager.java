@@ -85,7 +85,7 @@ public class ConsumerAndOffsetManager implements AutoCloseable {
 
     public void commit() {
         long currentTimeStamp = System.currentTimeMillis();
-        if (currentTimeStamp - lastCommitTimeStamp > kafkaConsumerConfig.getSourceKafkaConsumerCommitDelayMs()) {
+        if (currentTimeStamp - lastCommitTimeStamp > kafkaConsumerConfig.getSourceKafkaConsumerManualCommitMinIntervalMs()) {
             if (kafkaConsumerConfig.isSourceKafkaCommitOnlyCurrentPartitionsEnable()) {
                 sinks.forEach(Sink::calculateCommittableOffsets);
                 firehoseKafkaConsumer.commit(offsetManager.getCommittableOffset());

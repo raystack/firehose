@@ -51,5 +51,5 @@ public interface KafkaConsumerConfig extends AppConfig {
 
     @Key("SOURCE_KAFKA_CONSUMER_CONFIG_MANUAL_COMMIT_MIN_INTERVAL_MS")
     @DefaultValue("-1")
-    long getSourceKafkaConsumerCommitDelayMs();
+    long getSourceKafkaConsumerManualCommitMinIntervalMs();
 }
