@@ -50,6 +50,6 @@ public interface KafkaConsumerConfig extends AppConfig {
     KafkaConsumerMode getSourceKafkaConsumerMode();
 
     @Key("SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_COMMIT_MIN_DELAY_MS")
-    @DefaultValue("0")
+    @DefaultValue("-1")
     long getSourceKafkaConsumerCommitDelayMs();
 }
