@@ -116,7 +116,7 @@ public class ConsumerAndOffsetManagerTest {
         Instrumentation instrumentation = Mockito.mock(Instrumentation.class);
         OffsetManager offsetManager = new OffsetManager();
         KafkaConsumerConfig config = ConfigFactory.create(KafkaConsumerConfig.class, new HashMap<String, String>() {{
-            put("SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_COMMIT_MIN_DELAY_MS", "500");
+            put("SOURCE_KAFKA_CONSUMER_CONFIG_MANUAL_COMMIT_MIN_INTERVAL_MS", "500");
         }});
         ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, offsetManager, consumer, config, instrumentation);
         consumerAndOffsetManager.commit();
@@ -141,7 +141,7 @@ public class ConsumerAndOffsetManagerTest {
         Instrumentation instrumentation = Mockito.mock(Instrumentation.class);
         OffsetManager offsetManager = new OffsetManager();
         KafkaConsumerConfig config = ConfigFactory.create(KafkaConsumerConfig.class, new HashMap<String, String>() {{
-            put("SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_COMMIT_MIN_DELAY_MS", "-1");
+            put("SOURCE_KAFKA_CONSUMER_CONFIG_MANUAL_COMMIT_MIN_INTERVAL_MS", "-1");
         }});
         ConsumerAndOffsetManager consumerAndOffsetManager = new ConsumerAndOffsetManager(sinks, offsetManager, consumer, config, instrumentation);
         consumerAndOffsetManager.commit();

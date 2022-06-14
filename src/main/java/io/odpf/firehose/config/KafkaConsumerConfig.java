@@ -49,7 +49,7 @@ public interface KafkaConsumerConfig extends AppConfig {
     @DefaultValue("SYNC")
     KafkaConsumerMode getSourceKafkaConsumerMode();
 
-    @Key("SOURCE_KAFKA_CONSUMER_CONFIG_AUTO_COMMIT_MIN_DELAY_MS")
+    @Key("SOURCE_KAFKA_CONSUMER_CONFIG_MANUAL_COMMIT_MIN_INTERVAL_MS")
     @DefaultValue("-1")
     long getSourceKafkaConsumerCommitDelayMs();
 }
