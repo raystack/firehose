@@ -2,12 +2,12 @@
 
 Firehose can deployed locally, inside a Docker container or in a Kubernetes cluster. The following external services must be installed and launched before deploying Firehose on any platform -
 
-* Apache Kafka Server 2.3+
-* Stencil Server as schema registry
-* Telegraf as the StatsD host
-* InfluxDB for storing metrics
-* Grafana for metrics visualization
-* destination Sink server
+- Apache Kafka Server 2.3+
+- Stencil Server as schema registry
+- Telegraf as the StatsD host
+- InfluxDB for storing metrics
+- Grafana for metrics visualization
+- destination Sink server
 
 Refer the [Development Guide](../contribute/development.md) section on how to set up and configure the above services. For instructions on how to set up visualization of Firehose metrics , refer the [Monitoring ](../concepts/monitoring.md#setting-up-grafana-with-firehose)section.
 
@@ -39,10 +39,10 @@ Firehose needs Java SE Development Kit 8 to be installed and configured in `JAVA
 
 ```text
 # Clone the repo
-$ git clone https://github.com/odpf/firehose.git  
+$ git clone https://github.com/odpf/firehose.git
 
 # Build the jar
-$ ./gradlew clean build 
+$ ./gradlew clean build
 
 # Configure env variables
 $ cat env/local.properties
@@ -52,4 +52,3 @@ $ ./gradlew runConsumer
 ```
 
 **Note:** Sample configuration for other sinks along with some advanced configurations can be found [here](https://github.com/odpf/firehose/blob/main/docs/reference/configuration.md)
-
