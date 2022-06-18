@@ -42,7 +42,7 @@ Firehose [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol) sink 
 
 ### Supported Methods
 
-Firehose supports `PUT` and `POST` verbs in its HTTP sink. The method can be configured using [`SINK_HTTP_REQUEST_METHOD`](../sinks/http-sink.mdn#sink_http_request_method).
+Firehose supports `PUT` and `POST` verbs in its HTTP sink. The method can be configured using [`SINK_HTTP_REQUEST_METHOD`](../sinks/http-sink.md#sink_http_request_method).
 
 ### Authentication
 
@@ -57,7 +57,7 @@ SINK_HTTP_OAUTH2_SCOPE: User:read, sys:info  # Space-delimited scope overrides.
 
 ### Retries
 
-Firehose allows for retrying to sink messages in case of failure of HTTP service. The HTTP error code ranges to retry can be configured with [`SINK_HTTP_RETRY_STATUS_CODE_RANGES`](../sinks/http-sink.md#sink_http_retry_status_code_ranges). HTTP request timeout can be configured with [`SINK_HTTP_REQUEST_TIMEOUT_MS`](../sinks/http-sink.mdn#sink_http_request_timeout_ms)
+Firehose allows for retrying to sink messages in case of failure of HTTP service. The HTTP error code ranges to retry can be configured with [`SINK_HTTP_RETRY_STATUS_CODE_RANGES`](../sinks/http-sink.md#sink_http_retry_status_code_ranges). HTTP request timeout can be configured with [`SINK_HTTP_REQUEST_TIMEOUT_MS`](../sinks/http-sink.md#sink_http_request_timeout_ms)
 
 ### Templating
 

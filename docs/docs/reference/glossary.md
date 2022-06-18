@@ -36,9 +36,7 @@
 
 [Filter](../concepts/architecture.md#components)
 
-[Filter configs](../guides/filters/#filter-variables)
-
-[Filter expression syntax](../guides/filters/#filter-expressions)
+[Filter configs](../guides/json-based-filters.md)
 
 [Firehose integration](../concepts/architecture.md#firehose-integration)
 
@@ -72,9 +70,9 @@
 
 [JDBC sink configs](configuration/#jdbc-sink)
 
-[JEXL filters](../guides/filters/#filter-expressions)
+[JEXL filters](../guides/json-based-filters.md#filter-expressions)
 
-[JEXL expression syntax](../guides/filters/#syntax)
+[JEXL expression syntax](../guides/json-based-filters.md#syntax)
 
 ## K
 
@@ -98,7 +96,7 @@
 
 [Object Storage Sink](../guides/create_firehose.md#create-a-blob-sink)
 
-[Blob Sink Config](configuration/blob-sink.md)
+[Blob Sink Config](../sinks/blob-sink.md)
 
 ## P
 
@@ -131,4 +129,3 @@
 [Telegraf](../concepts/architecture.md#telegraf)
 
 [templating](../concepts/templating.md)
-

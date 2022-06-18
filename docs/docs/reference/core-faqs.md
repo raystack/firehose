@@ -14,17 +14,17 @@ Firehose has been built and tested to work with Java SE Development Kit 1.8.
 
 Firehose has the capability to run parallelly on threads. Each thread does the following:
 
-* Get messages from Kafka
-* Filter the messages \(optional\)
-* Push these messages to sink
-* All the existing sink types follow the same contract/lifecycle defined in `AbstractSink.java`. It consists of two stages:
-  * Prepare: Transformation over-filtered messages’ list to prepare the sink-specific insert/update client requests.
-  * Execute: Requests created in the Prepare stage are executed at this step and a list of failed messages is returned \(if any\) for retry.
-* In case push fails and DLQ is:
-  * enabled: Firehose keeps on retrying for the configured number of attempts before the messages got pushed to DLQ Kafka topic
-  * disabled: Firehose keeps on retrying until it receives a success code
-* Captures telemetry and success/failure events and send them to Telegraf
-* Repeat the process
+- Get messages from Kafka
+- Filter the messages \(optional\)
+- Push these messages to sink
+- All the existing sink types follow the same contract/lifecycle defined in `AbstractSink.java`. It consists of two stages:
+  - Prepare: Transformation over-filtered messages’ list to prepare the sink-specific insert/update client requests.
+  - Execute: Requests created in the Prepare stage are executed at this step and a list of failed messages is returned \(if any\) for retry.
+- In case push fails and DLQ is:
+  - enabled: Firehose keeps on retrying for the configured number of attempts before the messages got pushed to DLQ Kafka topic
+  - disabled: Firehose keeps on retrying until it receives a success code
+- Captures telemetry and success/failure events and send them to Telegraf
+- Repeat the process
 
 ## Can I do any transformations\(for example filter\) before sending the data to sink?
 
@@ -40,8 +40,8 @@ Adding some sort of a filter condition in the Firehose to ignore unnecessary mes
 
 In case push fails and DLQ \(Dead Letter Queue\) is:
 
-* enabled: Firehose keeps on retrying for the configured number of attempts before the messages got pushed to DLQ Kafka topic
-* disabled: Firehose keeps on retrying until it receives a success code
+- enabled: Firehose keeps on retrying for the configured number of attempts before the messages got pushed to DLQ Kafka topic
+- disabled: Firehose keeps on retrying until it receives a success code
 
 ## Which Kafka Client configs are available ?
 
@@ -118,11 +118,11 @@ Refer [https://developers.google.com/protocol-buffers](https://developers.google
 
 Firehose will send all the fields of the incoming messages to the specified sink. But you can configure your sink destination/ database to consume only the required fields.
 
-## How can I  handle consumer lag ?
+## How can I handle consumer lag ?
 
-* When it comes to decreasing the topic lag, it often helps to have the environment variable - [`SOURCE_KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS`](configuration/#source_kafka_consumer_config_max_poll_records) to be increased from the default of 500 to something higher which will tell the Kafka Consumer to consume more messages in a single poll.
-* Additionally, you can increase the workers in the Firehose which will effectively multiply the number of records being processed by Firehose. 
-* Alternatively, if your underlying sink is not able to handle increased \(or default\) volume of data being pushed to it, adding some sort of a filter condition in the Firehose to ignore unnecessary messages in the topic would help you bring down the volume of data being processed by the sink.
+- When it comes to decreasing the topic lag, it often helps to have the environment variable - [`SOURCE_KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS`](configuration/#source_kafka_consumer_config_max_poll_records) to be increased from the default of 500 to something higher which will tell the Kafka Consumer to consume more messages in a single poll.
+- Additionally, you can increase the workers in the Firehose which will effectively multiply the number of records being processed by Firehose.
+- Alternatively, if your underlying sink is not able to handle increased \(or default\) volume of data being pushed to it, adding some sort of a filter condition in the Firehose to ignore unnecessary messages in the topic would help you bring down the volume of data being processed by the sink.
 
 ## What is Stencil in context of Firehose ?
 
@@ -160,8 +160,8 @@ So, when Firehose is restarted, the Kafka Consumer automatically starts pulling 
 
 In case push fails and DLQ \(Dead Letter Queue\) is:
 
-* enabled: Firehose keeps on retrying for the configured number of attempts before the messages got pushed to DLQ Kafka topic
-* disabled: Firehose keeps on retrying until it receives a success code
+- enabled: Firehose keeps on retrying for the configured number of attempts before the messages got pushed to DLQ Kafka topic
+- disabled: Firehose keeps on retrying until it receives a success code
 
 ## How does commits for Kafka consumer works ?
 
@@ -181,7 +181,7 @@ When Firehose is restarted, the Kafka Consumer automatically starts pulling mess
 
 ## How to configure the filter for a proto field based on some data?
 
-The environment variables `FILTER_DATA_SOURCE` , `FILTER_JEXL_EXPRESSION` and `FILTER_SCHEMA_PROTO_CLASS` need to be set for filters to work. The required filters need to be written in JEXL expression format. Refer [Using Filters](../guides/filters/) section for more details.
+The environment variables `FILTER_DATA_SOURCE` , `FILTER_JEXL_EXPRESSION` and `FILTER_SCHEMA_PROTO_CLASS` need to be set for filters to work. The required filters need to be written in JEXL expression format. Refer [Using Filters](../guides/json-based-filters.md) section for more details.
 
 ## Can I perform basic arithmetic operations in filters?
 
@@ -194,4 +194,3 @@ Log Sink uses Logback and SL4J lobrary for logging to standard output. Thus, it'
 ## What are the use-cases of log sink?
 
 Firehose provides a log sink to make it easy to consume messages in [standard output](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_%28stdout%29). Log sink can be used for debugging purposes and experimenting with various filters. It can also be used to test the latency and overall performance of the Firehose.
-

@@ -1,6 +1,6 @@
 # Templating
 
-Firehose HTTP sink supports payload templating using [`SINK_HTTP_JSON_BODY_TEMPLATE`](../reference/configuration/#-sink_http_json_body_template) configuration. It uses [JsonPath](https://github.com/json-path/JsonPath) for creating Templates which is a DSL for basic JSON parsing. Playground for this: [https://jsonpath.com/](https://jsonpath.com/), where users can play around with a given JSON to extract out the elements as required and validate the `jsonpath`. The template works only when the output data format [`SINK_HTTP_DATA_FORMAT`](../reference/configuration/#-sink_http_data_format) is JSON.
+Firehose HTTP sink supports payload templating using [`SINK_HTTP_JSON_BODY_TEMPLATE`](../sinks/http-sink.md#sink_http_json_body_template) configuration. It uses [JsonPath](https://github.com/json-path/JsonPath) for creating Templates which is a DSL for basic JSON parsing. Playground for this: [https://jsonpath.com/](https://jsonpath.com/), where users can play around with a given JSON to extract out the elements as required and validate the `jsonpath`. The template works only when the output data format [`SINK_HTTP_DATA_FORMAT`](../sinks/http-sink.md#sink_http_data_format) is JSON.
 
 _**Creating Templates:**_
 
@@ -10,8 +10,7 @@ One sample configuration\(On XYZ proto\) : `{"test":"$.routes[0]", "$.order_numb
 
 Limitations:
 
-* Works when the input DATA TYPE is a protobuf, not a JSON.
-* Supports only on messages, not keys.
-* validation on the level of valid JSON template. But after data has been replaced the resulting string may or may not be a valid JSON. Users must do proper testing/validation from the service side.
-* If selecting fields from complex data types like repeated/messages/map of proto, the user must do filtering based first as selecting a field that does not exist would fail.
-
+- Works when the input DATA TYPE is a protobuf, not a JSON.
+- Supports only on messages, not keys.
+- validation on the level of valid JSON template. But after data has been replaced the resulting string may or may not be a valid JSON. Users must do proper testing/validation from the service side.
+- If selecting fields from complex data types like repeated/messages/map of proto, the user must do filtering based first as selecting a field that does not exist would fail.

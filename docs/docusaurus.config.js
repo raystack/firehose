@@ -47,7 +47,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
       },
       navbar: {
         title: 'Firehose',
-        logo: { src: 'assets/logo.svg', },
+        logo: { src: '/firehose.png', },
         hideOnScroll: true,
         items: [
           {
