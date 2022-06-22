@@ -47,13 +47,6 @@ module.exports = {
     },
     {
       type: "category",
-      label: "Sink",
-      items: [
-        "sink/bigquery",
-      ],
-    },
-    {
-      type: "category",
       label: "Reference",
       items: [
         "reference/configuration",
