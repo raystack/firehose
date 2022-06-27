@@ -113,7 +113,7 @@ public class ConsumerAndOffsetManagerTest {
             add(s3);
         }};
         FirehoseKafkaConsumer consumer = Mockito.mock(FirehoseKafkaConsumer.class);
-        Instrumentation instrumentation = Mockito.mock(Instrumentation.class);
+        FirehoseInstrumentation instrumentation = Mockito.mock(FirehoseInstrumentation.class);
         OffsetManager offsetManager = new OffsetManager();
         KafkaConsumerConfig config = ConfigFactory.create(KafkaConsumerConfig.class, new HashMap<String, String>() {{
             put("SOURCE_KAFKA_CONSUMER_CONFIG_MANUAL_COMMIT_MIN_INTERVAL_MS", "500");
@@ -138,7 +138,7 @@ public class ConsumerAndOffsetManagerTest {
             add(s3);
         }};
         FirehoseKafkaConsumer consumer = Mockito.mock(FirehoseKafkaConsumer.class);
-        Instrumentation instrumentation = Mockito.mock(Instrumentation.class);
+        FirehoseInstrumentation instrumentation = Mockito.mock(FirehoseInstrumentation.class);
         OffsetManager offsetManager = new OffsetManager();
         KafkaConsumerConfig config = ConfigFactory.create(KafkaConsumerConfig.class, new HashMap<String, String>() {{
             put("SOURCE_KAFKA_CONSUMER_CONFIG_MANUAL_COMMIT_MIN_INTERVAL_MS", "-1");
