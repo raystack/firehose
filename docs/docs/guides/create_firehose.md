@@ -2,10 +2,6 @@
 
 This page contains how-to guides for creating Firehose with different sinks along with their features.
 
-{% hint style="info" %}
-If you'd like to connect to a sink which is not yet supported, you can create a new sink by following the [contribution guidelines](../contribute/contribution.md)
-{% endhint %}
-
 ## Create a Log Sink
 
 Firehose provides a log sink to make it easy to consume messages in [standard output](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_%28stdout%29). A log sink firehose requires the following [variables](../reference/configurations) to be set. Firehose log sink can work in key as well as message parsing mode configured through [`KAFKA_RECORD_PARSER_MODE`](../reference/configurations#kafka_record_parser_mode)
@@ -136,3 +132,5 @@ _**Note:**_ [_**DATABASE**_](../sinks/influxdb-sink.md#sink_influx_db_name) _**a
 - This sink will generate bigquery schema from protobuf message schema and update bigquery table with the latest generated schema.
 - The protobuf message of a `google.protobuf.Timestamp` field might be needed when table partitioning is enabled.
 - Google cloud credential with some bigquery permission is required to run this sink.
+
+If you'd like to connect to a sink which is not yet supported, you can create a new sink by following the [contribution guidelines](../contribute/contribution.md)

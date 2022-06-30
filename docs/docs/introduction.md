@@ -35,15 +35,6 @@ Following sinks are supported in the Firehose
 - [Bigquery](https://cloud.google.com/bigquery) - A data warehouse provided by Google Cloud
 - [Blob Storage](https://gocloud.dev/howto/blob/) - A data storage architecture for large stores of unstructured data like google cloud storage, amazon s3, apache hadoop distributed filesystem
 
-## How is Firehose different from Kafka-Connect?
-
-- **Ease of use:** Firehose is easier to install, and using different sinks only requires changing a few configurations. When used in distributed mode across multiple nodes, it requires connectors to be installed across all the workers within your Kafka-Connect cluster.
-- **Filtering:** Value-based filtering is much easier to implement as compared to Kafka-Connect. Requires no additional plugins/schema-registry to be installed.
-- **Extensible:** Provides a comprehensible abstract sink contract making it easier to add a new sink in Firehose. Firehose also comes with an inbuilt serialization/deserialization and doesn't require any converters and serializers when implementing a new sink.
-- **Easy monitoring:** Firehose provides a detailed health dashboard \(Grafana\) for effortless monitoring.
-- **Connectors:** Some of the Kafka connect available connectors usually have limitations. Its usually rare to find all the required features in a single connector and so is to find documentation for the same
-- **Fully open-source:** Firehose is completely open-source while separation of commercial and open-source features is not very structured in Kafka Connect and for monitoring and advanced features, confluent control center requires an enterprise subscription
-
 ## How can I get started?
 
 Explore the following resources to get started with Firehose:

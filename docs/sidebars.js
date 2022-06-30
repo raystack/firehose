@@ -18,9 +18,6 @@ module.exports = {
       label: "Sinks",
       collapsed: false,
       items: [
-        "sinks/overview",
-        "sinks/filters",
-        "sinks/retries",
         "sinks/http-sink",
         "sinks/grpc-sink",
         "sinks/jdbc-sink",
@@ -49,14 +46,24 @@ module.exports = {
     },
     {
       type: "category",
+      label: "Advance",
+      items: [
+        "advance/generic",
+        "advance/errors",
+        "advance/dlq",
+        "advance/filters",
+        "advance/retries",
+        "advance/sink-pool",
+      ],
+    },
+    {
+      type: "category",
       label: "Reference",
       items: [
-        "reference/configurations",
         "reference/metrics",
         "reference/core-faqs",
         "reference/faq",
         "reference/glossary",
-
       ],
     },
     {
