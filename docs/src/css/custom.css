@@ -132,5 +132,6 @@ html[data-theme="light"] .navbar {
 
 /* ************** FOOTER ************** */
 .footer {
+  display: none;
   box-shadow: inset 0 1px rgb(227 232 238);
 }

@@ -1,4 +1,4 @@
-# Bigquery Sink
+# BigQuery
 
 Bigquery Sink has several responsibilities, first creation of bigquery table and dataset when they are not exist, second update the bigquery table schema based on the latest protobuf schema, third translate protobuf messages into bigquery records and insert them to bigquery tables.
 Bigquery utilise Bigquery [Streaming API](https://cloud.google.com/bigquery/streaming-data-into-bigquery) to insert record into bigquery tables.
@@ -41,6 +41,8 @@ Here are type conversion between protobuf type and bigquery type :
 | .google.protobuf.Timestamp                                                         | TIMESTAMP                |
 | .google.protobuf.Struct                                                            | STRING (Json Serialised) |
 | .google.protobuf.Duration                                                          | RECORD                   |
+
+## Modifier
 
 | Protobuf Modifier | Bigquery Modifier |
 | ----------------- | ----------------- |
