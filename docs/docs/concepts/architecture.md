@@ -87,7 +87,7 @@ The section details all integrating systems for Firehose deployment. These are e
 
 ### Kafka
 
-- The Kafka topic\(s\) where Firehose reads from. The [`SOURCE_KAFKA_TOPIC`](../reference/configuration/#source_kafka_topic) config can be set in Firehose.
+- The Kafka topic\(s\) where Firehose reads from. The [`SOURCE_KAFKA_TOPIC`](../advance/generic#source_kafka_topic) config can be set in Firehose.
 
 ### ProtoDescriptors
 
@@ -105,4 +105,4 @@ The section details all integrating systems for Firehose deployment. These are e
 
 - InfluxDB - time-series database where all Firehose metrics are stored. Integration through the Telegraf component.
 
-For a complete set of configurations please refer to the sink-specific [configuration](../reference/configuration/).
+For a complete set of configurations please refer to the sink-specific [configuration](../advance/generic/).

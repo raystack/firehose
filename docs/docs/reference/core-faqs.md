@@ -45,7 +45,7 @@ In case push fails and DLQ \(Dead Letter Queue\) is:
 
 ## Which Kafka Client configs are available ?
 
-Firehose provides various Kafka client configurations. Refer [Generic Configurations](configuration/#generic) section for details on configuration related to Kafka Consumer.
+Firehose provides various Kafka client configurations. Refer [Generic Configurations](../advance/generic) section for details on configuration related to Kafka Consumer.
 
 ## What all data formats are supported ?
 
@@ -120,7 +120,7 @@ Firehose will send all the fields of the incoming messages to the specified sink
 
 ## How can I handle consumer lag ?
 
-- When it comes to decreasing the topic lag, it often helps to have the environment variable - [`SOURCE_KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS`](configuration/#source_kafka_consumer_config_max_poll_records) to be increased from the default of 500 to something higher which will tell the Kafka Consumer to consume more messages in a single poll.
+- When it comes to decreasing the topic lag, it often helps to have the environment variable - [`SOURCE_KAFKA_CONSUMER_CONFIG_MAX_POLL_RECORDS`](../advance/generic.md#source_kafka_consumer_config_max_poll_records) to be increased from the default of 500 to something higher which will tell the Kafka Consumer to consume more messages in a single poll.
 - Additionally, you can increase the workers in the Firehose which will effectively multiply the number of records being processed by Firehose.
 - Alternatively, if your underlying sink is not able to handle increased \(or default\) volume of data being pushed to it, adding some sort of a filter condition in the Firehose to ignore unnecessary messages in the topic would help you bring down the volume of data being processed by the sink.
 

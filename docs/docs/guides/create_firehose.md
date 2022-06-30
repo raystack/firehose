@@ -2,13 +2,9 @@
 
 This page contains how-to guides for creating Firehose with different sinks along with their features.
 
-{% hint style="info" %}
-If you'd like to connect to a sink which is not yet supported, you can create a new sink by following the [contribution guidelines](../contribute/contribution.md)
-{% endhint %}
-
 ## Create a Log Sink
 
-Firehose provides a log sink to make it easy to consume messages in [standard output](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_%28stdout%29). A log sink firehose requires the following [variables](../reference/configurations) to be set. Firehose log sink can work in key as well as message parsing mode configured through [`KAFKA_RECORD_PARSER_MODE`](../reference/configurations#kafka_record_parser_mode)
+Firehose provides a log sink to make it easy to consume messages in [standard output](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_%28stdout%29). A log sink firehose requires the following [variables](../advance/generic.md) to be set. Firehose log sink can work in key as well as message parsing mode configured through [`KAFKA_RECORD_PARSER_MODE`](../advance/generic.md#kafka_record_parser_mode)
 
 An example log sink configurations:
 
@@ -36,11 +32,16 @@ event_timestamp {
 }
 ```
 
+## Define generic configurations
+
+- These are the configurations that remain common across all the Sink Types.
+- You don’t need to modify them necessarily, It is recommended to use them with the default values. More details [here](../advance/generic#standard).
+
 ## Create an HTTP Sink
 
 Firehose [HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol) sink allows users to read data from Kafka and write to an HTTP endpoint. it requires the following [variables](../sinks/http-sink.md#http-sink) to be set. You need to create your own HTTP endpoint so that the Firehose can send data to it.
 
-### Supported Methods
+### Supported methods
 
 Firehose supports `PUT` and `POST` verbs in its HTTP sink. The method can be configured using [`SINK_HTTP_REQUEST_METHOD`](../sinks/http-sink.md#sink_http_request_method).
 
@@ -76,20 +77,20 @@ Limitations:
 - validation on the level of valid JSON template. But after data has been replaced the resulting string may or may not be a valid JSON. Users must do proper testing/validation from the service side.
 - If selecting fields from complex data types like repeated/messages/map of proto, the user must do filtering based first as selecting a field that does not exist would fail.
 
-## Create a JDBC SINK
+## Create a JDBC sink
 
 - Supports only PostgresDB as of now.
 - Data read from Kafka is written to the PostgresDB database and it requires the following [variables](../sinks/jdbc-sink.md#jdbc-sink) to be set.
 
 _**Note: Schema \(Table, Columns, and Any Constraints\) being used in firehose configuration must exist in the Database already.**_
 
-## Create an InfluxDB Sink
+## Create an InfluxDB sink
 
 - Data read from Kafka is written to the InfluxDB time-series database and it requires the following [variables](../sinks/influxdb-sink.md#influx-sink) to be set.
 
 _**Note:**_ [_**DATABASE**_](../sinks/influxdb-sink.md#sink_influx_db_name) _**and**_ [_**RETENTION POLICY**_](../sinks/influxdb-sink.md#sink_influx_retention_policy) _**being used in firehose configuration must exist already in the Influx, It’s outside the scope of a firehose and won’t be generated automatically.**_
 
-## Create a Redis Sink
+## Create a Redis sink
 
 - it requires the following [variables](../sinks/redis-sink.md) to be set.
 - Redis sink can be created in 2 different modes based on the value of [`SINK_REDIS_DATA_TYPE`](../sinks/redis-sink.md#sink_redis_data_type): HashSet or List
@@ -99,30 +100,25 @@ _**Note:**_ [_**DATABASE**_](../sinks/influxdb-sink.md#sink_influx_db_name) _**a
 - Redis sink also supports different [Deployment Types](../sinks/redis-sink.md#sink_redis_deployment_type) `Standalone` and `Cluster`.
 - Limitation: Firehose Redis sink only supports HashSet and List entries as of now.
 
-## Create an Elasticsearch Sink
+## Create an Elasticsearch sink
 
 - it requires the following [variables](../sinks/elasticsearch-sink.md) to be set.
 - In the Elasticsearch sink, each message is converted into a document in the specified index with the Document type and ID as specified by the user.
 - Elasticsearch sink supports reading messages in both JSON and Protobuf formats.
 - Using [Routing Key](../sinks/elasticsearch-sink.md#sink_es_routing_key_name) one can route documents to a particular shard in Elasticsearch.
 
-## Create a GRPC Sink
+## Create a GRPC sink
 
 - Data read from Kafka is written to a GRPC endpoint and it requires the following [variables](../sinks/grpc-sink.md) to be set.
 - You need to create your own GRPC endpoint so that the Firehose can send data to it. The response proto should have a field “success” with value as true or false.
 
-## Create an MongoDB Sink
+## Create an MongoDB sink
 
 - it requires the following [variables](../sinks/mongo-sink.md) to be set.
 - In the MongoDB sink, each message is converted into a BSON Document and then inserted/updated/upserted into the specified Mongo Collection
 - MongoDB sink supports reading messages in both JSON and Protobuf formats.
 
-## Define Standard Configurations
-
-- These are the configurations that remain common across all the Sink Types.
-- You don’t need to modify them necessarily, It is recommended to use them with the default values. More details [here](../reference/configuration#standard).
-
-## Create a Blob Sink
+## Create a Blob sink
 
 - it requires the following [variables](../sinks/blob-sink.md) to be set.
 - Only support google cloud storage for now.
@@ -130,9 +126,11 @@ _**Note:**_ [_**DATABASE**_](../sinks/influxdb-sink.md#sink_influx_db_name) _**a
 - The protobuf message need to have a `google.protobuf.Timestamp` field as partitioning timestamp, `event_timestamp` field is usually being used.
 - Google cloud credential with some google cloud storage permission is required to run this sink.
 
-## Create a Bigquery Sink
+## Create a Bigquery sink
 
 - it requires the following [variables](../sinks/bigquery-sink.md) to be set.
 - This sink will generate bigquery schema from protobuf message schema and update bigquery table with the latest generated schema.
 - The protobuf message of a `google.protobuf.Timestamp` field might be needed when table partitioning is enabled.
 - Google cloud credential with some bigquery permission is required to run this sink.
+
+If you'd like to connect to a sink which is not yet supported, you can create a new sink by following the [contribution guidelines](../contribute/contribution.md)
