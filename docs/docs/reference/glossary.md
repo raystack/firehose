@@ -8,17 +8,17 @@
 
 [Bigquery sink](../guides/create_firehose.md#create-a-bigquery-sink)
 
-[Bigquery sink configs](configuration.md#bigquery-sink)
+[Bigquery sink configs](../sinks/bigquery-sink.md)
 
 ## C
 
-[Configurations](configuration/)
+[Configurations](../advance/generic.md)
 
 [Consumer](../concepts/architecture.md#components)
 
 [commit offset](core-faqs.md#how-does-commits-for-kafka-consumer-works)
 
-[consumer.max.poll.records](configuration/#source_kafka_consumer_config_max_poll_records)
+[consumer.max.poll.records](../advance/generic.md#source_kafka_consumer_config_max_poll_records)
 
 ## D
 
@@ -30,7 +30,7 @@
 
 [Elasticsearch sink](../guides/create_firehose.md#create-an-elasticsearch-sink)
 
-[Elasticsearch sink configs](configuration/#elasticsearch-sink)
+[Elasticsearch sink configs](../sinks/elasticsearch-sink.md)
 
 ## F
 
@@ -48,13 +48,13 @@
 
 [GRPC sink](../guides/create_firehose.md#create-a-grpc-sink)
 
-[GRPC sink configs](configuration/#grpc-sink)
+[GRPC sink configs](../sinks/grpc-sink.md)
 
 ## H
 
 [HTTP sink](../guides/create_firehose.md#create-an-http-sink)
 
-[HTTP sink configs](configuration/#http-sink)
+[HTTP sink configs](../sinks/http-sink.md)
 
 ## I
 
@@ -62,13 +62,13 @@
 
 [InfluxDB sink](../guides/create_firehose.md#create-an-influxdb-sink)
 
-[InfluxDB sink configs](configuration/#influx-sink)
+[InfluxDB sink configs](../sinks/influxdb-sink.md)
 
 ## J
 
 [JDBC sink](../guides/create_firehose.md#create-a-jdbc-sink)
 
-[JDBC sink configs](configuration/#jdbc-sink)
+[JDBC sink configs](../sinks/jdbc-sink.md)
 
 [JEXL filters](../guides/json-based-filters.md#filter-expressions)
 
@@ -76,7 +76,7 @@
 
 ## K
 
-[Kafka Client configs](configuration/#generic)
+[Kafka Client configs](../advance/generic.md)
 
 [Kubernetes deployment](../guides/deployment.md#deploy-on-kubernetes)
 
@@ -84,7 +84,7 @@
 
 [Log sink](../guides/create_firehose.md#create-a-log-sink)
 
-[Log sink configs](configuration/#generic)
+[Log sink configs](../advance/generic.md)
 
 ## M
 
@@ -100,7 +100,7 @@
 
 ## P
 
-[Prometheus sink configs](configuration/#prometheus-sink)
+[Prometheus sink configs](../sinks/prometheus-sink.md)
 
 [Protobuf](core-faqs.md#why-protobuf-can-it-support-other-formats-like-json-avro-thrift)
 
@@ -110,11 +110,11 @@
 
 [Redis Sink](../guides/create_firehose.md#create-a-redis-sink)
 
-[Redis Sink configs](configuration/#redis-sink)
+[Redis Sink configs](../sinks/redis-sink.md)
 
 [Retry mechanism](core-faqs.md#what-is-the-retry-mechanism-in-firehose-what-kind-of-retry-strategies-are-supported)
 
-[Retry configs](configuration/#standard)
+[Retry configs](../advance/retries.md)
 
 ## S
 

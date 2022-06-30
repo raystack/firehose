@@ -4,7 +4,7 @@ This page contains how-to guides for creating Firehose with different sinks alon
 
 ## Create a Log Sink
 
-Firehose provides a log sink to make it easy to consume messages in [standard output](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_%28stdout%29). A log sink firehose requires the following [variables](../reference/configurations) to be set. Firehose log sink can work in key as well as message parsing mode configured through [`KAFKA_RECORD_PARSER_MODE`](../reference/configurations#kafka_record_parser_mode)
+Firehose provides a log sink to make it easy to consume messages in [standard output](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_%28stdout%29). A log sink firehose requires the following [variables](../advance/generic.md) to be set. Firehose log sink can work in key as well as message parsing mode configured through [`KAFKA_RECORD_PARSER_MODE`](../advance/generic.md#kafka_record_parser_mode)
 
 An example log sink configurations:
 
@@ -35,7 +35,7 @@ event_timestamp {
 ## Define generic configurations
 
 - These are the configurations that remain common across all the Sink Types.
-- You don’t need to modify them necessarily, It is recommended to use them with the default values. More details [here](../reference/configuration#standard).
+- You don’t need to modify them necessarily, It is recommended to use them with the default values. More details [here](../advance/generic#standard).
 
 ## Create an HTTP Sink
 

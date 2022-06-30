@@ -42,5 +42,5 @@ Explore the following resources to get started with Firehose:
 - [Guides](./guides/create_firehose.md) provide guidance on creating Firehose with different sinks.
 - [Concepts](./concepts/overview.md) describe all important Firehose concepts.
 - [FAQs](./reference/faq.md) lists down some common frequently asked questions about Firehose and related components.
-- [Reference](./reference/configuration/) contains details about configurations, metrics, FAQs, and other aspects of Firehose.
+- [Reference](./advance/generic/) contains details about configurations, metrics, FAQs, and other aspects of Firehose.
 - [Contributing](./contribute/contribution.md) contains resources for anyone who wants to contribute to Firehose.
