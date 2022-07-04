@@ -2,6 +2,7 @@ package io.odpf.firehose.sink;
 
 import io.odpf.depot.bigquery.BigQuerySink;
 import io.odpf.depot.bigquery.BigQuerySinkFactory;
+import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.log.LogSink;
 import io.odpf.depot.log.LogSinkFactory;
 import io.odpf.depot.metrics.StatsDReporter;
@@ -21,6 +22,7 @@ import io.odpf.firehose.sink.mongodb.MongoSinkFactory;
 import io.odpf.firehose.sink.prometheus.PromSinkFactory;
 import io.odpf.firehose.sink.redis.RedisSinkFactory;
 import io.odpf.stencil.client.StencilClient;
+import org.aeonbits.owner.ConfigFactory;
 
 import java.util.Map;
 
@@ -67,7 +69,10 @@ public class SinkFactory {
                 return;
             case BIGQUERY:
                 BigquerySinkUtils.addMetadataColumns(config);
-                bigQuerySinkFactory = new BigQuerySinkFactory(config, statsDReporter, BigquerySinkUtils.getRowIDCreator());
+                bigQuerySinkFactory = new BigQuerySinkFactory(
+                        ConfigFactory.create(BigQuerySinkConfig.class, config),
+                        statsDReporter,
+                        BigquerySinkUtils.getRowIDCreator());
                 bigQuerySinkFactory.init();
                 return;
             default:
