@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static io.odpf.firehose.metrics.Metrics.RETRY_MESSAGES_TOTAL;
 import static io.odpf.firehose.metrics.Metrics.RETRY_ATTEMPTS_TOTAL;
@@ -65,11 +66,27 @@ public class SinkWithRetry extends SinkDecorator {
 
     private void logDebug(List<Message> messageList) throws IOException {
         if (firehoseInstrumentation.isDebugEnabled()) {
-            List<DynamicMessage> serializedBody = new ArrayList<>();
-            for (Message message : messageList) {
-                serializedBody.add(parser.parse(message));
+            switch (appConfig.getInputSchemaType()) {
+                case PROTOBUF:
+                    List<DynamicMessage> serializedBody = new ArrayList<>();
+                    for (Message message : messageList) {
+                        serializedBody.add(parser.parse(message));
+                    }
+                    firehoseInstrumentation.logDebug("Retry failed messages: \n{}", serializedBody.toString());
+                    break;
+                case JSON:
+                    List<String> messages = messageList.stream().map(m -> {
+                        if (appConfig.getKafkaRecordParserMode().equals("key")) {
+                            return new String(m.getLogKey());
+                        } else {
+                            return new String(m.getLogMessage());
+                        }
+                    }).collect(Collectors.toList());
+                    firehoseInstrumentation.logDebug("Retry failed messages: \n{}", messages.toString());
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unexpected value: " + appConfig.getInputSchemaType());
             }
-            firehoseInstrumentation.logDebug("Retry failed messages: \n{}", serializedBody.toString());
         }
     }
 

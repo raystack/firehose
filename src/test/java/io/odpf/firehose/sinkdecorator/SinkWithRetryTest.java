@@ -4,6 +4,7 @@ import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
 import io.odpf.firehose.config.AppConfig;
 import io.odpf.firehose.config.ErrorConfig;
+import io.odpf.firehose.config.enums.InputSchemaType;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.error.ErrorHandler;
 import io.odpf.firehose.exception.DeserializerException;
@@ -128,6 +129,7 @@ public class SinkWithRetryTest {
     @Test
     public void shouldLogRetriesMessages() throws IOException, DeserializerException {
         when(appConfig.getRetryMaxAttempts()).thenReturn(10);
+        when(appConfig.getInputSchemaType()).thenReturn(InputSchemaType.PROTOBUF);
         ArrayList<Message> messages = new ArrayList<>();
         messages.add(message);
         messages.add(message);
@@ -147,6 +149,33 @@ public class SinkWithRetryTest {
         verify(firehoseInstrumentation, times(1)).logInfo("Retrying messages attempt count: {}, Number of messages: {}", 4, 2);
         verify(firehoseInstrumentation, times(1)).logInfo("Retrying messages attempt count: {}, Number of messages: {}", 5, 2);
         verify(firehoseInstrumentation, times(5)).logDebug("Retry failed messages: \n{}", "[null, null]");
+    }
+
+    @Test
+    public void shouldLogRetriesMessagesForJsonInput() throws IOException, DeserializerException {
+        when(appConfig.getRetryMaxAttempts()).thenReturn(10);
+        when(appConfig.getInputSchemaType()).thenReturn(InputSchemaType.JSON);
+        when(appConfig.getKafkaRecordParserMode()).thenReturn("message");
+        when(message.getLogMessage()).thenReturn("testing message".getBytes());
+        ArrayList<Message> messages = new ArrayList<>();
+        messages.add(message);
+        messages.add(message);
+        when(message.getErrorInfo()).thenReturn(new ErrorInfo(null, ErrorType.DESERIALIZATION_ERROR));
+        when(firehoseInstrumentation.isDebugEnabled()).thenReturn(true);
+        when(sinkDecorator.pushMessage(anyList())).thenReturn(messages).thenReturn(messages).thenReturn(messages)
+                .thenReturn(messages).thenReturn(messages).thenReturn(new ArrayList<>());
+        SinkWithRetry sinkWithRetry = new SinkWithRetry(sinkDecorator, backOffProvider, firehoseInstrumentation, appConfig, parser, errorHandler);
+
+        List<Message> messageList = sinkWithRetry.pushMessage(Collections.singletonList(message));
+        assertTrue(messageList.isEmpty());
+        verify(firehoseInstrumentation, times(1)).logInfo("Maximum retry attempts: {}", 10);
+        verify(firehoseInstrumentation, times(5)).incrementCounter("firehose_retry_attempts_total");
+        verify(firehoseInstrumentation, times(1)).logInfo("Retrying messages attempt count: {}, Number of messages: {}", 1, 2);
+        verify(firehoseInstrumentation, times(1)).logInfo("Retrying messages attempt count: {}, Number of messages: {}", 2, 2);
+        verify(firehoseInstrumentation, times(1)).logInfo("Retrying messages attempt count: {}, Number of messages: {}", 3, 2);
+        verify(firehoseInstrumentation, times(1)).logInfo("Retrying messages attempt count: {}, Number of messages: {}", 4, 2);
+        verify(firehoseInstrumentation, times(1)).logInfo("Retrying messages attempt count: {}, Number of messages: {}", 5, 2);
+        verify(firehoseInstrumentation, times(5)).logDebug("Retry failed messages: \n{}", "[testing message, testing message]");
     }
 
     @Test

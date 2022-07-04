@@ -1,9 +1,11 @@
 package io.odpf.firehose.config;
 
+import io.odpf.firehose.config.converter.InputSchemaTypeConverter;
 import io.odpf.firehose.config.converter.ProtoIndexToFieldMapConverter;
 import io.odpf.firehose.config.converter.SchemaRegistryHeadersConverter;
 import io.odpf.firehose.config.converter.SchemaRegistryRefreshConverter;
 import io.odpf.firehose.config.converter.SinkTypeConverter;
+import io.odpf.firehose.config.enums.InputSchemaType;
 import io.odpf.firehose.config.enums.SinkType;
 import io.odpf.stencil.cache.SchemaRefreshStrategy;
 
@@ -14,18 +16,6 @@ import java.util.List;
 import java.util.Properties;
 
 public interface AppConfig extends Config {
-
-    @Key("METRIC_STATSD_HOST")
-    @DefaultValue("localhost")
-    String getMetricStatsDHost();
-
-    @Key("METRIC_STATSD_PORT")
-    @DefaultValue("8125")
-    Integer getMetricStatsDPort();
-
-    @Key("METRIC_STATSD_TAGS")
-    @DefaultValue("")
-    String getMetricStatsDTags();
 
     @Key("SINK_TYPE")
     @ConverterClass(SinkTypeConverter.class)
@@ -79,6 +69,11 @@ public interface AppConfig extends Config {
 
     @Key("INPUT_SCHEMA_PROTO_CLASS")
     String getInputSchemaProtoClass();
+
+    @Key("INPUT_SCHEMA_DATA_TYPE")
+    @DefaultValue("PROTOBUF")
+    @ConverterClass(InputSchemaTypeConverter.class)
+    InputSchemaType getInputSchemaType();
 
     @Key("INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING")
     @ConverterClass(ProtoIndexToFieldMapConverter.class)
