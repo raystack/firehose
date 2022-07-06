@@ -20,13 +20,8 @@ public class LogDlqWriter implements DlqWriter {
     @Override
     public List<Message> write(List<Message> messages) throws IOException {
         for (Message message : messages) {
-            String key;
-            if (message.getLogKey() == null) {
-                key = "";
-            } else {
-                key = new String(message.getLogKey());
-            }
-            String value = new String(message.getLogMessage());
+            String key = message.getLogKey() == null ? "" : new String(message.getLogKey());
+            String value = message.getLogMessage() == null ? "" : new String(message.getLogMessage());
 
             String error = "";
             ErrorInfo errorInfo = message.getErrorInfo();
