@@ -49,10 +49,10 @@ Firehose sends critical metrics via StatsD client. Refer the[ Monitoring](../con
 - A time-series database \(e.g. InfluxDB\) to store the metrics
 - GUI visualization dashboard \(e.g. Grafana\) for detailed visualisation of metrics
 
-# Running locally
+## Running locally
 
-- The following guide/walk through provides a simple way to run firehose locally, for log sink as an example.
-- The guide uses the TestMessage (src/test/proto/TestMessage.proto) proto schema, which has already been provided for testing purposes.
+- The following guides provide a simple way to run firehose with a log sink locally.
+- It uses the TestMessage (src/test/proto/TestMessage.proto) proto schema, which has already been provided for testing purposes.
 
 ```bash
 # Clone the repo
