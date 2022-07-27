@@ -161,8 +161,8 @@ public class FirehoseConsumerFactory {
         Sink baseSink = sinkFactory.getSink();
         Sink sinkWithFailHandler = new SinkWithFailHandler(baseSink, errorHandler);
         Sink sinkWithRetry = withRetry(sinkWithFailHandler, errorHandler);
-        Sink sinWithDLQ = withDlq(sinkWithRetry, tracer, errorHandler);
-        return new SinkFinal(sinWithDLQ, new FirehoseInstrumentation(statsDReporter, SinkFinal.class));
+        Sink sinkWithDLQ = withDlq(sinkWithRetry, tracer, errorHandler);
+        return new SinkFinal(sinkWithDLQ, new FirehoseInstrumentation(statsDReporter, SinkFinal.class));
     }
 
     public Sink withDlq(Sink sink, Tracer tracer, ErrorHandler errorHandler) {

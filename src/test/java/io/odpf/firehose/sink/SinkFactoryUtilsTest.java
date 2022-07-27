@@ -15,8 +15,8 @@ public class SinkFactoryUtilsTest {
             put("INPUT_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE", "true");
         }};
         Map<String, String> configs = SinkFactoryUtils.addAdditionalConfigsForSinkConnectors(env);
-        Assert.assertEquals("com.test.SomeProtoClass", configs.get("SINK_CONNECTOR_SCHEMA_MESSAGE_CLASS"));
-        Assert.assertEquals("com.test.SomeProtoClass", configs.get("SINK_CONNECTOR_SCHEMA_KEY_CLASS"));
+        Assert.assertEquals("com.test.SomeProtoClass", configs.get("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS"));
+        Assert.assertEquals("com.test.SomeProtoClass", configs.get("SINK_CONNECTOR_SCHEMA_PROTO_KEY_CLASS"));
         Assert.assertEquals("firehose_", configs.get("SINK_METRICS_APPLICATION_PREFIX"));
         Assert.assertEquals("true", configs.get("SINK_CONNECTOR_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE"));
         Assert.assertEquals("LOG_MESSAGE", configs.get("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE"));
