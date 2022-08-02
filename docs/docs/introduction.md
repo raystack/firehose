@@ -19,6 +19,10 @@ Discover why users choose Firehose as their main Kafka Consumer
 - **Runtime** Firehose can run inside containers or VMs in a fully managed runtime environment like Kubernetes.
 - **Metrics** Always know what’s going on with your deployment with built-in monitoring of throughput, response times, errors, and more.
 
+## Supported Incoming data types from kafka
+- [Protobuf](https://developers.google.com/protocol-buffers)
+- [JSON](https://www.json.org/json-en.html)
+
 ## Supported Sinks:
 
 Following sinks are supported in the Firehose

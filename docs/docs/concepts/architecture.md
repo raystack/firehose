@@ -71,14 +71,18 @@ The final state of message can be any one of the followings after it is consumed
 One can monitor via plotting the metrics related to messages.
 
 ### Schema Handling
+- Incase when `INPUT_SCHEMA_DATA_TYPE is set to protobuf`
+  - Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data. Data streams on Kafka topics are bound to a protobuf schema.
+  - Firehose deserializes the data consumed from the topics using the Protobuf descriptors generated out of the artifacts. The artifactory is an HTTP interface that Firehose uses to deserialize.
+  - The schema handling ie., find the mapped schema for the topic, downloading the descriptors, and dynamically being notified of/updating with the latest schema is abstracted through the Stencil library.
 
-- Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data. Data streams on Kafka topics are bound to a protobuf schema.
-- Firehose deserializes the data consumed from the topics using the Protobuf descriptors generated out of the artifacts. The artifactory is an HTTP interface that Firehose uses to deserialize.
-- The schema handling ie., find the mapped schema for the topic, downloading the descriptors, and dynamically being notified of/updating with the latest schema is abstracted through the Stencil library.
+    The Stencil is a proprietary library that provides an abstraction layer, for schema handling.
 
-  The Stencil is a proprietary library that provides an abstraction layer, for schema handling.
+    Schema Caching, dynamic schema updates, etc. are features of the stencil client library.
 
-  Schema Caching, dynamic schema updates, etc. are features of the stencil client library.
+- Incase when `INPUT_SCHEMA_DATA_TYPE is set to json`
+    - Currently for json, the schema is dynamically inferred from incoming data, in future we plan to provide json schema support via stencil.
+ 
 
 ## Firehose Integration
 

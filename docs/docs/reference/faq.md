@@ -771,15 +771,16 @@ section.
 
 #### What all data formats are supported?
 
-ElasticSearch and MongoDB sink support both JSON and Protobuf as the input schema. For other sinks, we currently support
+ElasticSearch, Bigquery and MongoDB sink support both JSON and Protobuf as the input schema. For other sinks, we currently support
 only Protobuf. Support for JSON and Avro is planned and incorporated in the roadmap.
 
 Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serialising structured data.
-Data streams on Kafka topics are bound to a Protobuf schema. Follow the instructions
+When `INPUT_SCHEMA_DATA_TYPE=protobuf` Data streams on Kafka topics are bound to a Protobuf schema. Follow the instructions
 in  [this article](https://developers.google.com/protocol-buffers/docs/javatutorial)  on how to create, compile and
 serialize a Protobuf object to send it to a binary OutputStream.
 Refer  [this guide](https://developers.google.com/protocol-buffers/docs/proto3)  for detailed Protobuf syntax and rules
 to create a  `.proto`  file.
+When `INPUT_SCHEMA_DATA_TYPE=json` data streams on kafka topics are bound to having a valid json message.
 
 #### Can we select particular fields from the input message?
 
