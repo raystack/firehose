@@ -81,7 +81,9 @@ One can monitor via plotting the metrics related to messages.
     Schema Caching, dynamic schema updates, etc. are features of the stencil client library.
 
 - Incase when `INPUT_SCHEMA_DATA_TYPE is set to json`
-    - Currently for json, the schema is dynamically inferred from incoming data, in future we plan to provide json schema support via stencil.
+    - Currently this config is only supported in Bigquery sink,
+    - For json, in bigquery sink the schema is dynamically inferred from incoming data, in future we plan to provide json schema support via stencil.
+
  
 
 ## Firehose Integration

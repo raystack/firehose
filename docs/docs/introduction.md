@@ -22,6 +22,7 @@ Discover why users choose Firehose as their main Kafka Consumer
 ## Supported Incoming data types from kafka
 - [Protobuf](https://developers.google.com/protocol-buffers)
 - [JSON](https://www.json.org/json-en.html)
+  - Supported limited to bigquery, elastic and mongo sink. In future support to other sinks will be added
 
 ## Supported Sinks:
 
