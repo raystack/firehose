@@ -37,7 +37,7 @@ Configuration parameter variables of each sink can be found in the [Configuratio
 
 ### Schema Registry
 
-Firehose uses Stencil Server as its Schema Registry for hosting Protobuf descriptors. The environment variable `SCHEMA_REGISTRY_STENCIL_ENABLE` must be set to `true` . Stencil server URL must be specified in the variable `SCHEMA_REGISTRY_STENCIL_URLS` . The Proto Descriptor Set file of the Kafka messages must be uploaded to the Stencil server.
+When `INPUT_SCHEMA_DATA_TYPE is set to protobuf`, firehose uses Stencil Server as its Schema Registry for hosting Protobuf descriptors. The environment variable `SCHEMA_REGISTRY_STENCIL_ENABLE` must be set to `true` . Stencil server URL must be specified in the variable `SCHEMA_REGISTRY_STENCIL_URLS` . The Proto Descriptor Set file of the Kafka messages must be uploaded to the Stencil server.
 
 Refer [this guide](https://github.com/odpf/stencil/tree/master/server#readme) on how to set up and configure the Stencil server, and how to generate and upload Proto descriptor set file to the server.
 
@@ -71,6 +71,7 @@ Set the generic variables in the local.properties file.
 ```text
 KAFKA_RECORD_PARSER_MODE = message
 SINK_TYPE = log
+INPUT_SCHEMA_DATA_TYPE=protobuf
 INPUT_SCHEMA_PROTO_CLASS = io.odpf.firehose.consumer.TestMessage
 ```
 Set the variables which specify the kafka server, topic name, and group-id of the kafka consumer - the standard values are used here.
