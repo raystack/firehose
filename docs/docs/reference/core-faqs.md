@@ -49,7 +49,7 @@ Firehose provides various Kafka client configurations. Refer [Generic Configurat
 
 ## What all data formats are supported ?
 
-Elasticsearch and MongoDB sink support both JSON and Protobuf as the input schema. For other sinks, we currently support only Protobuf. Support for JSON and Avro is planned and incorporated in our roadmap. Please refer to our Roadmap section for more details.
+Elasticsearch , Bigquery and MongoDB sink support both JSON and Protobuf as the input schema. For other sinks, we currently support only Protobuf. Support for JSON and Avro is planned and incorporated in our roadmap. Please refer to our Roadmap section for more details.
 
 Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data. Data streams on Kafka topics are bound to a Protobuf schema.
 
@@ -146,7 +146,7 @@ No, all fields from the input key/message will be sent by Firehose to the Sink. 
 
 Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data. Data streams on Kafka topics are bound to a Protobuf schema. Protobuf is much more lightweight that other schema formats like JSON, since it encodes the keys in the message to integers.
 
-Elasticsearch and MongoDB sink support both JSON and Protobuf as the input schema.
+Elasticsearch, Bigquery and MongoDB sink support both JSON and Protobuf as the input schema.
 
 For other sinks, we currently support only Protobuf. Support for JSON and Avro is planned and incorporated in our roadmap. Please refer to our Roadmap section for more details.
 
