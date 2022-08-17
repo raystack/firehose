@@ -63,10 +63,37 @@ public class IndividualRequestCreatorTest {
         List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(messages, requestEntityBuilder);
 
         assertEquals(2, requests.size());
+        assertEquals(HttpSinkRequestMethodType.PUT.toString(), requests.get(0).getMethod());
+        assertEquals(HttpSinkRequestMethodType.PUT.toString(), requests.get(1).getMethod());
         verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
                 uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages).get(0), HttpSinkRequestMethodType.PUT);
         verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
                 uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages).get(1), HttpSinkRequestMethodType.PUT);
+    }
+
+    @Test
+    public void shouldProduceIndividualRequestsWhenPatchRequest() throws DeserializerException, URISyntaxException {
+        Message message1 = new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
+        Message message2 = new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
+        ArrayList<Message> messages = new ArrayList<>();
+        messages.add(message1);
+        messages.add(message2);
+
+        ArrayList<String> serializedMessages = new ArrayList<>();
+        serializedMessages.add("dummyMessage1");
+        serializedMessages.add("dummyMessage2");
+        when(jsonBody.serialize(messages)).thenReturn(serializedMessages);
+
+        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PATCH, jsonBody);
+        List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(messages, requestEntityBuilder);
+
+        assertEquals(2, requests.size());
+        assertEquals(HttpSinkRequestMethodType.PATCH.toString(), requests.get(0).getMethod());
+        assertEquals(HttpSinkRequestMethodType.PATCH.toString(), requests.get(1).getMethod());
+        verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages).get(0), HttpSinkRequestMethodType.PATCH);
+        verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages).get(1), HttpSinkRequestMethodType.PATCH);
     }
 
     @Test

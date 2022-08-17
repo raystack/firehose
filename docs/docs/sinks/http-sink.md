@@ -6,7 +6,7 @@ An Http sink Firehose \(`SINK_TYPE`=`http`\) requires the following variables to
 
 ### `SINK_HTTP_SERVICE_URL`
 
-The HTTP endpoint of the service to which this consumer should PUT/POST data. This can be configured as per the requirement, a constant or a dynamic one \(which extract given field values from each message and use that as the endpoint\)  
+The HTTP endpoint of the service to which this consumer should PUT/POST/PATCH data. This can be configured as per the requirement, a constant or a dynamic one \(which extract given field values from each message and use that as the endpoint\)
 If service url is constant, messages will be sent as batches while in case of dynamic one each message will be sent as a separate request \(Since they’d be having different endpoints\).
 
 - Example value: `http://http-service.test.io`
@@ -15,7 +15,7 @@ If service url is constant, messages will be sent as batches while in case of dy
 
 ### `SINK_HTTP_REQUEST_METHOD`
 
-Defines the HTTP verb supported by the endpoint, Supports PUT and POST verbs as of now.
+Defines the HTTP verb supported by the endpoint, Supports PUT, POST and PATCH verbs as of now.
 
 - Example value: `post`
 - Type: `required`
