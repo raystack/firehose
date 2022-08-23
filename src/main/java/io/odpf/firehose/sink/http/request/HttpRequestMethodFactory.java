@@ -20,12 +20,13 @@ public class HttpRequestMethodFactory {
      * @return the http entity enclosing request base
      */
     public static HttpEntityEnclosingRequestBase create(URI uri, HttpSinkRequestMethodType method) {
-        if (method.equals(HttpSinkRequestMethodType.POST)) {
-            return new HttpPost(uri);
-        } else if (method.equals(HttpSinkRequestMethodType.PATCH)) {
-            return new HttpPatch(uri);
-        } else {
-            return new HttpPut(uri);
+        switch (method) {
+            case POST:
+                return new HttpPost(uri);
+            case PATCH:
+                return new HttpPatch(uri);
+            default:
+                return new HttpPut(uri);
         }
     }
 }
