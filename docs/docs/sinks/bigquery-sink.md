@@ -32,6 +32,10 @@ For type conversion between protobuf to bigquery type. Please refer to
 Bigquery Sink supports creation of table with partition configuration.
 For more information refer to [Depot-bigquery.md#partitioning section](https://github.com/odpf/depot/blob/main/docs/sinks/bigquery.md#partitioning)
 
+## Clustering
+Bigquery Sink supports for creating and modifying clustered or unclustered table with clustering configuration.
+For more information refer to [Depot-bigquery.md#clustering section](https://github.com/odpf/depot/blob/main/docs/sinks/bigquery.md#clustering)
+
 ## Kafka Metadata
 For data quality checking purpose sometimes kafka metadata need to be added on the record. For more information refer to [Depot-bigquery.md#metadata sectionn](https://github.com/odpf/depot/blob/main/docs/sinks/bigquery.md#metadata)
 
