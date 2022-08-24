@@ -62,6 +62,7 @@ public class BatchRequestCreatorTest {
         List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(messages, requestEntityBuilder);
 
         assertEquals(1, requests.size());
+        assertEquals(HttpSinkRequestMethodType.PUT.toString(), requests.get(0).getMethod());
         verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
                 uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages), HttpSinkRequestMethodType.PUT);
     }
@@ -72,8 +73,20 @@ public class BatchRequestCreatorTest {
         List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(messages, requestEntityBuilder);
 
         assertEquals(1, requests.size());
+        assertEquals(HttpSinkRequestMethodType.POST.toString(), requests.get(0).getMethod());
         verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
                 uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages), HttpSinkRequestMethodType.POST);
+    }
+
+    @Test
+    public void shouldWrapMessageToASingleRequestWhenPatchRequest() throws DeserializerException, URISyntaxException {
+        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PATCH, jsonBody);
+        List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(messages, requestEntityBuilder);
+
+        assertEquals(1, requests.size());
+        assertEquals(HttpSinkRequestMethodType.PATCH.toString(), requests.get(0).getMethod());
+        verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages), HttpSinkRequestMethodType.PATCH);
     }
 
     @Test
