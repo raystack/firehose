@@ -12,8 +12,8 @@ To use offset manager:
   * `setCommittable(Object batch)` to set the committable flag to be true.
 * `getCommittableOffset()` returns the largest offset that can be committed.
 
-##Implementation
-###Data Structures
+## Implementation
+### Data Structures
 * OffsetNode: A combination of topic, partition and the offset.
 * toBeCommittableBatchOffsets: A map of batch-keys and a set of OffsetNodes.
 * sortedOffsets: A map of topic-partition to a sorted list of OffsetNode.
