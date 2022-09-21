@@ -4,6 +4,7 @@ import io.odpf.depot.bigquery.BigQuerySink;
 import io.odpf.depot.bigquery.BigQuerySinkFactory;
 import io.odpf.depot.redis.RedisSink;
 import io.odpf.depot.redis.RedisSinkFactory;
+import io.odpf.depot.redis.RedisSinkConfig;
 import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.log.LogSink;
 import io.odpf.depot.log.LogSinkFactory;
