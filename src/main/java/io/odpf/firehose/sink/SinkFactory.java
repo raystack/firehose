@@ -2,13 +2,13 @@ package io.odpf.firehose.sink;
 
 import io.odpf.depot.bigquery.BigQuerySink;
 import io.odpf.depot.bigquery.BigQuerySinkFactory;
-import io.odpf.depot.redis.RedisSink;
-import io.odpf.depot.redis.RedisSinkFactory;
-import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.config.BigQuerySinkConfig;
+import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.log.LogSink;
 import io.odpf.depot.log.LogSinkFactory;
 import io.odpf.depot.metrics.StatsDReporter;
+import io.odpf.depot.redis.RedisSink;
+import io.odpf.depot.redis.RedisSinkFactory;
 import io.odpf.firehose.config.KafkaConsumerConfig;
 import io.odpf.firehose.config.enums.SinkType;
 import io.odpf.firehose.consumer.kafka.OffsetManager;
@@ -26,7 +26,6 @@ import io.odpf.firehose.sink.prometheus.PromSinkFactory;
 import io.odpf.stencil.client.StencilClient;
 import org.aeonbits.owner.ConfigFactory;
 
-import java.io.IOException;
 import java.util.Map;
 
 public class SinkFactory {
