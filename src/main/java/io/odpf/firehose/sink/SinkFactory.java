@@ -74,11 +74,7 @@ public class SinkFactory {
                 redisSinkFactory = new RedisSinkFactory(
                         ConfigFactory.create(RedisSinkConfig.class, config),
                         statsDReporter);
-                try {
-                    redisSinkFactory.init();
-                } catch (IOException e) {
-                    throw new IllegalArgumentException("Exception occurred while creating sink", e);
-                }
+                redisSinkFactory.init();
                 return;
             case BIGQUERY:
                 BigquerySinkUtils.addMetadataColumns(config);
