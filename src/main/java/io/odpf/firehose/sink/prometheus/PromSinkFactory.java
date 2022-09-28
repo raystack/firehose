@@ -13,7 +13,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import java.util.Map;
 
@@ -64,10 +64,14 @@ public class PromSinkFactory {
      * @return CloseableHttpClient
      */
     private static CloseableHttpClient newHttpClient(PromSinkConfig promSinkConfig) {
+        Integer maxPromConnections = promSinkConfig.getSinkPromMaxConnections();
         RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(promSinkConfig.getSinkPromRequestTimeoutMs())
                 .setConnectionRequestTimeout(promSinkConfig.getSinkPromRequestTimeoutMs())
                 .setConnectTimeout(promSinkConfig.getSinkPromRequestTimeoutMs()).build();
-        BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+        connectionManager.setMaxTotal(maxPromConnections);
+        connectionManager.setDefaultMaxPerRoute(maxPromConnections);
+
         HttpClientBuilder builder = HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig);
 
         return builder.build();
