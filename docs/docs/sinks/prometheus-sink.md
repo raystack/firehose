@@ -21,9 +21,9 @@ Defines the connection timeout for the request in millis.
 
 Defines the maximum number of HTTP connections with Prometheus.
 
-- Example value: `5`
+- Example value: `10`
 - Type: `required`
-- Default value: `5`
+- Default value: `10`
 
 ### `SINK_PROM_RETRY_STATUS_CODE_RANGES`
 
