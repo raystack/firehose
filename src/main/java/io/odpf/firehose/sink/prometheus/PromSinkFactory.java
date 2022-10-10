@@ -68,7 +68,7 @@ public class PromSinkFactory {
                 .setConnectionRequestTimeout(promSinkConfig.getSinkPromRequestTimeoutMs())
                 .setConnectTimeout(promSinkConfig.getSinkPromRequestTimeoutMs()).build();
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        if(promSinkConfig.getSinkPromMaxConnections() != null && promSinkConfig.getSinkPromMaxConnections() > 0){
+        if (promSinkConfig.getSinkPromMaxConnections() != null && promSinkConfig.getSinkPromMaxConnections() > 0) {
             connectionManager.setMaxTotal(promSinkConfig.getSinkPromMaxConnections());
             connectionManager.setDefaultMaxPerRoute(promSinkConfig.getSinkPromMaxConnections());
         }
