@@ -64,13 +64,14 @@ public class PromSinkFactory {
      * @return CloseableHttpClient
      */
     private static CloseableHttpClient newHttpClient(PromSinkConfig promSinkConfig) {
-        Integer maxPromConnections = promSinkConfig.getSinkPromMaxConnections();
         RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(promSinkConfig.getSinkPromRequestTimeoutMs())
                 .setConnectionRequestTimeout(promSinkConfig.getSinkPromRequestTimeoutMs())
                 .setConnectTimeout(promSinkConfig.getSinkPromRequestTimeoutMs()).build();
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        connectionManager.setMaxTotal(maxPromConnections);
-        connectionManager.setDefaultMaxPerRoute(maxPromConnections);
+        if(promSinkConfig.getSinkPromMaxConnections() != null && promSinkConfig.getSinkPromMaxConnections() > 0){
+            connectionManager.setMaxTotal(promSinkConfig.getSinkPromMaxConnections());
+            connectionManager.setDefaultMaxPerRoute(promSinkConfig.getSinkPromMaxConnections());
+        }
 
         HttpClientBuilder builder = HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig);
 

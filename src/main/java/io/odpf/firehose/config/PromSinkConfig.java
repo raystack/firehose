@@ -23,7 +23,6 @@ public interface PromSinkConfig extends AppConfig {
     Integer getSinkPromRequestTimeoutMs();
 
     @Key("SINK_PROM_MAX_CONNECTIONS")
-    @DefaultValue("10")
     Integer getSinkPromMaxConnections();
 
     @Key("SINK_PROM_SERVICE_URL")
