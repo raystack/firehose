@@ -17,6 +17,14 @@ Defines the connection timeout for the request in millis.
 - Type: `required`
 - Default value: `10000`
 
+### `SINK_PROM_MAX_CONNECTIONS`
+
+Defines the maximum number of HTTP connections with Prometheus.
+
+- Example value: `10`
+- Type: `optional`
+- Default value: `default no more than 2 concurrent connections per given route and no more 20 connections`
+
 ### `SINK_PROM_RETRY_STATUS_CODE_RANGES`
 
 Defines the range of HTTP status codes for which retry will be attempted.
