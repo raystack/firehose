@@ -6,6 +6,9 @@ import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.bigtable.BigTableSinkFactory;
 import io.odpf.depot.bigtable.BigTableSink;
 import io.odpf.depot.config.BigTableSinkConfig;
+import io.odpf.depot.redis.RedisSink;
+import io.odpf.depot.redis.RedisSinkFactory;
+import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.log.LogSink;
 import io.odpf.depot.log.LogSinkFactory;
 import io.odpf.depot.metrics.StatsDReporter;
@@ -23,7 +26,6 @@ import io.odpf.firehose.sink.influxdb.InfluxSinkFactory;
 import io.odpf.firehose.sink.jdbc.JdbcSinkFactory;
 import io.odpf.firehose.sink.mongodb.MongoSinkFactory;
 import io.odpf.firehose.sink.prometheus.PromSinkFactory;
-import io.odpf.firehose.sink.redis.RedisSinkFactory;
 import io.odpf.stencil.client.StencilClient;
 import org.aeonbits.owner.ConfigFactory;
 
@@ -38,6 +40,7 @@ public class SinkFactory {
     private BigQuerySinkFactory bigQuerySinkFactory;
     private BigTableSinkFactory bigTableSinkFactory;
     private LogSinkFactory logSinkFactory;
+    private RedisSinkFactory redisSinkFactory;
     private final Map<String, String> config;
 
     public SinkFactory(KafkaConsumerConfig kafkaConsumerConfig,
@@ -62,6 +65,11 @@ public class SinkFactory {
             case INFLUXDB:
             case ELASTICSEARCH:
             case REDIS:
+                redisSinkFactory = new RedisSinkFactory(
+                        ConfigFactory.create(RedisSinkConfig.class, config),
+                        statsDReporter);
+                redisSinkFactory.init();
+                return;
             case GRPC:
             case PROMETHEUS:
             case BLOB:
@@ -105,7 +113,7 @@ public class SinkFactory {
             case ELASTICSEARCH:
                 return EsSinkFactory.create(config, statsDReporter, stencilClient);
             case REDIS:
-                return RedisSinkFactory.create(config, statsDReporter, stencilClient);
+                return new GenericOdpfSink(new FirehoseInstrumentation(statsDReporter, RedisSink.class), sinkType.name(), redisSinkFactory.create());
             case GRPC:
                 return GrpcSinkFactory.create(config, statsDReporter, stencilClient);
             case PROMETHEUS:
