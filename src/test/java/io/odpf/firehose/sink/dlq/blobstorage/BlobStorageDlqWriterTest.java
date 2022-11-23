@@ -16,13 +16,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Comparator;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BlobStorageDlqWriterTest {
