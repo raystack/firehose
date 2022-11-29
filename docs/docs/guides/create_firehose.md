@@ -136,4 +136,8 @@ _**Note:**_ [_**DATABASE**_](../sinks/influxdb-sink.md#sink_influx_db_name) _**a
    - The timestamp column is needed incase of partition table. It can be generated at the time of ingestion by setting the config. Please refer to config `SINK_BIGQUERY_ADD_EVENT_TIMESTAMP_ENABLE` in [depot bigquery sink config section](https://github.com/odpf/depot/blob/main/docs/reference/configuration/bigquery-sink.md#sink_bigquery_add_event_timestamp_enable)
 - Google cloud credential with some bigquery permission is required to run this sink.
 
+## Create a Bigtable sink
+
+- it requires the following environment  [variables](https://github.com/odpf/depot/blob/main/docs/reference/configuration/bigtable.md) ,which are required by ODPF Depot library, to be set along with the generic firehose variables.
+
 If you'd like to connect to a sink which is not yet supported, you can create a new sink by following the [contribution guidelines](../contribute/contribution.md)

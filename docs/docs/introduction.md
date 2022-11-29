@@ -38,6 +38,7 @@ Following sinks are supported in the Firehose
 - [Prometheus](https://en.wikipedia.org/wiki/Prometheus_%28software) - A time-series database
 - [MongoDB](https://en.wikipedia.org/wiki/MongoDB) - A NoSQL database
 - [Bigquery](https://cloud.google.com/bigquery) - A data warehouse provided by Google Cloud
+- [Bigtable](https://cloud.google.com/bigtable) - A fully managed, scalable NoSQL database service for large analytical and operational workloads.
 - [Blob Storage](https://gocloud.dev/howto/blob/) - A data storage architecture for large stores of unstructured data like google cloud storage, amazon s3, apache hadoop distributed filesystem
 
 ## How can I get started?

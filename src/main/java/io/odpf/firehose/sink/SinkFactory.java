@@ -3,6 +3,9 @@ package io.odpf.firehose.sink;
 import io.odpf.depot.bigquery.BigQuerySink;
 import io.odpf.depot.bigquery.BigQuerySinkFactory;
 import io.odpf.depot.config.BigQuerySinkConfig;
+import io.odpf.depot.bigtable.BigTableSinkFactory;
+import io.odpf.depot.bigtable.BigTableSink;
+import io.odpf.depot.config.BigTableSinkConfig;
 import io.odpf.depot.log.LogSink;
 import io.odpf.depot.log.LogSinkFactory;
 import io.odpf.depot.metrics.StatsDReporter;
@@ -33,6 +36,7 @@ public class SinkFactory {
     private final StencilClient stencilClient;
     private final OffsetManager offsetManager;
     private BigQuerySinkFactory bigQuerySinkFactory;
+    private BigTableSinkFactory bigTableSinkFactory;
     private LogSinkFactory logSinkFactory;
     private final Map<String, String> config;
 
@@ -75,6 +79,12 @@ public class SinkFactory {
                         BigquerySinkUtils.getRowIDCreator());
                 bigQuerySinkFactory.init();
                 return;
+            case BIGTABLE:
+                bigTableSinkFactory = new BigTableSinkFactory(
+                        ConfigFactory.create(BigTableSinkConfig.class, config),
+                        statsDReporter);
+                bigTableSinkFactory.init();
+                return;
             default:
                 throw new ConfigurationException("Invalid Firehose SINK_TYPE");
         }
@@ -104,6 +114,8 @@ public class SinkFactory {
                 return BlobSinkFactory.create(config, offsetManager, statsDReporter, stencilClient);
             case BIGQUERY:
                 return new GenericOdpfSink(new FirehoseInstrumentation(statsDReporter, BigQuerySink.class), sinkType.name(), bigQuerySinkFactory.create());
+            case BIGTABLE:
+                return new GenericOdpfSink(new FirehoseInstrumentation(statsDReporter, BigTableSink.class), sinkType.name(), bigTableSinkFactory.create());
             case MONGODB:
                 return MongoSinkFactory.create(config, statsDReporter, stencilClient);
             default:
