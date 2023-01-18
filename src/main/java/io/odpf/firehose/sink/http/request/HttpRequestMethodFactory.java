@@ -2,7 +2,10 @@ package io.odpf.firehose.sink.http.request;
 
 import io.odpf.firehose.config.enums.HttpSinkRequestMethodType;
 import io.odpf.firehose.sink.http.request.method.HttpDeleteWithBody;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpPatch;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 
 import java.net.URI;
 
