@@ -481,7 +481,7 @@ configs mean, please have a look at the config section.
 
 #### Does it support DELETE calls?
 
-At the moment, the HTTP Sink supports only PUT, POST and PATCH methods.
+Yes, the HTTP Sink now supports DELETE calls also.
 
 #### How many messages are pushed in one call?
 
