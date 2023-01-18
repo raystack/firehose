@@ -1,10 +1,8 @@
 package io.odpf.firehose.sink.http.request;
 
 import io.odpf.firehose.config.enums.HttpSinkRequestMethodType;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpPatch;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
+import io.odpf.firehose.sink.http.request.method.HttpDeleteWithBody;
+import org.apache.http.client.methods.*;
 
 import java.net.URI;
 
@@ -25,6 +23,8 @@ public class HttpRequestMethodFactory {
                 return new HttpPost(uri);
             case PATCH:
                 return new HttpPatch(uri);
+            case DELETE:
+                return new HttpDeleteWithBody(uri);
             default:
                 return new HttpPut(uri);
         }
