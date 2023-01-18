@@ -97,6 +97,31 @@ public class IndividualRequestCreatorTest {
     }
 
     @Test
+    public void shouldProduceIndividualRequestsWhenDeleteRequest() throws DeserializerException, URISyntaxException {
+        Message message1 = new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
+        Message message2 = new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
+        ArrayList<Message> messages = new ArrayList<>();
+        messages.add(message1);
+        messages.add(message2);
+
+        ArrayList<String> serializedMessages = new ArrayList<>();
+        serializedMessages.add("dummyMessage1");
+        serializedMessages.add("dummyMessage2");
+        when(jsonBody.serialize(messages)).thenReturn(serializedMessages);
+
+        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.DELETE, jsonBody);
+        List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(messages, requestEntityBuilder);
+
+        assertEquals(2, requests.size());
+        assertEquals(HttpSinkRequestMethodType.DELETE.toString(), requests.get(0).getMethod());
+        assertEquals(HttpSinkRequestMethodType.DELETE.toString(), requests.get(1).getMethod());
+        verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages).get(0), HttpSinkRequestMethodType.DELETE);
+        verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages).get(1), HttpSinkRequestMethodType.DELETE);
+    }
+
+    @Test
     public void shouldSetRequestPropertiesMultipleTimes() throws DeserializerException, URISyntaxException {
         Message message1 = new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
         Message message2 = new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);

@@ -90,6 +90,17 @@ public class BatchRequestCreatorTest {
     }
 
     @Test
+    public void shouldWrapMessageToASingleRequestWhenDeleteRequest() throws DeserializerException, URISyntaxException {
+        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.DELETE, jsonBody);
+        List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(messages, requestEntityBuilder);
+
+        assertEquals(1, requests.size());
+        assertEquals(HttpSinkRequestMethodType.DELETE.toString(), requests.get(0).getMethod());
+        verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), jsonBody.serialize(messages), HttpSinkRequestMethodType.DELETE);
+    }
+
+    @Test
     public void shouldWrapMessagesToASingleRequest() throws DeserializerException, URISyntaxException {
         Message message1 = new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
         Message message2 = new Message(new byte[]{10, 20}, new byte[]{1, 2}, "sample-topic", 0, 100);
