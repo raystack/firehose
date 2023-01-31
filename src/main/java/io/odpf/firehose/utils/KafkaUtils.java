@@ -30,6 +30,8 @@ public class KafkaUtils {
     private static final String METADATA_MAX_AGE_MS = "metadata.max.age.ms";
     private static final String MAX_POLL_RECORDS = "max.poll.records";
     private static final String SESSION_TIMEOUT_MS = "session.timeout.ms";
+    private static final String PARTITION_ASSIGNMENT_STRATEGY = "partition.assignment.strategy";
+
 
 
     /**
@@ -56,6 +58,7 @@ public class KafkaUtils {
             put(METADATA_MAX_AGE_MS, config.getSourceKafkaConsumerConfigMetadataMaxAgeMs());
             put(MAX_POLL_RECORDS, config.getSourceKafkaConsumerConfigMaxPollRecords());
             put(SESSION_TIMEOUT_MS, config.getSourceKafkaConsumerConfigSessionTimeoutMs());
+            put(PARTITION_ASSIGNMENT_STRATEGY, config.getSourceKafkaConsumerConfigPartitionAssignmentStrategy());
         }};
 
         return merge(consumerConfigurationMap, KafkaEnvironmentVariables.parse(extraParameters));

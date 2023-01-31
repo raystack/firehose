@@ -52,4 +52,9 @@ public interface KafkaConsumerConfig extends AppConfig {
     @Key("SOURCE_KAFKA_CONSUMER_CONFIG_MANUAL_COMMIT_MIN_INTERVAL_MS")
     @DefaultValue("-1")
     long getSourceKafkaConsumerManualCommitMinIntervalMs();
+
+    @Key("SOURCE_KAFKA_CONSUMER_CONFIG_PARTITION_ASSIGNMENT_STRATEGY")
+    @DefaultValue("org.apache.kafka.clients.consumer.CooperativeStickyAssignor")
+    String getSourceKafkaConsumerConfigPartitionAssignmentStrategy();
+
 }
