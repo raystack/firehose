@@ -62,7 +62,7 @@ public class IndividualRequestCreatorTest {
         serializedMessages.add("dummyMessage2");
         when(jsonBody.serialize(messages)).thenReturn(serializedMessages);
 
-        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody,httpSinkConfig );
+        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody, httpSinkConfig);
         List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(messages, requestEntityBuilder);
 
         assertEquals(2, requests.size());
