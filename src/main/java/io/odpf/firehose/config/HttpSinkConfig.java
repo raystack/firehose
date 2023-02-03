@@ -87,7 +87,7 @@ public interface HttpSinkConfig extends AppConfig {
     String getSinkHttpParameterSchemaProtoClass();
 
     @Key("SINK_HTTP_DELETE_BODY_ENABLE")
-    @DefaultValue("false")
+    @DefaultValue("true")
     Boolean getSinkHttpDeleteBodyEnable();
 
 }

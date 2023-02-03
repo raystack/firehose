@@ -133,3 +133,11 @@ Space-delimited scope overrides. If scope override is not provided, no scopes wi
 
 - Example value: `User:read, sys:info`
 - Type: `optional`
+
+### `SINK_HTTP_DELETE_BODY_ENABLE`
+
+This config if set to true will allow body for the HTTP DELETE method, otherwise no payload will be sent with DELETE request.
+
+- Example value: `false`
+- Type: `optional`
+- Default value: `true`
