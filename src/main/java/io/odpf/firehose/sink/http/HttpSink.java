@@ -59,7 +59,9 @@ public class HttpSink extends AbstractHttpSink {
 
     @Override
     protected List<String> readContent(HttpEntityEnclosingRequestBase httpRequest) throws IOException {
-        if (httpRequest.getMethod().equals("DELETE") && httpRequest.getEntity() == null) return new ArrayList<>();
+        if (httpRequest.getMethod().equals("DELETE") && httpRequest.getEntity() == null) {
+            return new ArrayList<>();
+        }
         try (InputStream inputStream = httpRequest.getEntity().getContent()) {
             return new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
         }
