@@ -60,7 +60,7 @@ public class DynamicUrlRequest implements Request {
     @Override
     public Request setRequestStrategy(HeaderBuilder headerBuilder, UriBuilder uriBuilder, RequestEntityBuilder requestEntitybuilder) {
         this.requestCreator = new IndividualRequestCreator(
-                new FirehoseInstrumentation(statsDReporter, IndividualRequestCreator.class), uriBuilder, headerBuilder, method, body);
+                new FirehoseInstrumentation(statsDReporter, IndividualRequestCreator.class), uriBuilder, headerBuilder, method, body, httpSinkConfig);
         this.requestEntityBuilder = requestEntitybuilder;
         return this;
     }

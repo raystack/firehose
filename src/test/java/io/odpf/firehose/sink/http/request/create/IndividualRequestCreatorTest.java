@@ -1,5 +1,6 @@
 package io.odpf.firehose.sink.http.request.create;
 
+import io.odpf.firehose.config.HttpSinkConfig;
 import io.odpf.firehose.config.enums.HttpSinkRequestMethodType;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.exception.DeserializerException;
@@ -28,6 +29,8 @@ public class IndividualRequestCreatorTest {
     @Mock
     private UriBuilder uriBuilder;
 
+    @Mock
+    private HttpSinkConfig httpSinkConfig;
     @Mock
     private HeaderBuilder headerBuilder;
 
@@ -59,7 +62,7 @@ public class IndividualRequestCreatorTest {
         serializedMessages.add("dummyMessage2");
         when(jsonBody.serialize(messages)).thenReturn(serializedMessages);
 
-        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody);
+        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody,httpSinkConfig );
         List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(messages, requestEntityBuilder);
 
         assertEquals(2, requests.size());
@@ -84,7 +87,7 @@ public class IndividualRequestCreatorTest {
         serializedMessages.add("dummyMessage2");
         when(jsonBody.serialize(messages)).thenReturn(serializedMessages);
 
-        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PATCH, jsonBody);
+        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PATCH, jsonBody, httpSinkConfig);
         List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(messages, requestEntityBuilder);
 
         assertEquals(2, requests.size());
@@ -109,7 +112,7 @@ public class IndividualRequestCreatorTest {
         serializedMessages.add("dummyMessage2");
         when(jsonBody.serialize(messages)).thenReturn(serializedMessages);
 
-        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.DELETE, jsonBody);
+        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.DELETE, jsonBody, httpSinkConfig);
         List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(messages, requestEntityBuilder);
 
         assertEquals(2, requests.size());
@@ -134,7 +137,7 @@ public class IndividualRequestCreatorTest {
         serializedMessages.add("dummyMessage2");
         when(jsonBody.serialize(messages)).thenReturn(serializedMessages);
 
-        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody);
+        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody, httpSinkConfig);
         individualRequestCreator.create(messages, requestEntityBuilder);
 
         verify(uriBuilder, times(2)).build(any(Message.class));
@@ -159,7 +162,7 @@ public class IndividualRequestCreatorTest {
         serializedMessages.add("dummyMessage2");
         when(jsonBody.serialize(messages)).thenReturn(serializedMessages);
 
-        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody);
+        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody, httpSinkConfig);
         List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(messages, requestEntityBuilder);
 
         assertEquals(2, requests.size());
@@ -184,7 +187,7 @@ public class IndividualRequestCreatorTest {
 
         requestEntityBuilder = new RequestEntityBuilder().setWrapping(true);
 
-        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody);
+        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody, httpSinkConfig);
         List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(messages, requestEntityBuilder);
 
         byte[] bytes1 = IOUtils.toByteArray(requests.get(0).getEntity().getContent());
@@ -213,7 +216,7 @@ public class IndividualRequestCreatorTest {
 
         requestEntityBuilder = new RequestEntityBuilder().setWrapping(false);
 
-        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody);
+        IndividualRequestCreator individualRequestCreator = new IndividualRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.PUT, jsonBody, httpSinkConfig);
         List<HttpEntityEnclosingRequestBase> requests = individualRequestCreator.create(messages, requestEntityBuilder);
 
         byte[] bytes1 = IOUtils.toByteArray(requests.get(0).getEntity().getContent());

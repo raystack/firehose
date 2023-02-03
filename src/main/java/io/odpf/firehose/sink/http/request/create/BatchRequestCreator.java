@@ -1,5 +1,6 @@
 package io.odpf.firehose.sink.http.request.create;
 
+import io.odpf.firehose.config.HttpSinkConfig;
 import io.odpf.firehose.config.enums.HttpSinkRequestMethodType;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.metrics.FirehoseInstrumentation;
@@ -23,12 +24,14 @@ public class BatchRequestCreator implements RequestCreator {
     private HttpSinkRequestMethodType method;
     private JsonBody jsonBody;
     private FirehoseInstrumentation firehoseInstrumentation;
+    private HttpSinkConfig httpSinkConfig;
 
-    public BatchRequestCreator(FirehoseInstrumentation firehoseInstrumentation, UriBuilder uriBuilder, HeaderBuilder headerBuilder, HttpSinkRequestMethodType method, JsonBody jsonBody) {
+    public BatchRequestCreator(FirehoseInstrumentation firehoseInstrumentation, UriBuilder uriBuilder, HeaderBuilder headerBuilder, HttpSinkRequestMethodType method, JsonBody jsonBody, HttpSinkConfig httpSinkConfig) {
         this.uriBuilder = uriBuilder;
         this.headerBuilder = headerBuilder;
         this.method = method;
         this.jsonBody = jsonBody;
+        this.httpSinkConfig = httpSinkConfig;
         this.firehoseInstrumentation = firehoseInstrumentation;
     }
 
@@ -42,9 +45,13 @@ public class BatchRequestCreator implements RequestCreator {
         headerMap.forEach(request::addHeader);
         String messagesString = jsonBody.serialize(messages).toString();
 
-        request.setEntity(requestEntityBuilder.buildHttpEntity(messagesString));
-        firehoseInstrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
-                uri, headerMap, jsonBody.serialize(messages), method);
+        if (!(method == HttpSinkRequestMethodType.DELETE && !httpSinkConfig.getSinkHttpDeleteBodyEnable())) {
+            request.setEntity(requestEntityBuilder.buildHttpEntity(messagesString));
+            firehoseInstrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                    uri, headerMap, jsonBody.serialize(messages), method);
+        } else
+            firehoseInstrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: no body\nRequest method: {}",
+                    uri, headerMap, method);
         return Collections.singletonList(request);
     }
 }

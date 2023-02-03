@@ -1,5 +1,6 @@
 package io.odpf.firehose.sink.http.request.create;
 
+import io.odpf.firehose.config.HttpSinkConfig;
 import io.odpf.firehose.config.enums.HttpSinkRequestMethodType;
 import io.odpf.firehose.message.Message;
 import io.odpf.firehose.metrics.FirehoseInstrumentation;
@@ -23,13 +24,15 @@ public class IndividualRequestCreator implements RequestCreator {
     private HttpSinkRequestMethodType method;
     private UriBuilder uriBuilder;
     private FirehoseInstrumentation firehoseInstrumentation;
+    private HttpSinkConfig httpSinkConfig;
 
-    public IndividualRequestCreator(FirehoseInstrumentation firehoseInstrumentation, UriBuilder uriBuilder, HeaderBuilder headerBuilder, HttpSinkRequestMethodType method, JsonBody body) {
+    public IndividualRequestCreator(FirehoseInstrumentation firehoseInstrumentation, UriBuilder uriBuilder, HeaderBuilder headerBuilder, HttpSinkRequestMethodType method, JsonBody body, HttpSinkConfig httpSinkConfig) {
         this.uriBuilder = uriBuilder;
         this.headerBuilder = headerBuilder;
         this.jsonBody = body;
         this.method = method;
         this.firehoseInstrumentation = firehoseInstrumentation;
+        this.httpSinkConfig = httpSinkConfig;
     }
 
     @Override
@@ -43,11 +46,14 @@ public class IndividualRequestCreator implements RequestCreator {
 
             Map<String, String> headerMap = headerBuilder.build(message);
             headerMap.forEach(request::addHeader);
-            request.setEntity(entity.buildHttpEntity(bodyContents.get(i)));
+            if (!(method == HttpSinkRequestMethodType.DELETE && !httpSinkConfig.getSinkHttpDeleteBodyEnable())) {
+                request.setEntity(entity.buildHttpEntity(bodyContents.get(i)));
 
-            firehoseInstrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
-                    requestUrl, headerMap, bodyContents.get(i), method);
-
+                firehoseInstrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
+                        requestUrl, headerMap, bodyContents.get(i), method);
+            } else
+                firehoseInstrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: no body\nRequest method: {}",
+                        requestUrl, headerMap, method);
             requests.add(request);
         }
         return requests;
