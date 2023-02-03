@@ -93,7 +93,20 @@ public class BatchRequestCreatorTest {
     }
 
     @Test
-    public void shouldWrapMessageToASingleRequestWhenDeleteRequest() throws DeserializerException, URISyntaxException {
+    public void shouldWrapMessageToASingleRequestWhenDeleteRequestWithoutBody() throws DeserializerException, URISyntaxException {
+        when(httpSinkConfig.getSinkHttpDeleteBodyEnable()).thenReturn(false);
+        BatchRequestCreator batchRequestCreator = new BatchRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.DELETE, jsonBody, httpSinkConfig);
+        List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(messages, requestEntityBuilder);
+
+        assertEquals(1, requests.size());
+        assertEquals(HttpSinkRequestMethodType.DELETE.toString(), requests.get(0).getMethod());
+        verify(firehoseInstrumentation, times(1)).logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: no body\nRequest method: {}",
+                uriBuilder.build(), headerBuilder.build(), HttpSinkRequestMethodType.DELETE);
+    }
+
+    @Test
+    public void shouldWrapMessageToASingleRequestWhenDeleteRequestWithBody() throws DeserializerException, URISyntaxException {
+        when(httpSinkConfig.getSinkHttpDeleteBodyEnable()).thenReturn(true);
         BatchRequestCreator batchRequestCreator = new BatchRequestCreator(firehoseInstrumentation, uriBuilder, headerBuilder, HttpSinkRequestMethodType.DELETE, jsonBody, httpSinkConfig);
         List<HttpEntityEnclosingRequestBase> requests = batchRequestCreator.create(messages, requestEntityBuilder);
 
