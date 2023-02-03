@@ -49,9 +49,10 @@ public class BatchRequestCreator implements RequestCreator {
             request.setEntity(requestEntityBuilder.buildHttpEntity(messagesString));
             firehoseInstrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
                     uri, headerMap, jsonBody.serialize(messages), method);
-        } else
+        } else {
             firehoseInstrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: no body\nRequest method: {}",
                     uri, headerMap, method);
+        }
         return Collections.singletonList(request);
     }
 }

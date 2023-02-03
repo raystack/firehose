@@ -51,9 +51,10 @@ public class IndividualRequestCreator implements RequestCreator {
 
                 firehoseInstrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: {}\nRequest method: {}",
                         requestUrl, headerMap, bodyContents.get(i), method);
-            } else
+            } else {
                 firehoseInstrumentation.logDebug("\nRequest URL: {}\nRequest headers: {}\nRequest content: no body\nRequest method: {}",
                         requestUrl, headerMap, method);
+            }
             requests.add(request);
         }
         return requests;
