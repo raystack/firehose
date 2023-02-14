@@ -39,7 +39,7 @@ Defines the maximum number of HTTP connections.
 
 ### `SINK_HTTP_RETRY_STATUS_CODE_RANGES`
 
-Deifnes the range of HTTP status codes for which retry will be attempted.
+Defines the range of HTTP status codes for which retry will be attempted. Please remove 404 from retry code range in case of HTTP DELETE otherwise it might try to retry to delete already deleted resources.
 
 - Example value: `400-600`
 - Type: `optional`
