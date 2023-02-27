@@ -50,13 +50,13 @@ public class GrpcClientTest {
         headerTestInterceptor = new HeaderTestInterceptor();
         headerTestInterceptor.setHeaderKeys(HEADER_KEYS);
         ServerServiceDefinition serviceDefinition = ServerInterceptors.intercept(testGrpcService.bindService(), Arrays.asList(headerTestInterceptor));
-        server = ServerBuilder.forPort(5000)
+        server = ServerBuilder.forPort(5050)
                 .addService(serviceDefinition)
                 .build()
                 .start();
         Map<String, String> config = new HashMap<>();
         config.put("SINK_GRPC_SERVICE_HOST", "localhost");
-        config.put("SINK_GRPC_SERVICE_PORT", "5000");
+        config.put("SINK_GRPC_SERVICE_PORT", "5050");
         config.put("SINK_GRPC_METHOD_URL", "io.odpf.firehose.consumer.TestServer/TestRpcMethod");
         config.put("SINK_GRPC_RESPONSE_SCHEMA_PROTO_CLASS", "io.odpf.firehose.consumer.TestGrpcResponse");
 

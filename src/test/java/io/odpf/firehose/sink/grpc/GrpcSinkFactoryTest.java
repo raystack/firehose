@@ -43,7 +43,7 @@ public class GrpcSinkFactoryTest {
         when(testGrpcService.bindService()).thenCallRealMethod();
 
         Server server = ServerBuilder
-                .forPort(5000)
+                .forPort(5050)
                 .addService(testGrpcService.bindService())
                 .build()
                 .start();
