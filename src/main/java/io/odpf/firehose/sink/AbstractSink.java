@@ -73,7 +73,7 @@ public abstract class AbstractSink implements Closeable, Sink {
                 firehoseInstrumentation.captureMessageMetrics(SINK_MESSAGES_TOTAL, Metrics.MessageType.FAILURE, m.getErrorInfo().getErrorType(), 1);
                 firehoseInstrumentation.captureErrorMetrics(m.getErrorInfo().getErrorType());
                 firehoseInstrumentation.logError("Failed to Push message. Error: {},Topic: {}, Partition: {},Offset: {}",
-                        m.getErrorInfo().toString(),
+                        m.getErrorInfo().getErrorType(),
                         m.getTopic(),
                         m.getPartition(),
                         m.getOffset());
