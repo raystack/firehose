@@ -62,10 +62,10 @@ public class SimpleRequest implements Request {
     public Request setRequestStrategy(HeaderBuilder headerBuilder, UriBuilder uriBuilder, RequestEntityBuilder requestEntitybuilder) {
         if (isTemplateBody(httpSinkConfig)) {
             this.requestCreator = new IndividualRequestCreator(new FirehoseInstrumentation(
-                    statsDReporter, IndividualRequestCreator.class), uriBuilder, headerBuilder, method, body);
+                    statsDReporter, IndividualRequestCreator.class), uriBuilder, headerBuilder, method, body, httpSinkConfig);
         } else {
             this.requestCreator = new BatchRequestCreator(new FirehoseInstrumentation(
-                    statsDReporter, BatchRequestCreator.class), uriBuilder, headerBuilder, method, body);
+                    statsDReporter, BatchRequestCreator.class), uriBuilder, headerBuilder, method, body, httpSinkConfig);
         }
         this.requestEntityBuilder = requestEntitybuilder;
         return this;

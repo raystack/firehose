@@ -481,7 +481,7 @@ configs mean, please have a look at the config section.
 
 #### Does it support DELETE calls?
 
-At the moment, the HTTP Sink supports only PUT, POST and PATCH methods.
+Yes, the HTTP Sink supports DELETE calls since Firehose version 0.7.3.
 
 #### How many messages are pushed in one call?
 

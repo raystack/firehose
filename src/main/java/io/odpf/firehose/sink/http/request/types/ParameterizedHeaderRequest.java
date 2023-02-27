@@ -74,7 +74,7 @@ public class ParameterizedHeaderRequest implements Request {
         this.requestCreator = new IndividualRequestCreator(
                 new FirehoseInstrumentation(statsDReporter, IndividualRequestCreator.class), uriBuilder,
                 headerBuilder.withParameterizedHeader(protoToFieldMapper, httpSinkConfig.getSinkHttpParameterSource()),
-                method, body);
+                method, body, httpSinkConfig);
         this.requestEntityBuilder = requestEntitybuilder;
         return this;
     }
