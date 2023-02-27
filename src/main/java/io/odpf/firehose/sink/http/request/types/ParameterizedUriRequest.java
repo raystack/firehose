@@ -73,7 +73,7 @@ public class ParameterizedUriRequest implements Request {
         this.requestCreator = new IndividualRequestCreator(
                 new FirehoseInstrumentation(statsDReporter, IndividualRequestCreator.class),
                 uriBuilder.withParameterizedURI(protoToFieldMapper, httpSinkConfig.getSinkHttpParameterSource()),
-                headerBuilder, method, body);
+                headerBuilder, method, body, httpSinkConfig);
         this.requestEntityBuilder = requestEntitybuilder;
         return this;
     }

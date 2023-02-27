@@ -6,7 +6,7 @@ An Http sink Firehose \(`SINK_TYPE`=`http`\) requires the following variables to
 
 ### `SINK_HTTP_SERVICE_URL`
 
-The HTTP endpoint of the service to which this consumer should PUT/POST/PATCH data. This can be configured as per the requirement, a constant or a dynamic one \(which extract given field values from each message and use that as the endpoint\)
+The HTTP endpoint of the service to which this consumer should PUT/POST/PATCH/DELETE data. This can be configured as per the requirement, a constant or a dynamic one \(which extract given field values from each message and use that as the endpoint\)
 If service url is constant, messages will be sent as batches while in case of dynamic one each message will be sent as a separate request \(Since they’d be having different endpoints\).
 
 - Example value: `http://http-service.test.io`
@@ -15,7 +15,7 @@ If service url is constant, messages will be sent as batches while in case of dy
 
 ### `SINK_HTTP_REQUEST_METHOD`
 
-Defines the HTTP verb supported by the endpoint, Supports PUT, POST and PATCH verbs as of now.
+Defines the HTTP verb supported by the endpoint, Supports PUT, POST, PATCH and DELETE verbs as of now.
 
 - Example value: `post`
 - Type: `required`
@@ -39,7 +39,7 @@ Defines the maximum number of HTTP connections.
 
 ### `SINK_HTTP_RETRY_STATUS_CODE_RANGES`
 
-Deifnes the range of HTTP status codes for which retry will be attempted.
+Defines the range of HTTP status codes for which retry will be attempted. Please remove 404 from retry code range in case of HTTP DELETE otherwise it might try to retry to delete already deleted resources.
 
 - Example value: `400-600`
 - Type: `optional`
@@ -133,3 +133,11 @@ Space-delimited scope overrides. If scope override is not provided, no scopes wi
 
 - Example value: `User:read, sys:info`
 - Type: `optional`
+
+### `SINK_HTTP_DELETE_BODY_ENABLE`
+
+This config if set to true will allow body for the HTTP DELETE method, otherwise no payload will be sent with DELETE request.
+
+- Example value: `false`
+- Type: `optional`
+- Default value: `true`

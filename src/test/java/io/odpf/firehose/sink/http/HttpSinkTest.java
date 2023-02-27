@@ -129,6 +129,7 @@ public class HttpSinkTest {
         when(httpEntity.getContent()).thenReturn(new StringInputStream(""));
         when(request.build(messages)).thenReturn(httpRequests);
         when(httpClient.execute(httpPut)).thenReturn(null);
+        when(httpPut.getMethod()).thenReturn("PUT");
 
         HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient, retryStatusCodeRange, requestLogStatusCodeRanges);
         httpSink.prepare(messages);
@@ -284,6 +285,7 @@ public class HttpSinkTest {
         when(httpClient.execute(httpPut)).thenReturn(response);
         when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
         when(response.getEntity()).thenReturn(httpEntity);
+        when(httpPut.getMethod()).thenReturn("PUT");
         when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value1\"},{\"key\":\"value2\"}]"));
 
         HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient,
@@ -312,6 +314,7 @@ public class HttpSinkTest {
         when(response.getAllHeaders()).thenReturn(new Header[]{new BasicHeader("Accept", "text/plain")});
         when(response.getEntity()).thenReturn(httpEntity);
         when(httpEntity.getContent()).thenReturn(new StringInputStream("[{\"key\":\"value1\"},{\"key\":\"value2\"}]"));
+        when(httpPut.getMethod()).thenReturn("PUT");
 
         HttpSink httpSink = new HttpSink(firehoseInstrumentation, request, httpClient, stencilClient,
                 new RangeToHashMapConverter().convert(null, "400-499"), requestLogStatusCodeRanges);
