@@ -40,10 +40,10 @@ To know more, follow the detailed [documentation](docs)
 
 Explore the following resources to get started with Firehose:
 
-- [Guides](docs/guides) provides guidance on [creating Firehose](docs/guides/overview.md) with different sinks.
-- [Concepts](docs/concepts) describes all important Firehose concepts.
-- [Reference](docs/reference) contains details about configurations, metrics and other aspects of Firehose.
-- [Contribute](docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Firehose.
+- [Guides](docs/docs/guides) provides guidance on [creating Firehose](docs/guides/overview.md) with different sinks.
+- [Concepts](docs/docs/concepts) describes all important Firehose concepts.
+- [Reference](docs/docs/reference) contains details about configurations, metrics and other aspects of Firehose.
+- [Contribute](docs/docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Firehose.
 
 ## Run with Docker
 
