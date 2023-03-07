@@ -34,11 +34,11 @@ public class MessageToJsonTest {
                 Base64.getDecoder().decode(logMessage.getBytes()), "sample-topic", 0, 100);
         String actualOutput = messageToJson.serialize(message);
         assertEquals(actualOutput, "{\"logMessage\":\"{\\\"uniqueDrivers\\\":\\\"3\\\","
-                + "\\\"windowStartTime\\\":\\\"Mar 20, 2017 10:54:00 AM\\\","
-                + "\\\"windowEndTime\\\":\\\"Mar 20, 2017 10:55:00 AM\\\",\\\"s2IdLevel\\\":13,\\\"vehicleType\\\":\\\"BIKE\\\","
+                + "\\\"windowStartTime\\\":\\\"Mar 20, 2017, 10:54:00 AM\\\","
+                + "\\\"windowEndTime\\\":\\\"Mar 20, 2017, 10:55:00 AM\\\",\\\"s2IdLevel\\\":13,\\\"vehicleType\\\":\\\"BIKE\\\","
                 + "\\\"s2Id\\\":\\\"3344472187078705152\\\"}\",\"topic\":\"sample-topic\",\"logKey\":\"{"
-                + "\\\"windowStartTime\\\":\\\"Mar 20, 2017 10:54:00 AM\\\","
-                + "\\\"windowEndTime\\\":\\\"Mar 20, 2017 10:55:00 AM\\\",\\\"s2IdLevel\\\":13,\\\"vehicleType\\\":\\\"BIKE\\\","
+                + "\\\"windowStartTime\\\":\\\"Mar 20, 2017, 10:54:00 AM\\\","
+                + "\\\"windowEndTime\\\":\\\"Mar 20, 2017, 10:55:00 AM\\\",\\\"s2IdLevel\\\":13,\\\"vehicleType\\\":\\\"BIKE\\\","
                 + "\\\"s2Id\\\":\\\"3344472187078705152\\\"}\"}");
     }
 
@@ -50,8 +50,8 @@ public class MessageToJsonTest {
                 100);
         String actualOutput = messageToJson.serialize(message);
         assertEquals("{\"logMessage\":\"{\\\"uniqueDrivers\\\":\\\"3\\\","
-                + "\\\"windowStartTime\\\":\\\"Mar 20, 2017 10:54:00 AM\\\","
-                + "\\\"windowEndTime\\\":\\\"Mar 20, 2017 10:55:00 AM\\\",\\\"s2IdLevel\\\":13,\\\"vehicleType\\\":\\\"BIKE\\\","
+                + "\\\"windowStartTime\\\":\\\"Mar 20, 2017, 10:54:00 AM\\\","
+                + "\\\"windowEndTime\\\":\\\"Mar 20, 2017, 10:55:00 AM\\\",\\\"s2IdLevel\\\":13,\\\"vehicleType\\\":\\\"BIKE\\\","
                 + "\\\"s2Id\\\":\\\"3344472187078705152\\\"}\",\"topic\":\"sample-topic\"}", actualOutput);
     }
 
@@ -64,8 +64,8 @@ public class MessageToJsonTest {
 
         String actualOutput = messageToJson.serialize(message);
         assertEquals("{\"logMessage\":\"{\\\"uniqueDrivers\\\":\\\"3\\\","
-                + "\\\"windowStartTime\\\":\\\"Mar 20, 2017 10:54:00 AM\\\","
-                + "\\\"windowEndTime\\\":\\\"Mar 20, 2017 10:55:00 AM\\\",\\\"s2IdLevel\\\":13,\\\"vehicleType\\\":\\\"BIKE\\\","
+                + "\\\"windowStartTime\\\":\\\"Mar 20, 2017, 10:54:00 AM\\\","
+                + "\\\"windowEndTime\\\":\\\"Mar 20, 2017, 10:55:00 AM\\\",\\\"s2IdLevel\\\":13,\\\"vehicleType\\\":\\\"BIKE\\\","
                 + "\\\"s2Id\\\":\\\"3344472187078705152\\\"}\",\"topic\":\"sample-topic\"}", actualOutput);
     }
 
@@ -93,8 +93,8 @@ public class MessageToJsonTest {
 
         String actualOutput = messageToJson.serialize(message);
         assertEquals("[{\"logMessage\":\"{\\\"uniqueDrivers\\\":\\\"3\\\","
-                + "\\\"windowStartTime\\\":\\\"Mar 20, 2017 10:54:00 AM\\\","
-                + "\\\"windowEndTime\\\":\\\"Mar 20, 2017 10:55:00 AM\\\",\\\"s2IdLevel\\\":13,\\\"vehicleType\\\":\\\"BIKE\\\","
+                + "\\\"windowStartTime\\\":\\\"Mar 20, 2017, 10:54:00 AM\\\","
+                + "\\\"windowEndTime\\\":\\\"Mar 20, 2017, 10:55:00 AM\\\",\\\"s2IdLevel\\\":13,\\\"vehicleType\\\":\\\"BIKE\\\","
                 + "\\\"s2Id\\\":\\\"3344472187078705152\\\"}\",\"topic\":\"sample-topic\"}]", actualOutput);
     }
 
