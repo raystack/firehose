@@ -43,6 +43,24 @@ public class MessageToJsonTest {
     }
 
     @Test
+    public void shouldProperlyHandleMiddayCycle() throws DeserializerException {
+        MessageToJson messageToJson = new MessageToJson(protoParser, false, true);
+
+        String logMessageWithMidday = "CgYI9/7PoQYSBgiz/8+hBhgNIICAgIDA9/y0LigCMAM\u003d";
+        String logKeyWithMidday = "CgYI9/7PoQYSBgiz/8+hBhgNIICAgIDA9/y0LigC";
+        Message message = new Message(Base64.getDecoder().decode(logKeyWithMidday.getBytes()),
+                Base64.getDecoder().decode(logMessageWithMidday.getBytes()), "sample-topic", 0, 100);
+        String actualOutput = messageToJson.serialize(message);
+        assertEquals(actualOutput, "{\"logMessage\":\"{\\\"uniqueDrivers\\\":\\\"3\\\","
+                + "\\\"windowStartTime\\\":\\\"Apr 10, 2023 12:22:15 PM\\\","
+                + "\\\"windowEndTime\\\":\\\"Apr 10, 2023 12:23:15 PM\\\",\\\"s2IdLevel\\\":13,\\\"vehicleType\\\":\\\"BIKE\\\","
+                + "\\\"s2Id\\\":\\\"3344472187078705152\\\"}\",\"topic\":\"sample-topic\",\"logKey\":\"{"
+                + "\\\"windowStartTime\\\":\\\"Apr 10, 2023 12:22:15 PM\\\","
+                + "\\\"windowEndTime\\\":\\\"Apr 10, 2023 12:23:15 PM\\\",\\\"s2IdLevel\\\":13,\\\"vehicleType\\\":\\\"BIKE\\\","
+                + "\\\"s2Id\\\":\\\"3344472187078705152\\\"}\"}");
+    }
+
+    @Test
     public void shouldSerializeWhenKeyIsMissing() throws DeserializerException {
         MessageToJson messageToJson = new MessageToJson(protoParser, false, true);
 

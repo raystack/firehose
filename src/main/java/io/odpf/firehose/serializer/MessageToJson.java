@@ -114,7 +114,7 @@ public class MessageToJson implements MessageSerializer {
 
         Date date;
         try {
-            date = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss").parse(timestampObject);
+            date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(timestampObject);
         } catch (java.text.ParseException e) {
             throw new RuntimeException(String.format("Not able to parse date, %s", timestampObject));
         }
