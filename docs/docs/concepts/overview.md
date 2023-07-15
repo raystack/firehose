@@ -10,7 +10,7 @@ scale. This section explains the overall architecture of Firehose and describes 
 ## [Monitoring Firehose with exposed metrics](monitoring.md)
 
 Always know what’s going on with your deployment with
-built-in [monitoring](https://github.com/odpf/firehose/blob/main/docs/assets/firehose-grafana-dashboard.json) of
+built-in [monitoring](https://github.com/raystack/firehose/blob/main/docs/assets/firehose-grafana-dashboard.json) of
 throughput, response times, errors and more. This section contains guides, best practices and advises related to
 managing Firehose in production.
 
@@ -27,12 +27,13 @@ Firehose provides various templating features
 
 Decorators are used for chained processing of messages.
 
-* SinkWithFailHandler
-* SinkWithRetry
-* SinkWithDlq
-* SinkFinal
+- SinkWithFailHandler
+- SinkWithRetry
+- SinkWithDlq
+- SinkFinal
 
 ## [FirehoseConsumer](consumer.md)
+
 A firehose consumer read messages from kafka, pushes those messages to sink and commits offsets back to kafka based on certain strategies.
 
 ## [Offsets](offsets.md)
@@ -40,5 +41,3 @@ A firehose consumer read messages from kafka, pushes those messages to sink and 
 Offset manager is a data structure used to manage offsets asynchronously. An offset should only be committed when a
 message is processed fully. Offset manager maintains a state of all the offsets of all topic-partitions, that can be
 committed. It can also be used by sinks to manage its own offsets.
-
-
