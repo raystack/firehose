@@ -40,7 +40,7 @@ _**Sink**_
 - All the existing sink types follow the same contract/lifecycle defined in `AbstractSink.java`. It consists of two stages:
   - Prepare: Transformation over-filtered messages’ list to prepare the sink-specific insert/update client requests.
   - Execute: Requests created in the Prepare stage are executed at this step and a list of failed messages is returned \(if any\) for retry.
-- Underlying implementation of AbstractSink can use implementation present in [depot](https://github.com/odpf/depot).
+- Underlying implementation of AbstractSink can use implementation present in [depot](https://github.com/raystack/depot).
 - If the batch has any failures, Firehose will retry to push the failed messages to the sink
 
 _**SinkPool**_
@@ -71,7 +71,9 @@ The final state of message can be any one of the followings after it is consumed
 One can monitor via plotting the metrics related to messages.
 
 ### Schema Handling
+
 - Incase when `INPUT_SCHEMA_DATA_TYPE is set to protobuf`
+
   - Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data. Data streams on Kafka topics are bound to a protobuf schema.
   - Firehose deserializes the data consumed from the topics using the Protobuf descriptors generated out of the artifacts. The artifactory is an HTTP interface that Firehose uses to deserialize.
   - The schema handling ie., find the mapped schema for the topic, downloading the descriptors, and dynamically being notified of/updating with the latest schema is abstracted through the Stencil library.
@@ -81,10 +83,8 @@ One can monitor via plotting the metrics related to messages.
     Schema Caching, dynamic schema updates, etc. are features of the stencil client library.
 
 - Incase when `INPUT_SCHEMA_DATA_TYPE is set to json`
-    - Currently this config is only supported in Bigquery sink,
-    - For json, in bigquery sink the schema is dynamically inferred from incoming data, in future we plan to provide json schema support via stencil.
-
- 
+  - Currently this config is only supported in Bigquery sink,
+  - For json, in bigquery sink the schema is dynamically inferred from incoming data, in future we plan to provide json schema support via stencil.
 
 ## Firehose Integration
 

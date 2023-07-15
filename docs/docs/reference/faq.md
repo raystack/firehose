@@ -6,103 +6,103 @@ answers.
 # Table of contents
 
 - [Frequently Asked Questions](#frequently-asked-questions)
-    - [Firehose Sinks](#firehose-sinks)
-        - [Blob Sink](#blob-sink)
-            - [What file formats are the records written into ?](#what-file-formats-are-the-records-written-into-)
-            - [Does the sink support json/Avro/Parquet/CSV ?](#does-the-sink-support-jsonavroparquetcsv-)
-            - [Does the sink support file compression GZIP/Snappy/lz4 ?](#does-the-sink-support-file-compression-gzipsnappylz4-)
-            - [Does the sink support partitioning ?](#does-the-sink-support-partitioning-)
-            - [How to configure partitioning ?](#how-to-configure-partitioning-)
-            - [Does the sink support S3 or hdfs ?](#does-the-sink-support-s3-or-hdfs-)
-            - [How the schema being generated ? How the data types being converted to Parquet types ?](#how-the-schema-being-generated--how-the-data-types-being-converted-to-parquet-types-)
-            - [How is the folder path for the file that being created ?](#how-is-the-folder-path-for-the-file-that-being-created-)
-            - [How to configure object storage bucket ?](#how-to-configure-object-storage-bucket-)
-            - [What will happen when file upload failed ?](#what-will-happen-when-file-upload-failed-)
-            - [What will happen when disk is full ?](#what-will-happen-when-disk-is-full-)
-            - [How to implement new Object Storage provider, for example S3 ?](#how-to-implement-new-object-storage-provider-for-example-s3-)
-            - [How to implement new file format ?](#how-to-implement-new-file-format-)
-            - [How to commit being handled ?](#how-to-commit-being-handled-)
-            - [How much Disk size recommended for the sink ?](#how-much-disk-size-recommended-for-the-sink-)
-        - [BigQuery Sink](#bigquery-sink)
-            - [What is the method that is being used to insert the bq rows ?](#what-is-the-method-that-is-being-used-to-insert-the-bq-rows-)
-            - [Does the sink support partitioned table ?](#does-the-sink-support-partitioned-table-)
-            - [How to configure partitioning ?](#how-to-configure-partitioning-)
-            - [How the schema being generated ? How the data types being converted to BQ ?](#how-the-schema-being-generated--how-the-data-types-being-converted-to-bq-)
-            - [Does the sink support ingestion time/ integer range partitioning?](#does-the-sink-support-ingestion-time-integer-range-partitioning)
-            - [How to configure table destination ?](#how-to-configure-table-destination-)
-            - [What will happen when on insertion of a record the timestamp is out of range more than 5 year in the past or 1 year in the future ?](#what-will-happen-when-on-insertion-of-a-record-the-timestamp-is-out-of-range-more-than-5-year-in-the-past-or-1-year-in-the-future-)
-            - [How many records are inserted/ batched each time ?](#how-many-records-are-inserted-batched-each-time-)
-            - [When is the BigQuery table schema updated ?](#when-is-the-bigquery-table-schema-updated-)
-            - [Is the table automatically created ?](#is-the-table-automatically-created-)
-            - [Does this sink support BigQuery table clustering configuration ?](#does-this-sink-support-bigquery-table-clustering-configuration-)
-            - [Does this sink support BigQuery table labeling ?](#does-this-sink-support-bigquery-table-labeling-)
-        - [Redis Sink](#redis-sink)
-            - [What is the Redis version supported ?](#what-is-the-redis-version-supported-)
-            - [What Data types are supported in Redis sink?](#what-data-types-are-supported-in-redis-sink)
-            - [What all deployments types of Redis is supported ?](#what-all-deployments-types-of-redis-is-supported-)
-            - [How to use Redis cluster for Redis sink?](#how-to-use-redis-cluster-for-redis-sink)
-            - [How to specify a template for the keys ?](#how-to-specify-a-template-for-the-keys-)
-            - [How to select nested fields?](#how-to-select-nested-fields)
-            - [What is the behaviour on connection failures?](#what-is-the-behaviour-on-connection-failures)
-            - [How can TTL be configured for the Redis keys?](#how-can-ttl-be-configured-for-the-redis-keys)
-            - [Does it support deleting the keys?](#does-it-support-deleting-the-keys)
-            - [What are some of the use cases of this sink?](#what-are-some-of-the-use-cases-of-this-sink)
-            - [What happens if the Redis goes down?](#what-happens-if-the-redis-goes-down)
-        - [JDBC Sink](#jdbc-sink)
-            - [What are some of the use cases of this sink?](#what-are-some-of-the-use-cases-of-this-sink)
-            - [What monitoring metrics are available for this sink?](#what-monitoring-metrics-are-available-for-this-sink)
-            - [Do we need to create table/schema before pushing data via JDBC sink ?](#do-we-need-to-create-tableschema-before-pushing-data-via-jdbc-sink-)
-            - [Any restriction of version of supported database?](#any-restriction-of-version-of-supported-database)
-            - [How messages get mapped to the queries?](#how-messages-get-mapped-to-the-queries)
-            - [How data types are handled?](#how-data-types-are-handled)
-            - [How are the database connections are formed?](#how-are-the-database-connections-are-formed)
-            - [How does JDBC sink handles connection pooling?](#how-does-jdbc-sink-handles-connection-pooling)
-            - [When and how do the DB connections gets closed?](#when-and-how-do-the-db-connections-gets-closed)
-            - [How to support a new data base which supports JDBC, e:g MySQL ?](#how-to-support-a-new-data-base-which-supports-jdbc-eg-mysql-)
-            - [Any transaction, locking provision?](#any-transaction-locking-provision)
-            - [Are there any chances of race conditions?](#are-there-any-chances-of-race-conditions)
-        - [HTTP Sink](#http-sink)
-            - [How does the payload look like?](#how-does-the-payload-look-like)
-            - [Does it support DELETE calls?](#does-it-support-delete-calls)
-            - [How many messages are pushed in one call?](#how-many-messages-are-pushed-in-one-call)
-            - [How can I configure the number of connections?](#how-can-i-configure-the-number-of-connections)
-            - [What data types of request body are supported?](#what-data-types-of-request-body-are-supported)
-            - [Does it support client side load balancing?](#does-it-support-client-side-load-balancing)
-            - [Which authentication methods are supported?](#which-authentication-methods-are-supported)
-            - [How can I pass a particular input field as a header in request?](#how-can-i-pass-a-particular-input-field-as-a-header-in-request)
-            - [How can I pass a particular input field as a query param in request?](#how-can-i-pass-a-particular-input-field-as-a-query-param-in-request)
-            - [What happens if my services fails ?](#what-happens-if-my-services-fails-)
-            - [How are HTTP connections handled, long lived?](#how-are-http-connections-handled-long-lived)
-            - [What is logRequest config?](#what-is-logrequest-config)
-            - [What is shouldRetry config?](#what-is-shouldretry-config)
-            - [What happens in case of null response?](#what-happens-in-case-of-null-response)
-            - [What happens in case of null status code in a non-null response?](#what-happens-in-case-of-null-status-code-in-a-non-null-response)
-            - [When is a message dropped?](#when-is-a-message-dropped)
-            - [What is the difference between Parameterised vs Dynamic Url ?](#what-is-the-difference-between-parameterised-vs-dynamic-url-)
-            - [For parameterised header, how is the data added?](#for-parameterised-header-how-is-the-data-added)
-        - [General Queries](#general-queries)
-            - [Which Java versions firehose work with?](#which-java-versions-firehose-work-with)
-            - [How does the execution work? Is the entire process sync or async ?](#how-does-the-execution-work-is-the-entire-process-sync-or-async-)
-            - [Is there any code snippet which shows how I can produce sample message in supported data format?](#is-there-any-code-snippet-which-shows-how-i-can-produce-sample-message-in-supported-data-format)
-            - [Why Protobuf ? Can it support other formats like JSON, AVRO, Thrift ?](#why-protobuf--can-it-support-other-formats-like-json-avro-thrift-)
-            - [Does firehose have support for SSL on Kafka?](#does-firehose-have-support-for-ssl-on-kafka)
-            - [How does  Firehose create the Kafka consumer?](#how-does--firehose-create-the-kafka-consumer)
-            - [Can I change the consumer group name or reset it ? Overall, how do I handle my consumer group operations?](#can-i-change-the-consumer-group-name-or-reset-it--overall-how-do-i-handle-my-consumer-group-operations)
-            - [What are the advantages of Firehose over Kafka connect ?](#what-are-the-advantages-of-firehose-over-kafka-connect-)
-            - [What problems does Firehose solve?](#what-problems-does-firehose-solve)
-            - [Can I do any transformations before sending data to sink, for example filtering ?](#can-i-do-any-transformations-before-sending-data-to-sink-for-example-filtering-)
-            - [How to optimise parallelism based on input rate of Kafka messages? Does it depend on sink ?](#how-to-optimise-parallelism-based-on-input-rate-of-kafka-messages-does-it-depend-on-sink-)
-            - [What are the retry mechanisms in firehose?](#what-are-the-retry-mechanisms-in-firehose)
-            - [Which Kafka client configs are available ?](#which-kafka-client-configs-are-available-)
-            - [What all data formats are supported?](#what-all-data-formats-are-supported)
-            - [Can we select particular fields from the input message?](#can-we-select-particular-fields-from-the-input-message)
-            - [How do I configure the Protobuf schema for the topic Firehose needs to consume?](#how-do-i-configure-the-protobuf-schema-for-the-topic-firehose-needs-to-consume)
-            - [What is Stencil in context of firehose ?](#what-is-stencil-in-context-of-firehose-)
-            - [Will I have any data loss if my firehose is failed ?](#will-i-have-any-data-loss-if-my-firehose-is-failed-)
-            - [How does firehose handle failed messages?](#how-does-firehose-handle-failed-messages)
-            - [What all metrics are produced for me to monitor ?](#what-all-metrics-are-produced-for-me-to-monitor-)
-            - [What kind of delivery guarantees does Firehose provide? Is it different from what Kafka is tuned for?](#what-kind-of-delivery-guarantees-does-firehose-provide-is-it-different-from-what-kafka-is-tuned-for)
-            - [What happens if my firehose is stopped and Kafka retention is for few days?](#what-happens-if-my-firehose-is-stopped-and-kafka-retention-is-for-few-days)
+  - [Firehose Sinks](#firehose-sinks)
+    - [Blob Sink](#blob-sink)
+      - [What file formats are the records written into ?](#what-file-formats-are-the-records-written-into-)
+      - [Does the sink support json/Avro/Parquet/CSV ?](#does-the-sink-support-jsonavroparquetcsv-)
+      - [Does the sink support file compression GZIP/Snappy/lz4 ?](#does-the-sink-support-file-compression-gzipsnappylz4-)
+      - [Does the sink support partitioning ?](#does-the-sink-support-partitioning-)
+      - [How to configure partitioning ?](#how-to-configure-partitioning-)
+      - [Does the sink support S3 or hdfs ?](#does-the-sink-support-s3-or-hdfs-)
+      - [How the schema being generated ? How the data types being converted to Parquet types ?](#how-the-schema-being-generated--how-the-data-types-being-converted-to-parquet-types-)
+      - [How is the folder path for the file that being created ?](#how-is-the-folder-path-for-the-file-that-being-created-)
+      - [How to configure object storage bucket ?](#how-to-configure-object-storage-bucket-)
+      - [What will happen when file upload failed ?](#what-will-happen-when-file-upload-failed-)
+      - [What will happen when disk is full ?](#what-will-happen-when-disk-is-full-)
+      - [How to implement new Object Storage provider, for example S3 ?](#how-to-implement-new-object-storage-provider-for-example-s3-)
+      - [How to implement new file format ?](#how-to-implement-new-file-format-)
+      - [How to commit being handled ?](#how-to-commit-being-handled-)
+      - [How much Disk size recommended for the sink ?](#how-much-disk-size-recommended-for-the-sink-)
+    - [BigQuery Sink](#bigquery-sink)
+      - [What is the method that is being used to insert the bq rows ?](#what-is-the-method-that-is-being-used-to-insert-the-bq-rows-)
+      - [Does the sink support partitioned table ?](#does-the-sink-support-partitioned-table-)
+      - [How to configure partitioning ?](#how-to-configure-partitioning-)
+      - [How the schema being generated ? How the data types being converted to BQ ?](#how-the-schema-being-generated--how-the-data-types-being-converted-to-bq-)
+      - [Does the sink support ingestion time/ integer range partitioning?](#does-the-sink-support-ingestion-time-integer-range-partitioning)
+      - [How to configure table destination ?](#how-to-configure-table-destination-)
+      - [What will happen when on insertion of a record the timestamp is out of range more than 5 year in the past or 1 year in the future ?](#what-will-happen-when-on-insertion-of-a-record-the-timestamp-is-out-of-range-more-than-5-year-in-the-past-or-1-year-in-the-future-)
+      - [How many records are inserted/ batched each time ?](#how-many-records-are-inserted-batched-each-time-)
+      - [When is the BigQuery table schema updated ?](#when-is-the-bigquery-table-schema-updated-)
+      - [Is the table automatically created ?](#is-the-table-automatically-created-)
+      - [Does this sink support BigQuery table clustering configuration ?](#does-this-sink-support-bigquery-table-clustering-configuration-)
+      - [Does this sink support BigQuery table labeling ?](#does-this-sink-support-bigquery-table-labeling-)
+    - [Redis Sink](#redis-sink)
+      - [What is the Redis version supported ?](#what-is-the-redis-version-supported-)
+      - [What Data types are supported in Redis sink?](#what-data-types-are-supported-in-redis-sink)
+      - [What all deployments types of Redis is supported ?](#what-all-deployments-types-of-redis-is-supported-)
+      - [How to use Redis cluster for Redis sink?](#how-to-use-redis-cluster-for-redis-sink)
+      - [How to specify a template for the keys ?](#how-to-specify-a-template-for-the-keys-)
+      - [How to select nested fields?](#how-to-select-nested-fields)
+      - [What is the behaviour on connection failures?](#what-is-the-behaviour-on-connection-failures)
+      - [How can TTL be configured for the Redis keys?](#how-can-ttl-be-configured-for-the-redis-keys)
+      - [Does it support deleting the keys?](#does-it-support-deleting-the-keys)
+      - [What are some of the use cases of this sink?](#what-are-some-of-the-use-cases-of-this-sink)
+      - [What happens if the Redis goes down?](#what-happens-if-the-redis-goes-down)
+    - [JDBC Sink](#jdbc-sink)
+      - [What are some of the use cases of this sink?](#what-are-some-of-the-use-cases-of-this-sink)
+      - [What monitoring metrics are available for this sink?](#what-monitoring-metrics-are-available-for-this-sink)
+      - [Do we need to create table/schema before pushing data via JDBC sink ?](#do-we-need-to-create-tableschema-before-pushing-data-via-jdbc-sink-)
+      - [Any restriction of version of supported database?](#any-restriction-of-version-of-supported-database)
+      - [How messages get mapped to the queries?](#how-messages-get-mapped-to-the-queries)
+      - [How data types are handled?](#how-data-types-are-handled)
+      - [How are the database connections are formed?](#how-are-the-database-connections-are-formed)
+      - [How does JDBC sink handles connection pooling?](#how-does-jdbc-sink-handles-connection-pooling)
+      - [When and how do the DB connections gets closed?](#when-and-how-do-the-db-connections-gets-closed)
+      - [How to support a new data base which supports JDBC, e:g MySQL ?](#how-to-support-a-new-data-base-which-supports-jdbc-eg-mysql-)
+      - [Any transaction, locking provision?](#any-transaction-locking-provision)
+      - [Are there any chances of race conditions?](#are-there-any-chances-of-race-conditions)
+    - [HTTP Sink](#http-sink)
+      - [How does the payload look like?](#how-does-the-payload-look-like)
+      - [Does it support DELETE calls?](#does-it-support-delete-calls)
+      - [How many messages are pushed in one call?](#how-many-messages-are-pushed-in-one-call)
+      - [How can I configure the number of connections?](#how-can-i-configure-the-number-of-connections)
+      - [What data types of request body are supported?](#what-data-types-of-request-body-are-supported)
+      - [Does it support client side load balancing?](#does-it-support-client-side-load-balancing)
+      - [Which authentication methods are supported?](#which-authentication-methods-are-supported)
+      - [How can I pass a particular input field as a header in request?](#how-can-i-pass-a-particular-input-field-as-a-header-in-request)
+      - [How can I pass a particular input field as a query param in request?](#how-can-i-pass-a-particular-input-field-as-a-query-param-in-request)
+      - [What happens if my services fails ?](#what-happens-if-my-services-fails-)
+      - [How are HTTP connections handled, long lived?](#how-are-http-connections-handled-long-lived)
+      - [What is logRequest config?](#what-is-logrequest-config)
+      - [What is shouldRetry config?](#what-is-shouldretry-config)
+      - [What happens in case of null response?](#what-happens-in-case-of-null-response)
+      - [What happens in case of null status code in a non-null response?](#what-happens-in-case-of-null-status-code-in-a-non-null-response)
+      - [When is a message dropped?](#when-is-a-message-dropped)
+      - [What is the difference between Parameterised vs Dynamic Url ?](#what-is-the-difference-between-parameterised-vs-dynamic-url-)
+      - [For parameterised header, how is the data added?](#for-parameterised-header-how-is-the-data-added)
+    - [General Queries](#general-queries)
+      - [Which Java versions firehose work with?](#which-java-versions-firehose-work-with)
+      - [How does the execution work? Is the entire process sync or async ?](#how-does-the-execution-work-is-the-entire-process-sync-or-async-)
+      - [Is there any code snippet which shows how I can produce sample message in supported data format?](#is-there-any-code-snippet-which-shows-how-i-can-produce-sample-message-in-supported-data-format)
+      - [Why Protobuf ? Can it support other formats like JSON, AVRO, Thrift ?](#why-protobuf--can-it-support-other-formats-like-json-avro-thrift-)
+      - [Does firehose have support for SSL on Kafka?](#does-firehose-have-support-for-ssl-on-kafka)
+      - [How does Firehose create the Kafka consumer?](#how-does--firehose-create-the-kafka-consumer)
+      - [Can I change the consumer group name or reset it ? Overall, how do I handle my consumer group operations?](#can-i-change-the-consumer-group-name-or-reset-it--overall-how-do-i-handle-my-consumer-group-operations)
+      - [What are the advantages of Firehose over Kafka connect ?](#what-are-the-advantages-of-firehose-over-kafka-connect-)
+      - [What problems does Firehose solve?](#what-problems-does-firehose-solve)
+      - [Can I do any transformations before sending data to sink, for example filtering ?](#can-i-do-any-transformations-before-sending-data-to-sink-for-example-filtering-)
+      - [How to optimise parallelism based on input rate of Kafka messages? Does it depend on sink ?](#how-to-optimise-parallelism-based-on-input-rate-of-kafka-messages-does-it-depend-on-sink-)
+      - [What are the retry mechanisms in firehose?](#what-are-the-retry-mechanisms-in-firehose)
+      - [Which Kafka client configs are available ?](#which-kafka-client-configs-are-available-)
+      - [What all data formats are supported?](#what-all-data-formats-are-supported)
+      - [Can we select particular fields from the input message?](#can-we-select-particular-fields-from-the-input-message)
+      - [How do I configure the Protobuf schema for the topic Firehose needs to consume?](#how-do-i-configure-the-protobuf-schema-for-the-topic-firehose-needs-to-consume)
+      - [What is Stencil in context of firehose ?](#what-is-stencil-in-context-of-firehose-)
+      - [Will I have any data loss if my firehose is failed ?](#will-i-have-any-data-loss-if-my-firehose-is-failed-)
+      - [How does firehose handle failed messages?](#how-does-firehose-handle-failed-messages)
+      - [What all metrics are produced for me to monitor ?](#what-all-metrics-are-produced-for-me-to-monitor-)
+      - [What kind of delivery guarantees does Firehose provide? Is it different from what Kafka is tuned for?](#what-kind-of-delivery-guarantees-does-firehose-provide-is-it-different-from-what-kafka-is-tuned-for)
+      - [What happens if my firehose is stopped and Kafka retention is for few days?](#what-happens-if-my-firehose-is-stopped-and-kafka-retention-is-for-few-days)
 
 ## Firehose Sinks
 
@@ -187,15 +187,15 @@ terminated with an abnormal status code.
 
 #### How to implement new Object Storage provider, for example S3 ?
 
-Firehose exposes an interface class called *BlobStorage.java* which can be used to create new blob storage
-implementations. Subsequently, the *BlobStorageFactory.java* can be modified to produce instance of this new blob
+Firehose exposes an interface class called _BlobStorage.java_ which can be used to create new blob storage
+implementations. Subsequently, the _BlobStorageFactory.java_ can be modified to produce instance of this new blob
 storage provider, while injecting the necessary configs. Firehose also exposes a config called as **
 SINK_BLOB_STORAGE_TYPE** which is used to control which storage provider to use, with its default currently set to GCS.
 
 #### How to implement new file format ?
 
-Firehose exposes an interface called *LocalFileWriter.java* which can be used to create new file writer implementations.
-Subsequently, the *LocalStorage.java* class can be modified to produce instance of this new file writer, while injecting
+Firehose exposes an interface called _LocalFileWriter.java_ which can be used to create new file writer implementations.
+Subsequently, the _LocalStorage.java_ class can be modified to produce instance of this new file writer, while injecting
 the necessary configs. Firehose also exposes a config called as **SINK_BLOB_LOCAL_FILE_WRITER_TYPE** which is used to
 control which file writer type to use, with its default currently set to parquet.
 
@@ -289,7 +289,7 @@ to `label1=value1,label2=value2`.
 
 #### What is the Redis version supported ?
 
-Firehose uses Jedis v3.0.1 (as of the latest release) as the redis client. At the time of writing this documentation, 
+Firehose uses Jedis v3.0.1 (as of the latest release) as the redis client. At the time of writing this documentation,
 Jedis is [fully compatible](https://github.com/redis/jedis#jedis) with redis 2.8.x, 3.x.x and above.
 
 #### What Data types are supported in Redis sink?
@@ -327,7 +327,7 @@ redis hash set entry. For example, consider a proto as follows:-
         int32 driver_id = 1;
         PersonName driver_name = 2;
     }
-    
+
     message PersonName {
         string fname = 1;
         string lname = 2;
@@ -409,7 +409,7 @@ SINK_JDBC_UNIQUE_KEYS**. For example, consider a proto as follows:-
         int32 driver_id = 1;
         PersonName driver_name = 2;
     }
-    
+
     message PersonName {
         string fname = 1;
         string lname = 2;
@@ -423,7 +423,7 @@ can set the **INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** config as follows:-
 This will output a row in the Driver table as follows:-
 
 | id   | first_name | last_name |
-|------|------------|-----------|
+| ---- | ---------- | --------- |
 | 1234 | Chuck      | Norris    |
 
 Unique keys as per the table schema can be configured by setting the config **SINK_JDBC_UNIQUE_KEYS**. For
@@ -475,7 +475,7 @@ can override the data from other partition.
 
 #### How does the payload look like?
 
-The payload format differs based on the configs **SINK_HTTP_DATA_FORMAT**, **SINK_HTTP_JSON_BODY_TEMPLATE**, 
+The payload format differs based on the configs **SINK_HTTP_DATA_FORMAT**, **SINK_HTTP_JSON_BODY_TEMPLATE**,
 **SINK_HTTP_PARAMETER_SOURCE**, **SINK_HTTP_SERVICE_URL** and **SINK_HTTP_PARAMETER_PLACEMENT**. For details on what these
 configs mean, please have a look at the config section.
 
@@ -507,7 +507,7 @@ respective encoded serialised string from the Kafka message:
 
 #### Does it support client side load balancing?
 
-Yes. The IP/hostname of the Load Balancer fronting the HTTP Sink Servers can be provided to Firehose via 
+Yes. The IP/hostname of the Load Balancer fronting the HTTP Sink Servers can be provided to Firehose via
 **SINK_HTTP_SERVICE_URL**. Firehose will call this endpoint when pushing messages and then the LB can take care of
 distributing the load among multiple sink servers.
 
@@ -517,26 +517,26 @@ Firehose supports OAuth authentication for the HTTP Sink.
 
 #### How can I pass a particular input field as a header in request?
 
-1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message` 
-(based on whether the field one requires in the http request is part of the key or the message in the Kafka record)
+1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message`
+   (based on whether the field one requires in the http request is part of the key or the message in the Kafka record)
 2. set **SINK_HTTP_PARAMETER_PLACEMENT** to `header`, and
-3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the proto class for the input Kafka message and set 
-**INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be 
-mapped to the header name.
+3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the proto class for the input Kafka message and set
+   **INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be
+   mapped to the header name.
 
 #### How can I pass a particular input field as a query param in request?
 
-1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message` 
-(based on whether the field one requires in the http request is part of the key or the message in the Kafka record),
+1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message`
+   (based on whether the field one requires in the http request is part of the key or the message in the Kafka record),
 2. set **SINK_HTTP_PARAMETER_PLACEMENT** to `query`, and
-3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the proto class for the input Kafka message and set 
-**INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be 
-mapped to the query parameter name.
+3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the proto class for the input Kafka message and set
+   **INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be
+   mapped to the query parameter name.
 
 #### What happens if my services fails ?
 
-If messages failed to get pushed to the HTTP endpoint with a retryable status code as specified via 
-**SINK_HTTP_RETRY_STATUS_CODE_RANGES** config, Firehose will retry sending the messages for a fixed number of attempts. 
+If messages failed to get pushed to the HTTP endpoint with a retryable status code as specified via
+**SINK_HTTP_RETRY_STATUS_CODE_RANGES** config, Firehose will retry sending the messages for a fixed number of attempts.
 If the messages still failed to get published after retries, Firehose will push these messages to the DLQ topic if DLQ is
 enabled via configs. If not enabled, it will drop the messages.
 
@@ -583,12 +583,12 @@ Kafka message is parsed into the request body.
 
 #### For parameterised header, how is the data added?
 
-1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message` (based on whether the field one requires in the http 
-request is part of the key or the message in the Kafka record),
+1. set **SINK_HTTP_PARAMETER_SOURCE** to either `key` or `message` (based on whether the field one requires in the http
+   request is part of the key or the message in the Kafka record),
 2. set **SINK_HTTP_PARAMETER_PLACEMENT** to `header`, and
-3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the Protobuf class for the input Kafka message and 
-**INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be 
-mapped to the header name.
+3. set **SINK_HTTP_PARAMETER_SCHEMA_PROTO_CLASS** to the Protobuf class for the input Kafka message and
+   **INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING** to a json value indicating the proto field number from the input message to be
+   mapped to the header name.
 
 ### General Queries
 
@@ -600,28 +600,29 @@ hence, needs to be tested prior to use.
 #### How does the execution work? Is the entire process sync or async ?
 
 The execution works as follows:
-* Get messages from Kafka
-* Filter the messages (optional)
-* Push these messages to sink: All the existing sink types follow the same contract/lifecycle defined
+
+- Get messages from Kafka
+- Filter the messages (optional)
+- Push these messages to sink: All the existing sink types follow the same contract/lifecycle defined
   in `AbstractSink.java`. It consists of two stages:
-    * **Prepare**: Transformation over-filtered messages’ list to prepare the sink-specific insert/update client
-      requests.
-    * **Execute**: Requests created in the prepare stage are executed at this step and a list of failed
-      messages is returned (if any) for retry.
-* If the push to the sink fails with a retryable exception, Firehose will attempt to retry pushing the messages for a
+  - **Prepare**: Transformation over-filtered messages’ list to prepare the sink-specific insert/update client
+    requests.
+  - **Execute**: Requests created in the prepare stage are executed at this step and a list of failed
+    messages is returned (if any) for retry.
+- If the push to the sink fails with a retryable exception, Firehose will attempt to retry pushing the messages for a
   configured number of attempts with backoff. After that, if DLQ is enabled, the messages are pushed to DLQ queue with
   backoff. If DLQ is disabled, messages are dropped.
-* Captures telemetry and success/failure events and send them to Telegraf
-* Repeat the process above again
+- Captures telemetry and success/failure events and send them to Telegraf
+- Repeat the process above again
 
-Firehose can configure its Kafka consumer to work in either sync or async mode. For more details, you can look 
+Firehose can configure its Kafka consumer to work in either sync or async mode. For more details, you can look
 [here](/docs/concepts/consumer.md)
 
 #### Is there any code snippet which shows how I can produce sample message in supported data format?
 
 Following is an example to demonstrate how to create a Protobuf message and then produce it to a Kafka cluster. Firstly,
-create a  `.proto`  file containing all the required field names and their corresponding integer tags. Save it in a new
-file named  `person.proto`
+create a `.proto` file containing all the required field names and their corresponding integer tags. Save it in a new
+file named `person.proto`
 
 ```
 syntax = "proto2";
@@ -653,10 +654,10 @@ message Person {
 
 ```
 
-Next, compile your  `.proto`  file using Protobuf compiler i.e.  `protoc`.This will generate Person, PersonOrBuilder and
+Next, compile your `.proto` file using Protobuf compiler i.e. `protoc`.This will generate Person, PersonOrBuilder and
 PersonProtos Java source files. Specify the source directory (where your application's source code lives – the current
 directory is used if you don't provide a value), the destination directory (where you want the generated code to go;
-often the same as  `$SRC_DIR`), and the path to your  `.proto`
+often the same as `$SRC_DIR`), and the path to your `.proto`
 
 ```
 protoc -I=$SRC_DIR --java_out=$DST_DIR $SRC_DIR/person.proto
@@ -664,12 +665,12 @@ protoc -I=$SRC_DIR --java_out=$DST_DIR $SRC_DIR/person.proto
 ```
 
 Lastly, add the following lines in your Java code to generate a POJO (Plain Old Java Object) of the Person proto class
-and serialize it to a byte array, using the  `toByteArray()`  method of
-the  [com.google.protobuf.GeneratedMessageV3](https://www.javadoc.io/static/com.google.protobuf/protobuf-java/3.5.1/com/google/protobuf/GeneratedMessageV3.html)
+and serialize it to a byte array, using the `toByteArray()` method of
+the [com.google.protobuf.GeneratedMessageV3](https://www.javadoc.io/static/com.google.protobuf/protobuf-java/3.5.1/com/google/protobuf/GeneratedMessageV3.html)
 class. The byte array is then sent to the Kafka cluster by the producer.
 
     KafkaProducer<byte[], byte[]> producer = new KafkaProducer<>(properties);
-    
+
     Person john = Person.newBuilder()
                     .setId(87182872)
                     .setName("John Doe")
@@ -679,10 +680,10 @@ class. The byte array is then sent to the Kafka cluster by the producer.
                                     .setNumber("555-4321")
                                     .setType(Person.PhoneType.HOME))
                     .build();
-    
+
     producer.send(new ProducerRecord<byte[], byte[]>(topicName, john.toByteArray()));
 
-Refer  [https://developers.google.com/protocol-buffers](https://developers.google.com/protocol-buffers)  for more info
+Refer [https://developers.google.com/protocol-buffers](https://developers.google.com/protocol-buffers) for more info
 on how to create protobuf files.
 
 #### Why Protobuf ? Can it support other formats like JSON, AVRO, Thrift ?
@@ -698,11 +699,11 @@ supports only Protobuf. Support for JSON and Avro is planned and incorporated in
 
 No, the Kafka consumer used in Firehose doesn't support SSL.
 
-#### How does  Firehose create the Kafka consumer?
+#### How does Firehose create the Kafka consumer?
 
 When Firehose starts, it creates as many Kafka consumers as specified by the config **APPLICATION_THREAD_COUNT** (
 default set to 1). Each consumer runs on a separate thread. Please
-look [here](https://github.com/odpf/firehose/blob/main/docs/reference/configuration.md#kafka-consumer) for more details
+look [here](https://github.com/raystack/firehose/blob/main/docs/reference/configuration.md#kafka-consumer) for more details
 on how to configure the Kafka consumer.
 
 #### Can I change the consumer group name or reset it ? Overall, how do I handle my consumer group operations?
@@ -710,22 +711,22 @@ on how to configure the Kafka consumer.
 Yes, the Kafka consumer group name can be changed by specifying the following configuration **SOURCE_KAFKA_CONSUMER_GROUP_ID**. The Kafka consumer in Firehose can also be reset. However, the default behaviour is
 currently set to read from the latest offset. To know further details on how to tune the Kafka consumer group, you can
 have a look at the Kafka consumer configurations already exposed by
-Firehose [here](https://github.com/odpf/firehose/blob/main/docs/reference/configuration/kafka-consumer-1.md#kafka-consumer).
+Firehose [here](https://github.com/raystack/firehose/blob/main/docs/reference/configuration/kafka-consumer-1.md#kafka-consumer).
 
 #### What are the advantages of Firehose over Kafka connect ?
 
-- **Ease of use:**  Firehose is easier to install, and using different sinks only requires changing a few
+- **Ease of use:** Firehose is easier to install, and using different sinks only requires changing a few
   configurations. However, Kafka Connect requires connectors to be installed across all the worker nodes within the
   cluster when used in distributed mode.
-- **Filtering:**  Value-based filtering is much easier to implement as compared to Kafka Connect. Requires no additional
+- **Filtering:** Value-based filtering is much easier to implement as compared to Kafka Connect. Requires no additional
   plugins/schema-registry to be installed.
-- **Extensible:**  Provides a comprehensible abstract sink contract making it easier to add a new sink in Firehose.
+- **Extensible:** Provides a comprehensible abstract sink contract making it easier to add a new sink in Firehose.
   Firehose also comes with an inbuilt serialisation/deserialisation and doesn't require any converters and serialisers
   when implementing a new sink.
-- **Easy monitoring:**  Firehose provides a detailed health dashboard (Grafana) for effortless monitoring.
-- **Connectors:**  Some of the Kafka connect available connectors usually have limitations. It's usually rare to find
+- **Easy monitoring:** Firehose provides a detailed health dashboard (Grafana) for effortless monitoring.
+- **Connectors:** Some of the Kafka connect available connectors usually have limitations. It's usually rare to find
   all the required features in a single connector and so is to find documentation for the same.
-- **Fully open-source:**  Firehose is completely open-source while separation of commercial and open-source features is
+- **Fully open-source:** Firehose is completely open-source while separation of commercial and open-source features is
   not very structured in Kafka Connect and for monitoring and advanced features, confluent control center requires an
   enterprise subscription.
 
@@ -742,14 +743,14 @@ requires no ongoing administration.
 #### Can I do any transformations before sending data to sink, for example filtering ?
 
 Yes, Firehose provides JEXL based filters based on the fields in key or message of the Kafka record. Read
-the [Filters](https://github.com/odpf/firehose/blob/main/docs/concepts/filters.md) section for further details.
+the [Filters](https://github.com/raystack/firehose/blob/main/docs/concepts/filters.md) section for further details.
 
 #### How to optimise parallelism based on input rate of Kafka messages? Does it depend on sink ?
 
 You can increase the workers in the Firehose which will effectively multiply the number of records being processed by
-Firehose. Adding some sort of filter condition in the Firehose to ignore unnecessary messages in the topic would help 
-you bring down the volume of data being processed by the sink.Firehose can also be configured for its Kafka consumer to 
-work in [async mode](/docs/concepts/consumer.md), thereby allowing it to do offset management and commit asynchronously 
+Firehose. Adding some sort of filter condition in the Firehose to ignore unnecessary messages in the topic would help
+you bring down the volume of data being processed by the sink.Firehose can also be configured for its Kafka consumer to
+work in [async mode](/docs/concepts/consumer.md), thereby allowing it to do offset management and commit asynchronously
 improving performance.
 
 #### What are the retry mechanisms in firehose?
@@ -761,12 +762,12 @@ messages are pushed to DLQ queue with backoff. If push fails and DLQ is disabled
 Starting with version 0.2, Firehose also provides the ability to tag different error types under a specific scope: `DLQ`
 , `RETRY` or `FAIL`. This enables Firehose to effectively determine at runtime as to what should be the strategy when a
 particular error is encountered. For more details, please look at `ErrorConfig.java` class and classes in
-the `io.odpf.firehose.error` package.
+the `come.raystack.firehose.error` package.
 
 #### Which Kafka client configs are available ?
 
 Firehose provides various Kafka client configurations.
-Refer [Kafka Consumer Configurations](https://github.com/odpf/firehose/blob/main/docs/reference/configuration/kafka-consumer-1.md)
+Refer [Kafka Consumer Configurations](https://github.com/raystack/firehose/blob/main/docs/reference/configuration/kafka-consumer-1.md)
 section.
 
 #### What all data formats are supported?
@@ -776,10 +777,10 @@ only Protobuf. Support for JSON and Avro is planned and incorporated in the road
 
 Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serialising structured data.
 When `INPUT_SCHEMA_DATA_TYPE=protobuf` Data streams on Kafka topics are bound to a Protobuf schema. Follow the instructions
-in  [this article](https://developers.google.com/protocol-buffers/docs/javatutorial)  on how to create, compile and
+in [this article](https://developers.google.com/protocol-buffers/docs/javatutorial) on how to create, compile and
 serialize a Protobuf object to send it to a binary OutputStream.
-Refer  [this guide](https://developers.google.com/protocol-buffers/docs/proto3)  for detailed Protobuf syntax and rules
-to create a  `.proto`  file.
+Refer [this guide](https://developers.google.com/protocol-buffers/docs/proto3) for detailed Protobuf syntax and rules
+to create a `.proto` file.
 When `INPUT_SCHEMA_DATA_TYPE=json` data streams on kafka topics are bound to having a valid json message.
 
 #### Can we select particular fields from the input message?
@@ -791,28 +792,28 @@ destination/ database to consume only the required fields.
 
 Generated Protobuf Descriptors are hosted behind a Stencil server artifactory/HTTP endpoint. This endpoint URL and the
 ProtoDescriptor class that the Firehose deployment should use to deserialise raw data with is configured in Firehose in
-the environment variables **SCHEMA_REGISTRY_STENCIL_URLS** and **INPUT_SCHEMA_PROTO_CLASS**  respectively.
+the environment variables **SCHEMA_REGISTRY_STENCIL_URLS** and **INPUT_SCHEMA_PROTO_CLASS** respectively.
 
 The Proto Descriptor set of the Kafka messages must be uploaded to the Stencil server.
-Refer  [this guide](https://github.com/odpf/stencil/blob/master/docs/guides/quick_start.md)  on how to setup and
+Refer [this guide](https://github.com/raystack/stencil/blob/master/docs/guides/quick_start.md) on how to setup and
 configure the Stencil server.
 
 #### What is Stencil in context of firehose ?
 
-ODPF Stencil API is a dynamic schema registry for hosting and managing versions of Protobuf descriptors. The schema
+Stencil API is a dynamic schema registry for hosting and managing versions of Protobuf descriptors. The schema
 handling i.e., find the mapped schema for the topic, downloading the descriptors, and dynamically being notified
 of/updating with the latest schema is abstracted through the Stencil library.
 
 The Stencil Client is a proprietary library that provides an abstraction layer, for schema handling. Schema caching,
 dynamic schema updates are features of the stencil client library.
 
-Refer  [this article](https://odpf.gitbook.io/stencil/)  for further information of the features, configuration and
+Refer [this article](https://raystack.gitbook.io/stencil/) for further information of the features, configuration and
 deployment instructions of the Stencil API. Source code of Stencil Server and Client API can be found in
-its  [Github repository](https://github.com/odpf/stencil).
+its [Github repository](https://github.com/raystack/stencil).
 
 #### Will I have any data loss if my firehose is failed ?
 
-Firehose follows an *at-least* once policy. After a batch of messages is pushed to the sink successfully, Firehose
+Firehose follows an _at-least_ once policy. After a batch of messages is pushed to the sink successfully, Firehose
 commits the offset before the consumer polls another batch from Kafka. Thus, failed messages are not committed.
 
 So, when Firehose is restarted, the Kafka Consumer automatically starts pulling messages from the last committed offset
@@ -827,12 +828,12 @@ messages are pushed to DLQ queue with backoff. If push fails and DLQ is disabled
 Starting with version 0.2, Firehose also provides the ability to tag different error types under a specific scope: `DLQ`
 , `RETRY` or `FAIL`. This enables Firehose to effectively determine at runtime as to what should be the strategy when a
 particular error is encountered. For more details, please look at `ErrorConfig.java` class and classes in
-the `io.odpf.firehose.error` package.
+the `org.raystack.firehose.error` package.
 
 #### What all metrics are produced for me to monitor ?
 
 Firehose exposes critical metrics to monitor the health of your delivery streams and take any necessary actions. Refer
-the [Metrics](https://github.com/odpf/firehose/blob/main/docs/reference/metrics.md) section for further details on each
+the [Metrics](https://github.com/raystack/firehose/blob/main/docs/reference/metrics.md) section for further details on each
 metric.
 
 #### What kind of delivery guarantees does Firehose provide? Is it different from what Kafka is tuned for?
@@ -847,7 +848,7 @@ messages are pushed to DLQ queue with backoff. If push fails and DLQ is disabled
 Starting with version 0.2, Firehose also provides the ability to tag different error types under a specific scope: `DLQ`
 , `RETRY` or `FAIL`. This enables Firehose to effectively determine at runtime as to what should be the strategy when a
 particular error is encountered. For more details, please look at `ErrorConfig.java` class and classes in
-the `io.odpf.firehose.error` package.
+the `org.raystack.firehose.error` package.
 
 #### What happens if my firehose is stopped and Kafka retention is for few days?
 

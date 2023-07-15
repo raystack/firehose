@@ -32,8 +32,8 @@ lombok {
     sha256 = ""
 }
 
-group 'io.odpf'
-version '0.7.4'
+group 'org.raystack'
+version '0.8.0'
 
 def projName = "firehose"
 
@@ -41,6 +41,7 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
+    mavenLocal()
     mavenCentral()
     jcenter()
     maven {
@@ -54,7 +55,7 @@ private Properties loadEnv() {
     properties
 }
 
-def mainClassName = "io.odpf.firehose.launch.Main"
+def mainClassName = "org.raystack.firehose.launch.Main"
 
 dependencies {
     implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.1.0'
@@ -71,7 +72,7 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-jexl', version: '2.1'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
     implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
-    implementation group: 'io.odpf', name: 'stencil', version: '0.2.1' exclude group: 'org.slf4j'
+    implementation group: 'org.raystack', name: 'stencil', version: '0.4.0' exclude group: 'org.slf4j'
     implementation group: 'software.amazon.awssdk', name: 's3', version: '2.17.129'
     implementation group: 'org.influxdb', name: 'influxdb-java', version: '2.5'
     implementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
@@ -85,7 +86,7 @@ dependencies {
         exclude group: "log4j", module: "log4j"
     }
     implementation 'io.confluent:monitoring-interceptors:3.0.0'
-    implementation "io.grpc:grpc-all:1.38.0"
+    implementation 'io.grpc:grpc-all:1.53.0'
     implementation group: 'org.jfrog.buildinfo', name: 'build-info-extractor', version: '2.6.3'
     implementation group: 'com.google.gradle', name: 'osdetector-gradle-plugin', version: '1.2.1'
     implementation group: 'org.apache.ivy', name: 'ivy', version: '2.2.0'
@@ -98,10 +99,9 @@ dependencies {
     implementation 'com.gojek.parquet:parquet-hadoop:1.11.9'
     implementation group: 'com.github.os72', name: 'protobuf-dynamic', version: '1.0.1'
     implementation platform('com.google.cloud:libraries-bom:20.5.0')
-    implementation 'com.google.cloud:google-cloud-storage:1.114.0'
-    implementation 'com.google.cloud:google-cloud-bigquery:1.115.0'
-    implementation 'org.apache.logging.log4j:log4j-core:2.17.1'
-    implementation group: 'io.odpf', name: 'depot', version: '0.3.8'
+    implementation 'com.google.cloud:google-cloud-storage:2.20.1'
+    implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
+    implementation group: 'org.raystack', name: 'depot', version: '0.4.0'
     implementation group: 'com.networknt', name: 'json-schema-validator', version: '1.0.59' exclude group: 'org.slf4j'
 
     testImplementation group: 'junit', name: 'junit', version: '4.11'
@@ -146,7 +146,7 @@ test {
         events "passed", "skipped", "failed"
     }
     useJUnit {
-        excludeCategories 'io.odpf.firehose.test.categories.IntegrationTest'
+        excludeCategories 'org.raystack.firehose.test.categories.IntegrationTest'
     }
     doLast {
         delete "$projectDir/src/test/resources/__files"
@@ -158,7 +158,7 @@ clean {
 }
 jar {
     manifest {
-        attributes 'Main-Class': 'io.odpf.firehose.launch.Main'
+        attributes 'Main-Class': 'org.raystack.firehose.launch.Main'
         duplicatesStrategy = 'exclude'
         zip64 = true
     }
@@ -181,7 +181,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = "https://maven.pkg.github.com/odpf/firehose"
+            url = "https://maven.pkg.github.com/raystack/firehose"
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
