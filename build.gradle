@@ -4,7 +4,6 @@ buildscript {
     }
     dependencies {
         classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.17'
-        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.4.7"
         classpath "org.ajoberstar:gradle-git:1.6.0"
     }
 }
@@ -33,7 +32,7 @@ lombok {
 }
 
 group 'org.raystack'
-version '0.8.0'
+version '0.8.1'
 
 def projName = "firehose"
 
@@ -87,7 +86,6 @@ dependencies {
     }
     implementation 'io.confluent:monitoring-interceptors:3.0.0'
     implementation 'io.grpc:grpc-all:1.53.0'
-    implementation group: 'org.jfrog.buildinfo', name: 'build-info-extractor', version: '2.6.3'
     implementation group: 'com.google.gradle', name: 'osdetector-gradle-plugin', version: '1.2.1'
     implementation group: 'org.apache.ivy', name: 'ivy', version: '2.2.0'
     implementation group: 'org.mongodb', name: 'mongo-java-driver', version: '3.12.8'
